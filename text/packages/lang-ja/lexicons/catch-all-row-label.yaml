@@ -1,0 +1,10 @@
+# 上の行が拾わなかった場合をまとめて受ける行（場合分けの表の最後の行）の札。条件の欄は、当てはまる条件が無いので空く。
+# 行の最初の欄の頭で照らす。
+id: catch-all-row-label
+language: ja
+entries:
+  - pattern: 上記以外
+  - pattern: 上記のいずれにも該当しない
+  - pattern: 上記のいずれにも当てはまらない
+  - pattern: それ以外
+  - pattern: 以上のいずれでもない

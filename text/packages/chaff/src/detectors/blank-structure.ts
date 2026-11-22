@@ -9,6 +9,7 @@ import { amountColumnOf, isTotalRowGap, type BodyRow } from "../structure/total-
 import { isAmountNameLine, isTotalLine } from "../structure/total-line.ts";
 import { isTotalLabel, withoutLeadingBlankCells } from "../structure/total.ts";
 import { isSpannedLabelGap } from "../structure/spanned-label-blank.ts";
+import { isCatchAllRowGap } from "../structure/catch-all-row-blank.ts";
 import { picturesSpreadsheet } from "./spreadsheet-grid.ts";
 
 /** Fewer body rows than this, and one blank is as likely a choice as a gap. */
@@ -79,24 +80,28 @@ const bodyRowOf = (source: string, row: MarkdownNode, isTotalRow: IsTotalRow): B
   cells: (row.children ?? []).map((cell) => (shows(cell) ? sourceOf(source, cell) : undefined)),
 });
 
-/** How a table's rows are read: which rows are totals, and the total words that make a cell a row label (Total score). */
-type TableReading = { readonly isTotalRow: IsTotalRow; readonly totalWords: readonly string[] };
+/**
+ * How a table's rows are read: which rows are totals, the total words that make a cell a row label (Total score), and the
+ * words that open a catch-all row (none of the above).
+ */
+type TableReading = { readonly isTotalRow: IsTotalRow; readonly totalWords: readonly string[]; readonly catchAllWords: readonly string[] };
 
-const NO_TOTALS: TableReading = { isTotalRow: () => false, totalWords: [] };
+const NO_TOTALS: TableReading = { isTotalRow: () => false, totalWords: [], catchAllWords: [] };
 
 /**
  * The one blank body cell of a column whose other body rows are all filled, unless it is a total row's blank beside its
- * amount, or the second column of a label that spans two (| Total score |  | 5 |). Such a blank still counts as a second
- * blank, so the rows it shares a column with stay as unreported as before.
+ * amount, the second column of a label that spans two (| Total score |  | 5 |), or a condition a catch-all row leaves out
+ * (| none of the above apply |  | 10 percent |). Such a blank still counts as a second blank, so the rows it shares a column
+ * with stay as unreported as before.
  */
-const columnBlank = (source: string, table: TableRows, totalWords: readonly string[], column: number): Blank[] => {
+const columnBlank = (source: string, table: TableRows, reading: TableReading, column: number): Blank[] => {
   const { header, body, rows } = table;
   const blanks = rows.flatMap((row, index) => (row.cells[column] === undefined ? [index] : []));
   const at = blanks[0];
   const row = at === undefined ? undefined : rows[at];
   if (blanks.length !== 1 || at === undefined || row === undefined) return [];
   if (isTotalRowGap(row, column, amountColumnOf(rows, header.children?.length ?? 0))) return [];
-  if (isSpannedLabelGap(row.cells, column, totalWords)) return [];
+  if (isSpannedLabelGap(row.cells, column, reading.totalWords) || isCatchAllRowGap(row.cells, column, reading.catchAllWords)) return [];
   const offset = cellOffset(body[at]?.children?.[column], body[at]);
   const name = sourceOf(source, header.children?.[column]);
   return offset === undefined || name === "" ? [] : [{ offset, name }];
@@ -120,7 +125,7 @@ const tableBlanksOf = (source: string, table: MarkdownNode, reading: TableReadin
   const columns = header.children?.length ?? 0;
   return Array.from({ length: columns }, (_unused, column) => column)
     .slice(1)
-    .flatMap((column) => columnBlank(source, { header, body, rows }, reading.totalWords, column));
+    .flatMap((column) => columnBlank(source, { header, body, rows }, reading, column));
 };
 
 /** Quoted material is someone else's: email replies the document model found, and every Markdown blockquote. */
@@ -211,6 +216,10 @@ const totalRowOf = (doc: ProseDocument): IsTotalRow => {
 };
 
 export const emptyTableCell: Detector = findingsOf("empty-table-cell", (doc) =>
-  tableBlanks(doc.source, doc.replyQuotes ?? [], { isTotalRow: totalRowOf(doc), totalWords: patternsOf(doc, "total-label") }),
+  tableBlanks(doc.source, doc.replyQuotes ?? [], {
+    isTotalRow: totalRowOf(doc),
+    totalWords: patternsOf(doc, "total-label"),
+    catchAllWords: patternsOf(doc, "catch-all-row-label"),
+  }),
 );
 export const emptyListItem: Detector = findingsOf("empty-list-item", (doc) => listBlanks(doc.source, doc.replyQuotes ?? []));

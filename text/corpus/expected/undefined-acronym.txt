@@ -21,11 +21,11 @@ genai-web-procedure  2
 github-general-privacy-statement  4
 gitlab-meetings  6
 gitlab-values  8
-go-1-23-release-notes  9
+go-1-23-release-notes  8
 govuk-cddo-roadmap-2022-2025  8
 govuk-incident-safe-browsing  2
 govuk-style-guide-a-to-z  25
-irs-online-account-faq  5
+irs-online-account-faq  3
 kep-2214-indexed-job  5
 kimino-opendata-site  2
 koenote-requirements  6
@@ -36,7 +36,7 @@ nasa-advisory-crew-13-coverage  5
 neeview-changelog-ja  16
 noaa-press-flood-mapping  3
 nodejs-tsc-minutes-2026-05-06  5
-nstac-microdata-forum  3
+nstac-microdata-forum  1
 nttcom-onboarding-week1  3
 nws-glossary-a  9
 rfc3693-geopriv-requirements  12

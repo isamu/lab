@@ -113,15 +113,46 @@ const closesFirstClauseWithNoun = (tokens: readonly Token[], topic: number, at: 
   !tokens.slice(topic + 1, at).some(isComma) &&
   newTopicAfter(tokens, at + 1, last);
 
+/** 〜の積上げであり、: the copula's continuing あり after で, and a comma. */
+const isCopulaContinuing = (tokens: readonly Token[], at: number): boolean =>
+  tokens[at]?.surface === "あり" && tokens[at]?.lemma === "ある" && tokens[at - 1]?.surface === "で" && isCopula(tokens[at - 1]) && isComma(tokens[at + 1]);
+
+/** The sentence ends on a copula (〜ものではありません, 〜ということです) or on ある after が (〜する必要があります). */
+const endsOnCopulaOrBeing = (tokens: readonly Token[], last: number): boolean => {
+  const head = beforeTail(tokens, last);
+  const token = tokens[head];
+  return isCopula(token) || (token !== undefined && isParticle(token, "が") && tokens[head + 1]?.lemma === "ある");
+};
+
+/**
+ * 収益は、…の積上げであり、…ストック型が主要を占めております: the copula's continuing form closes the topic's clause when a new
+ * topic follows, or a subject of its own (が) whose predicate is not again a copula or ある. 信頼型は、…ものであり、…ものではありません
+ * and これは…リンクであり、ユーザーが…ということです say two things of the same topic.
+ */
+const closesWithCopulaContinuing = (tokens: readonly Token[], at: number, last: number, subject: number): boolean =>
+  isCopulaContinuing(tokens, at) && (newTopicAfter(tokens, at + 1, last) || (subject > at && !endsOnCopulaOrBeing(tokens, last)));
+
+/**
+ * 〜する想定のため: a clause, a noun it ends on, and の before ため, the copula's attributive form (想定であるため). A bare noun
+ * before のため (安全管理のため) is more often a purpose, which the topic's own predicate still follows.
+ */
+const clauseNounBeforeTame = (tokens: readonly Token[], at: number): boolean => {
+  const before = tokens[at - 1];
+  const clauseEnd = tokens[at - 3];
+  const endsClause = clauseEnd?.pos === "VERB" || (clauseEnd?.pos === "AUX" && clauseEnd.lemma !== "だ");
+  return before !== undefined && isParticle(before, "の") && isOwnNoun(tokens[at - 2]) && endsClause;
+};
+
 /**
  * A clause that may close the topic's predicate, when a new subject follows, each stopped by a comma: a copula after ない or
- * ため (〜ではなく、, 〜であるため、), a copula's condition (〜であるならば、), ところ (〜にあるところ、), and a continuing verb
- * (〜を続けており、).
+ * ため (〜ではなく、, 〜であるため、, 〜の想定のため、), a copula's condition (〜であるならば、), ところ (〜にあるところ、), and a
+ * continuing verb (〜を続けており、).
  */
 const closesIfNewSubject = (tokens: readonly Token[], at: number): boolean => {
   const token = tokens[at];
   if (!isComma(tokens[at + 1])) return false;
-  if (token?.surface === "ため" || token?.lemma === "ない") return copulaBefore(tokens, at);
+  if (token?.surface === "ため") return copulaBefore(tokens, at) || clauseNounBeforeTame(tokens, at);
+  if (token?.lemma === "ない") return copulaBefore(tokens, at);
   if (closesWithTokoro(tokens, at) || closesWithCondition(tokens, at)) return true;
   return token?.pos === "VERB" && token.lemma === "おる" && token.features?.["Bound"] === "Yes";
 };
@@ -161,14 +192,35 @@ const endsPolite = (tokens: readonly Token[], at: number, tail: readonly string[
   isPoliteMasu(tokens[at - tail.length - 1]) &&
   tail.every((surface, index) => tokens[at - tail.length + index]?.pos === "AUX" && tokens[at - tail.length + index]?.surface === surface);
 
-/** 〜ておりますが / 〜しましたが / 〜できませんでしたが: a polite predicate and the contrastive が. */
-const isPoliteGa = (tokens: readonly Token[], at: number): boolean => {
-  if (tokens[at]?.surface !== "が" || tokens[at]?.pos !== "SCONJ") return false;
-  return POLITE_TAILS.some((tail) => endsPolite(tokens, at, tail));
+/** The polite copula, past or not, just before at: ほとんどですが, ほとんどでしたが. */
+const endsPoliteCopula = (tokens: readonly Token[], at: number): boolean => {
+  const end = tokens[at - 1]?.surface === "た" && tokens[at - 1]?.pos === "AUX" ? at - 1 : at;
+  const copula = tokens[end - 1];
+  return copula?.pos === "AUX" && copula.lemma === "です";
 };
 
-const ownGaSubjectBetween = (tokens: readonly Token[], from: number, to: number): boolean =>
-  tokens.some((token, at) => at > from && at < to && isParticle(token, "が") && headsSubject(tokens, at));
+/** 〜ておりますが / 〜しましたが / 〜できませんでしたが / 〜でしたが: a polite predicate and the contrastive が. */
+const isPoliteGa = (tokens: readonly Token[], at: number): boolean => {
+  if (tokens[at]?.surface !== "が" || tokens[at]?.pos !== "SCONJ") return false;
+  return POLITE_TAILS.some((tail) => endsPolite(tokens, at, tail)) || endsPoliteCopula(tokens, at);
+};
+
+/** A topic on a noun that sets the time or the case (普及以前は, 決定後は): it frames a clause, not the whole sentence. */
+const isSettingTopic = (tokens: readonly Token[], topic: number): boolean => tokens[topic - 1]?.features?.["Adverbial"] === "Yes";
+
+/** A が on a noun, a nominaliser too (感染するものが増えている), past at and past the last comma: the final predicate's subject. */
+const finalGaAfter = (tokens: readonly Token[], at: number, last: number): boolean => {
+  const lastComma = tokens.findLastIndex((token, index) => index < last && isComma(token));
+  return tokens.some((token, index) => index > Math.max(at, lastComma) && index < last && isParticle(token, "が") && NOMINAL.has(tokens[index - 1]?.pos ?? ""));
+};
+
+/** A new topic on a noun after at, before the last word, bare or on に or で (プログラムには, 国内では). */
+const frameTopicAfter = (tokens: readonly Token[], at: number, last: number): boolean =>
+  tokens.some((token, index) => {
+    if (index <= at || index >= last || !isParticle(token, "は")) return false;
+    const head = tokens[index - 1]?.surface === "に" || tokens[index - 1]?.surface === "で" ? index - 2 : index - 1;
+    return isOwnNoun(tokens[head]);
+  });
 
 /** A word of a name (赤澤, 大臣), not a noun that sets the time or the case (今後, 当日). */
 const isNameWord = (token: Token): boolean => NOMINAL.has(token.pos) && token.features?.["Adverbial"] !== "Yes";
@@ -189,18 +241,23 @@ const isActTopic = (tokens: readonly Token[], topic: number): boolean =>
 
 /**
  * 当社は…を営んでおりますが、…の重要性が乏しいため、…の記載は行っておりません: after 〜ますが、 the words up to the next comma
- * say something of a subject of their own (が) and a new topic takes what comes after, so the predicate before が was the
- * topic's, when no other subject stands between the topic and it (需要の停滞がありましたが is not). A clause with no subject of
- * its own there is read to the end, unless a name stands as a new topic straight after the comma (〜ましたが、B大臣は…), or the
- * topic is an act made a noun (つまびらかにすることは差し控えますが、…): what is said of an act ends there, and the rest is the
- * speaker's.
+ * say something of a subject of their own (が) and a new topic (bare, or on に or で: 〜プログラムには) takes what comes after
+ * that subject, so the predicate before が was the topic's, when no other subject stands between the topic and it
+ * (需要の停滞がありましたが is not). A clause with no subject of its own there is read to the end, unless a name stands as a new
+ * topic straight after the comma (〜ましたが、B大臣は…), or the topic is an act made a noun (つまびらかにすることは差し控えますが、…):
+ * what is said of an act ends there, and the rest is the speaker's. A topic that sets the time or the case (普及以前は、決定後は)
+ * frames only its clause: when a subject of its own follows the comma, its clause ends at 〜ますが even with a subject between.
  */
-const closesWithPoliteGa = (tokens: readonly Token[], topic: number, at: number, last: number): boolean => {
-  if (!isPoliteGa(tokens, at) || !isComma(tokens[at + 1]) || subjectBetween(tokens, topic, at)) return false;
+const closesWithPoliteGa = (tokens: readonly Token[], topic: number, at: number, last: number, subject: number): boolean => {
+  if (!isPoliteGa(tokens, at) || !isComma(tokens[at + 1])) return false;
+  if (isSettingTopic(tokens, topic)) return newTopicAfter(tokens, at + 1, last) || subject > at || finalGaAfter(tokens, at, last);
+  if (subjectBetween(tokens, topic, at)) return false;
   if (isActTopic(tokens, topic) || newNameTopicRunsToEnd(tokens, at + 1, last)) return true;
   const comma = tokens.findIndex((token, index) => index > at + 1 && index < last && isComma(token));
-  const clauseEnd = comma === -1 ? last : comma;
-  return ownGaSubjectBetween(tokens, at + 1, clauseEnd) && newTopicAfter(tokens, clauseEnd, last);
+  const ga = tokens.findIndex(
+    (token, index) => index > at + 1 && index < (comma === -1 ? last : comma) && isParticle(token, "が") && headsSubject(tokens, index),
+  );
+  return ga !== -1 && frameTopicAfter(tokens, ga, last);
 };
 
 /**
@@ -261,8 +318,9 @@ export const topicClauseEnd = (tokens: readonly Token[], topic: number, last: nu
   const closes = (at: number): boolean =>
     closesSurely(tokens, at, last) ||
     (closesIfNewSubject(tokens, at) && subject > at) ||
+    closesWithCopulaContinuing(tokens, at, last, subject) ||
     closesFirstClauseWithNoun(tokens, topic, at, last) ||
-    closesWithPoliteGa(tokens, topic, at, last) ||
+    closesWithPoliteGa(tokens, topic, at, last, subject) ||
     closesAfterPredicate(tokens, topic, at, words) ||
     closesWithItemMark(tokens, at) ||
     closesCleftInNounPhrase(tokens, topic, at, last);

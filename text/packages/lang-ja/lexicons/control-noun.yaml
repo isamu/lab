@@ -1,0 +1,16 @@
+# 書式や画面の部品を指す名詞。この語のすぐ前に括弧で囲んで書いた大文字（「OK」ボタン、「VOID」欄）は、そこに印刷された
+# 表示で、書式の言葉なので書き手が直せない。undefined-acronym は数に入れるが、展開を求めない。英文をそのまま載せた文書のために
+# 英語の形も置く。
+id: control-noun
+language: ja
+entries:
+  - pattern: "ボタン"
+  - pattern: "欄"
+  - pattern: "チェックボックス"
+  - pattern: "タブ"
+  - pattern: "キー"
+  - pattern: "メニュー"
+  - pattern: "アイコン"
+  - pattern: "box"
+  - pattern: "button"
+  - pattern: "field"

@@ -46,7 +46,18 @@ describe("spelledInSentence", () => {
     assert.deepEqual([...spelledInSentence([jchs])], ["JCHS"]);
   });
 
-  it("invalid: the name after the first use, in another sentence, with other words between, or not word for word", () => {
+  it("valid: a name closed by a common noun in lower case, and a passage of several sentences", () => {
+    assert.deepEqual([...spelledInSentence(["Someone used your stolen Social Security number. A return was filed using your SSN."])], ["SSN"]);
+    assert.deepEqual([...spelledInSentence(["Apply for an Employer Identification number before you hire, and keep the EIN."])], ["EIN"]);
+  });
+
+  it("invalid: a closing noun that gives another letter, or a name of one word before it", () => {
+    assert.deepEqual([...spelledInSentence(["Your Social Security card is safe. Keep your SSN private."])], []);
+    assert.deepEqual([...spelledInSentence(["The Security number is printed. Keep your SSN private."])], []);
+    assert.deepEqual([...spelledInSentence(["Keep your SSN private. Someone used your Social Security number."])], []);
+  });
+
+  it("invalid: the name after the first use, in another passage, with other words between, or not word for word", () => {
     const after = ["Use the OIT signature logo.", "Enter Office of Information and Technology for the OIT logo."];
     assert.deepEqual([...spelledInSentence(after)], []);
     assert.deepEqual([...spelledInSentence(["The National Park Service runs it.", "Ask the NPS desk."])], []);
@@ -62,6 +73,21 @@ describe("spelledInSentence", () => {
     assert.deepEqual([...spelledInSentence([])], []);
     assert.deepEqual([...spelledInSentence(["", " "])], []);
     assert.deepEqual([...spelledInSentence(["Data Protection by the DP team."])], []);
+  });
+});
+
+describe("undefined-acronym and a name written out earlier in the paragraph", () => {
+  it("en: the name in the sentence before, in the same paragraph, explains the acronym", () => {
+    const paragraph = "Identity theft occurs when someone uses your stolen Social Security number to file a return. A return was filed using your SSN.";
+    assert.deepEqual(reportedAcronyms(en, doc(paragraph)), ["SRE"]);
+  });
+
+  it("en: the name in another paragraph does not", () => {
+    assert.deepEqual(reportedAcronyms(en, doc("Someone used your stolen Social Security number.", "", "A return was filed using your SSN.")), ["SSN", "SRE"]);
+  });
+
+  it("en: a list item is a passage of its own", () => {
+    assert.deepEqual(reportedAcronyms(en, doc("- Keep your Social Security number.", "- A return used your SSN.")), ["SSN", "SRE"]);
   });
 });
 
@@ -145,9 +171,9 @@ describe("undefined-acronym: series, spelled names, reference entries, judges, c
     assert.deepEqual(reportedAcronyms(en, longLabel.join("\n")), ["SRE"]);
   });
 
-  it("invalid: a lone DR, a name in another sentence, capitals in prose", () => {
+  it("invalid: a lone DR, a name in another paragraph, capitals in prose", () => {
     assert.deepEqual(reportedAcronyms(en, doc("The DR plan is tested yearly.")), ["DR", "SRE"]);
-    assert.deepEqual(reportedAcronyms(en, doc("The Small Business Administration helps.", "Ask the SBA.")), ["SBA", "SRE"]);
+    assert.deepEqual(reportedAcronyms(en, doc("The Small Business Administration helps.", "", "Ask the SBA.")), ["SBA", "SRE"]);
     assert.deepEqual(reportedAcronyms(en, doc("WHATWG publishes the Fetch standard.")), ["WHATWG", "SRE"]);
   });
 

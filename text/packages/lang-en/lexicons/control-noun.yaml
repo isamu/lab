@@ -1,0 +1,23 @@
+# Nouns that name a control on a form or a screen. Capitals quoted right before one of them (the “VOID” box, the "SUBMIT"
+# button) are the label printed there, the form's words, which the writer cannot change: undefined-acronym counts them but
+# does not ask to spell them out.
+id: control-noun
+language: en
+entries:
+  - pattern: "box"
+  - pattern: "boxes"
+  - pattern: "checkbox"
+  - pattern: "checkboxes"
+  - pattern: "button"
+  - pattern: "buttons"
+  - pattern: "field"
+  - pattern: "fields"
+  - pattern: "tab"
+  - pattern: "tabs"
+  - pattern: "key"
+  - pattern: "keys"
+  - pattern: "menu"
+  - pattern: "option"
+  - pattern: "options"
+  - pattern: "icon"
+  - pattern: "link"

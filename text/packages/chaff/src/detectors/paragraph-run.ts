@@ -1,24 +1,21 @@
-import type { Detector, Finding } from "../plugin.ts";
+import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { oneSentenceRuns } from "../paragraph-runs.ts";
 import { referenceListSpans } from "../reference-lists.ts";
 
 /** How much of the run's first paragraph the finding quotes when it holds no sentence; it never runs past the paragraph. */
 const QUOTE_LENGTH = 80;
 
+/** The headings whose paragraphs are entries, not prose: a reference list's, and a footnotes section's (each note its own paragraph). */
+const entryListHeadings = (doc: ProseDocument): string[] =>
+  ["reference-list-heading", "note-list-heading"].flatMap((lexicon) => (doc.lexicons[lexicon] ?? []).map((entry) => entry.pattern));
+
 /**
  * Runs of one-sentence paragraphs longer than the limit: every sentence set apart as its own paragraph, so nothing is grouped
  * and the reader cannot see which points belong together. One finding per run, at its first paragraph. A reference list's
- * entries are a list, and are not counted.
+ * entries and a footnotes section's notes are a list, and are not counted.
  */
 export const oneSentenceParagraphRun: Detector = (doc, options): Finding[] =>
-  oneSentenceRuns(
-    doc.source,
-    doc.paragraphs,
-    referenceListSpans(
-      doc.source,
-      (doc.lexicons["reference-list-heading"] ?? []).map((entry) => entry.pattern),
-    ),
-  )
+  oneSentenceRuns(doc.source, doc.paragraphs, referenceListSpans(doc.source, entryListHeadings(doc)))
     .filter((run) => run.length > options.limit)
     .flatMap((run) => {
       const first = run[0];

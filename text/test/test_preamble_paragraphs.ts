@@ -139,3 +139,13 @@ describe("preamble-length と文でない段落", () => {
     assert.equal(findingsFor(letter, en, "business/report")[0]?.values["count"], 4);
   });
 });
+
+describe("preamble-length and a municipal page's closing contact box", () => {
+  it("日本語: 唯一の見出しが自治体の記事末の問い合わせ先の囲みなら、本題の見出しが無いので測らない", () => {
+    const paragraphs = ["一つ目です。", "二つ目です。", "三つ目です。", "四つ目です。", "五つ目です。"].join("\n\n");
+    ["この記事に関するお問い合わせ先", "このページに関するお問い合わせ先", "このページに関するお問い合わせ"].forEach((heading) => {
+      assert.deepEqual(findingsFor(`# お知らせ\n\n${paragraphs}\n\n## ${heading}\n\n産業課\n`, ja, "business/press-release"), [], heading);
+    });
+    assert.equal(findingsFor(`# お知らせ\n\n${paragraphs}\n\n## この記事について\n\n産業課\n`, ja, "business/press-release").length, 1);
+  });
+});

@@ -68,6 +68,21 @@ const sentenceWords = (sentence: string): SentenceWord[] =>
 /** Initials and where they end, for the runs of name words that start at `from`. Small words join a run, never open or close one. */
 type Spelled = { readonly letters: string; readonly end: number };
 
+/** A common noun in lower case that closes a name ("Social Security number" → SSN): it gives the last letter, and the run ends there. */
+const CLOSING_NOUN = /^\p{Ll}+$/u;
+
+/** The run closed by a common noun after its name words, when the name words give all but the last letter. */
+const closedByNoun = (word: SentenceWord, letters: readonly string[]): Spelled[] =>
+  CLOSING_NOUN.test(word.core) && !JOINERS.has(word.core) && letters.length >= MIN_SPELLED - 1
+    ? [{ letters: [...letters, word.core.charAt(0).toUpperCase()].join(""), end: word.end }]
+    : [];
+
+/** A word past the run's start that is not a name word: a closing noun adds its run, and only a small word that closes nothing lets the run go on. */
+const stopsAt = (word: SentenceWord, letters: readonly string[], runs: Spelled[]): boolean => {
+  runs.push(...closedByNoun(word, letters));
+  return !JOINERS.has(word.core) || word.closes;
+};
+
 // A loop that stops at the run's end: slicing the rest of the sentence for every word would be quadratic in a long one.
 const runsFrom = (words: readonly SentenceWord[], from: number): Spelled[] => {
   const runs: Spelled[] = [];
@@ -75,20 +90,24 @@ const runsFrom = (words: readonly SentenceWord[], from: number): Spelled[] => {
   for (let index = from; index < words.length && letters.length < MAX_SPELLED; index += 1) {
     const word = words[index];
     if (word === undefined || (index > from && word.opens)) break;
-    const named = NAME_WORD.test(word.core);
-    if (!named && (index === from || !JOINERS.has(word.core))) break;
-    if (named) letters.push(word.core.charAt(0));
-    if (named && letters.length >= MIN_SPELLED) runs.push({ letters: letters.join(""), end: word.end });
+    if (!NAME_WORD.test(word.core)) {
+      if (index === from || stopsAt(word, letters, runs)) break;
+      continue;
+    }
+    letters.push(word.core.charAt(0));
+    if (letters.length >= MIN_SPELLED) runs.push({ letters: letters.join(""), end: word.end });
     if (word.closes) break;
   }
   return runs;
 };
 
 /**
- * Acronyms whose name is written out earlier in the same sentence, without brackets: a citation names the publisher and then
+ * Acronyms whose name is written out earlier in the same passage, without brackets: a citation names the publisher and then
  * gives its short name ("U.S. Small Business Administration, … (Washington: SBA, August)", "(Nat'l Indian Gaming Comm'n May
- * 30, 2002) (NIGC Final Order)"). The name must give the acronym's letters word for word, and come before the acronym's first
- * use: a name written out only after the reader has met the acronym, or in another sentence, does not explain it.
+ * 30, 2002) (NIGC Final Order)"), or a paragraph names the thing and then uses its short name ("your stolen Social Security
+ * number … filed using your SSN"). Each passage is read alone: the caller passes sentences or paragraphs. The name must give
+ * the acronym's letters word for word, and come before the acronym's first use: a name written out only after the reader has
+ * met the acronym, or in another passage, does not explain it.
  */
 export const spelledInSentence = (sentences: readonly string[]): ReadonlySet<string> => {
   const seen = new Set<string>();
@@ -147,11 +166,40 @@ export const spelledBeforeSameNoun = (sentences: readonly string[]): ReadonlySet
   return spelled;
 };
 
+type PassageSentence = { readonly text: string; readonly span: { readonly start: number } };
+
 /**
- * The acronyms the text explains without brackets: glossed between dashes, named earlier in the sentence (capitalised, or in
- * lower case before the same noun), or a series cited by number.
+ * The sentences joined into passages: the sentences of one paragraph make one passage, and a sentence outside every paragraph
+ * (a list item, a table cell) is a passage alone. paragraphOf: the paragraph a sentence starting there belongs to.
  */
-export const explainedInText = (body: string, sentences: readonly { readonly text: string }[]): ReadonlySet<string> => {
+const passagesOf = (sentences: readonly PassageSentence[], paragraphOf: (start: number) => number | undefined): string[] => {
+  const passages: string[][] = [];
+  const opened = new Map<number, string[]>();
+  sentences.forEach((sentence) => {
+    const paragraph = paragraphOf(sentence.span.start);
+    const passage = paragraph === undefined ? undefined : opened.get(paragraph);
+    if (passage !== undefined) {
+      passage.push(sentence.text);
+      return;
+    }
+    const fresh = [sentence.text];
+    passages.push(fresh);
+    if (paragraph !== undefined) opened.set(paragraph, fresh);
+  });
+  return passages.map((passage) => passage.join(" "));
+};
+
+/**
+ * The acronyms the text explains without brackets: glossed between dashes, named earlier in the paragraph, named in lower case
+ * earlier in the sentence before the same noun, or a series cited by number.
+ */
+export const explainedInText = (
+  body: string,
+  sentences: readonly PassageSentence[],
+  paragraphs: readonly { readonly sentences: readonly { readonly span: { readonly start: number } }[] }[],
+): ReadonlySet<string> => {
+  const paragraphAt = new Map(paragraphs.flatMap((paragraph, index) => paragraph.sentences.map((sentence): [number, number] => [sentence.span.start, index])));
   const texts = sentences.map((sentence) => sentence.text);
-  return new Set([...glossedAcronyms(body), ...spelledInSentence(texts), ...spelledBeforeSameNoun(texts), ...numberedSeries(body)]);
+  const passages = passagesOf(sentences, (start) => paragraphAt.get(start));
+  return new Set([...glossedAcronyms(body), ...spelledInSentence(passages), ...spelledBeforeSameNoun(texts), ...numberedSeries(body)]);
 };
