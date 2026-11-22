@@ -7,7 +7,8 @@ import type { Detector, Finding } from "../plugin.ts";
 export const phoneNumberVariant: Detector = (doc, options): Finding[] => {
   const labels = options.lexicon ?? [];
   if (labels.length === 0) return [];
-  return phoneVariants(labelledPhoneNumbers(doc.prose ?? doc.source, labels)).map(({ number, other }) => ({
+  const links = (doc.lexicons["phone-label-link"] ?? []).map((entry) => entry.pattern);
+  return phoneVariants(labelledPhoneNumbers(doc.prose ?? doc.source, labels, links)).map(({ number, other }) => ({
     rule: "",
     severity: "info",
     line: 0,
