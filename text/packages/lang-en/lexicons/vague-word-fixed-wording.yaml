@@ -1,0 +1,13 @@
+# Fixed wordings that hold a vague word. The vague word still leaves something to the reader, so vague-word-density counts it
+# towards the document's density, but the wording is not the writer's to change and the sentence is not reported for it.
+id: vague-word-fixed-wording
+language: en
+entries:
+  # The storage-limitation principle of data-protection law (UK GDPR Article 5(1)(e)): keep personal data no longer than its
+  # purpose needs. A guide repeats the law's words.
+  - pattern: as long as necessary
+  - pattern: as long as is necessary
+  - pattern: no longer than necessary
+  - pattern: no longer than is necessary
+  # "Use the most appropriate template" asks the reader to pick the best fit among the options in front of them.
+  - pattern: most appropriate

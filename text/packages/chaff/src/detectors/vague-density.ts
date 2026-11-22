@@ -4,7 +4,9 @@
 // there. The rule speaks once per sentence, about the document's density. Pure: the words come from the language's
 // lexicons vague-word and vague-word-term-of-art, the genre from the options. The lines of a table of contents are the
 // sections' names, not the writer's sentences, and are not read. A word a law governs ("as required by applicable law")
-// is fixed by that law; the governing words and the law's names come from the lexicon vague-word-law-reference.
+// is fixed by that law; the governing words and the law's names come from the lexicon vague-word-law-reference. A wording the
+// writer does not choose (vague-word-fixed-wording: "keep data for as long as necessary") counts towards the density, but its
+// sentence is not reported for it.
 import { entriesForGenre } from "../lexicon-genres.ts";
 import { contentsLineNumbers } from "../structure/contents-lines.ts";
 import { lineNumberAt, linesOf } from "../structure/lines.ts";
@@ -19,6 +21,8 @@ const TERMS_OF_ART = "vague-word-term-of-art";
 /** The words that start an aside giving a name (以下「HR」という, hereinafter): such an aside pins nothing down. */
 const NAME_MARKERS = "definition-marker";
 const LAW_REFERENCE = "vague-word-law-reference";
+/** Wordings the writer does not choose (keep data for as long as necessary): their vague word counts, but its sentence is not reported for it. */
+const FIXED_WORDING = "vague-word-fixed-wording";
 
 type Place = { readonly start: number; readonly end: number };
 
@@ -94,6 +98,7 @@ export const vagueDensity: Detector = (doc, options): Finding[] => {
   const nameMarkers = (doc.lexicons[NAME_MARKERS] ?? []).map((entry) => entry.pattern);
   const law = lawReferenceOf(doc.lexicons[LAW_REFERENCE] ?? []);
   const contents = contentsSentences(doc);
+  const fixedWordings = [...termsOfArt, ...(doc.lexicons[FIXED_WORDING] ?? [])];
   const hits: SentenceHits[] = doc.sentences
     .filter((sentence) => !contents.has(sentence))
     .map((sentence) => ({ sentence, words: vagueWordsIn(sentence, options.lexicon ?? [], termsOfArt, nameMarkers, law) }))
@@ -101,7 +106,10 @@ export const vagueDensity: Detector = (doc, options): Finding[] => {
   const count = hits.reduce((sum, hit) => sum + hit.words.length, 0);
   const density = rateOver(doc, count, options.limit);
   if (density === undefined) return [];
-  return hits.map(({ sentence, words }) => ({
+  const reported = hits
+    .map(({ sentence }) => ({ sentence, words: vagueWordsIn(sentence, options.lexicon ?? [], fixedWordings, nameMarkers, law) }))
+    .filter((hit) => hit.words.length > 0);
+  return reported.map(({ sentence, words }) => ({
     rule: "vague-word-density",
     severity: "warning",
     line: 0,
