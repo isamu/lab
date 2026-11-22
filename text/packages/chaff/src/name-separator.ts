@@ -120,14 +120,21 @@ const isLabelledValue = (text: string, boundary: Boundary, tokens: readonly Toke
   const pair = pairAround(text, enclosure, boundary.offset);
   const label = { start: pair.start, end: boundary.offset };
   const value = valueOf(text.slice(boundary.offset + 1, pair.end), text.slice(enclosure.end, line.end));
-  if (!PAIR_LABEL.test(text.slice(label.start, label.end)) || value === undefined || !PAIR_VALUE.test(value)) return false;
+  if (value === undefined || !PAIR_VALUE.test(value)) return false;
   if (SENTENCE_END.test(text.slice(enclosure.start, enclosure.end))) return false;
-  const labelTokens = tokensIn(tokens, label, base);
-  return (
-    labelTokens.length > 0 &&
-    labelTokens.every((token) => PAIR_LABEL_POS.has(token.pos)) &&
-    !tokensIn(tokens, enclosure, base).some((token) => CLAUSE_POS.has(token.pos))
-  );
+  return isPairLabel(text, label, tokensIn(tokens, label, base), base) && !tokensIn(tokens, enclosure, base).some((token) => CLAUSE_POS.has(token.pos));
+};
+
+/** 項目名の語をつなぐ接続詞の品詞（社会福祉士または介護支援専門員、保健師及び看護師）。つないだ名前の一つずつが短い項目名。 */
+const LABEL_JOINER_POS = "CCONJ";
+
+/** 名詞だけの短い項目名か、接続詞でつないだ短い項目名の並び。接続詞は頭にも終わりにも置かない。 */
+const isPairLabel = (text: string, label: Span, labelTokens: readonly Token[], base: number): boolean => {
+  const joiners = labelTokens.filter((token) => token.pos === LABEL_JOINER_POS);
+  if (labelTokens.length === 0 || labelTokens.some((token) => token.pos !== LABEL_JOINER_POS && !PAIR_LABEL_POS.has(token.pos))) return false;
+  const cuts = [label.start, ...joiners.flatMap((token) => [token.span.start - base, token.span.end - base]), label.end];
+  const parts = cuts.flatMap((cut, index) => (index % 2 === 0 ? [text.slice(cut, cuts[index + 1])] : []));
+  return parts.every((part) => PAIR_LABEL.test(part));
 };
 
 /** 項目名とコロンの後ろに値の組を並べた行の、組と、数で始まる次の組のあいだの空白か。 */

@@ -185,6 +185,18 @@ describe("latin-spacing は番号の中や項目の値を区切る空白を数�
     assert.deepEqual(spacing(`${body}電話 03-1234-5678、内線 3839～40\n`), []);
   });
 
+  it("「または」「及び」でつないだ二つの短い項目名と値を並べただけの組の空白も数えない", () => {
+    const body = "# 試し\n\n振込手数料は1件につき330円です。定員は30名、参加費は500円です。\n\n";
+    assert.deepEqual(spacing(`${body}社会福祉士または介護支援専門員 1人\n`), []);
+    assert.deepEqual(spacing(`${body}- 保健師及び看護師 2人\n`), []);
+  });
+
+  it("invalid: つないだ項目名でも、文の中の値や長すぎる名前の組の空白は、これまでどおり数える", () => {
+    const body = "# 試し\n\n振込手数料は1件につき330円です。定員は30名、参加費は500円です。\n\n";
+    assert.deepEqual(spacing(`${body}社会福祉士または介護支援専門員 1人を募集します。\n`), ["後ろの数字:空けています"]);
+    assert.deepEqual(spacing(`${body}地域包括支援センター相談員または介護支援専門員 1人\n`), ["後ろの数字:空けています"]);
+  });
+
   it("文の中の値や、量の前置き・値の後ろの語のある組の空白は、これまでどおり数える", () => {
     const body = "# 試し\n\n振込手数料は1件につき330円です。定員は30名、参加費は500円です。\n\n";
     assert.deepEqual(spacing(`${body}当日は最高速度 40km/hで走ります。\n`), ["後ろの数字:空けています"]);
@@ -193,6 +205,18 @@ describe("latin-spacing は番号の中や項目の値を区切る空白を数�
     assert.deepEqual(spacing(`${body}受付は、内線 3839 までお電話ください。\n`), ["後ろの数字:空けています", "前の数字:空けています"]);
     assert.deepEqual(spacing(`${body}約 30名\n`), ["後ろの数字:空けています"]);
     assert.deepEqual(spacing(`${body}およそ 30名\n`), ["後ろの数字:空けています"]);
+  });
+
+  it("前後を空けて一字だけ書いた英字（見分けてほしい字の例）の前後は数えない", () => {
+    const body = "# 試し\n\nPythonを使い、Rubyで書き、Goで動かします。\n\n";
+    assert.deepEqual(spacing(`${body}大文字の（アイ） I を小文字の（エル） l にした名前に注意します。\n`), []);
+    assert.deepEqual(spacing(`${body}小文字の o を数字にします。\n`), []);
+  });
+
+  it("invalid: 二字以上の英字や、片側だけ空けた一字は、これまでどおり数える", () => {
+    const body = "# 試し\n\nPythonを使い、Rubyで書き、Goで動かします。\n\n";
+    assert.deepEqual(spacing(`${body}次は Go を使います。\n`), ["英字:空けています", "英字:空けています"]);
+    assert.deepEqual(spacing(`${body}次は Rを使います。\n`), ["英字:空けています"]);
   });
 
   it("英字の前後の空け方は、項目の組とは関わらずこれまでどおり数える", () => {
