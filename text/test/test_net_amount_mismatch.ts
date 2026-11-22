@@ -239,9 +239,41 @@ describe("net-amount-mismatch in documents", () => {
     assert.deepEqual(found(lines("$1,396.41"), en), []);
   });
 
-  it("does not join names from different sections or tables", () => {
-    const split = ["Gross pay: $1,661.00", "", "## Deductions", "", "Total deductions: $264.59", "", "Net pay: $1,369.41"].join("\n");
+  it("does not join names from different sections or tables, other than a payslip's own three", () => {
+    const split = ["Gross earnings: $1,661.00", "", "## Deductions", "", "Total deductions: $264.59", "", "Net pay: $1,369.41"].join("\n");
     assert.deepEqual(detected(split, en), []);
+    const deposit = ["- 敷金：200,000円", "", "## 精算", "", "- 控除合計：50,000円", "- 返金額：140,000円"].join("\n");
+    assert.deepEqual(detected(deposit, ja), []);
+  });
+
+  const payslip = (net: string): string =>
+    [
+      "## 支給",
+      "",
+      "| 支給項目 | 金額 |",
+      "| --- | --- |",
+      "| 基本給 | 280,000円 |",
+      "| 時間外手当 | 25,200円 |",
+      "| 総支給額 | 305,200円 |",
+      "",
+      "## 控除",
+      "",
+      "| 控除項目 | 金額 |",
+      "| --- | --- |",
+      "| 健康保険料 | 16,400円 |",
+      "| 所得税 | 7,750円 |",
+      "| 控除合計 | 24,150円 |",
+      "",
+      "## 差引",
+      "",
+      `- 差引支給額：${net}`,
+      "",
+      "差引支給額は、支給日に口座へ振り込みます。",
+    ].join("\n");
+
+  it("reads a payslip's gross, total deductions and net set out in sections of their own", () => {
+    assert.deepEqual(found(payslip("218,050円"), ja), ["218,050円:281,050円"]);
+    assert.deepEqual(found(payslip("281,050円"), ja), []);
     const tables = [
       "| Earning | Amount |",
       "| --- | --- |",
@@ -252,7 +284,37 @@ describe("net-amount-mismatch in documents", () => {
       "| Total deductions | $264.59 |",
       "| Net pay | $1,369.41 |",
     ].join("\n");
-    assert.deepEqual(detected(tables, en), []);
+    assert.deepEqual(found(tables, en), ["$1,369.41:$1,396.41"]);
+    const split = ["Gross pay: $1,661.00", "", "## Deductions", "", "Total deductions: $264.59", "", "## Net", "", "Net pay: $1,369.41"].join("\n");
+    assert.deepEqual(found(split, en), ["$1,369.41:$1,396.41"]);
+  });
+
+  it("does not read a payslip's sections where a name labels two places, has two amounts, or another name has an amount", () => {
+    const toDate = [payslip("218,050円"), "", "## 累計", "", "| 項目 | 当月 | 累計 |", "| --- | --- | --- |", "| 総支給額 | 305,200円 | 2,912,400円 |"].join(
+      "\n",
+    );
+    assert.deepEqual(detected(toDate, ja), []);
+    const twice = [payslip("218,050円"), "", "## 振込", "", "- 差引支給額：—"].join("\n");
+    assert.deepEqual(detected(twice, ja), []);
+    const taxable = [payslip("218,050円"), "", "## 税", "", "- 課税対象額：289,000円"].join("\n");
+    assert.deepEqual(detected(taxable, ja), []);
+    const months = [
+      "| 月 | 総支給額 |",
+      "| --- | --- |",
+      "| 9月 | 305,200円 |",
+      "| 10月 | 305,200円 |",
+      "",
+      "## 控除",
+      "",
+      "- 控除合計：24,150円",
+      "",
+      "## 差引",
+      "",
+      "- 差引支給額：218,050円",
+    ].join("\n");
+    assert.deepEqual(detected(months, ja), []);
+    const units = ["- 総支給額：305,200円", "", "## 控除", "", "- 控除合計：24千円", "", "## 差引", "", "- 差引支給額：218,050円"].join("\n");
+    assert.deepEqual(detected(units, ja), []);
   });
 
   it("is silent when a name is written twice with different amounts", () => {
