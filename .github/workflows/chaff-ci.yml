@@ -70,8 +70,41 @@ jobs:
       - name: build
         run: yarn build
 
-      # rule の見本（docs/samples）は 1 ページで chaff を 3 回動かし、出力は OS に依らないので、3 OS の部分から外してここで 1 度だけ走らせる。
+  # rule の見本（docs/samples）は 1 ページで chaff を 3 回動かす。出力は OS に依らないので ubuntu だけで、見本を部分に分けて並べて走らせる。
+  # 一つの job で回すと、見本が増えるにつれて checks の時間の上限に当たった。
+  samples:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [1, 2, 3]
+    name: rule samples (part ${{ matrix.part }}/3)
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        id: setup-node
+        with:
+          node-version: "24"
+
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            text/node_modules
+            text/packages/*/node_modules
+          key: chaff-node-modules-${{ runner.os }}-${{ steps.setup-node.outputs.node-version }}-${{ hashFiles('text/yarn.lock') }}
+          restore-keys: chaff-node-modules-${{ runner.os }}-${{ steps.setup-node.outputs.node-version }}-
+
+      - run: yarn install --frozen-lockfile
+
+      - run: yarn build
+
       - name: rule samples
+        env:
+          CHAFF_SAMPLE_PART: ${{ matrix.part }}/3
         run: node --test test/test_rule_samples.ts
 
   # 公開しているパッケージなので 3 OS で回す。テストファイルを scripts/test-parts.ts の部分に分け、部分ごとに別の job で走らせる。
