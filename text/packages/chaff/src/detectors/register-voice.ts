@@ -1,4 +1,4 @@
-import type { LexiconEntry, Sentence, Token } from "../plugin.ts";
+import type { LexiconEntry, Section, Sentence, Token } from "../plugin.ts";
 
 // Sentence shapes whose register is a deliberate voice, not a slip: counted, never pointed at. Pure.
 
@@ -15,6 +15,25 @@ export const endsInSetGreeting = (sentence: Sentence, phrases: readonly LexiconE
   const text = withoutTrailingMarks(sentence.text);
   return phrases.some((phrase) => text.endsWith(phrase.pattern));
 };
+
+const isPagePointer = (sentence: Sentence, words: readonly LexiconEntry[]): boolean => {
+  const text = withoutTrailingMarks(sentence.text);
+  const of = (group: string): LexiconEntry[] => words.filter((word) => word.group === group);
+  return of("ending").some((ending) => text.endsWith(ending.pattern)) && of("word").some((word) => text.includes(word.pattern));
+};
+
+/**
+ * A polite pointer the page sets for its reader under a heading of its own (## 概要 / 本検討会の概要は、…をご覧ください。): the only
+ * sentence of its section, ending in a phrase from the ending group of page-pointer and holding a word from its word group. A plain
+ * page points its reader elsewhere so too; the same pointer inside the text's own paragraphs is still a slip.
+ */
+export const pagePointerSentences = (sections: readonly Section[], words: readonly LexiconEntry[]): Set<Sentence> =>
+  new Set(
+    sections.flatMap((section) => {
+      const [only] = section.sentences;
+      return section.sentences.length === 1 && only !== undefined && isPagePointer(only, words) ? [only] : [];
+    }),
+  );
 
 const PAST = new Set(["た", "だ"]);
 
@@ -87,6 +106,22 @@ const closingParticles = (tokens: readonly Token[]): string => {
 export const isAddressed = (sentence: Sentence, particles: readonly LexiconEntry[]): boolean => {
   const closing = closingParticles(sentence.tokens ?? []);
   return closing !== "" && particles.some((particle) => closing.endsWith(particle.pattern));
+};
+
+/** A joiner from the list followed straight by a comma (止まるし、). */
+const joinsWith = (tokens: readonly Token[], joiners: ReadonlySet<string>): boolean =>
+  tokens.some((token, index) => token.pos === "SCONJ" && joiners.has(token.surface) && tokens[index + 1]?.surface === "、");
+
+/**
+ * A writer's aside of feeling (ここまでは、まだよかった。動画は止まるし、…と言われる。): the sentence ends on a word of a class from the
+ * word-class group of feeling-aside (but not a word of the not-feeling group, 制限なし。), or joins its clauses with a joiner from the
+ * joiner group. marks is that word list already narrowed to the document's genre; outside its genres nothing holds.
+ */
+export const isFeelingAside = (sentence: Sentence, ending: readonly Token[], marks: readonly LexiconEntry[]): boolean => {
+  const of = (group: string): Set<string> => new Set(marks.filter((mark) => mark.group === group).map((mark) => mark.pattern));
+  const head = ending[0];
+  const feels = head !== undefined && of("word-class").has(head.pos ?? "") && !of("not-feeling").has(head.surface);
+  return feels || joinsWith(sentence.tokens ?? [], of("joiner"));
 };
 
 const EXCLAMATION = /[！!][\s」』）)]*$/u;

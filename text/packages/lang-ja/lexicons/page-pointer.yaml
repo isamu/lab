@@ -1,0 +1,17 @@
+# no-mixed-desumasu が、である調の文書の中でページの読み手に「詳しくはどこを見るか」を丁寧に示す文（本検討会の概要は、
+# …をご覧ください。）を指さないための語。見出しの下にその一文だけがあり、group ending の語で終わり、group word の語を含む丁寧な文は、
+# 議事録や通知の本文ではなく、掲載したページが読み手に向けて置く案内で、である調の本文の横でもこの形で書く。数には入れる。
+# 本文の段落の中の案内（…測定する。詳しくは手順書をご覧ください。）と、案内の語の無い依頼（資料をご覧ください。）は今までどおり指す。
+id: page-pointer
+language: ja
+entries:
+  - pattern: をご覧ください
+    group: ending
+  - pattern: をご参照ください
+    group: ending
+  - pattern: 概要は
+    group: word
+  - pattern: 詳細は
+    group: word
+  - pattern: 詳しくは
+    group: word
