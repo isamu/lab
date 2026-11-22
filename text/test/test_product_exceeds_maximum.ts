@@ -41,6 +41,22 @@ describe("product-exceeds-maximum", () => {
     assert.deepEqual(checkEn("Take 2 tablets, up to 3 times a day. No more than 4 tablets in 24 hours."), ["4 tablets<6"]);
   });
 
+  it("the period of a maximum written with in, within, over or any (en)", () => {
+    const directions = (period: string): string[] => checkEn(`Take 2 tablets at a time, up to 4 times a day. Do not take more than 6 tablets ${period}.`);
+    ["in a day", "in one day", "in any one day", "in a single day", "within 24 hours", "over 24 hours", "per 24-hour period", "in a 24 hour period"].forEach(
+      (period) => assert.deepEqual(directions(period), ["6 tablets<8"], period),
+    );
+    assert.deepEqual(checkEn("Take 2 tablets at a time, up to 4 times in a day. The maximum daily dose is 6 tablets."), ["6 tablets<8"]);
+    assert.deepEqual(checkEn("Take 2 tablets at a time, up to 3 times a day. Do not take more than 6 tablets in a day."), []);
+    assert.deepEqual(checkEn("Take 2 tablets at a time, up to 4 times a day. Do not take more than 6 tablets in a week."), []);
+  });
+
+  it("the period of a maximum written with に or あたり (ja)", () => {
+    assert.deepEqual(checkJa("1回2錠を1日4回まで服用できます。1日に6錠を超えて服用しないでください。"), ["6錠<8"]);
+    assert.deepEqual(checkJa("1回2錠を1日4回まで服用できます。1日あたりの上限は6錠です。"), ["6錠<8"]);
+    assert.deepEqual(checkJa("1回2錠を1日3回まで服用できます。1日に6錠を超えて服用しないでください。"), []);
+  });
+
   it("a product within the maximum stays silent", () => {
     assert.deepEqual(checkJa("1回2錠を1日3回まで服用できます。1日の最大量は6錠です。"), []);
     assert.deepEqual(checkJa("1回500円、1日6回まで利用できます。1日の上限は3,000円です。"), []);
