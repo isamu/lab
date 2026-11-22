@@ -1,0 +1,8 @@
+# Words that may stand between a phone label and its number: "Call us on 0800 046 3172", "our recall line at
+# 1-800-555-0147". phone-number-variant looks for the label before a run of these words, written whole.
+id: phone-label-link
+language: en
+entries:
+  - { pattern: at }
+  - { pattern: on }
+  - { pattern: us }

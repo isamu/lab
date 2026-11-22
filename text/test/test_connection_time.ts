@@ -45,6 +45,16 @@ describe("connection-time-short: a travel time added to an item, from the arriva
     ]);
   });
 
+  it("an item that opens with its time and Arrive is an arrival (en)", () => {
+    const meeting = "10:00 Meeting with the supplier at their works (about 25 minutes by taxi from the station)";
+    assert.deepEqual(shortEn(list("09:45 Arrive at Leeds station", meeting)), ["09:45->10:00<25 minutes"]);
+    assert.deepEqual(shortEn(list("09:45 arrive at Leeds station", meeting)), ["09:45->10:00<25 minutes"]);
+    assert.deepEqual(shortEn(table("09:45 | Arrive at Leeds station", meeting.replace(" Meeting", " | Meeting"))), ["09:45->10:00<25 minutes"]);
+    assert.deepEqual(shortEn(list("09:20 Arrive at Leeds station", meeting)), []);
+    assert.deepEqual(shortEn(list("Coffee at 09:45 Arrive desk", meeting)), []);
+    assert.deepEqual(shortEn(list("09:45 Arrivals hall", meeting)), []);
+  });
+
   it("enough time, or exactly the stated time, is not reported", () => {
     assert.deepEqual(shortJa(list(FLIGHT_JA, "10:30 博多駅で田中様と合流（福岡空港から地下鉄で約10分）")), []);
     assert.deepEqual(shortJa(list(FLIGHT_JA, "10:00 博多駅で田中様と合流（福岡空港から地下鉄で約10分）")), []);

@@ -23,3 +23,7 @@ entries:
   - { pattern: "Arr", position: before, group: arrival }
   - { pattern: "arr.", position: before, group: arrival }
   - { pattern: "Arr.", position: before, group: arrival }
+  # An itinerary row opening with its time says what happens then: "09:45 Arrive at Leeds station". A word after the time
+  # is read only on a row that opens with that time.
+  - { pattern: "Arrive", position: after, group: arrival }
+  - { pattern: "arrive", position: after, group: arrival }

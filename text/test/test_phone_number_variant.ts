@@ -94,6 +94,14 @@ describe("phone-number-variant", () => {
     assert.deepEqual(found(en1("Support ticket: 1234-5678-90", "", "Support ticket: 1234-5678-09"), en), []);
   });
 
+  it("en: reads a number after at, on or us that follows its label (our recall line at, call us on)", () => {
+    const en1 = (...lines: string[]): string => ["# Notice", "", ...lines, ""].join("\n");
+    assert.deepEqual(found(en1("Call our recall line at 1-800-555-0147 for a refund.", "", "Recall line: 1-800-555-0174"), en), [5]);
+    assert.deepEqual(found(en1("Call us on 0800 046 3172 from a landline.", "", "Phone: 0800 046 3127"), en), [5]);
+    assert.deepEqual(found(en1("Call us on 0800 046 3172.", "", "Call us on 0800 046 3172 again."), en), []);
+    assert.deepEqual(found(en1("Support ticket at 1234-5678-90", "", "Support ticket at 1234-5678-09"), en), []);
+  });
+
   it("does not run in literature", () => {
     assert.deepEqual(found(doc("電話：0120-123-456", "", "電話：0120-123-465"), ja, "literature/fiction"), []);
   });
@@ -149,6 +157,21 @@ describe("phone numbers", () => {
     assert.deepEqual(digitsOf("電話：03 1234 5678"), []);
     assert.deepEqual(digitsOf("Tel: 2026 10 09 020 7946 0186"), []);
     assert.deepEqual(digitsOf("Tel: 020 7946 0186 2026"), []);
+  });
+
+  it("reads a number after link words that follow its label, and only those words", () => {
+    const en = [
+      { pattern: "call", group: "phone" },
+      { pattern: "line", group: "desk" },
+    ];
+    const links = ["at", "on", "us"];
+    const digitsOf = (text: string): string[] => labelledPhoneNumbers(text, en, links).map((number) => number.digits);
+    assert.deepEqual(digitsOf("Call us on 0800 046 3172"), ["08000463172"]);
+    assert.deepEqual(digitsOf("Call our recall line at 1-800-555-0147"), ["18005550147"]);
+    assert.deepEqual(digitsOf("Call us about order 0800 046 3172"), []);
+    assert.deepEqual(digitsOf("Our line for orders at 1-800-555-0147"), []);
+    assert.deepEqual(digitsOf("Call the cat 0800 046 3172"), []);
+    assert.deepEqual(labelledPhoneNumbers("Call our recall line at 1-800-555-0147", en).length, 0);
   });
 
   it("gives a number after a desk's name the kind of the label right before the name, else phone", () => {

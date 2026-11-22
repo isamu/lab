@@ -10,7 +10,7 @@ name:
   en: An arrival before its departure
 
 why:
-  ja: 「福岡 11:30発、羽田 11:05着」のように、同じ便や列車の着の時刻が発より前だと、どちらかの時刻を書き間違えています。読み手は乗る便を確かめ直すことになり、間違ったまま予定を組む人も出ます。同じ行の発と着（時刻のすぐ後ろの「発」「着」、表の出発と到着の列）を比べます。着に翌日の印（翌、+1）があれば一日足し、発と着の両方に日付があれば日付から比べます。
+  ja: 「福岡 11:30発、羽田 11:05着」のように、同じ便や列車の着の時刻が発より前だと、どちらかの時刻を書き間違えています。読み手は乗る便を確かめ直すことになり、間違ったまま予定を組む人も出ます。同じ行の発と着（時刻のすぐ後ろの「発」「着」、地名に付けて時刻の前に書いた「東京発 07:45」、表の出発と到着の列）を比べます。着に翌日の印（翌、+1）があれば一日足し、発と着の両方に日付があれば日付から比べます。
   en: 'When a leg such as "departs Washington 1:30 PM, arrives Boston 1:05 PM" arrives before it departs, one of the times is wrong. The reader has to look the connection up again, and someone may plan around the wrong time. A departure and an arrival in one line are compared: times marked "departs" and "arrives" (or "dep" and "arr"), and the departure and arrival columns of a table. An arrival marked as the next day (+1, "next day") gets a day added, and when both times have a date, the dates are compared first.'
 
 message:

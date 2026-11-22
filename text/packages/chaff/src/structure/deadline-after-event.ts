@@ -7,7 +7,7 @@ import { cellsOf, tablesOf } from "../facts/table-facts.ts";
 
 /**
  * 催しの後の申込締切。催しの日の語で始まり時刻のある一行（日時：2026年11月20日（金）14:00〜）が催しの日を書き、
- * 申込の語（申込、RSVP）と締め切りの語（までに、by）のある文か行の、年のある日付がどの催しの日よりも後なら指す。
+ * 申込の語（申込、RSVP）と締め切りの語（までに、by）のある文か行の、年のある日付がどの催しの日よりも後なら指す。催しの日と締め切りの両方に年が無ければ、催しの日が一つで、締め切りがその一月のうちに後なら指す。
  * 時刻を求めるのは、手紙の頭の「Date: …」を催しの日と読まないため。催しの後に来てよいもの（アンケート、支払）の語が同じ文にあれば比べない。
  * 文か行に日付が二つ以上あれば、どれが締め切りか分からないので比べない。
  * チケットの注文（題名にチケットの語があり、請求書の語が無い文書）では、支払の期限も締め切りと読む。請求書なら支払は催しの後でよい。
@@ -41,12 +41,13 @@ const endOf = (line: Line): number => line.start + line.text.length;
 
 const datesIn = (dates: readonly DatedPoint[], span: Span): DatedPoint[] => dates.filter((date) => date.offset >= span.start && date.offset < span.end);
 
+/** 催しの日の語で始まり、時刻のある行の日付。 */
+const eventLineDates = (line: Line, dates: readonly DatedPoint[], words: EventDeadlineWords): string[] =>
+  isTotalLabel(line.text, words.events) && CLOCK_TIME.test(line.text) ? datesIn(dates, { start: line.start, end: endOf(line) }).map((date) => date.value) : [];
+
 /** 催しの日: 催しの日の語で始まり、時刻と年のある日付を書いた行の、いちばん後の日付。 */
-const eventDayOf = (line: Line, dates: readonly DatedPoint[], words: EventDeadlineWords): string | undefined => {
-  if (!isTotalLabel(line.text, words.events) || !CLOCK_TIME.test(line.text)) return undefined;
-  const values = datesIn(dates, { start: line.start, end: endOf(line) }).map((date) => date.value);
-  return latestOf(values.filter((value) => FULL_DATE.test(value)));
-};
+const eventDayOf = (line: Line, dates: readonly DatedPoint[], words: EventDeadlineWords): string | undefined =>
+  latestOf(eventLineDates(line, dates, words).filter((value) => FULL_DATE.test(value)));
 
 const MONTH_DAY = /^\d{2}-\d{2}$/u;
 const YEAR_LENGTH = 4;
@@ -145,16 +146,40 @@ const columnHeadingAt = (reading: Reading, line: Line, offset: number): string |
   return column === -1 ? undefined : cellsOf(header)[column]?.text;
 };
 
-const lateDeadlines = (reading: Reading, readDeadline: ReadDeadline, event: string): DeadlineIssue[] =>
+/** 催しの日と、それより後の締め切りの日付か。年の無い催しの日は、年の無い日付とだけ比べる。 */
+type EventDay = { readonly value: string; readonly isLate: (deadline: string) => boolean };
+
+/**
+ * 年の無い催しの日と締め切りは、同じ年と読める近さのときだけ比べる。催しの一月後の締め切りを前の年のものと読むには、
+ * 締め切りが催しの十一か月前になり、申込の締め切りとしてありえない。それより離れていれば、どちらの年か分からない。
+ */
+const YEARLESS_WINDOW_DAYS = 31;
+const MS_PER_DAY = 86_400_000;
+/** 年の無い日付を日の数にする年。うるう年なので 2月29日も読める。 */
+const LEAP_YEAR = 2024;
+
+const dayNumberOf = (monthDay: string): number => {
+  const [month = 1, day = 1] = monthDay.split("-").map(Number);
+  return Date.UTC(LEAP_YEAR, month - 1, day) / MS_PER_DAY;
+};
+
+const fullEvent = (event: string): EventDay => ({ value: event, isLate: (deadline) => FULL_DATE.test(deadline) && deadline > event });
+
+const yearlessEvent = (event: string): EventDay => ({
+  value: event,
+  isLate: (deadline) => MONTH_DAY.test(deadline) && deadline > event && dayNumberOf(deadline) - dayNumberOf(event) <= YEARLESS_WINDOW_DAYS,
+});
+
+const lateDeadlines = (reading: Reading, readDeadline: ReadDeadline, event: EventDay): DeadlineIssue[] =>
   reading.dates.flatMap((date) => {
-    if (!FULL_DATE.test(date.value) || date.value <= event) return [];
+    if (!event.isLate(date.value)) return [];
     const line = reading.lines[(lineNumberAt(reading.lines, date.offset) ?? 0) - 1];
     if (line === undefined) return [];
     const unit = unitOf(date.offset, line, reading.sentences);
     if (datesIn(reading.dates, unit).length > 1) return [];
     const kind = readDeadline(reading.source.slice(unit.start, unit.end), columnHeadingAt(reading, line, date.offset));
     if (kind === undefined) return [];
-    return [{ offset: date.offset, kind, values: { deadline: date.value, event } }];
+    return [{ offset: date.offset, kind, values: { deadline: date.value, event: event.value } }];
   });
 
 /** 催しの日: 催しの日の行の日付と、旅行の知らせなら出発の行の日付の、いちばん後のもの。 */
@@ -165,6 +190,20 @@ const eventOf = (reading: Reading, words: EventDeadlineWords): string | undefine
       [eventDayOf(line, reading.dates, words), trip ? tripStartOf(line, reading.dates, words) : undefined].flatMap((day) => day ?? []),
     ),
   );
+};
+
+/** 年のある催しの日が無く、催しの日の行の年の無い日付が一つだけなら、その日。二つあれば、年をまたぐかもしれず並べられない。 */
+const yearlessEventOf = (reading: Reading, words: EventDeadlineWords): string | undefined => {
+  const values = new Set(reading.lines.flatMap((line) => eventLineDates(line, reading.dates, words)));
+  const [only] = values;
+  return values.size === 1 && only !== undefined && MONTH_DAY.test(only) ? only : undefined;
+};
+
+const eventDayIn = (reading: Reading, words: EventDeadlineWords): EventDay | undefined => {
+  const event = eventOf(reading, words);
+  if (event !== undefined) return fullEvent(event);
+  const yearless = yearlessEventOf(reading, words);
+  return yearless === undefined ? undefined : yearlessEvent(yearless);
 };
 
 /** title は文書の最初の見出しの言葉（無ければ undefined）。 */
@@ -178,7 +217,7 @@ export const deadlinesAfterEvent = (
   if (words.events.length === 0 || words.registrations.length === 0 || words.deadlines.length === 0) return [];
   const lines = linesOf(source);
   const reading = { title, source, lines, dates, sentences, tableHeaders: tableHeadersOf(lines) };
-  const event = eventOf(reading, words);
+  const event = eventDayIn(reading, words);
   if (event === undefined) return [];
   return lateDeadlines(reading, deadlineReaderOf(reading, words), event);
 };
