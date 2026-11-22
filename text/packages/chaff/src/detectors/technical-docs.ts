@@ -48,16 +48,20 @@ export const codeFenceLanguage: Detector = (doc, options): Finding[] => {
 
 export type PromptStyle = "prompt" | "bare" | undefined;
 
+/** A line that opens with a digit is output (an address, a count), never a command a reader types. */
+const OUTPUT_LINE = /^\d/u;
+
 /**
  * Whether a shell block writes its commands after a prompt ($ npm install) or bare (npm install). A block that mixes
- * prompted and unprompted lines shows a command with its output, and is neither. Comment lines (#) are skipped.
+ * prompted and unprompted lines shows a command with its output, and is neither; so is an unprompted block holding a line
+ * of output. Comment lines (#) are skipped.
  */
 export const promptStyleOf = (fence: CodeFence, prompts: readonly string[]): PromptStyle => {
   const lines = fence.lines.map((line) => line.trim()).filter((line) => line !== "" && !line.startsWith("#"));
   if (lines.length === 0) return undefined;
   const prompted = lines.filter((line) => prompts.some((prompt) => line.startsWith(`${prompt} `))).length;
   if (prompted === lines.length) return "prompt";
-  return prompted === 0 ? "bare" : undefined;
+  return prompted === 0 && !lines.some((line) => OUTPUT_LINE.test(line)) ? "bare" : undefined;
 };
 
 export const shellPrompt: Detector = (doc, options): Finding[] => {

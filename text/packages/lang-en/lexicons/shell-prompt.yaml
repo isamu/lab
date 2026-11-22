@@ -1,5 +1,6 @@
 # The prompt a shell command is written after, followed by a space ($ npm install, PS> Get-Item). "#" is left out: in a
-# shell block it is far more often a comment than a root prompt.
+# shell block it is far more often a comment than a root prompt. A debugger's prompt ((gdb) b main) is here too: a
+# session with one, written in a shell block, shows commands with their output.
 id: shell-prompt
 language: en
 entries:
@@ -7,3 +8,6 @@ entries:
   - pattern: "%"
   - pattern: PS>
   - pattern: ❯
+  - pattern: (gdb)
+  - pattern: (lldb)
+  - pattern: (Pdb)
