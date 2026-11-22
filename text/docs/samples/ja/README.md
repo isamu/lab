@@ -11,7 +11,7 @@ chaff が見つけるまちがいを、ルールごとに一つずつ見本に�
 
 English samples: [../en/README.md](../en/README.md)
 
-見本のあるルール: 162 / 272
+見本のあるルール: 184 / 272
 
 ## 読みやすさ
 
@@ -193,9 +193,32 @@ English samples: [../en/README.md](../en/README.md)
 
 日付と曜日、日付の順番、合計と内訳のように、暦や計算で確かめられる食い違い。
 
-このグループの見本はまだありません。
+| ルール | 見つけるもの |
+| --- | --- |
+| [毎週の休みから決まる日数より少ない年間休日](annual-holidays-mismatch.md)（`annual-holidays-mismatch`） | 「完全週休2日制」で「年間休日 90日」のように、毎週の休みから決まる104日より少ない年間休日 |
+| [月給と賞与から計算した額と合わない年収例](annual-pay-mismatch.md)（`annual-pay-mismatch`） | 「月給28万円、賞与3ヶ月分」で「年収例 450万円」のように、月給の12か月分と賞与を足した額と合わない年収例 |
+| [残数が発注数量から納品数量を引いた数と合わない](backorder-mismatch.md)（`backorder-mismatch`） | 表の同じ行で、残数が発注数量から納品数量を引いた数と違う所 |
+| [BMI が身長と体重から出る値と合わない](bmi-mismatch.md)（`bmi-mismatch`） | 健診の BMI が、体重 ÷ 身長² と合わない所 |
+| [電池の容量を消費電流で割った時間より長い使用時間](capacity-runtime-mismatch.md)（`capacity-runtime-mismatch`） | 「5000 mAh、500 mA、連続使用時間15時間」のように、容量を消費電流で割った時間より長い使用時間 |
+| [引用と文献一覧が合っていない](citation-reference-mismatch.md)（`citation-reference-mismatch`） | 文献一覧に無い文献を引く引用と、本文で一度も引かない文献 |
+| [ファイルによって違う値が書いてある項目](cross-doc-fact-conflict.md)（`cross-doc-fact-conflict`） | 同じ項目（料金、版、締切、問い合わせ先）に、ファイルによって違う値を書いた所 |
+| [表の一つの列に、違う通貨の金額が一つだけある](currency-column-mix.md)（`currency-column-mix`） | 円の金額が並ぶ列に一つだけある「USD 45」のような、違う通貨の升 |
+| [図や表の参照先が無い](dangling-figure-reference.md)（`dangling-figure-reference`） | 本文が指す「図3」「表2」が、文書のどこにも無い所 |
+| [免責金額が支払限度額より大きい](deductible-exceeds-limit.md)（`deductible-exceeds-limit`） | 「免責金額5,000円、限度額3,000円」のように、免責金額が支払う上限を超える所 |
+| [既定値を二通りに書いている](default-value-mismatch.md)（`default-value-mismatch`） | 引数やオプションの既定値が、シグネチャ・表・文で食い違う所 |
+| [非推奨と書いた名前をコード例で使っている](deprecated-option-used.md)（`deprecated-option-used`） | 非推奨と書いたオプションを、同じ文書のコード例がまだ使っている所 |
+| [回数と1回の長さを掛けた時間が、書いた合計と合わない](duration-product-mismatch.md)（`duration-product-mismatch`） | 「90分×15回（計24時間）」のように、回数と1回の長さを掛けても書いた合計にならない所 |
+| [同じ項目に違う値が書いてある](fact-conflict.md)（`fact-conflict`） | 同じ節の中で、同じ項目（締切、料金など）に違う値を書いた所 |
+| [見出しに書いた計算と合わない金額](formula-amount-mismatch.md)（`formula-amount-mismatch`） | 「売買代金の3%」のような見出しの計算と合わない金額 |
+| [GPA が科目の評価と単位数から出る値と合わない](gpa-mismatch.md)（`gpa-mismatch`） | GPA が、科目の評価と単位数から計算した値と合わない所 |
+| [見出しのコマンドやオプションが、その節のコードに無い](heading-command-missing.md)（`heading-command-missing`） | 見出しが名指すコマンドやオプションが、その節のコード例のどこにも無い所 |
+| [使う間隔の下限と回数の上限が両立しない、または表の回数と合わない](interval-count-mismatch.md)（`interval-count-mismatch`） | 「8時間以上あけ、1日4回まで」のように、間隔の下限と回数の上限が両立しない所と、上限の回数が表の回数と違う所 |
+| [部屋の内訳と合わない間取り](layout-code-mismatch.md)（`layout-code-mismatch`） | 「間取り 3LDK」と、間取り詳細に挙げた居室の数（洋室二つ）のように、間取りの記号と部屋の内訳が合わない所 |
+| [指示数の差が使用量と合わない](meter-usage-mismatch.md)（`meter-usage-mismatch`） | 検針票で、今回と前回の指示数の差が使用量と合わない所 |
+| [引数の表とシグネチャが合わない](parameter-table-mismatch.md)（`parameter-table-mismatch`） | API リファレンスで、引数の表とシグネチャの引数が食い違う所 |
+| [題の決算期間と違う期間](period-label-conflict.md)（`period-label-conflict`） | 第2四半期決算の表の「当第3四半期」、令和8年分の明細の「2025年分」のような、題と同じ種類の別の期間 |
 
-まだ見本の無いルール: `amount-range-reversed`, `announced-count-mismatch`, `annual-holidays-mismatch`, `annual-pay-mismatch`, `arrival-before-departure`, `attachment-not-attached`, `backorder-mismatch`, `bmi-mismatch`, `capacity-runtime-mismatch`, `change-rate-mismatch`, `citation-reference-mismatch`, `closing-balance-mismatch`, `connection-time-short`, `contact-variant`, `count-over-capacity`, `cross-doc-fact-conflict`, `cumulative-below-current`, `currency-column-mix`, `dangling-figure-reference`, `date-order`, `date-outside-period`, `date-range-reversed`, `date-stamp-order`, `date-weekday-mismatch`, `deadline-after-event`, `deductible-exceeds-limit`, `default-value-mismatch`, `delivered-over-ordered`, `deprecated-option-used`, `discount-rate-mismatch`, `due-before-issue`, `duration-mismatch`, `duration-product-mismatch`, `elapsed-years-mismatch`, `fact-conflict`, `formula-amount-mismatch`, `gpa-mismatch`, `heading-command-missing`, `impossible-date`, `impossible-time`, `installment-total-mismatch`, `interest-mismatch`, `interval-count-mismatch`, `layout-code-mismatch`, `line-amount-mismatch`, `meter-usage-mismatch`, `net-amount-mismatch`, `net-over-gross`, `number-word-figure-mismatch`, `parameter-table-mismatch`, `percent-sum-mismatch`, `period-label-conflict`, `period-multiple-mismatch`, `period-part-exceeds-whole`, `phone-number-variant`, `product-exceeds-maximum`, `quantity-range-reversed`, `quote-unnamed-speaker`, `quote-without-source`, `range-band-mismatch`, `ratio-mismatch`, `reference-flag-mismatch`, `reference-number-repeated`, `reference-number-variant`, `reference-title-mismatch`, `reference-topic-missing`, `reference-unit-mismatch`, `relative-date-mismatch`, `rent-multiple-mismatch`, `return-type-mismatch`, `revision-direction-mismatch`, `running-balance-mismatch`, `scaled-quantity-mismatch`, `serial-range-reversed`, `share-amount-mismatch`, `share-over-hundred`, `step-time-sum-mismatch`, `summary-fact-mismatch`, `table-unit-mix`, `tax-mismatch`, `tier-threshold-mismatch`, `time-order`, `time-range-reversed`, `total-mismatch`, `undefined-function-call`, `unit-mismatch`, `variance-mismatch`, `version-mismatch`, `version-order`, `walk-time-distance-mismatch`
+まだ見本の無いルール: `amount-range-reversed`, `announced-count-mismatch`, `arrival-before-departure`, `attachment-not-attached`, `change-rate-mismatch`, `closing-balance-mismatch`, `connection-time-short`, `contact-variant`, `count-over-capacity`, `cumulative-below-current`, `date-order`, `date-outside-period`, `date-range-reversed`, `date-stamp-order`, `date-weekday-mismatch`, `deadline-after-event`, `delivered-over-ordered`, `discount-rate-mismatch`, `due-before-issue`, `duration-mismatch`, `elapsed-years-mismatch`, `impossible-date`, `impossible-time`, `installment-total-mismatch`, `interest-mismatch`, `line-amount-mismatch`, `net-amount-mismatch`, `net-over-gross`, `number-word-figure-mismatch`, `percent-sum-mismatch`, `period-multiple-mismatch`, `period-part-exceeds-whole`, `phone-number-variant`, `product-exceeds-maximum`, `quantity-range-reversed`, `quote-unnamed-speaker`, `quote-without-source`, `range-band-mismatch`, `ratio-mismatch`, `reference-flag-mismatch`, `reference-number-repeated`, `reference-number-variant`, `reference-title-mismatch`, `reference-topic-missing`, `reference-unit-mismatch`, `relative-date-mismatch`, `rent-multiple-mismatch`, `return-type-mismatch`, `revision-direction-mismatch`, `running-balance-mismatch`, `scaled-quantity-mismatch`, `serial-range-reversed`, `share-amount-mismatch`, `share-over-hundred`, `step-time-sum-mismatch`, `summary-fact-mismatch`, `table-unit-mix`, `tax-mismatch`, `tier-threshold-mismatch`, `time-order`, `time-range-reversed`, `total-mismatch`, `undefined-function-call`, `unit-mismatch`, `variance-mismatch`, `version-mismatch`, `version-order`, `walk-time-distance-mismatch`
 
 ## AIっぽさ
 
