@@ -3,6 +3,7 @@
 
 import type { ProseDocument, Sentence, Span } from "../plugin.ts";
 import { externalLinkTitleSpans } from "../link-title.ts";
+import { runInTitleSpans } from "../run-in-title.ts";
 import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { singleQuotedSpans } from "../single-quoted-span.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
@@ -64,7 +65,7 @@ export type Names = {
 export const namesOf = (doc: ProseDocument, genre: string | undefined): Names => ({
   team: doc.names ?? [],
   companyForms: allPatternsOf(doc, COMPANY_FORM),
-  linkTitles: externalLinkTitleSpans(doc.source, doc.links),
+  linkTitles: [...externalLinkTitleSpans(doc.source, doc.links), ...runInTitleSpans(doc.source)],
   singleQuoted: singleQuotedSpans(doc.source),
   mentions: allPatternsOf(doc, SPELLING_MENTION),
   referenceLists: referenceListSpans(doc.source, allPatternsOf(doc, REFERENCE_LIST_HEADING)),

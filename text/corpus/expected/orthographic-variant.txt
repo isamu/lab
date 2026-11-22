@@ -10,13 +10,13 @@ commonpaper-csa  1
 da-agile-review-4  1
 da-ai-advisory-board-1  11
 da-area-data-model  2
-da-legal-practice  3
+da-legal-practice  2
 da-minister-press-conference-2026-09-18  1
 da-recruitment-career-faq  1
 da-service-design-guidelines-2  11
 denkiyagi-ryohi-kitei  1
 denkiyagi-shugyo-kisoku  13
-entaku-rb-4  2
+entaku-rb-4  1
 entaku-rb-5  1
 env-nikko-national-park-story  1
 etax-oshirase-mail-templates  4
