@@ -22,6 +22,13 @@ const CAPITALISED = /^\p{Lu}\p{Ll}/u;
 const LETTER = /\p{L}/u;
 
 /**
+ * 数の前の -ly の語は数を絞る（only 26、nearly 40）。括弧の頭で読点が続く語は呼び名の前置き（(collectively, the agencies)）。
+ * どちらも動詞を修飾しておらず、畳む先が無い。
+ */
+const qualifiesNoVerb = (tokens: readonly Token[], at: number): boolean =>
+  tokens[at + 1]?.pos === "NUM" || (tokens[at - 1]?.surface === "(" && tokens[at + 1]?.surface === ",");
+
+/**
  * 頭だけ大文字の -ly の語は、文の途中なら解析器が語尾で副詞と当てた名前（July、Kelly）か題の語、文頭でも行全体が題の書き方なら
  * 題の語（Frequently Asked Questions）。どちらも動詞に畳める副詞ではない。書き手の確かさを言う副詞（probably、apparently）も、畳む先の動詞が無い。
  */
@@ -30,7 +37,7 @@ const lyAdverbsOf = (sentence: Sentence, stance: ReadonlySet<string>): Token[] =
   const first = tokens.findIndex((token) => LETTER.test(token.surface));
   const titleLine = isTitleCase(sentence.text) === true;
   const isTitleWord = (token: Token, at: number): boolean => CAPITALISED.test(token.surface) && (at > first || titleLine);
-  return tokens.filter((token, at) => isLyAdverb(token) && !stance.has(token.surface.toLowerCase()) && !isTitleWord(token, at));
+  return tokens.filter((token, at) => isLyAdverb(token) && !stance.has(token.surface.toLowerCase()) && !isTitleWord(token, at) && !qualifiesNoVerb(tokens, at));
 };
 
 /**
