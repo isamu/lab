@@ -1,0 +1,10 @@
+# 語や名前の由来を言う語。「と言われている」の前の節にあれば、言い回しは語源や名の起こりの諸説をぼかして伝える言い方で、
+# 名前の無い大勢に主張を預けてはいない（魚釣り（fishing）と洗練（sophisticated）から作られた造語であるといわれています）。
+# 語源には定まった出典が無いことが多く、ぼかすのが正直な書き方。weasel-word はこの形を指さない。
+id: origin-hedge
+language: ja
+entries:
+  - pattern: 造語
+  - pattern: 語源
+  - pattern: 由来
+  - pattern: 名の起こり
