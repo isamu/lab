@@ -319,6 +319,26 @@ describe("contraction-consistency", () => {
       assert.deepEqual(matchedFor(source), ["do not"]);
     });
 
+    describe("平易な要約を条項に添えた文書", () => {
+      const clauses = "You do not own the Service. You do not resell it.\n\nThe Agreement is not enforceable in part. Your use is not limited.";
+
+      it("valid: 「Short version:」の要約と導入は条項と別の文体で、数えるが指さない", () => {
+        // github-terms-of-service の形。要約と冒頭の挨拶は短縮形、条項は長い形。
+        const source = `Thanks for using the Service! We're glad you're here.\n\n## A. Terms\n\n**Short version:** _Some changes aren't that important; we don't bother you._\n\n${clauses}`;
+        assert.deepEqual(matchedFor(source), []);
+      });
+
+      it("invalid: 条項の中の少ない形は、要約の形も数えて指す", () => {
+        const source = `## A. Terms\n\n**Short version:** _We don't bother you._\n\n${clauses}\n\nYou do not copy it. You don't sublicense it.`;
+        assert.deepEqual(matchedFor(source), ["don't"]);
+      });
+
+      it("invalid: 要約の札が無ければ、導入もこれまでどおり数える", () => {
+        const source = `We don't bother you. We don't email you.\n\n## A. Terms\n\n${clauses.replace("You do not resell it.", "")}`;
+        assert.deepEqual(matchedFor(source), ["do not"]);
+      });
+    });
+
     it("invalid: 警告の中の形も、どちらが多いかを数えるときは数える", () => {
       const source = "# Run\n\nDo not edit the file. Do not restart the node.\n\nWarning: Do not run this. Do not open it.\n\nDon't skip the check.";
       assert.deepEqual(matchedFor(source), ["don't"]);
