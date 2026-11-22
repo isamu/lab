@@ -11,7 +11,7 @@ import { chronologyRows } from "../chronology-rows.ts";
 import { isNeutralPlainShape } from "./register-neutral-shape.ts";
 import { spokenAnswerSentences } from "./register-interview.ts";
 import { contactBlockSentences, fieldValueSentences, labelledQuoteSentences, referenceNoteSentences, tableCellSentences } from "./register-set-apart.ts";
-import { endsInSetGreeting, isAddressed, isDeclaration, isExclamation, isTakenUp } from "./register-voice.ts";
+import { endsInSetGreeting, isAddressed, isDeclaration, isExclamation, isFeelingAside, isTakenUp, pagePointerSentences } from "./register-voice.ts";
 import { entriesForGenre } from "../lexicon-genres.ts";
 import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 
@@ -43,7 +43,7 @@ type Entry = { readonly sentence: Sentence; readonly register: Register; readonl
 
 /** 文の調子と quiet を決める語彙表。polite は polite-ending、neutral は neutral-ending、requests は neutral-request、wishes は neutral-wish、
  * greetings は set-polite-phrase、declaration と resolves は declaration-particle と declaration-ending を文書の genre で絞ったもの、openers は takeup-opener、
- * address は address-particle。 */
+ * address は address-particle、asides は feeling-aside を文書の genre で絞ったもの。 */
 type EndingWords = {
   readonly polite: readonly LexiconEntry[];
   readonly neutral: readonly LexiconEntry[];
@@ -54,6 +54,7 @@ type EndingWords = {
   readonly resolves: readonly LexiconEntry[];
   readonly openers: readonly LexiconEntry[];
   readonly address: readonly LexiconEntry[];
+  readonly asides: readonly LexiconEntry[];
 };
 
 type Read = { readonly register: Register; readonly quiet: boolean };
@@ -68,6 +69,7 @@ const endingWords = (doc: ProseDocument, polite: readonly LexiconEntry[], genre:
   resolves: entriesForGenre(doc.lexicons["declaration-ending"] ?? [], genre),
   openers: doc.lexicons["takeup-opener"] ?? [],
   address: doc.lexicons["address-particle"] ?? [],
+  asides: entriesForGenre(doc.lexicons["feeling-aside"] ?? [], genre),
 });
 
 /** 調子を持つ文のうち、指さない形か。next は同じ文書の次の文、between はその間の文字列。 */
@@ -78,6 +80,7 @@ const isQuiet = (sentence: Sentence, ending: readonly Token[], register: Registe
       isDeclaration(sentence, ending, words.declaration, words.resolves) ||
       isExclamation(sentence) ||
       isAddressed(sentence, words.address) ||
+      isFeelingAside(sentence, ending, words.asides) ||
       isTakenUp(next, between, words.openers);
 
 const registerOfSentence = (doc: ProseDocument, index: number, words: EndingWords): Read | undefined => {
@@ -117,6 +120,7 @@ export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntr
   const asides = new Set([
     ...referenceNoteSentences(doc.sentences, doc.source),
     ...tableCellSentences(doc.sentences, doc.source),
+    ...pagePointerSentences(doc.sections, doc.lexicons["page-pointer"] ?? []),
     ...spokenAnswerSentences(
       doc,
       (doc.lexicons["interviewer-mark"] ?? []).map((entry) => entry.pattern),
