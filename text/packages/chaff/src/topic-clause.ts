@@ -113,9 +113,24 @@ const closesFirstClauseWithNoun = (tokens: readonly Token[], topic: number, at: 
   !tokens.slice(topic + 1, at).some(isComma) &&
   newTopicAfter(tokens, at + 1, last);
 
-/** 〜の積上げであり、: the copula's continuing あり after で. */
+/** 〜の積上げであり、: the copula's continuing あり after で, and a comma. */
 const isCopulaContinuing = (tokens: readonly Token[], at: number): boolean =>
-  tokens[at]?.surface === "あり" && tokens[at]?.lemma === "ある" && tokens[at - 1]?.surface === "で" && isCopula(tokens[at - 1]);
+  tokens[at]?.surface === "あり" && tokens[at]?.lemma === "ある" && tokens[at - 1]?.surface === "で" && isCopula(tokens[at - 1]) && isComma(tokens[at + 1]);
+
+/** The sentence ends on a copula (〜ものではありません, 〜ということです) or on ある after が (〜する必要があります). */
+const endsOnCopulaOrBeing = (tokens: readonly Token[], last: number): boolean => {
+  const head = beforeTail(tokens, last);
+  const token = tokens[head];
+  return isCopula(token) || (token !== undefined && isParticle(token, "が") && tokens[head + 1]?.lemma === "ある");
+};
+
+/**
+ * 収益は、…の積上げであり、…ストック型が主要を占めております: the copula's continuing form closes the topic's clause when a new
+ * topic follows, or a subject of its own (が) whose predicate is not again a copula or ある. 信頼型は、…ものであり、…ものではありません
+ * and これは…リンクであり、ユーザーが…ということです say two things of the same topic.
+ */
+const closesWithCopulaContinuing = (tokens: readonly Token[], at: number, last: number, subject: number): boolean =>
+  isCopulaContinuing(tokens, at) && (newTopicAfter(tokens, at + 1, last) || (subject > at && !endsOnCopulaOrBeing(tokens, last)));
 
 /**
  * 〜する想定のため: a clause, a noun it ends on, and の before ため, the copula's attributive form (想定であるため). A bare noun
@@ -130,15 +145,15 @@ const clauseNounBeforeTame = (tokens: readonly Token[], at: number): boolean => 
 
 /**
  * A clause that may close the topic's predicate, when a new subject follows, each stopped by a comma: a copula after ない or
- * ため (〜ではなく、, 〜であるため、, 〜の想定のため、), the copula's continuing form (〜であり、), a copula's condition
- * (〜であるならば、), ところ (〜にあるところ、), and a continuing verb (〜を続けており、).
+ * ため (〜ではなく、, 〜であるため、, 〜の想定のため、), a copula's condition (〜であるならば、), ところ (〜にあるところ、), and a
+ * continuing verb (〜を続けており、).
  */
 const closesIfNewSubject = (tokens: readonly Token[], at: number): boolean => {
   const token = tokens[at];
   if (!isComma(tokens[at + 1])) return false;
   if (token?.surface === "ため") return copulaBefore(tokens, at) || clauseNounBeforeTame(tokens, at);
   if (token?.lemma === "ない") return copulaBefore(tokens, at);
-  if (isCopulaContinuing(tokens, at) || closesWithTokoro(tokens, at) || closesWithCondition(tokens, at)) return true;
+  if (closesWithTokoro(tokens, at) || closesWithCondition(tokens, at)) return true;
   return token?.pos === "VERB" && token.lemma === "おる" && token.features?.["Bound"] === "Yes";
 };
 
@@ -303,6 +318,7 @@ export const topicClauseEnd = (tokens: readonly Token[], topic: number, last: nu
   const closes = (at: number): boolean =>
     closesSurely(tokens, at, last) ||
     (closesIfNewSubject(tokens, at) && subject > at) ||
+    closesWithCopulaContinuing(tokens, at, last, subject) ||
     closesFirstClauseWithNoun(tokens, topic, at, last) ||
     closesWithPoliteGa(tokens, topic, at, last, subject) ||
     closesAfterPredicate(tokens, topic, at, words) ||
