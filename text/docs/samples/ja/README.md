@@ -11,7 +11,7 @@ chaff が見つけるまちがいを、ルールごとに一つずつ見本に�
 
 English samples: [../en/README.md](../en/README.md)
 
-見本のあるルール: 229 / 272
+見本のあるルール: 272 / 272
 
 ## 読みやすさ
 
@@ -212,53 +212,94 @@ English samples: [../en/README.md](../en/README.md)
 | --- | --- |
 | [金額の範囲の上限が下限より小さい](amount-range-reversed.md)（`amount-range-reversed`） | 「月給30万円〜25万円」のように、金額の範囲の終わりが始まりより小さい所 |
 | [予告した数と箇条書きの数が合わない](announced-count-mismatch.md)（`announced-count-mismatch`） | 「以下の3点」と書いたのに、下の箇条書きの数が違う所 |
+| [毎週の休みから決まる日数より少ない年間休日](annual-holidays-mismatch.md)（`annual-holidays-mismatch`） | 「完全週休2日制」で「年間休日 90日」のように、毎週の休みから決まる104日より少ない年間休日 |
+| [月給と賞与から計算した額と合わない年収例](annual-pay-mismatch.md)（`annual-pay-mismatch`） | 「月給28万円、賞与3ヶ月分」で「年収例 450万円」のように、月給の12か月分と賞与を足した額と合わない年収例 |
 | [着が発より前](arrival-before-departure.md)（`arrival-before-departure`） | 旅程の便や列車で、着の時刻が発の時刻より前の所 |
 | [添付に触れているのに、添付が見当たらない](attachment-not-attached.md)（`attachment-not-attached`） | 本文が「添付します」と書いているのに、添付の欄もファイル名も無い送ったメール |
+| [残数が発注数量から納品数量を引いた数と合わない](backorder-mismatch.md)（`backorder-mismatch`） | 表の同じ行で、残数が発注数量から納品数量を引いた数と違う所 |
+| [BMI が身長と体重から出る値と合わない](bmi-mismatch.md)（`bmi-mismatch`） | 健診の BMI が、体重 ÷ 身長² と合わない所 |
+| [電池の容量を消費電流で割った時間より長い使用時間](capacity-runtime-mismatch.md)（`capacity-runtime-mismatch`） | 「5000 mAh、500 mA、連続使用時間15時間」のように、容量を消費電流で割った時間より長い使用時間 |
 | [増減率が二つの値と合わない](change-rate-mismatch.md)（`change-rate-mismatch`） | 「1,000社から20%増えて1,200社」のように、一つの文や表の一行の二つの値と増減率が合わない所 |
+| [引用と文献一覧が合っていない](citation-reference-mismatch.md)（`citation-reference-mismatch`） | 文献一覧に無い文献を引く引用と、本文で一度も引かない文献 |
 | [期末の残高が、期首の残高に入金を足し出金を引いた額と合わない](closing-balance-mismatch.md)（`closing-balance-mismatch`） | 当月末残高が、前月末残高 ＋ 入金合計 − 出金合計 と合わない所 |
 | [移動の時間より短い乗り継ぎ](connection-time-short.md)（`connection-time-short`） | 旅程で、次の予定までの間が文書に書いた移動の時間より短い所 |
 | [連絡先の書き違い](contact-variant.md)（`contact-variant`） | 同じメールアドレスや住所が、一か所だけ違って書かれている所（hibari-lab と hibarilab） |
 | [定員より多い申込の人数](count-over-capacity.md)（`count-over-capacity`） | 「定員90名」の案内に、それより多い申込の人数が書いてある所 |
+| [ファイルによって違う値が書いてある項目](cross-doc-fact-conflict.md)（`cross-doc-fact-conflict`） | 同じ項目（料金、版、締切、問い合わせ先）に、ファイルによって違う値を書いた所 |
 | [累計が当月の値より小さい](cumulative-below-current.md)（`cumulative-below-current`） | 給与明細や月報で、累計が当月の値より小さい所 |
+| [表の一つの列に、違う通貨の金額が一つだけある](currency-column-mix.md)（`currency-column-mix`） | 円の金額が並ぶ列に一つだけある「USD 45」のような、違う通貨の升 |
+| [図や表の参照先が無い](dangling-figure-reference.md)（`dangling-figure-reference`） | 本文が指す「図3」「表2」が、文書のどこにも無い所 |
 | [日程の順番が前後している](date-order.md)（`date-order`） | 旅程や予定表、変更履歴の見出しで、一つだけ日付の順番が前後している所 |
 | [書いた期間の外の日付](date-outside-period.md)（`date-outside-period`） | 旅程や会期のように書いた期間の外にある、日程の日付 |
 | [期間の終わりが始まりより前](date-range-reversed.md)（`date-range-reversed`） | 「4月1日〜3月31日」のように、期間の終わりが始まりより前の所 |
 | [制定日が改定日より後](date-stamp-order.md)（`date-stamp-order`） | 規約やポリシーの末尾で、制定の日付が改定の日付より後になっている所 |
 | [日付と曜日の食い違い](date-weekday-mismatch.md)（`date-weekday-mismatch`） | 「2026年10月1日（金）」のように、日付と曜日が暦と合っていない所 |
 | [申込締切が催しの日より後](deadline-after-event.md)（`deadline-after-event`） | 案内状やお知らせで、申込や出欠の返信の締め切りが催しの日より後の所 |
+| [免責金額が支払限度額より大きい](deductible-exceeds-limit.md)（`deductible-exceeds-limit`） | 「免責金額5,000円、限度額3,000円」のように、免責金額が支払う上限を超える所 |
+| [既定値を二通りに書いている](default-value-mismatch.md)（`default-value-mismatch`） | 引数やオプションの既定値が、シグネチャ・表・文で食い違う所 |
 | [納品数量が発注数量より多い](delivered-over-ordered.md)（`delivered-over-ordered`） | 表の同じ行で、納品数量が発注数量より多い所 |
+| [非推奨と書いた名前をコード例で使っている](deprecated-option-used.md)（`deprecated-option-used`） | 非推奨と書いたオプションを、同じ文書のコード例がまだ使っている所 |
 | [割引率が定価と単価から出る率と合わない](discount-rate-mismatch.md)（`discount-rate-mismatch`） | 価格表で、割引率が定価と単価から出る率と合わない所 |
 | [期限が発行日より前](due-before-issue.md)（`due-before-issue`） | 支払期限や締切など、後に来るはずの日付が先の日付より前の所 |
 | [始まりと期間から計算した終わりが、書いた終わりと合わない](duration-mismatch.md)（`duration-mismatch`） | 「4月1日から3か月間（7月31日まで）」のように、始まりに期間を足しても書いた終わりにならない所 |
+| [回数と1回の長さを掛けた時間が、書いた合計と合わない](duration-product-mismatch.md)（`duration-product-mismatch`） | 「90分×15回（計24時間）」のように、回数と1回の長さを掛けても書いた合計にならない所 |
 | [起点の年から数えた年数が、文書の日付と合わない](elapsed-years-mismatch.md)（`elapsed-years-mismatch`） | 「2015年創業」と「創業5年」のように、起点の年や生年月日から計算した年数・年齢と合わない所 |
+| [同じ項目に違う値が書いてある](fact-conflict.md)（`fact-conflict`） | 同じ節の中で、同じ項目（締切、料金など）に違う値を書いた所 |
+| [見出しに書いた計算と合わない金額](formula-amount-mismatch.md)（`formula-amount-mismatch`） | 「売買代金の3%」のような見出しの計算と合わない金額 |
+| [GPA が科目の評価と単位数から出る値と合わない](gpa-mismatch.md)（`gpa-mismatch`） | GPA が、科目の評価と単位数から計算した値と合わない所 |
+| [見出しのコマンドやオプションが、その節のコードに無い](heading-command-missing.md)（`heading-command-missing`） | 見出しが名指すコマンドやオプションが、その節のコード例のどこにも無い所 |
 | [暦に無い日付](impossible-date.md)（`impossible-date`） | 「2月30日」「2023年2月29日」のような暦に無い日付と、和暦と西暦の年が食い違う日付 |
 | [時計に無い時刻](impossible-time.md)（`impossible-time`） | 「午後13時」「13 PM」「10時75分」のように、時計に無い時刻 |
 | [回数×毎回の額と合わないお支払総額](installment-total-mismatch.md)（`installment-total-mismatch`） | 「60回、毎月32,800円」とお支払総額が合わない支払いの案内 |
 | [利息が残高に利率を掛けた額と合わない](interest-mismatch.md)（`interest-mismatch`） | 預金の明細で、利息が残高に利率を掛けた額と合わない所 |
+| [使う間隔の下限と回数の上限が両立しない、または表の回数と合わない](interval-count-mismatch.md)（`interval-count-mismatch`） | 「8時間以上あけ、1日4回まで」のように、間隔の下限と回数の上限が両立しない所と、上限の回数が表の回数と違う所 |
+| [部屋の内訳と合わない間取り](layout-code-mismatch.md)（`layout-code-mismatch`） | 「間取り 3LDK」と、間取り詳細に挙げた居室の数（洋室二つ）のように、間取りの記号と部屋の内訳が合わない所 |
 | [数量×単価が金額と合わない](line-amount-mismatch.md)（`line-amount-mismatch`） | 見積書や請求書の明細で、数量×単価がその行の金額と合わない所 |
+| [指示数の差が使用量と合わない](meter-usage-mismatch.md)（`meter-usage-mismatch`） | 検針票で、今回と前回の指示数の差が使用量と合わない所 |
 | [差引額が、総額から控除合計を引いた額と合わない](net-amount-mismatch.md)（`net-amount-mismatch`） | 差引支給額が、総支給額 − 控除合計 と合わない所 |
 | [正味重量が総重量より重い](net-over-gross.md)（`net-over-gross`） | 表の同じ行で、正味重量が総重量より重い所 |
 | [文字で書いた数と括弧の数字が違う](number-word-figure-mismatch.md)（`number-word-figure-mismatch`） | 「三（4）か月」「金参拾万円（30,000円）」のように、文字で書いた数と後ろの括弧の数字が違う所 |
+| [引数の表とシグネチャが合わない](parameter-table-mismatch.md)（`parameter-table-mismatch`） | API リファレンスで、引数の表とシグネチャの引数が食い違う所 |
 | [内訳の割合を足しても 100% にならない](percent-sum-mismatch.md)（`percent-sum-mismatch`） | 構成比や内訳の百分率を足しても 100% にならない所 |
+| [題の決算期間と違う期間](period-label-conflict.md)（`period-label-conflict`） | 第2四半期決算の表の「当第3四半期」、令和8年分の明細の「2025年分」のような、題と同じ種類の別の期間 |
+| [月払の何か月分と合わない額](period-multiple-mismatch.md)（`period-multiple-mismatch`） | 「月払の12か月分」とあるのに、月払の12倍と合わない金額 |
 | [全体の期間より長い、その一部の期間](period-part-exceeds-whole.md)（`period-part-exceeds-whole`） | 「保証期間（12か月）のうち無料交換期間は18か月」のような全体より長い一部の期間 |
 | [電話番号の数字の入れ違い](phone-number-variant.md)（`phone-number-variant`） | 同じ文書で、電話番号の隣り合う数字が一か所だけ入れ違っている所（0120-123-456 と 0120-123-465） |
+| [1回の量と回数を掛けると、書いた上限を超える](product-exceeds-maximum.md)（`product-exceeds-maximum`） | 「1回2錠を1日3回」なのに「1日の最大量は4錠」のように、1回の量×回数が上限を超える所 |
 | [量の範囲の上限が下限より小さい](quantity-range-reversed.md)（`quantity-range-reversed`） | 「使用温度範囲：-10〜-40℃」のように、測った量の範囲の終わりが始まりより小さい所 |
+| [名前の無い話し手の言葉を引いている](quote-unnamed-speaker.md)（`quote-unnamed-speaker`） | 「業界のアナリストは『…』と述べています」のように、名前の無い話し手の言葉を引いた所 |
+| [人の言葉として引いた文に出典がない](quote-without-source.md)（`quote-without-source`） | 「〜は『…』と述べた」のように人の言葉として引いたのに、同じ段落に出典の無い所 |
+| [重なるか、間が空いた区分の幅](range-band-mismatch.md)（`range-band-mismatch`） | 表の列や箇条書きの「7〜12歳」「12〜14歳」のように、隣り合う区分の幅が重なるか、間が空いた所 |
 | [利益率が二つの値の割り算と合わない](ratio-mismatch.md)（`ratio-mismatch`） | 表や文の「営業利益率」が、営業利益 ÷ 売上高 と合わない所 |
+| [結果と基準値に合わない判定の印](reference-flag-mismatch.md)（`reference-flag-mismatch`） | 検査結果の表で、基準値の範囲内の値に「高」、範囲外の値に「基準内」と付いた行 |
+| [明細の表で、同じ領収書・請求書の番号が二つの行にある](reference-number-repeated.md)（`reference-number-repeated`） | 明細の表で、同じ領収書や請求書の番号が二つの行にある所 |
+| [予約番号などの文字の入れ違い](reference-number-variant.md)（`reference-number-variant`） | 同じ文書で、予約番号などの隣り合う文字が入れ違っている所（MN-48215 と MN-48251） |
+| [参照に添えた名前が、参照先の見出しと違う](reference-title-mismatch.md)（`reference-title-mismatch`） | 「第5条（秘密保持）」のように参照に添えた名前が、その条や章の見出しと違う所 |
+| [「第2章で述べた〇〇」の〇〇が、第2章に無い](reference-topic-missing.md)（`reference-topic-missing`） | 「第2章で述べた料金体系」のように参照先の話題を書いたのに、その章に話題の語が無い所 |
+| [検査結果の単位が基準値の単位と違う](reference-unit-mismatch.md)（`reference-unit-mismatch`） | 検査結果の表で、結果と基準値の単位が違う行 |
 | [「3日後の10月5日」の日付が、基準の日付から数えた日と合わない](relative-date-mismatch.md)（`relative-date-mismatch`） | 「3日後の10月6日」のように、相対で書いた日付が基準の日付から数えた日と合わない所 |
+| [賃料の月数分と合わない敷金・礼金](rent-multiple-mismatch.md)（`rent-multiple-mismatch`） | 「敷金 2か月（98,000円）」のように、賃料のその月数分と合わない金額 |
+| [戻り値の型が二通りに書かれている](return-type-mismatch.md)（`return-type-mismatch`） | API リファレンスで、シグネチャと説明が違う戻り値の型を言う所 |
+| [修正の向きと表の数字が逆](revision-direction-mismatch.md)（`revision-direction-mismatch`） | 「上方修正」と書いたのに、表の今回の予想が前回より小さい所 |
 | [残高が前の行から計算した値と合わない](running-balance-mismatch.md)（`running-balance-mismatch`） | 返済表や明細の残高が、前の行の残高からの足し引きと合わない所 |
+| [人数の列で、一行だけ量が比のとおりに増えていない](scaled-quantity-mismatch.md)（`scaled-quantity-mismatch`） | 人数ごとの列を持つ材料の表で、一行だけ比のとおりに増えていない量 |
 | [製造番号やロットの範囲の終わりが始まりより小さい](serial-range-reversed.md)（`serial-range-reversed`） | 「製造番号：A2400〜A1800」のように、番号の範囲の終わりが始まりより小さい所 |
 | [負担額が合計に負担の割合を掛けた額と合わない](share-amount-mismatch.md)（`share-amount-mismatch`） | 医療費の明細で、負担額が合計の3割（30%）などと合わない所 |
 | [100% を超える一部の割合](share-over-hundred.md)（`share-over-hundred`） | 「回答者の120%」のように、集まりの一部の割合なのに 100% を超える百分率 |
 | [所要時間が、手順に書いた時間の和と合わない](step-time-sum-mismatch.md)（`step-time-sum-mismatch`） | レシピや手順書で、所要時間が手順の時間の和と合わない所 |
+| [冒頭や要約の値が本文と違う](summary-fact-mismatch.md)（`summary-fact-mismatch`） | 冒頭や概要の節に書いた値（締切、料金など）が、本文の同じ項目の値と違う所 |
+| [表の中で金額の桁の単位が混ざっている](table-unit-mix.md)（`table-unit-mix`） | 「（単位：百万円）」の表の中の千円の升や、ほかの行の千倍に書いた一行 |
 | [税額が小計に税率を掛けた額と合わない](tax-mismatch.md)（`tax-mismatch`） | 請求書の消費税や価格表の税込価格が、税率で計算した額と合わない所 |
+| [会員の値が、書いたランクの基準に当たらない](tier-threshold-mismatch.md)（`tier-threshold-mismatch`） | 会員の値（ポイントや泊数）が、書いたランクの基準に当たらない所 |
+| [一日の予定の時刻が前後している](time-order.md)（`time-order`） | 旅程や式次第で、一つだけ時刻の順番が前後している所 |
 | [時刻の範囲の終わりが始まりより前](time-range-reversed.md)（`time-range-reversed`） | 「15:15〜14:15」のように、時刻の範囲の終わりが始まりより前の所 |
 | [合計が内訳の和と合わない](total-mismatch.md)（`total-mismatch`） | 見積もりや請求書、契約書で、合計が内訳に並べた金額の和と合わない所 |
+| [ページに無い関数をコード例で呼んでいる](undefined-function-call.md)（`undefined-function-call`） | コード例が、ページで説明している関数と違う、どこにも無い名前の関数を呼んでいる所 |
+| [同じ項目の量を違う単位で書いて、換算すると合わない](unit-mismatch.md)（`unit-mismatch`） | 同じ項目の量を、違う単位で書いて換算すると合わない所（距離：5 km と 3000 m） |
 | [予算と決算の差が、増減の列と合わない](variance-mismatch.md)（`variance-mismatch`） | 予算額と決算額の差が、書いた増減と合わない行 |
 | [説明の版とコードの版が違う](version-mismatch.md)（`version-mismatch`） | コードブロックのすぐ上の説明が名指す版と、コードの版が違う所 |
 | [版の並びが前後している](version-order.md)（`version-order`） | 変更履歴の見出しや版の一覧で、一つだけ順番から外れた版 |
 | [距離と合わない徒歩の分数](walk-time-distance-mismatch.md)（`walk-time-distance-mismatch`） | 「徒歩3分（約600m）」のように、徒歩の分数が書いた距離と合わない所 |
-
-まだ見本の無いルール: `annual-holidays-mismatch`, `annual-pay-mismatch`, `backorder-mismatch`, `bmi-mismatch`, `capacity-runtime-mismatch`, `citation-reference-mismatch`, `cross-doc-fact-conflict`, `currency-column-mix`, `dangling-figure-reference`, `deductible-exceeds-limit`, `default-value-mismatch`, `deprecated-option-used`, `duration-product-mismatch`, `fact-conflict`, `formula-amount-mismatch`, `gpa-mismatch`, `heading-command-missing`, `interval-count-mismatch`, `layout-code-mismatch`, `meter-usage-mismatch`, `parameter-table-mismatch`, `period-label-conflict`, `period-multiple-mismatch`, `product-exceeds-maximum`, `quote-unnamed-speaker`, `quote-without-source`, `range-band-mismatch`, `reference-flag-mismatch`, `reference-number-repeated`, `reference-number-variant`, `reference-title-mismatch`, `reference-topic-missing`, `reference-unit-mismatch`, `rent-multiple-mismatch`, `return-type-mismatch`, `revision-direction-mismatch`, `scaled-quantity-mismatch`, `summary-fact-mismatch`, `table-unit-mix`, `tier-threshold-mismatch`, `time-order`, `undefined-function-call`, `unit-mismatch`
 
 ## AIっぽさ
 

@@ -11,7 +11,7 @@ Or paste a draft into the [playground](https://isamu.github.io/lab/en/playground
 
 日本語の見本: [../ja/README.md](../ja/README.md)
 
-Rules with a sample: 191 / 259
+Rules with a sample: 259 / 259
 
 ## Readability
 
@@ -195,30 +195,96 @@ A date and its weekday, dates out of order, a total and its items: disagreements
 
 | Rule | What it finds |
 | --- | --- |
+| [An amount range whose upper end is below its lower end](amount-range-reversed.md) (`amount-range-reversed`) | An amount range that ends lower than it starts, such as "$90,000–$70,000" |
 | [A list that does not have the number of items announced](announced-count-mismatch.md) (`announced-count-mismatch`) | A list whose number of items differs from the number announced just before it |
+| [Annual days off fewer than the weekly days off give](annual-holidays-mismatch.md) (`annual-holidays-mismatch`) | Annual days off fewer than the 104 days that two days off every week give |
+| [An example annual pay that is not the monthly pay and bonus](annual-pay-mismatch.md) (`annual-pay-mismatch`) | An example annual pay that is not 12 months' pay plus the bonus months |
 | [An arrival before its departure](arrival-before-departure.md) (`arrival-before-departure`) | A flight or a train in an itinerary that arrives before it departs |
 | [Attachment mentioned but not shown](attachment-not-attached.md) (`attachment-not-attached`) | A sent email that says something is attached but shows no attachment |
+| [A backordered quantity that is not the ordered less the delivered](backorder-mismatch.md) (`backorder-mismatch`) | A backordered quantity that is not the ordered less the delivered on its row |
+| [A BMI the height and weight beside it do not give](bmi-mismatch.md) (`bmi-mismatch`) | A BMI in a checkup that the weight divided by the height squared does not give |
+| [A runtime longer than the battery capacity divided by the consumption](capacity-runtime-mismatch.md) (`capacity-runtime-mismatch`) | A runtime longer than the battery capacity divided by its consumption |
+| [A rate of change the two values do not give](change-rate-mismatch.md) (`change-rate-mismatch`) | A rate of change the two values in one sentence or table row do not give |
+| [Citations and reference list do not match](citation-reference-mismatch.md) (`citation-reference-mismatch`) | A citation with no entry in the reference list, or an entry the text never cites |
+| [A closing balance that is not the opening balance plus deposits less withdrawals](closing-balance-mismatch.md) (`closing-balance-mismatch`) | A closing balance that is not the opening balance plus deposits less withdrawals |
 | [A connection shorter than the stated travel time](connection-time-short.md) (`connection-time-short`) | An itinerary that leaves less time for a connection than the trip it states |
 | [A contact written two ways](contact-variant.md) (`contact-variant`) | An email or postal address written differently in one place |
+| [More registered than the stated capacity](count-over-capacity.md) (`count-over-capacity`) | A stated capacity smaller than the number registered |
+| [One item given different values in different files](cross-doc-fact-conflict.md) (`cross-doc-fact-conflict`) | The same item (a fee, a deadline, a contact) given different values in two files |
+| [A cumulative figure lower than this period's](cumulative-below-current.md) (`cumulative-below-current`) | A year-to-date figure lower than the same row's figure for this period |
+| [One amount in another currency in a column of amounts](currency-column-mix.md) (`currency-column-mix`) | A lone amount in another currency in a column, such as ¥12,500 among dollars |
+| [Reference to a missing figure or table](dangling-figure-reference.md) (`dangling-figure-reference`) | A figure or table the text refers to that the document does not have |
 | [A date out of order in a schedule](date-order.md) (`date-order`) | One date out of order in an itinerary, a schedule or a changelog's headings |
+| [A date outside the stated period](date-outside-period.md) (`date-outside-period`) | A dated item outside the period the document gives, such as a trip's dates |
 | [A period that ends before it starts](date-range-reversed.md) (`date-range-reversed`) | A period whose end date comes before its start date |
+| [An established date after the last update](date-stamp-order.md) (`date-stamp-order`) | An established date later than the last update at the foot of a policy or terms |
 | [Date and weekday disagree](date-weekday-mismatch.md) (`date-weekday-mismatch`) | A date and its weekday that disagree, such as "Friday, 1 October 2026" |
 | [A registration deadline after the event](deadline-after-event.md) (`deadline-after-event`) | A sign-up or RSVP deadline that falls after the event itself |
+| [A deductible larger than the most paid](deductible-exceeds-limit.md) (`deductible-exceeds-limit`) | A deductible or excess larger than the most paid for the same benefit |
+| [Default value stated two ways](default-value-mismatch.md) (`default-value-mismatch`) | A parameter's default that differs between the signature, a table and the text |
+| [A delivered quantity larger than the ordered quantity](delivered-over-ordered.md) (`delivered-over-ordered`) | A row of an order table that delivers more than was ordered |
+| [Deprecated name used in an example](deprecated-option-used.md) (`deprecated-option-used`) | An option the document calls deprecated, still used in one of its examples |
 | [A discount that the list price and the tier price do not give](discount-rate-mismatch.md) (`discount-rate-mismatch`) | A discount on a price list that the list price and the tier price do not give |
 | [A due date before the issue date](due-before-issue.md) (`due-before-issue`) | A due date or other later date that falls before the date it must follow |
 | [A start plus a length of time that does not reach the stated end](duration-mismatch.md) (`duration-mismatch`) | A start date plus a length of time that does not reach the end date given |
+| [A number of sessions times their length that does not make the stated total](duration-product-mismatch.md) (`duration-product-mismatch`) | Sessions times the length of each that does not make the total given |
+| [A count of years that does not match its starting year](elapsed-years-mismatch.md) (`elapsed-years-mismatch`) | A count of years or an age that does not match its starting year or birth date |
+| [One item given two different values](fact-conflict.md) (`fact-conflict`) | The same item (a deadline, a fee) given two different values in one section |
+| [An amount that is not what its label's formula gives](formula-amount-mismatch.md) (`formula-amount-mismatch`) | An amount that is not what its label's formula ("5% of the sale price") gives |
+| [A grade-point average the course rows do not give](gpa-mismatch.md) (`gpa-mismatch`) | A grade-point average that is not what the course grades and credits give |
+| [A heading names a command its section's code does not show](heading-command-missing.md) (`heading-command-missing`) | A command or option named in a heading that the section's examples never use |
 | [A date the calendar does not have](impossible-date.md) (`impossible-date`) | A date not on the calendar ("February 30"), or a year two calendars disagree on |
 | [A time the clock does not have](impossible-time.md) (`impossible-time`) | A time the clock does not have, such as "13 PM", "午後13時" or "10:75" |
+| [A total of payments that is not the payments added up](installment-total-mismatch.md) (`installment-total-mismatch`) | A total of payments that is not the number of payments times the payment |
+| [An interest amount that is not the stated balance times the stated rate](interest-mismatch.md) (`interest-mismatch`) | Interest on a statement that is not the stated balance times the stated rate |
+| [A minimum interval and a maximum count of uses that cannot both hold, or a count that differs from the table](interval-count-mismatch.md) (`interval-count-mismatch`) | A minimum gap and maximum count that conflict, or a maximum unlike the table's |
+| [A layout that does not match the rooms listed](layout-code-mismatch.md) (`layout-code-mismatch`) | A room layout such as "3 bedrooms" that does not match the rooms listed |
 | [Quantity times unit price is not the line amount](line-amount-mismatch.md) (`line-amount-mismatch`) | A line of a quote or invoice whose quantity times price is not its amount |
+| [The meter readings' difference is not the usage](meter-usage-mismatch.md) (`meter-usage-mismatch`) | A utility bill whose current minus previous meter reading is not the usage |
+| [A net amount that is not the gross amount minus the deductions](net-amount-mismatch.md) (`net-amount-mismatch`) | A net pay that is not the gross pay minus the total deductions |
+| [A net weight larger than the gross weight](net-over-gross.md) (`net-over-gross`) | A row of a packing list whose net weight is larger than its gross weight |
 | [Number in words differs from its figure](number-word-figure-mismatch.md) (`number-word-figure-mismatch`) | A number in words with a different figure in brackets, as "six (7) months" |
+| [Parameter table that does not match the signature](parameter-table-mismatch.md) (`parameter-table-mismatch`) | A parameter in only one of a signature and the parameter table under it |
 | [Shares of a whole that do not add up to 100%](percent-sum-mismatch.md) (`percent-sum-mismatch`) | A breakdown whose percentages do not add up to 100% |
+| [A period other than the one the title reports](period-label-conflict.md) (`period-label-conflict`) | Not the title's period: Q3 in a Q2 release, tax year 2025 in a 2026 statement |
+| [An amount that is not the stated number of payments](period-multiple-mismatch.md) (`period-multiple-mismatch`) | An amount said to be 12 monthly payments that is not 12 times the monthly one |
+| [A part of a period that is longer than the period](period-part-exceeds-whole.md) (`period-part-exceeds-whole`) | A part of a period longer than the whole: 18 months within a 12-month warranty |
 | [Phone number with two digits swapped](phone-number-variant.md) (`phone-number-variant`) | A phone number written elsewhere with two digits swapped |
+| [An amount per use times the uses that goes over the stated maximum](product-exceeds-maximum.md) (`product-exceeds-maximum`) | An amount per use times the uses per period that is over that period's maximum |
+| [A measured range whose upper end is below its lower end](quantity-range-reversed.md) (`quantity-range-reversed`) | A measured range that ends lower than it starts, such as "-10 to -40 °C" |
+| [A quotation given to a speaker with no name](quote-unnamed-speaker.md) (`quote-unnamed-speaker`) | A quotation given to a speaker named only by a role ("…," said an analyst) |
+| [A quotation given to someone, with no source](quote-without-source.md) (`quote-without-source`) | A quotation given to someone ("X said …") in a paragraph that gives no source |
+| [Bands that overlap or leave a gap](range-band-mismatch.md) (`range-band-mismatch`) | Neighbouring bands that overlap or leave a gap, such as "7 to 12", "12 to 14" |
+| [A margin the two values it divides do not give](ratio-mismatch.md) (`ratio-mismatch`) | A margin in a table or sentence that is not its profit divided by its sales |
+| [A flag that does not match the result and its reference range](reference-flag-mismatch.md) (`reference-flag-mismatch`) | A lab result flagged high though within its range, or normal though outside it |
+| [The same receipt or invoice number on two rows of an itemised table](reference-number-repeated.md) (`reference-number-repeated`) | The same receipt or invoice number written on two rows of one itemised table |
+| [Booking or reference number with two characters swapped](reference-number-variant.md) (`reference-number-variant`) | A booking number written once with two neighbours swapped (MN-48215, MN-48251) |
+| [A reference whose name does not match its target's heading](reference-title-mismatch.md) (`reference-title-mismatch`) | A reference's title ("Section 5 (Privacy)") that differs from the heading |
+| [A reference to a topic its target never mentions](reference-topic-missing.md) (`reference-topic-missing`) | A reference that names a topic ("see Section 2 for pricing") never found there |
+| [A test result in another unit than its reference range](reference-unit-mismatch.md) (`reference-unit-mismatch`) | A results table row whose result and reference range are in different units |
 | [A relative date that does not match its base date](relative-date-mismatch.md) (`relative-date-mismatch`) | A date given as "two weeks later, on May 16" that is not that far away |
+| [A deposit that is not the stated months of rent](rent-multiple-mismatch.md) (`rent-multiple-mismatch`) | A deposit amount that is not the stated months of rent |
+| [A return type stated two ways](return-type-mismatch.md) (`return-type-mismatch`) | A return type that the signature and the description state differently |
+| [A forecast revision that moves the other way](revision-direction-mismatch.md) (`revision-direction-mismatch`) | A forecast said to be revised up whose new figure is lower, or the reverse |
+| [A running balance the row above and this row's amounts do not give](running-balance-mismatch.md) (`running-balance-mismatch`) | A running balance that is not the balance above plus or minus this row's amounts |
+| [One row of a servings table that does not scale with the others](scaled-quantity-mismatch.md) (`scaled-quantity-mismatch`) | A recipe table with one row that does not scale with the servings |
+| [A serial or lot number range that ends below where it starts](serial-range-reversed.md) (`serial-range-reversed`) | A serial or lot number range that ends below its start, such as "L5240 to L5210" |
+| [An amount paid that is not the stated share of the total](share-amount-mismatch.md) (`share-amount-mismatch`) | An amount paid on a medical bill that is not the stated share (30%) of the total |
+| [A share above 100%](share-over-hundred.md) (`share-over-hundred`) | A share of a group over 100%, such as "120% of respondents" |
+| [A total time that is not the sum of the steps' times](step-time-sum-mismatch.md) (`step-time-sum-mismatch`) | A recipe or guide whose total time is not the sum of its steps' times |
+| [A summary value that differs from the body](summary-fact-mismatch.md) (`summary-fact-mismatch`) | A value in the summary (a deadline, a fee) that differs from the body |
+| [A table that mixes scales of amount](table-unit-mix.md) (`table-unit-mix`) | A cell in thousands in a table in millions, or a row a thousand times the others |
 | [A tax that is not its rate of the subtotal](tax-mismatch.md) (`tax-mismatch`) | A tax line, or a price list's price with tax, that does not match the tax rate |
+| [A member's tier that their own points or nights do not reach](tier-threshold-mismatch.md) (`tier-threshold-mismatch`) | A stated tier whose member's points or nights fall outside that tier's band |
+| [A time out of order in a day's schedule](time-order.md) (`time-order`) | One time out of order in an itinerary or a day's programme |
 | [A time range that ends before it starts](time-range-reversed.md) (`time-range-reversed`) | A time range whose end comes before its start |
 | [A total that is not the sum of its items](total-mismatch.md) (`total-mismatch`) | A total in a quote, invoice or contract that is not the sum of its items |
-
-Rules with no sample yet: `amount-range-reversed`, `annual-holidays-mismatch`, `annual-pay-mismatch`, `backorder-mismatch`, `bmi-mismatch`, `capacity-runtime-mismatch`, `change-rate-mismatch`, `citation-reference-mismatch`, `closing-balance-mismatch`, `count-over-capacity`, `cross-doc-fact-conflict`, `cumulative-below-current`, `currency-column-mix`, `dangling-figure-reference`, `date-outside-period`, `date-stamp-order`, `deductible-exceeds-limit`, `default-value-mismatch`, `delivered-over-ordered`, `deprecated-option-used`, `duration-product-mismatch`, `elapsed-years-mismatch`, `fact-conflict`, `formula-amount-mismatch`, `gpa-mismatch`, `heading-command-missing`, `installment-total-mismatch`, `interest-mismatch`, `interval-count-mismatch`, `layout-code-mismatch`, `meter-usage-mismatch`, `net-amount-mismatch`, `net-over-gross`, `parameter-table-mismatch`, `period-label-conflict`, `period-multiple-mismatch`, `period-part-exceeds-whole`, `product-exceeds-maximum`, `quantity-range-reversed`, `quote-unnamed-speaker`, `quote-without-source`, `range-band-mismatch`, `ratio-mismatch`, `reference-flag-mismatch`, `reference-number-repeated`, `reference-number-variant`, `reference-title-mismatch`, `reference-topic-missing`, `reference-unit-mismatch`, `rent-multiple-mismatch`, `return-type-mismatch`, `revision-direction-mismatch`, `running-balance-mismatch`, `scaled-quantity-mismatch`, `serial-range-reversed`, `share-amount-mismatch`, `share-over-hundred`, `step-time-sum-mismatch`, `summary-fact-mismatch`, `table-unit-mix`, `tier-threshold-mismatch`, `time-order`, `undefined-function-call`, `unit-mismatch`, `variance-mismatch`, `version-mismatch`, `version-order`, `walk-time-distance-mismatch`
+| [Example calls a function the page does not define](undefined-function-call.md) (`undefined-function-call`) | An example calling a name the page never defines, close to one it documents |
+| [One item given in two units that do not convert](unit-mismatch.md) (`unit-mismatch`) | The same item in two units that do not convert ("5 km" and "3000 m") |
+| [A variance that is not the difference of the budget and the actual](variance-mismatch.md) (`variance-mismatch`) | A table row whose variance is not the difference of its budget and actual |
+| [The version in the text is not the one in the code](version-mismatch.md) (`version-mismatch`) | A version named right above a code block that the block does not use |
+| [A version out of order in a changelog](version-order.md) (`version-order`) | One version out of order in a changelog or a list of releases |
+| [A walking time that does not match the stated distance](walk-time-distance-mismatch.md) (`walk-time-distance-mismatch`) | A walking time that does not match the distance beside it |
 
 ## Signs of generated text
 
