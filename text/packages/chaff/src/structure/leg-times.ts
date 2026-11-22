@@ -5,6 +5,7 @@ import {
   dayShiftOf,
   markBefore,
   markRightAfter,
+  wordMarkAfter,
   wordOffsets,
   zonesIn,
   SECONDS_PER_DAY,
@@ -70,12 +71,22 @@ const sideBefore = (head: string, legs: readonly Mark[]): string | undefined => 
   return BREAK.test(head.slice(at + mark.pattern.length)) ? undefined : mark.group;
 };
 
+/** 時刻の前に、字も数字も無い（行の頭の時刻。箇条書きの印と表の区切りは除く）。 */
+const LETTER_OR_DIGIT = /[\p{L}\p{N}]/u;
+
+/** 行の頭の時刻の、次の語の印（「- 09:45 Arrive at Leeds station」）。予定の行は時刻で始まり、その行の出来事を書く。 */
+const sideOfRow = (source: string, lineStart: number, time: TimeSpan, legs: readonly Mark[]): string | undefined =>
+  LETTER_OR_DIGIT.test(source.slice(lineStart, time.start)) ? undefined : wordMarkAfter(source, time.end, legs)?.group;
+
 /** 一行の中の発着の時刻を、書いた順に。前の時刻から後ろだけを、その時刻の前置きとして読む。 */
 const legsInLine = (start: number, end: number, inputs: Inputs): Leg[] =>
   timesWithin(inputs.times, start, end).flatMap((time, index, all) => {
     const from = all[index - 1]?.end ?? start;
     const to = all[index + 1]?.start ?? end;
-    const side = markRightAfter(inputs.source, time.end, inputs.words.legs)?.group ?? sideBefore(inputs.source.slice(from, time.start), inputs.words.legs);
+    const side =
+      markRightAfter(inputs.source, time.end, inputs.words.legs)?.group ??
+      sideBefore(inputs.source.slice(from, time.start), inputs.words.legs) ??
+      sideOfRow(inputs.source, start, time, inputs.words.legs);
     return side === DEPARTURE || side === ARRIVAL ? [{ ...legTimeOf(time, from, to, inputs), side }] : [];
   });
 
