@@ -50,6 +50,10 @@ describe("startsWithVowelSound: the sound a word starts with, from lexicon artic
     assert.deepEqual(["RAG", "MIR", "SEP"].map(soundOf), [false, false, false]);
   });
 
+  it("a filing's name said as a word (SAR, a suspicious activity report) takes the word's sound", () => {
+    assert.equal(soundOf("SAR"), false);
+  });
+
   it("a group's name said as a word (SIG) takes the word's sound; a stock code or a card said both ways (SKU, NIC) is left alone", () => {
     assert.deepEqual(["SIG", "SKU", "NIC"].map(soundOf), [false, undefined, undefined]);
     assert.deepEqual(["SEC", "MIT"].map(soundOf), [true, true]);
