@@ -241,3 +241,39 @@ describe("one-sentence-paragraph-run: numbered items and the items of a lead-in"
     assert.deepEqual(findingsOf(`${few.join("\n\n")}\n`, en), ["5 one-sentence paragraphs in a row (limit 4)"]);
   });
 });
+
+describe("one-sentence-paragraph-run: a footnotes section and a specification", () => {
+  const notes = [
+    "The directory is available at https://example.com/directory.",
+    "It is also possible for a firm to bid on both contracts.",
+    "Agencies report these figures once a year.",
+    "See the agency's guide for the forms.",
+    "This scorecard is the most recent one.",
+  ].join("\n\n");
+
+  it("the notes under a footnotes heading are entries, not a run", () => {
+    assert.deepEqual(findingsOf(`## Footnotes\n\n${notes}\n`, en), []);
+    assert.deepEqual(findingsOf(`## Endnotes\n\n${notes}\n`, en), []);
+    assert.deepEqual(findingsOf(`## 脚注\n\n${paragraphs(5)}\n`), []);
+    assert.deepEqual(findingsOf(`## 注\n\n${paragraphs(5)}\n`), []);
+  });
+
+  it("the same paragraphs under another heading, or after the footnotes section ends, still count", () => {
+    assert.deepEqual(findingsOf(`## Background\n\n${notes}\n`, en), ["5 one-sentence paragraphs in a row (limit 4)"]);
+    assert.deepEqual(findingsOf(`## Footnotes\n\nOne note.\n\n## Next steps\n\n${notes}\n`, en), ["5 one-sentence paragraphs in a row (limit 4)"]);
+    assert.deepEqual(findingsOf(`## 注意\n\n${paragraphs(5)}\n`), ["一文だけの段落が 5 個続いています（4 個まで）"]);
+  });
+
+  it("a specification sets one requirement per paragraph: off for technical/spec, on for a README", () => {
+    const rules = [
+      "A new transaction type is introduced.",
+      "Its cost is the base cost.",
+      "Its payload is a list.",
+      "Its signature covers the payload.",
+      "Its receipt holds the status.",
+    ];
+    const source = `## Specification\n\n${rules.join("\n\n")}\n`;
+    assert.equal(firedRules(en, source, "technical/spec").includes(RULE), false);
+    assert.equal(firedRules(en, source, "technical/readme").includes(RULE), true);
+  });
+});
