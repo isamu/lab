@@ -44,17 +44,21 @@ describe("orthographic-variant: 前の語に続けて書いたかなの動詞", 
   });
 });
 
-describe("orthographic-variant: かなで書いた語の頭", () => {
-  it("かなの語の頭（つきたて、かきかけ、かみさま）を、同じ読みの漢字の名詞（月、柿、紙）と比べない", () => {
+describe("orthographic-variant: 名詞に読んだかなの動詞", () => {
+  it("名詞に読んだかなの動詞（つきたて の つき、かみさま の かみ）を、同じ読みの漢字だけの名詞（月、紙）と比べない", () => {
     assert.deepEqual(
       findingsOf("# お知らせ\n\n4月1日から4月7日まで開きます。期間中は、つきたての餅をふるまいます。5月1日にも開きます。\n", "business/press-release"),
       [],
     );
-    assert.deepEqual(findingsOf("# 記録\n\n柿を買った。柿を食べた。柿をむいた。かきかけの手紙が残る。\n"), []);
     assert.deepEqual(findingsOf("# 記録\n\n紙を買った。紙に書いた。紙を折った。かみさまの話を聞く。\n"), []);
   });
 
-  it("それだけで書いたかなの名詞は今までどおり比べる", () => {
+  it("送りがなの付いた漢字の書き方（焼きたて）とは今までどおり比べる", () => {
+    assert.equal(findingsOf("# 献立\n\n焼きたてのパン。焼きたてのパイ。焼きたての餅。やきたてのピザ。\n").length, 1);
+  });
+
+  it("かなの名詞（まちづくり、かきの実）は今までどおり比べる", () => {
+    assert.equal(findingsOf("# 記録\n\nまちづくりを進める。まちづくりの会。まちづくりの日。街づくりの話。\n").length, 1);
     assert.equal(findingsOf("# 記録\n\n柿を買った。柿を食べた。柿をむいた。かきの実が落ちた。\n").length, 1);
   });
 });

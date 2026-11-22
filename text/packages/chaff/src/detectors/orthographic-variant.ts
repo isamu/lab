@@ -15,6 +15,7 @@ import { asNounWhereNominal, documentNounKeys } from "../nominal-stem.ts";
 import { isCompoundHead } from "../compound-head.ts";
 import { voiceAt, voiceStarts } from "../voice-parts.ts";
 import {
+  HIRAGANA_ONLY,
   isCopulaReadAsVerb,
   isCutFromKatakana,
   isNumeral,
@@ -40,6 +41,8 @@ type Placed = KeyedWord &
     readonly offset: number;
     readonly shown?: string;
     readonly compoundHead?: boolean;
+    /** Whether a verb's stem written in kana is read as its noun (つき of つきたて, from つく). */
+    readonly kanaStem?: boolean;
     /** Where a run of words ends (タイヤレバー). */
     readonly end?: number;
     /** Whether a Latin word stands in a name of capitalised words (the Interagency Group) or in a cited work. */
@@ -162,7 +165,8 @@ const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[
       const local = token.span.start - sentence.span.start;
       if (key === undefined || token.lemma === undefined || !isOpen(local, local + token.surface.length)) return [];
       const compoundHead = isCompoundHead(token, tokens, at, skips.phraseSuffixes);
-      return [{ key, spelling: token.lemma, sentence, offset: token.span.start, compoundHead, ...teFormOf(word, tokens, at) }];
+      const kanaStem = written.pos === "VERB" && token.pos === "NOUN" && HIRAGANA_ONLY.test(token.surface);
+      return [{ key, spelling: token.lemma, sentence, offset: token.span.start, compoundHead, kanaStem, ...teFormOf(word, tokens, at) }];
     }),
   ];
 };
@@ -179,6 +183,13 @@ const ONE_KANJI = /^\p{Script=Han}$/u;
 const isOneKanjiElement = (word: Placed, spellings: readonly string[]): boolean =>
   word.compoundHead === true && ONE_KANJI.test(word.spelling) && dropsOkurigana(word.spelling, spellings);
 
+/**
+ * A verb's stem in kana read as its noun (つき of つきたて) meets only a kanji spelling that ends in the same kana, as the
+ * verb's noun does (付き): a kanji noun of the same sound that ends in its kanji (月) is another word.
+ */
+const isStemWithoutItsKanji = (word: Placed, spellings: readonly string[], skeletonOf: (spelling: string) => string): boolean =>
+  word.kanaStem === true && !spellings.some((spelling) => skeletonOf(spelling) !== "" && spelling.endsWith(word.spelling.slice(-1)));
+
 const byKanji = (words: readonly Placed[]): Placed[] =>
   [...groupBy(words, (word) => word.key).values()].flatMap((group) => {
     const spellings = [...new Set(group.map((word) => word.spelling))];
@@ -187,7 +198,7 @@ const byKanji = (words: readonly Placed[]): Placed[] =>
     const apart = spellings.some((spelling) => dropsOkurigana(spelling, spellings)) ? "|compound" : "";
     return group.flatMap((word): Placed[] => {
       const own = skeletonOf(word.spelling);
-      if ((own === "" && skeletons.length > 1) || isOneKanjiElement(word, spellings)) return [];
+      if ((own === "" && (skeletons.length > 1 || isStemWithoutItsKanji(word, spellings, skeletonOf))) || isOneKanjiElement(word, spellings)) return [];
       const use = word.compoundHead === true ? apart : "";
       return [{ ...word, key: `${word.key}|${own === "" ? (skeletons[0] ?? "") : own}${use}` }];
     });
