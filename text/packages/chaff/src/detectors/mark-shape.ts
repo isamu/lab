@@ -14,6 +14,7 @@ import { divisionLabelPattern, isDivisionSeparator } from "./division-label-sepa
 import { isInCopiedText } from "./hyphen-copied-text.ts";
 import { joinsNameSuffix } from "./hyphen-name-suffix.ts";
 import { verseBlockSpans } from "./verse-block.ts";
+import { inlineItemLabelOffsets } from "./inline-item-label.ts";
 
 /** The letters a mark must touch to count as part of the document's text, by language. */
 const SCRIPT: Readonly<Record<string, RegExp>> = {
@@ -144,23 +145,13 @@ const enumeratorIn = (line: string): readonly number[] => {
 };
 
 /**
- * An item's address in the prose: a section's number and its item's bracketed number (上記4(2)で), as the lines number them.
- * Not after a digit, a comma or a point, so a figure and its bracketed figure in a table (1,054(47)) is not one.
+ * The offsets in `source` of each line's label's opening and closing bracket, and of the brackets of an item number set
+ * inside a line: after a sentence on a joined line, continuing a run of items, or in an address (上記4(2)で, 第3条(a)(1)).
  */
-const ITEM_ADDRESS = /(?<![0-9０-９,，.．])[0-9０-９]{1,2}(?:\([0-9０-９]{1,2}\)|（[0-9０-９]{1,2}）)(?=[\p{Script=Han}\p{Script=Hiragana}])/gu;
-
-const addressBrackets = (match: RegExpMatchArray & { index: number }): number[] => {
-  const end = match.index + match[0].length - 1;
-  return [match.index + match[0].search(/[(（]/u), end];
-};
-
-/** The offsets in `source` of each line's label's opening and closing bracket, and of the brackets of an item's address. */
-export const enumeratorBracketOffsets = (source: string): ReadonlySet<number> => {
+export const enumeratorBracketOffsets = (source: string, conjunctions: readonly string[] = []): ReadonlySet<number> => {
   const starts = lineStarts(source);
-  return new Set([
-    ...source.split("\n").flatMap((line, index) => enumeratorIn(line).map((at) => (starts[index] ?? 0) + at)),
-    ...[...source.matchAll(ITEM_ADDRESS)].flatMap(addressBrackets),
-  ]);
+  const heads = source.split("\n").flatMap((line, index) => enumeratorIn(line).map((at) => (starts[index] ?? 0) + at));
+  return new Set([...heads, ...inlineItemLabelOffsets(source, isLineLabel, new Set(heads), conjunctions)]);
 };
 
 /** Appended to a mark's kind for an item number's bracket. A lexicon's group, a word from YAML, never holds a NUL. */
@@ -242,7 +233,10 @@ export const markConsistency: Detector = (doc, options): Finding[] => {
   // A link that quotes an outside page's title keeps that page's marks ((コンテキスト内) in a WCAG title), and a quotation
   // of the document's own heading keeps the heading's.
   const titles = [...externalLinkTitleSpans(doc.source, doc.links), ...ownTitleQuoteSpans(doc.source, doc.markup?.headings ?? [], new Set(forms.keys()))];
-  const enumerators = enumeratorBracketOffsets(doc.source);
+  const enumerators = enumeratorBracketOffsets(
+    doc.source,
+    (doc.lexicons["list-conjunction"] ?? []).map((entry) => entry.pattern),
+  );
   const doubled = doubledParenOffsets(doc.source);
   const notes = noteMarkerOffsets(doc.source);
   const noteAddresses = noteAddressOffsets(doc.source);
