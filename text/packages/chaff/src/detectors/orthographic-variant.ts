@@ -31,6 +31,7 @@ import { withoutQuotedSpellings, type Quoted } from "../quoted-spelling.ts";
 import { teFormOf, withTeFormFullVerbs, type TeForm } from "../te-form-helper.ts";
 import { citedSpans, isOpenIn, namesOf, patternsOf, type IsOpen, type Names } from "./orthographic-variant-open.ts";
 import { headingSentences } from "./heading-sentences.ts";
+import { isOneKanjiElement, isStemWithoutItsKanji } from "./orthographic-variant-kanji-word.ts";
 
 /**
  * A word found in the document: where it is, which sentence it is in, its key and spelling, how it is written when that differs, and
@@ -179,18 +180,6 @@ const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[
  * (取扱事業者 beside 個人情報の取扱い), so where the document writes a word both ways, its compound heads are compared apart. A head of
  * one kanji without its okurigana (曇 of 曇雨天, beside 曇り) is a Sino-Japanese element of the compound and is not compared at all.
  */
-const ONE_KANJI = /^\p{Script=Han}$/u;
-
-const isOneKanjiElement = (word: Placed, spellings: readonly string[]): boolean =>
-  word.compoundHead === true && ONE_KANJI.test(word.spelling) && dropsOkurigana(word.spelling, spellings);
-
-/**
- * A verb's stem in kana read as its noun (つき of つきたて) meets only a kanji spelling that ends in the same kana, as the
- * verb's noun does (付き): a kanji noun of the same sound that ends in its kanji (月) is another word.
- */
-const isStemWithoutItsKanji = (word: Placed, spellings: readonly string[], skeletonOf: (spelling: string) => string): boolean =>
-  word.kanaStem === true && !spellings.some((spelling) => skeletonOf(spelling) !== "" && spelling.endsWith(word.spelling.slice(-1)));
-
 const byKanji = (words: readonly Placed[]): Placed[] =>
   [...groupBy(words, (word) => word.key).values()].flatMap((group) => {
     const spellings = [...new Set(group.map((word) => word.spelling))];
