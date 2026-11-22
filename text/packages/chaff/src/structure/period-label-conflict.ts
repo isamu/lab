@@ -36,8 +36,8 @@ type Unit = {
   readonly start: number;
   readonly text: string;
   readonly headerCell: boolean;
-  /** 文書の期間の名前を探す範囲。表の見出しの升なら行全体（| FY2025 | FY2026 | の FY2025 は比べる相手）。 */
-  readonly context: string;
+  /** 文書の期間の名前を探す範囲。表の見出しの升なら行の升ごと（| FY2025 | FY2026 | の FY2025 は比べる相手）、文なら文そのもの。 */
+  readonly context: readonly string[];
   readonly section: string;
 };
 
@@ -103,9 +103,22 @@ export const refersToCurrent = (label: PeriodLabel, stated: PeriodLabel, unit: P
 
 const isAside = (text: string, words: ReportingWords): boolean => hasWord(text, words.comparisons) || hasWord(text, words.forecasts);
 
+/**
+ * 表の見出しの一つの升が言う文書の期間の名前。年の中の一部（四半期、半期）は、同じ升に文書と違う年があれば別の年の同じ期間
+ * （| Q2 FY2026 | の Q2 は前の年の第2四半期）なので、文書の期間を言わない。年は、四半期が違っても同じ年のまま。
+ */
+const cellNames = (cell: string, stated: readonly PeriodLabel[], words: ReportingWords): PeriodLabel[] => {
+  const labels = labelsIn(cell, words);
+  const otherYear = labels.some((label) => !label.withinYear && conflictingStated(label, stated) !== undefined);
+  return otherYear ? labels.filter((label) => !label.withinYear) : labels;
+};
+
+const namesIn = (unit: Unit, stated: readonly PeriodLabel[], words: ReportingWords): PeriodLabel[] =>
+  unit.context.flatMap((piece) => (unit.headerCell ? cellNames(piece, stated, words) : labelsIn(piece, words)));
+
 const issuesIn = (unit: Unit, stated: readonly PeriodLabel[], words: ReportingWords): PeriodConflict[] => {
   if (isAside(unit.text, words) || isAside(unit.section, words)) return [];
-  const named = labelsIn(unit.context, words);
+  const named = namesIn(unit, stated, words);
   return labelsIn(unit.text, words).flatMap((label) => {
     const statedLabel = conflictingStated(label, stated);
     if (statedLabel === undefined || named.some((other) => sameLabel(other, statedLabel))) return [];
@@ -139,14 +152,16 @@ const headerRows = (lines: readonly Line[]): Line[] =>
 const sectionAt = (headings: readonly Heading[], offset: number): string => headings.findLast((heading) => heading.start < offset)?.text ?? "";
 
 const headerUnits = (lines: readonly Line[], headings: readonly Heading[]): Unit[] =>
-  headerRows(lines).flatMap((row) =>
-    cellsOf(row).map((cell) => ({ start: cell.start, text: cell.text, headerCell: true, context: row.text, section: sectionAt(headings, cell.start) })),
-  );
+  headerRows(lines).flatMap((row) => {
+    const cells = cellsOf(row);
+    const context = cells.map((cell) => cell.text);
+    return cells.map((cell) => ({ start: cell.start, text: cell.text, headerCell: true, context, section: sectionAt(headings, cell.start) }));
+  });
 
 const textUnits = (source: string, spans: readonly Span[], headings: readonly Heading[]): Unit[] =>
   spans.map((span) => {
     const text = source.slice(span.start, span.end);
-    return { start: span.start, text, headerCell: false, context: text, section: sectionAt(headings, span.start) };
+    return { start: span.start, text, headerCell: false, context: [text], section: sectionAt(headings, span.start) };
   });
 
 type Head = { readonly title: string; readonly periodLine: string; readonly end: number };
