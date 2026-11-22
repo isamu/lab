@@ -1,5 +1,8 @@
 # Latin words that, right before a version, say it is the version installed (version-mismatch): "Install version 2.4.0",
 # "release 2.4.0", "install 2.4.0". Any other Latin word there names another program ("Requires Node.js 18.17.0").
+# group copula: a word that gives the version to a subject of these words ("The current release is 2.4.0"); group current:
+# the only words that may stand before that subject (any other, "The Node.js version is", "The previous release is", names
+# another program or release).
 id: version-lead
 language: en
 entries:
@@ -12,3 +15,9 @@ entries:
   - pattern: pin
   - pattern: download
   - pattern: get
+  - { pattern: is, group: copula }
+  - { pattern: the, group: current }
+  - { pattern: current, group: current }
+  - { pattern: latest, group: current }
+  - { pattern: newest, group: current }
+  - { pattern: stable, group: current }

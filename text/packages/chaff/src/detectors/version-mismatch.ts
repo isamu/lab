@@ -10,10 +10,16 @@ import { releasesOf } from "../structure/release-list.ts";
 import { codeFences } from "./code-fences.ts";
 import { quoteAt } from "./structure-tree.ts";
 
+/** The words of lexicon version-lead in one group: ungrouped, the words that lead to the version installed. */
+const leadWords = (doc: ProseDocument, group: string | undefined): string[] =>
+  (doc.lexicons["version-lead"] ?? []).filter((entry) => entry.group === group).map((entry) => entry.pattern);
+
 const leadInFindings = (doc: ProseDocument): Finding[] => {
   const words: VersionWords = {
     ranges: (doc.lexicons["version-range"] ?? []).map((entry): RangeWord => ({ word: entry.pattern, position: entry.position ?? "before" })),
-    versionWords: (doc.lexicons["version-lead"] ?? []).map((entry) => entry.pattern),
+    versionWords: leadWords(doc, undefined),
+    copulas: leadWords(doc, "copula"),
+    currentWords: leadWords(doc, "current"),
   };
   const blocks = codeFences(doc.source).map((fence) => ({ start: fence.start, code: fence.lines.join("\n") }));
   return versionMismatches(doc.source, doc.prose ?? doc.source, blocks, words).map((issue) => ({
