@@ -126,10 +126,23 @@ const endsWithSelfPrefix = (text: string, prefixes: readonly string[]): boolean 
     LATIN_LETTER.test(prefix) ? new RegExp(String.raw`(?<![\p{L}\p{N}])${escapeRegExp(prefix)}\s+$`, "iu").test(text) : endsWithWordPrefix(text, prefix),
   );
 
-/** 定義が文書自身の名前か（この就業規則（以下「規則」）、本規程（以下「規程」）、This Agreement … (this "Agreement")）。 */
+/** 括弧の前の、一つか二つの小文字の語（this document の document、this sales agreement の sales agreement）。 */
+const TRAILING_COMMON_NOUNS = [/(?<![\p{L}\p{N}])\p{Ll}[\p{L}-]*\s*$/u, /(?<![\p{L}\p{N}])\p{Ll}[\p{L}-]*\s+\p{Ll}[\p{L}-]*\s*$/u];
+
+/** 括弧の前が、文書自身を指す頭と普通の名詞か（in this document (the "Terms of Service")）。 */
+const followsSelfNoun = (before: string, prefixes: readonly string[]): boolean => {
+  const latin = prefixes.filter((prefix) => LATIN_LETTER.test(prefix));
+  return TRAILING_COMMON_NOUNS.some((noun) => {
+    const found = noun.exec(before);
+    return found !== null && endsWithSelfPrefix(before.slice(0, found.index), latin);
+  });
+};
+
+/** 定義が文書自身の名前か（この就業規則（以下「規則」）、本規程（以下「規程」）、This Agreement … (this "Agreement")、this document (the "Terms")）。 */
 export const namesItself = (defining: DefiningName, prefixes: readonly string[]): boolean =>
   endsWithSelfPrefix(defining.head, prefixes) ||
   endsWithSelfPrefix(defining.before, prefixes) ||
+  (defining.name === "" && followsSelfNoun(defining.before, prefixes)) ||
   prefixes.some((prefix) => !LATIN_LETTER.test(prefix) && defining.name.startsWith(prefix));
 
 /** 文の at の語の前が、文書自身を指す頭か（この規則、this Agreement）。 */

@@ -33,6 +33,30 @@ describe("bracket-width-consistency on line labels and item addresses", () => {
     assert.deepEqual(findingsOf(notes.replace("注(2)で", "注（2）で")), []);
   });
 
+  it("compares an item number opening a sentence on a joined line, and the next numbers of its run, with the labels", () => {
+    const report =
+      "方針を述べます。(1)経営方針当社は（販売事業）に注力します。(2)目標当社は（製造事業）を伸ばします。(3)戦略当社は（物流事業）を強めます。(4)課題当社は（保守事業）を続けます。\n";
+    assert.deepEqual(findingsOf(report), []);
+    const terms = "概要は次のとおりです。(1)行使期間2025年１月１日から2026年２月28日まで(2)行使価額（当初）から(3)買取価額（時価）（参考）（試算）\n";
+    assert.deepEqual(findingsOf(terms), []);
+  });
+
+  it("still counts an item number of a joined line when the document writes its item numbers two ways", () => {
+    const report =
+      "方針を述べます。(1）経営方針当社は（販売事業）に注力します。(2）目標当社は（製造事業）を伸ばします。(3)戦略当社は（物流事業）を強めます。\n";
+    assert.notDeepEqual(findingsOf(report), []);
+  });
+
+  it("compares an article's clause addresses (第2条(b)(1)および(2)) with the labels", () => {
+    const license = [
+      "-  第2条(b)(1)および(2)において規定される権利（著作権を含む）は対象（例外を除く）です。",
+      "-  第3条(a)(1)(A)(i)に定める者（許諾者）は、第6条(a)の事由（終了）を知らせます。",
+      "-  第3条(a)の条件（表示）は、本第6条(b)の定め（回復）に従います。",
+      "",
+    ].join("\n");
+    assert.deepEqual(findingsOf(license), []);
+  });
+
   it("still counts a bracket after a Latin word, a figure's bracket in a table and a Japanese word at a line's head", () => {
     assert.equal(findingsOf([...PROSE, "OSI(Open Source Initiative)の定義を見てください。", ""].join("\n")).length, 1);
     assert.equal(findingsOf([...PROSE, "所有割合は100.0(100.0)プリンター関連です。", ""].join("\n")).length, 1);

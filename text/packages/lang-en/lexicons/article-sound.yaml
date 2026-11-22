@@ -81,6 +81,7 @@ entries:
   - { pattern: SEP, group: word }
   - { pattern: SIG, group: word }
   - { pattern: NAS, group: word }
+  - { pattern: SAR, group: word }
   - { pattern: SHA, group: either }
   - { pattern: SQL, group: either }
   - { pattern: FAQ, group: either }
