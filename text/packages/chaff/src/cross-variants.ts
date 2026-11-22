@@ -1,6 +1,6 @@
 // One word written one way in some files of a run and another way in the others (サーバ / サーバー, e-mail / email).
 // Pure: the words come in already read from each document, each with the key both spellings share.
-import { tallyVotes, type Vote } from "./cross-votes.ts";
+import { votesOutOfStep, type Vote } from "./cross-votes.ts";
 
 /** One written word: the key both its spellings share, the spelling as written (in a form that compares), and where. */
 export type KeyedWord = { readonly key: string; readonly form: string; readonly offset: number };
@@ -37,19 +37,16 @@ const votesOf = (usages: readonly Usage[]): Vote<string>[] =>
   });
 
 const oddAmong = (usages: readonly Usage[]): OddSpelling[] => {
-  const tally = tallyVotes(votesOf(usages), (left, right) => left === right);
-  const [example] = tally?.usual ?? [];
-  if (tally === undefined || example === undefined) return [];
   const firstIn = new Map(usages.map((usage) => [usage.path, usage.first]));
-  return tally.odd.flatMap((vote) => {
+  return votesOutOfStep(votesOf(usages), (left, right) => left === right).flatMap(({ vote, against }) => {
     const word = firstIn.get(vote.path);
-    return word === undefined ? [] : [{ path: vote.path, word, usual: example.value, files: tally.usual.length, example: example.path }];
+    return word === undefined ? [] : [{ path: vote.path, word, usual: against[0].value, files: against.length, example: against[0].path }];
   });
 };
 
 /**
  * The files that write a word unlike the rest of the run. Each file that writes a word one way votes for that way; a file
  * writing it both ways does not vote. When the votes split, every file outside the usual way is reported once per word,
- * at the first place it writes it.
+ * at the first place it writes it; when two ways share the most files, the files of both.
  */
 export const oddSpellings = (docs: readonly DocumentWords[]): OddSpelling[] => [...usagesByKey(docs).values()].flatMap(oddAmong);

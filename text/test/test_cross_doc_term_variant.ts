@@ -26,8 +26,27 @@ describe("oddSpellings: which files are out of step", () => {
     ]);
   });
 
-  it("on a tie, the way of the first file in the run's order is the usual one", () => {
-    assert.deepEqual(odd([words("a.md", "サーバ"), words("b.md", "サーバー")]), ["b.md@0 サーバー→サーバ (1, a.md)"]);
+  it("on an even split neither way is fewer, and the files of both are reported, each naming the other way", () => {
+    assert.deepEqual(odd([words("a.md", "サーバ"), words("b.md", "サーバー")]), ["a.md@0 サーバ→サーバー (1, b.md)", "b.md@0 サーバー→サーバ (1, a.md)"]);
+    assert.deepEqual(odd([words("b.md", "サーバー"), words("a.md", "サーバ")]), ["b.md@0 サーバー→サーバ (1, a.md)", "a.md@0 サーバ→サーバー (1, b.md)"]);
+  });
+
+  it("two ways tied ahead of a third: every file is reported", () => {
+    assert.deepEqual(
+      odd(
+        [words("a.md", "e-mail"), words("b.md", "email"), words("c.md", "E-Mail"), words("d.md", "email"), words("e.md", "e-mail")].map((doc) => ({
+          ...doc,
+          words: doc.words.map((word) => ({ ...word, key: "mail" })),
+        })),
+      ),
+      [
+        "a.md@0 e-mail→email (2, b.md)",
+        "e.md@0 e-mail→email (2, b.md)",
+        "b.md@0 email→e-mail (2, a.md)",
+        "d.md@0 email→e-mail (2, a.md)",
+        "c.md@0 E-Mail→e-mail (2, a.md)",
+      ],
+    );
   });
 
   it("a file writing the word both ways does not vote, and is not reported", () => {
@@ -105,5 +124,18 @@ describe("cross-doc-term-variant: on the command line", () => {
     const run = await runCli(files, ["a.md", "b.md", "c.md", "--experimental", "--compact"]);
     rmSync(run.dir, { recursive: true, force: true });
     assert.match(run.out, /b\.md[\s\S]*3:1 +info +「サーバ」と書いていますが、一緒に見たほかの 2 ファイルでは「サーバー」です（例：a\.md）/u);
+    assert.equal(run.out.match(/cross-doc-term-variant/gu)?.length, 1);
+  });
+
+  it("on an even split, reports both files", async () => {
+    const files = {
+      "chaff.yaml": "language: ja\ngenre: docs/manual\n",
+      "a.md": "# 手順\n\nサーバーを起動します。\n",
+      "b.md": "# 案内\n\nサーバに接続します。\n",
+    };
+    const run = await runCli(files, ["a.md", "b.md", "--experimental", "--compact"]);
+    rmSync(run.dir, { recursive: true, force: true });
+    assert.match(run.out, /「サーバー」と書いていますが、一緒に見たほかの 1 ファイルでは「サーバ」です（例：b\.md）/u);
+    assert.match(run.out, /「サーバ」と書いていますが、一緒に見たほかの 1 ファイルでは「サーバー」です（例：a\.md）/u);
   });
 });

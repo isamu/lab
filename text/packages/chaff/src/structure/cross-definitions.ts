@@ -1,4 +1,4 @@
-import { tallyVotes, type Vote } from "../cross-votes.ts";
+import { votesOutOfStep, type Vote } from "../cross-votes.ts";
 
 // One term defined in two files of one run, in different words. Pure: the definitions come in already read from each file.
 
@@ -45,16 +45,13 @@ const voteOf = (file: FileDefinitions, term: string): Vote<WrittenDefinition>[] 
 
 const sameWording = (left: WrittenDefinition, right: WrittenDefinition): boolean => definitionKey(left.body) === definitionKey(right.body);
 
-/** The files that define a term in other words than most files of the run that define it. */
+/** The files that define a term in other words than most files of the run that define it; on an even split, every side. */
 export const definitionsOutOfStep = (files: readonly FileDefinitions[]): DefinitionOutOfStep[] => {
   const terms = [...new Set(files.flatMap((file) => file.definitions.map((definition) => definition.term)))];
-  return terms.flatMap((term) => {
-    const tally = tallyVotes(
+  return terms.flatMap((term) =>
+    votesOutOfStep(
       files.flatMap((file) => voteOf(file, term)),
       sameWording,
-    );
-    const [usual] = tally?.usual ?? [];
-    if (tally === undefined || usual === undefined) return [];
-    return tally.odd.map((vote) => ({ path: vote.path, definition: vote.value, usual, files: tally.usual.length }));
-  });
+    ).map(({ vote, against }) => ({ path: vote.path, definition: vote.value, usual: against[0], files: against.length })),
+  );
 };
