@@ -164,6 +164,12 @@ const opensAsNoun = (scope: ItemScope, item: TokenRange): boolean => {
   return opening !== undefined && (opening.pos === "DET" || NOMINAL.has(opening.pos));
 };
 
+/** 導入の句の頭（前置詞・接続詞・副詞・to・分詞）で始まる項目。 */
+const opensAsLead = (scope: ItemScope, item: TokenRange): boolean => {
+  const opening = openingOf(scope, item);
+  return opening !== undefined && (LEAD_POS.has(opening.pos) || isParticiple(opening));
+};
+
 /** 項目が読点で閉じず、節の終わり（文の終わりか ; : —）まで続く。 */
 const runsToClauseEnd = (scope: ItemScope, item: TokenRange): boolean => scope.sentence.tokens[item.end]?.surface !== ",";
 
@@ -171,11 +177,13 @@ const runsToClauseEnd = (scope: ItemScope, item: TokenRange): boolean => scope.s
  * 名前のすぐ後ろの、関係詞（who / which）で始まる項目は、読点で挟んで名前に添えた節（Tom, who repaired radios for forty years
  * before he retired, gently opened the back and quickly found a loose wire）。名前も節も並びの項目ではなく、並びがあるなら節の後ろから
  * （Alice, who leads design, Bob, Carol, and Dan は Bob からの 3 つ）。関係詞の語は語彙表 aside-relative が言う。
+ * 導入の句（To create a list in the editor, which uses no fixed font, you can look … and count）に添えた節も同じ。
+ * 動詞で始まる項目（Review the docs, which are long, fix typos, and ship）は述語の並びの項目なので残す。
  */
 const afterRelativeAside = (view: View): View => {
   const { scope } = view.list;
   const [name, aside] = [firstOf(view), secondOf(view)];
-  if (name === undefined || aside === undefined || !opensAsNoun(scope, name.item)) return view;
+  if (name === undefined || aside === undefined || !(opensAsNoun(scope, name.item) || opensAsLead(scope, name.item))) return view;
   const opening = openingOf(scope, aside.item)?.surface.toLowerCase() ?? "";
   return scope.sentence.words.asideRelative?.has(opening) === true ? after(view, aside) : view;
 };

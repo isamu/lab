@@ -120,6 +120,13 @@ describe("oxford-comma-consistency: what is not a list", () => {
     assert.equal(reportedWith("We hired Alice, who leads design, Bob, Carol and Dan."), true);
     assert.equal(reportedWithout("Alice, who leads design, Bob, Carol, and Dan joined the team."), true);
   });
+
+  it("does not count a relative clause set off by commas after an opening phrase, and reads a list after it", () => {
+    const editor =
+      "To create a nested list in the comment editor on the site, which doesn't use a monospaced font, you can look at the list item immediately above the nested list and count the number of characters that appear before the content of the item.";
+    assert.equal(reportedWith(editor), false);
+    assert.equal(reportedWith("To bake bread, which takes time, buy flour, yeast and salt."), true);
+  });
 });
 
 describe("excerptSpans", () => {
