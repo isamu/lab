@@ -380,14 +380,35 @@ describe("use-before-definition: contents, captions and longer names", () => {
 
   it("valid: the document naming itself, and a use that gives the long name in brackets", () => {
     assert.deepEqual(early('Read this Agreement first. Harbour Ltd and Hill Ltd sign this sales agreement (this "Agreement").\n'), []);
+    // github-terms-of-service の形。文書を this document と書き、括弧の中は the。
+    assert.deepEqual(early('Please read this Terms of Service agreement. The rules are set out in this document (the "Terms of Service").\n'), []);
     assert.deepEqual(early("この規則は、会社と社員の約束である。\n\n第1条　この就業規則（以下「規則」という。）は、社員の働き方を定める。\n", ja), []);
     const law = "港の利用に関する法律（令和6年法律第1号。以下「みなと法」という。）を守る。\n";
     assert.deepEqual(early(`# 心得\n\nみなと法（港の利用に関する法律）を毎朝よく読む。\n\n${law}`, ja), []);
   });
 
+  it("valid: a word in a GitHub alert, the publisher's note beside the text", () => {
+    // github-educational-use-agreement の形。掲載元の注記が、当事者の条より上にある。
+    const parties = 'This agreement is between you and Harbour, Inc. ("Harbour").\n';
+    assert.deepEqual(early(`> [!NOTE]\n> This agreement belongs to the Harbour School Program.\n\n## Agreement\n\n${parties}`), []);
+  });
+
+  it("invalid: the same use outside the alert", () => {
+    const parties = 'This agreement is between you and Harbour, Inc. ("Harbour").\n';
+    assert.deepEqual(early(`This agreement belongs to the Harbour School Program.\n\n## Agreement\n\n${parties}`), [
+      '"Harbour" is used here, before it is defined on line 5',
+    ]);
+  });
+
   it("invalid: the same words without the self-reference or the gloss", () => {
     assert.deepEqual(early('The Agreement binds both. Harbour Ltd and Hill Ltd sign this sales agreement (this "Agreement").\n'), [
       '"Agreement" is used here, before it is defined on line 1',
+    ]);
+    assert.deepEqual(early('Please read the Terms of Service. The rules are set out in this document (the "Terms of Service").\n'), [
+      '"Terms of Service" is used here, before it is defined on line 1',
+    ]);
+    assert.deepEqual(early('Please read this Fee table. In this case the buyer pays the fee (the "Fee").\n'), [
+      '"Fee" is used here, before it is defined on line 1',
     ]);
     assert.deepEqual(early("規則は、会社と社員の約束である。\n\n第1条　この就業規則（以下「規則」という。）は、社員の働き方を定める。\n", ja), [
       "「規則」を、3 行目の定義より前で使っています",
