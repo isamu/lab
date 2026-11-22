@@ -12,7 +12,7 @@ import { withoutCoinedNames } from "../coined-hyphen-name.ts";
 import { wholeWordRuns, type WholeWordRun } from "../whole-word-runs.ts";
 import { entriesForGenre } from "../lexicon-genres.ts";
 import { asNounWhereNominal, documentNounKeys } from "../nominal-stem.ts";
-import { isCompoundHead } from "../compound-head.ts";
+import { compoundTailOf } from "../compound-head.ts";
 import { voiceAt, voiceStarts } from "../voice-parts.ts";
 import {
   HIRAGANA_ONLY,
@@ -31,7 +31,8 @@ import { withoutQuotedSpellings, type Quoted } from "../quoted-spelling.ts";
 import { teFormOf, withTeFormFullVerbs, type TeForm } from "../te-form-helper.ts";
 import { citedSpans, isOpenIn, namesOf, patternsOf, type IsOpen, type Names } from "./orthographic-variant-open.ts";
 import { headingSentences } from "./heading-sentences.ts";
-import { isOneKanjiElement, isStemWithoutItsKanji } from "./orthographic-variant-kanji-word.ts";
+import { isHashtag, withoutInlineCode, withoutLinkChrome } from "./orthographic-variant-text.ts";
+import { isOneKanjiElement, isSetCompoundBesideGeneralRules, isStemWithoutItsKanji } from "./orthographic-variant-kanji-word.ts";
 
 /**
  * A word found in the document: where it is, which sentence it is in, its key and spelling, how it is written when that differs, and
@@ -43,6 +44,8 @@ type Placed = KeyedWord &
     readonly offset: number;
     readonly shown?: string;
     readonly compoundHead?: boolean;
+    /** The noun a compound head is written onto, by its reading (締切 of 申込締切). */
+    readonly compoundTail?: string;
     /** Whether a verb's stem written in kana is read as its noun (つき of つきたて, from つく). */
     readonly kanaStem?: boolean;
     /** Where a run of words ends (タイヤレバー). */
@@ -166,9 +169,10 @@ const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[
       const key = readingKeyOf(word, skips);
       const local = token.span.start - sentence.span.start;
       if (key === undefined || token.lemma === undefined || !isOpen(local, local + token.surface.length)) return [];
-      const compoundHead = isCompoundHead(token, tokens, at, skips.phraseSuffixes);
+      const tail = compoundTailOf(token, tokens, at, skips.phraseSuffixes);
+      const compound = tail === undefined ? { compoundHead: false } : { compoundHead: true, compoundTail: tail.reading ?? tail.surface };
       const kanaStem = written.pos === "VERB" && token.pos === "NOUN" && HIRAGANA_ONLY.test(token.surface);
-      return [{ key, spelling: token.lemma, sentence, offset: token.span.start, compoundHead, kanaStem, ...teFormOf(word, tokens, at) }];
+      return [{ key, spelling: token.lemma, sentence, offset: token.span.start, ...compound, kanaStem, ...teFormOf(word, tokens, at) }];
     }),
   ];
 };
@@ -189,6 +193,7 @@ const byKanji = (words: readonly Placed[]): Placed[] =>
     return group.flatMap((word): Placed[] => {
       const own = skeletonOf(word.spelling);
       if ((own === "" && (skeletons.length > 1 || isStemWithoutItsKanji(word, spellings, skeletonOf))) || isOneKanjiElement(word, spellings)) return [];
+      if (isSetCompoundBesideGeneralRules(word, group)) return [];
       const use = word.compoundHead === true ? apart : "";
       return [{ ...word, key: `${word.key}|${own === "" ? (skeletons[0] ?? "") : own}${use}` }];
     });
@@ -240,12 +245,6 @@ const katakanaRunWords = (sentence: Sentence, isOpen: IsOpen): Placed[] =>
 
 /** Whether a run holds a place another key already points at: the word inside it is said, not the run around it. */
 const coversOffset = (run: Placed, offset: number): boolean => offset >= run.offset && offset < (run.end ?? run.offset + 1);
-
-const HASHTAG_MARK = "#";
-const WORD_CHARACTER = /[\p{L}\p{N}_]/u;
-
-/** A word written as a hashtag (#vimconf): spelled as the service matches it, like an address. */
-const isHashtag = (text: string, start: number): boolean => text.charAt(start - 1) === HASHTAG_MARK && !WORD_CHARACTER.test(text.charAt(start - 2));
 
 const LATIN_WORD = /[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*/gu;
 const LOWER = /\p{Ll}/u;
@@ -318,11 +317,6 @@ type Place = {
 /** What the words of a document are read with besides the lexicons of uses: the dictionary, and the small words inside a name (of). */
 type Reading = { readonly isWord: (word: string) => boolean; readonly nameJoiners: readonly string[] };
 
-/** A link's brackets and where it goes (`[`, `](#contentType)`, `][ref]`). The prose hides them outside tables; a cell keeps the Markdown as written. */
-const LINK_CHROME = /\]\([^)]*\)|\]\[[^\]]*\]|\[/gu;
-
-const withoutLinkChrome = (text: string): string => text.replaceAll(LINK_CHROME, (chrome) => " ".repeat(chrome.length));
-
 /** A body cell of a table read as a sentence of its own: the prose covers tables, so a cell's words (片栗粉 in a list of ingredients) are not in the sentences. Header rows stay out. */
 const cellPlace = (cell: TableCell, names: Names): Place => {
   const text = withoutLinkChrome(cell.text);
@@ -345,14 +339,6 @@ const textPlace = (written: Sentence, names: Names, heading: boolean): Place => 
   const sentence = heading ? withoutInlineCode(written) : written;
   return { sentence, isOpen: isOpenIn(sentence, names), readsLatin: true, readsJapanese: !heading, cited: citedSpans(sentence, names) };
 };
-
-const INLINE_CODE = /`[^`]*`/gu;
-
-/** A heading with its code blanked out (`kubectl create configmap`): the body's prose masks code, a heading's text keeps it. */
-const withoutInlineCode = (sentence: Sentence): Sentence => ({
-  ...sentence,
-  text: sentence.text.replaceAll(INLINE_CODE, (code) => " ".repeat(code.length)),
-});
 
 /** The odd spellings among places that speak in one voice. */
 const findingsIn = (placed: readonly Place[], skips: Skips, { isWord, nameJoiners }: Reading, limit: number): Finding[] => {

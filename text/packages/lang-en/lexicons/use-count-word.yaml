@@ -12,14 +12,40 @@ entries:
   - { pattern: "each day", group: period, weight: 24, position: after }
   - { pattern: "every day", group: period, weight: 24, position: after }
   - { pattern: "daily", group: period, weight: 24, position: after }
+  - { pattern: "in a day", group: period, weight: 24, position: after }
+  - { pattern: "in one day", group: period, weight: 24, position: after }
+  - { pattern: "in any one day", group: period, weight: 24, position: after }
+  - { pattern: "in any day", group: period, weight: 24, position: after }
+  - { pattern: "in a single day", group: period, weight: 24, position: after }
+  - { pattern: "within a day", group: period, weight: 24, position: after }
+  - { pattern: "within one day", group: period, weight: 24, position: after }
   - { pattern: "in 24 hours", group: period, weight: 24, position: after }
   - { pattern: "in any 24 hours", group: period, weight: 24, position: after }
   - { pattern: "per 24 hours", group: period, weight: 24, position: after }
   - { pattern: "in a 24-hour period", group: period, weight: 24, position: after }
   - { pattern: "in any 24-hour period", group: period, weight: 24, position: after }
+  - { pattern: "within 24 hours", group: period, weight: 24, position: after }
+  - { pattern: "within any 24 hours", group: period, weight: 24, position: after }
+  - { pattern: "over 24 hours", group: period, weight: 24, position: after }
+  - { pattern: "in a 24 hour period", group: period, weight: 24, position: after }
+  - { pattern: "in any 24 hour period", group: period, weight: 24, position: after }
+  - { pattern: "per 24-hour period", group: period, weight: 24, position: after }
+  - { pattern: "per 24 hour period", group: period, weight: 24, position: after }
+  - { pattern: "in each 24-hour period", group: period, weight: 24, position: after }
+  - { pattern: "in one 24-hour period", group: period, weight: 24, position: after }
+  - { pattern: "within a 24-hour period", group: period, weight: 24, position: after }
+  - { pattern: "within any 24-hour period", group: period, weight: 24, position: after }
+  - { pattern: "over a 24-hour period", group: period, weight: 24, position: after }
+  - { pattern: "over any 24-hour period", group: period, weight: 24, position: after }
   - { pattern: "a week", group: period, weight: 168, position: after }
   - { pattern: "per week", group: period, weight: 168, position: after }
   - { pattern: "weekly", group: period, weight: 168, position: after }
+  - { pattern: "in a week", group: period, weight: 168, position: after }
+  - { pattern: "in one week", group: period, weight: 168, position: after }
+  - { pattern: "in any one week", group: period, weight: 168, position: after }
+  - { pattern: "each week", group: period, weight: 168, position: after }
+  - { pattern: "every week", group: period, weight: 168, position: after }
+  - { pattern: "in any 7-day period", group: period, weight: 168, position: after }
   - { pattern: "times", group: counter }
   - { pattern: "doses", group: counter }
   - { pattern: "uses", group: counter }

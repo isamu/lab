@@ -58,7 +58,7 @@ faq.md   docs/faq · English   genre from --genre
   ⚠  One item given different values in different files
 
      "Joining fee" is £25 here, but £20 in 2 other files checked with it (as in join-online.md)
-     A manual or a bundle of documents repeats the same items, such as a fee, a version, a deadline or a contact address, on page after page. When a value changes and one page is missed, the pages disagree and the reader cannot tell which to trust. Across the files given together, values written as "Item: value" or "The item is value", and table cells, are read; a file that gives the same item name (case and width aside) a different value in the same unit is pointed out. Email addresses and versions of three parts or more (2.4.1, v3) are read as values too. chaff does not decide which is right; it points at the value fewer files give.
+     A manual or a bundle of documents repeats the same items, such as a fee, a version, a deadline or a contact address, on page after page. When a value changes and one page is missed, the pages disagree and the reader cannot tell which to trust. Across the files given together, values written as "Item: value" or "The item is value", and table cells, are read; a file that gives the same item name (case and width aside) a different value in the same unit is pointed out. Email addresses and versions of three parts or more (2.4.1, v3) are read as values too. chaff does not decide which is right; it points at the value fewer files give. When as many files give one value as the other, neither is fewer, and the files of both values are pointed out.
 
      → Check which value is right and correct the other. If they are values of different things (another plan, another release), say so in the item name ("Pro plan monthly fee").
 
@@ -123,7 +123,7 @@ $ npx chaffjs explain cross-doc-fact-conflict --genre docs/faq
 
   One item given different values in different files   (cross-doc-fact-conflict)
 
-  A manual or a bundle of documents repeats the same items, such as a fee, a version, a deadline or a contact address, on page after page. When a value changes and one page is missed, the pages disagree and the reader cannot tell which to trust. Across the files given together, values written as "Item: value" or "The item is value", and table cells, are read; a file that gives the same item name (case and width aside) a different value in the same unit is pointed out. Email addresses and versions of three parts or more (2.4.1, v3) are read as values too. chaff does not decide which is right; it points at the value fewer files give.
+  A manual or a bundle of documents repeats the same items, such as a fee, a version, a deadline or a contact address, on page after page. When a value changes and one page is missed, the pages disagree and the reader cannot tell which to trust. Across the files given together, values written as "Item: value" or "The item is value", and table cells, are read; a file that gives the same item name (case and width aside) a different value in the same unit is pointed out. Email addresses and versions of three parts or more (2.4.1, v3) are read as values too. chaff does not decide which is right; it points at the value fewer files give. When as many files give one value as the other, neither is fewer, and the files of both values are pointed out.
 
   How to fix: Check which value is right and correct the other. If they are values of different things (another plan, another release), say so in the item name ("Pro plan monthly fee").
 

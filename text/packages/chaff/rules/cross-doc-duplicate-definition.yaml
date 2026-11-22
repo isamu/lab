@@ -13,8 +13,8 @@ name:
   en: One term defined differently in different files
 
 why:
-  ja: 契約書の束や説明書では、同じ語をいくつものファイルで定義することがあります（本契約と別紙、用語集と各ページ）。後から一方だけを直すと、ファイルによって定義が食い違い、どちらの意味で読めばよいか分からなくなります。一度に渡したファイルどうしで、同じ語の定義（「『X』とは、…をいう」"X" means …）の、語の後ろの言葉を比べ、多くのファイルと違う言葉で定義したファイルを指します。全角半角、空白、両端の句読点の違いは問いません。言葉が違っても意味が同じかは機械では決まらないので、確かめる場所を示すだけです。
-  en: 'A bundle of contracts or a manual often defines the same term in several files (the agreement and its schedule, the glossary and the pages). When one is changed later and the other is not, the files disagree on what the term means. Across the files given together, the words after the term in each definition ("X" means …, 「X」とは、…をいう) are compared, and a file that defines the term in other words than most files do is pointed out. Width, spaces and the punctuation at either end do not count. Whether two wordings mean the same is not something a machine can decide, so chaff only shows where to look.'
+  ja: 契約書の束や説明書では、同じ語をいくつものファイルで定義することがあります（本契約と別紙、用語集と各ページ）。後から一方だけを直すと、ファイルによって定義が食い違い、どちらの意味で読めばよいか分からなくなります。一度に渡したファイルどうしで、同じ語の定義（「『X』とは、…をいう」"X" means …）の、語の後ろの言葉を比べ、多くのファイルと違う言葉で定義したファイルを指します。いちばん多くのファイルが使う言葉が二つ以上あって少ないほうが決まらないときは、どの言葉で定義したファイルも指します。全角半角、空白、両端の句読点の違いは問いません。言葉が違っても意味が同じかは機械では決まらないので、確かめる場所を示すだけです。
+  en: 'A bundle of contracts or a manual often defines the same term in several files (the agreement and its schedule, the glossary and the pages). When one is changed later and the other is not, the files disagree on what the term means. Across the files given together, the words after the term in each definition ("X" means …, 「X」とは、…をいう) are compared, and a file that defines the term in other words than most files do is pointed out. When two wordings share the most files, neither is fewer, and the files of every wording are pointed out. Width, spaces and the punctuation at either end do not count. Whether two wordings mean the same is not something a machine can decide, so chaff only shows where to look.'
 
 message:
   ja: 「{term}」を、一緒に見たほかの {count} ファイルと違う言葉で定義しています（例：{example}）

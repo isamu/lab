@@ -34,7 +34,7 @@ standard-plan.md   docs/manual · English   genre from --genre
 
 ─── line 10 ──────────────────────────────────────────────────
 
-    | $32 | | Annually (12 monthly payments)
+    | Annually (12 monthly payments)
 
   ⚠  An amount that is not the stated number of payments
 

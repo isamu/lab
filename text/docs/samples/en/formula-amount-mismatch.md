@@ -34,7 +34,7 @@ settlement-statement.md   business/report · English   genre from --genre
 
 ─── line 8 ───────────────────────────────────────────────────
 
-    f the sale price) | $15,600.00 | | Title
+    f the sale price) | $15,600.00 |
 
   ⚠  An amount that is not what its label's formula gives
 
