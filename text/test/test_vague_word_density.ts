@@ -62,6 +62,26 @@ describe("vague-word-density: あいまいな語が文書の長さに対して�
     assert.equal(findingsOf(`${asProse}${body}`).length, 3);
   });
 
+  it("a fixed wording (keep data for as long as necessary, the most appropriate template) counts but is not reported", () => {
+    const vague = "Report incidents as needed and notify the appropriate people in a timely manner. Keep adequate records where possible.";
+    const fixed = `${PLAIN_EN.repeat(13)}${vague} Keep data for as long as necessary. Use the most appropriate issue template.\n`;
+    const findings = findingsOf(fixed, en, "docs/manual");
+    assert.equal(findings.length, 2, findings.join("\n"));
+    // The same words outside the fixed wording, in sentences of the same length: reported, and the density is the same.
+    const loose = `${PLAIN_EN.repeat(13)}${vague} Keep records and delete them as necessary. Use the appropriate issue template now.\n`;
+    const looseFindings = findingsOf(loose, en, "docs/manual");
+    assert.equal(looseFindings.length, 4);
+    const densityOf = (finding: string): string => finding.replace(/^.*: /u, "");
+    assert.equal(densityOf(findings[0] ?? ""), densityOf(looseFindings[0] ?? ""));
+  });
+
+  it("a document whose vague words are all fixed wordings reports nothing, and a sentence with another vague word is still reported", () => {
+    const fixedOnly = `${PLAIN_EN.repeat(13)}Keep data for as long as necessary. Use the most appropriate issue template.\n`;
+    assert.deepEqual(findingsOf(fixedOnly, en, "docs/manual"), []);
+    const mixed = `${PLAIN_EN.repeat(13)}Report as needed, notify the appropriate people, keep adequate records, and keep data for as long as necessary.\n`;
+    assert.equal(findingsOf(mixed, en, "docs/manual").length, 1);
+  });
+
   it("reasonable accommodation is the name of a legal duty in any genre, and a bare reasonable is still counted", () => {
     const vague = "Report incidents as needed and notify the appropriate people in a timely manner. Keep adequate records where possible.";
     const named = `${PLAIN_EN.repeat(13)}${vague} Requests for reasonable accommodation go to the disability office.\n`;
