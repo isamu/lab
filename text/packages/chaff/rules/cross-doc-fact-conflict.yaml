@@ -12,8 +12,8 @@ name:
   en: One item given different values in different files
 
 why:
-  ja: 説明書や文書の束では、料金・版・締切・問い合わせ先のような同じ項目を、いくつものページに書きます。値を直したときに一つのページだけ直し忘れると、ページによって値が食い違い、読み手はどれを信じればよいか分かりません。一度に渡したファイルどうしで、「項目：値」「項目は値です」と書いた所と表の升を読み、同じ項目名（全角半角、大文字小文字は揃えて比べます）に、同じ単位で違う値を書いたファイルを指します。メールアドレスと、三つ以上に区切った版（2.4.1、v3）も値として読みます。どちらが正しいかは決めず、その値を書いたファイルの少ないほうを指します。
-  en: 'A manual or a bundle of documents repeats the same items, such as a fee, a version, a deadline or a contact address, on page after page. When a value changes and one page is missed, the pages disagree and the reader cannot tell which to trust. Across the files given together, values written as "Item: value" or "The item is value", and table cells, are read; a file that gives the same item name (case and width aside) a different value in the same unit is pointed out. Email addresses and versions of three parts or more (2.4.1, v3) are read as values too. chaff does not decide which is right; it points at the value fewer files give.'
+  ja: 説明書や文書の束では、料金・版・締切・問い合わせ先のような同じ項目を、いくつものページに書きます。値を直したときに一つのページだけ直し忘れると、ページによって値が食い違い、読み手はどれを信じればよいか分かりません。一度に渡したファイルどうしで、「項目：値」「項目は値です」と書いた所と表の升を読み、同じ項目名（全角半角、大文字小文字は揃えて比べます）に、同じ単位で違う値を書いたファイルを指します。メールアドレスと、三つ以上に区切った版（2.4.1、v3）も値として読みます。どちらが正しいかは決めず、その値を書いたファイルの少ないほうを指します。二つの値を書いたファイルの数が同じなら、少ないほうが無いので両方のファイルを指します。
+  en: 'A manual or a bundle of documents repeats the same items, such as a fee, a version, a deadline or a contact address, on page after page. When a value changes and one page is missed, the pages disagree and the reader cannot tell which to trust. Across the files given together, values written as "Item: value" or "The item is value", and table cells, are read; a file that gives the same item name (case and width aside) a different value in the same unit is pointed out. Email addresses and versions of three parts or more (2.4.1, v3) are read as values too. chaff does not decide which is right; it points at the value fewer files give. When as many files give one value as the other, neither is fewer, and the files of both values are pointed out.'
 
 message:
   ja: 「{label}」が {value} と書かれていますが、一緒に見たほかの {count} ファイルでは {other} です（例：{example}）
