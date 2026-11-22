@@ -43,6 +43,10 @@ describe("weasel-word: 言われた場面や言った人を名指す引用", () 
   it("科学の解説が分野の今の見方を言う scientists believe は指さない", () => {
     assert.deepEqual(findingsOf("Scientists believe most of the water is frozen.", en), []);
     assert.equal(findingsOf("Experts believe most of the water is frozen.", en).length, 1);
+    // An unnamed share of scientists is still a weasel.
+    assert.equal(findingsOf("Some scientists believe most of the water is frozen.", en).length, 1);
+    assert.equal(findingsOf("Many scientists believe most of the water is frozen.", en).length, 1);
+    assert.equal(findingsOf("A few scientists believe most of the water is frozen.", en).length, 1);
   });
 
   it("quotationStart: 末尾で閉じる引用の始まり", () => {
