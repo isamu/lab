@@ -255,6 +255,12 @@ describe("agreement-slip — 英語", () => {
     assert.deepEqual(findingsOf("Send a reminders to everyone, not a notes."), ["1:6 a reminders", "1:35 a notes"]);
   });
 
+  it("valid: 数を比べる fewer の後ろの複数（a third fewer requests）。more は比べる語にもなるので数える", () => {
+    assert.deepEqual(findingsOf("Managers will have about a third fewer requests to approve each month."), []);
+    assert.deepEqual(findingsOf("We expect a few fewer visitors."), []);
+    assert.deepEqual(findingsOf("She wrote a more detailed reports for the board."), ["1:11 a more detailed reports"]);
+  });
+
   it("valid: 前置詞の後ろの所有の語と名詞の will（at its will）", () => {
     // Dartmouth College v. Woodward (1819), public domain.
     const opinion =

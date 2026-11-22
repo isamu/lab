@@ -43,7 +43,7 @@ const holdsWord = (inner: string, words: Lexicon): boolean =>
   });
 
 /** A bracket a closing word ends: two to four words, each opening with a capital ([Candidate Name], [Start Date]). */
-const TITLED_BLANK = /^(?:\p{Lu}[\p{L}'’-]*\s+){1,3}\p{Lu}[\p{L}]*$/u;
+const TITLED_BLANK = /^(?:\p{Lu}[\p{L}'’-]*\s+){1,3}\p{Lu}\p{L}*$/u;
 
 const rawInnerOf = (match: RegExpExecArray): string => (match[1] ?? match[2] ?? match[3] ?? "").trim();
 

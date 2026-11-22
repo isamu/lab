@@ -1,8 +1,9 @@
 # Adjectives with which a singular determiner counts several things: "a few days", "a great many people",
-# "an extra several hours".
+# "an extra several hours", "a third fewer requests". Not "more": "a more detailed reports" is a slip.
 id: count-adjective
 language: en
 entries:
   - pattern: few
   - pattern: many
   - pattern: several
+  - pattern: fewer
