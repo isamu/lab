@@ -78,25 +78,22 @@ describe("preamble-length と文でない段落", () => {
   });
 
   it("日本語: 注を除いても文の段落が上限を超えれば指摘する", () => {
-    const source =
-      "# 表題\n\n前置き一です※1。\n\n前置き二です。\n\n前置き三です。\n\n前置き四です。\n\n前置き五です。\n\n※1 注です。\n\n## 本題\n\n中身です。\n";
-    assert.equal(findingsFor(source, ja)[0]?.values["count"], 5);
+    const source = "# 表題\n\n前置き一です※1。\n\n前置き二です。\n\n前置き三です。\n\n※1 注です。\n\n## 本題\n\n中身です。\n";
+    assert.equal(findingsFor(source, ja)[0]?.values["count"], 3);
   });
 
   it("日本語: 札を除いても文の段落が上限を超えれば指摘し、数と位置は最初の文の段落から", () => {
-    const source = "# 表題\n\n暮らし・手続\n\n前置き一。\n\n前置き二。\n\n前置き三。\n\n前置き四。\n\n前置き五。\n\n## 本題\n\n中身です。\n";
+    const source = "# 表題\n\n暮らし・手続\n\n前置き一。\n\n前置き二。\n\n前置き三。\n\n## 本題\n\n中身です。\n";
     const [finding] = findingsFor(source, ja);
-    assert.equal(finding?.values["count"], 5);
+    assert.equal(finding?.values["count"], 3);
     assert.equal(finding?.values["offset"], source.indexOf("前置き一"));
   });
 
   it("終止符の後ろに脚注の印が付いた文も閉じた文として数える", () => {
-    const ja5 =
-      "# 表題\n\n前置き一です。※1\n\n前置き二です。[^2]\n\n前置き三です。<sup>3</sup>\n\n前置き四です。\n\n前置き五です。\n\n## 本題\n\n中身です。\n\n[^2]: 注。\n";
-    assert.equal(findingsFor(ja5, ja)[0]?.values["count"], 5);
-    const en5 =
-      "# Title\n\nFirst paragraph.[^1]\n\nSecond paragraph.[^2]\n\nThird paragraph.[^3]\n\nFourth paragraph.\n\nFifth paragraph.\n\n## Body\n\nText.\n\n[^1]: A.\n[^2]: B.\n[^3]: C.\n";
-    assert.equal(findingsFor(en5, en)[0]?.values["count"], 5);
+    const ja3 = "# 表題\n\n前置き一です。※1\n\n前置き二です。[^2]\n\n前置き三です。<sup>3</sup>\n\n## 本題\n\n中身です。\n\n[^2]: 注。\n";
+    assert.equal(findingsFor(ja3, ja)[0]?.values["count"], 3);
+    const en3 = "# Title\n\nFirst paragraph.[^1]\n\nSecond paragraph.[^2]\n\nThird paragraph.[^3]\n\n## Body\n\nText.\n\n[^1]: A.\n[^2]: B.\n[^3]: C.\n";
+    assert.equal(findingsFor(en3, en)[0]?.values["count"], 3);
   });
 
   it("English: a report's front matter of names, affiliations and labels is not preamble", () => {
@@ -114,50 +111,36 @@ describe("preamble-length と文でない段落", () => {
     assert.deepEqual(findingsFor(source, en), []);
   });
 
-  it("English: a template directive and a link to the next page are not preamble; five sentences are", () => {
+  it("English: a template directive and a link to the next page are not preamble; three sentences are", () => {
     const directive = '{% include "steps.html" current=3 %}\n\n[Next to Reimbursement >](next.html)\n\n';
     assert.deepEqual(findingsFor(`${directive}Now for the fun part.\n\n### Pack light\n\nBody.\n`, en), []);
-    const [finding] = findingsFor(`${directive}First.\n\nSecond.\n\nThird.\n\nFourth.\n\nFifth.\n\n### Pack light\n\nBody.\n`, en);
-    assert.equal(finding?.values["count"], 5);
+    const [finding] = findingsFor(`${directive}First.\n\nSecond.\n\nThird.\n\n### Pack light\n\nBody.\n`, en);
+    assert.equal(finding?.values["count"], 3);
   });
 
   it("English: address fields closed by Inc. are not preamble; a field whose value is a sentence is", () => {
     const fields =
       "# Quotation\n\nQuote number: Q-1\n\nTo: Minato Manufacturing Inc.\n\nFrom: Aoba Systems Inc.\n\nWe are pleased to quote as follows.\n\n## Amount\n\nText.\n";
     assert.deepEqual(findingsFor(fields, en), []);
-    const notes =
-      "# Guide\n\nNote: This guide covers the setup.\n\nWarning: The steps delete old files.\n\nRead them first.\n\nFourth.\n\nFifth.\n\n## Setup\n\nText.\n";
-    assert.equal(findingsFor(notes, en)[0]?.values["count"], 5);
-    const summary = "# Report\n\nSummary: Sales up 5%.\n\nSecond.\n\nThird.\n\nFourth.\n\nFifth.\n\n## Body\n\nText.\n";
-    assert.equal(findingsFor(summary, en)[0]?.values["count"], 5);
+    const notes = "# Guide\n\nNote: This guide covers the setup.\n\nWarning: The steps delete old files.\n\nRead them first.\n\n## Setup\n\nText.\n";
+    assert.equal(findingsFor(notes, en)[0]?.values["count"], 3);
+    const summary = "# Report\n\nSummary: Sales up 5%.\n\nSecond.\n\nThird.\n\n## Body\n\nText.\n";
+    assert.equal(findingsFor(summary, en)[0]?.values["count"], 3);
   });
 
   it("日本語: 体言止めの結論の欄は前置きに数える", () => {
-    const source = "# 表題\n\n結論：売上前年比5%増。\n\n二つ目です。\n\n三つ目です。\n\n四つ目です。\n\n五つ目です。\n\n## 本題\n\n中身です。\n";
-    assert.equal(findingsFor(source, ja)[0]?.values["count"], 5);
+    const source = "# 表題\n\n結論：売上前年比5%増。\n\n二つ目です。\n\n三つ目です。\n\n## 本題\n\n中身です。\n";
+    assert.equal(findingsFor(source, ja)[0]?.values["count"], 3);
   });
   it("a letter or an email is not measured: its body comes before any heading, which only marks a reply block", () => {
     const letter =
-      "Welcome to the team, Sam!\n\nWe are glad to offer you the job.\n\nYour salary is set out below.\n\nYou start on Monday.\n\nBring your ID.\n\n## Acceptance\n\nI accept this offer.\n";
+      "Welcome to the team, Sam!\n\nWe are glad to offer you the job.\n\nYour salary is set out below.\n\nYou start on Monday.\n\n## Acceptance\n\nI accept this offer.\n";
     assert.deepEqual(findingsFor(letter, en, "business/email"), []);
-    assert.equal(findingsFor(letter, en, "business/report")[0]?.values["count"], 5);
+    assert.equal(findingsFor(letter, en, "business/report")[0]?.values["count"], 4);
   });
 });
 
-describe("preamble-length and the lead of a notice", () => {
-  it("日本語: 表題の下に経緯・依頼・お詫びが四段落あるお知らせのリードは指摘しない", () => {
-    const source =
-      "# 窓口の受付時間の変更について\n\n更新日：2026年4月1日\n\n平素より市の窓口をご利用いただき、ありがとうございます。\n\n" +
-      "来月から、窓口の受付時間を変更します。\n\nご来庁の際は、新しい受付時間をご確認ください。\n\nご不便をおかけし、申し訳ありません。\n\n## 新しい受付時間\n\n平日の9時から16時までです。\n";
-    assert.deepEqual(findingsFor(source, ja, "business/press-release"), []);
-  });
-
-  it("English: a guidance page whose explanation is its first four paragraphs is not flagged", () => {
-    const source =
-      "# Use short words\n\nShort words are easier to read.\n\nThey also make a sentence shorter.\n\nReaders skim, so every word counts.\n\nPrefer the plain word when it means the same.\n\n## Examples\n\nUse instead of utilize.\n";
-    assert.deepEqual(findingsFor(source, en), []);
-  });
-
+describe("preamble-length and a municipal page's closing contact box", () => {
   it("日本語: 唯一の見出しが自治体の記事末の問い合わせ先の囲みなら、本題の見出しが無いので測らない", () => {
     const paragraphs = ["一つ目です。", "二つ目です。", "三つ目です。", "四つ目です。", "五つ目です。"].join("\n\n");
     ["この記事に関するお問い合わせ先", "このページに関するお問い合わせ先", "このページに関するお問い合わせ"].forEach((heading) => {

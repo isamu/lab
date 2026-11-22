@@ -90,7 +90,7 @@ const preamble = (source: string, adapter: LanguageAdapter): number =>
   ).length;
 
 describe("preamble-length does not start the body at an untitled heading", () => {
-  const paragraphs = "First.\n\nSecond.\n\nThird.\n\nFourth.\n\nFifth.\n\n";
+  const paragraphs = "First.\n\nSecond.\n\nThird.\n\nFourth.\n\n";
 
   it("English: a release whose only deeper heading is empty has no subheading, so no preamble", () => {
     assert.equal(preamble(`# Release\n\n${paragraphs}###\n\nAbout us.\n`, en), 0);
@@ -105,11 +105,11 @@ describe("preamble-length does not start the body at an untitled heading", () =>
   });
 
   it("日本語: 空の見出しだけなら中見出しの無い文書として何も言わない", () => {
-    assert.equal(preamble("# 表題\n\n一。\n\n二。\n\n三。\n\n四。\n\n五。\n\n###\n\n会社概要。\n", ja), 0);
+    assert.equal(preamble("# 表題\n\n一。\n\n二。\n\n三。\n\n###\n\n会社概要。\n", ja), 0);
   });
 
   it("日本語: 題のある中見出しなら従来どおり指摘する", () => {
-    assert.equal(preamble("# 表題\n\n一。\n\n二。\n\n三。\n\n四。\n\n五。\n\n## 本題\n\n中身。\n", ja), 1);
+    assert.equal(preamble("# 表題\n\n一。\n\n二。\n\n三。\n\n## 本題\n\n中身。\n", ja), 1);
   });
 });
 

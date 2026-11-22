@@ -21,7 +21,7 @@ how_to_fix:
   ja: 結論を先に書くか、前置きを見出しの下へ移してください。
   en: Put the conclusion first, or move the preamble under a heading.
 
-levels: { strict: 2, normal: 4, relaxed: 6 }
+levels: { strict: 1, normal: 2, relaxed: 4 }
 
 use_for: [business, legal, docs, academic, literature, speech]
 off_for:
@@ -47,10 +47,6 @@ example:
 
       一方で、郊外の店の売上は伸び悩んでいます。
 
-      郊外では、家賃も上がり続けています。駐車場の費用も増えました。
-
-      来年には、郊外の二店の契約が切れます。
-
       ## 決めたこと
 
       来期は、郊外の二店を閉じ、駅前に一店を開きます。
@@ -61,7 +57,7 @@ example:
 
       ## 理由
 
-      この十年で店の数は二倍になりましたが、郊外の店の売上は伸び悩み、家賃は上がり続けています。来年には、郊外の二店の契約が切れます。
+      この十年で店の数は二倍になりましたが、郊外の店の売上は伸び悩んでいます。
   en:
     before: |
       # Store plan for next year
@@ -71,10 +67,6 @@ example:
       In the last ten years the number of stores has doubled.
 
       Suburban stores, however, have struggled to grow.
-
-      Suburban rents keep rising. Parking costs have grown too.
-
-      The leases of two suburban stores end next year.
 
       ## Decision
 
@@ -86,7 +78,7 @@ example:
 
       ## Why
 
-      The number of stores has doubled in ten years, but suburban stores have struggled to grow while their rents keep rising. The leases of two of them end next year.
+      The number of stores has doubled in ten years, but suburban stores have struggled to grow.
 
 not_flagged:
   ja: 表題より下の見出しが一つもない文書は測りません。法務やブログのジャンルと、手紙・メールでは見ません。本文の語に付けた注（※1 …）の段落は、前置きではなく注なので数えません。見出しが末尾の問い合わせ先や参考文献のような前後の見出しだけの文書（手紙の形の諮問）も、本題の見出しが無いので測りません。
