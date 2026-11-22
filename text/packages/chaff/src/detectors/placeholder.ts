@@ -7,6 +7,7 @@ import { escapeRegExp } from "../orthography.ts";
  * AI時代の AI や CI/CD の CD は、同じ文字の繰り返しではないので略語のまま数える。
  * 単位の前には空白 1 つを挟んでもよい（XX 月 XX 日）。ひな形が名前の代わりに書く O か X を 4 つ以上並べた語（OOOO、XXXX）も、
  * 単位が無くても略語ではない。3 つまで（AAA、XXX）は略語にもあり、ほかの文字の繰り返し（IIII、MMMMM）は崩れたローマ数字にもある。
+ * 3 つまでの O か X の繰り返しも、同じ文に同じ形で 2 度以上置けば（OO で OO な方）、語の代わりに空けた欄で略語ではない。
  */
 
 type Span = { readonly start: number; readonly end: number };
@@ -17,6 +18,9 @@ const SEPARATOR = "[/／:：.-]";
 const JOINED = new RegExp(String.raw`(?<![A-Za-z0-9_&])${PART}(?:${SEPARATOR}${PART})+(?![A-Za-z0-9_&])`, "gu");
 const CAPITALS = /[A-Z]+/gu;
 const LONG_REPEAT = /(?<![A-Za-z0-9_&])(?<letter>[OX])\k<letter>{3,}(?![A-Za-z0-9_&])/gu;
+const SHORT_REPEAT = /(?<![A-Za-z0-9_&])(?<letter>[OX])\k<letter>{1,2}(?![A-Za-z0-9_&])/gu;
+/** 一つの文に置いた空欄の数がこれ以上なら、短い繰り返しも空欄と読む。一つだけの OO や XXX は略語（out of office の OOO）にもある。 */
+const REPEATED_BLANKS = 2;
 
 const isRepeated = (word: string): boolean => REPEATED.test(word);
 
@@ -37,9 +41,15 @@ const beforeUnitSpans = (text: string, units: readonly string[]): Span[] => {
   return [...text.matchAll(pattern)].filter((match) => isRepeated(match[0])).map(spanOf);
 };
 
+const repeatedBlankSpans = (text: string): Span[] => {
+  const matches = [...text.matchAll(SHORT_REPEAT)];
+  return matches.filter((match) => matches.filter((other) => other[0] === match[0]).length >= REPEATED_BLANKS).map(spanOf);
+};
+
 /** 文の中の、日付・時刻の書式とひな形の名前に置いた大文字の範囲。units は日付・時刻の単位の語。 */
 export const placeholderSpans = (text: string, units: readonly string[]): Span[] => [
   ...joinedSpans(text),
   ...beforeUnitSpans(text, units),
   ...[...text.matchAll(LONG_REPEAT)].map(spanOf),
+  ...repeatedBlankSpans(text),
 ];

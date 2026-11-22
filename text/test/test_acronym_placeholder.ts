@@ -28,6 +28,8 @@ describe("placeholderSpans", () => {
     ["ドットで繋ぐ日付", "use DD.MM.YYYY dates", ["DD", "MM", "YYYY"]],
     ["数字と繋ぐ", "due 2026/MM/DD and 10:MM", ["MM", "DD", "MM"]],
     ["全角のスラッシュ", "YYYY／MM／DD", ["YYYY", "MM", "DD"]],
+    ["一つの文に 2 度置いた短い空欄", "ただし OO で OO な方は登録できます", ["OO", "OO"]],
+    ["一つの文に 3 度置いた X の空欄", "XX が XX に XX を送る", ["XX", "XX", "XX"]],
   ].forEach(([form, text, words]) => {
     it(`valid: ${String(form)}`, () => assert.deepEqual(covered(String(text)), words));
   });
@@ -41,6 +43,9 @@ describe("placeholderSpans", () => {
     ["語の一部", "COMM/DD, MMX/DD, the XHH:MMY"],
     ["1 文字", "M/D/Y and H:M"],
     ["数字だけ", "2026/01/31 12:30"],
+    ["一つだけの短い繰り返し", "I am OOO today, ask the OO team"],
+    ["違う形の短い繰り返し", "OO and OOO, XX and XXX"],
+    ["O と X 以外の短い繰り返し", "AA and AA, the BB and BB"],
   ].forEach(([form, text]) => {
     it(`invalid: ${String(form)}`, () => assert.deepEqual(covered(String(text)), []));
   });
@@ -68,6 +73,14 @@ describe("undefined-acronym と日付・時刻の書式", () => {
   it("ja: 語彙表から単位を抜けば、単位の前の繰り返しは数える", () => {
     const withoutUnits: LanguageAdapter = { ...ja, lexicons: { ...ja.lexicons, "date-time-unit": [] } };
     assert.deepEqual(reportedAcronyms(withoutUnits, "# 手引き\n\n有効期限は令和YY年です。SREも見ます。\n"), ["YY", "SRE"]);
+  });
+
+  it("ja: 一つの文に 2 度置いた空欄の OO は数えず、SRE は数える", () => {
+    assert.deepEqual(reportedAcronyms(ja, "# 手引き\n\nただし OO で OO な方は登録できます。SREも見ます。\n"), ["SRE"]);
+  });
+
+  it("en: 一つだけの OOO は数える", () => {
+    assert.deepEqual(reportedAcronyms(en, "# Notes\n\nThe lead is OOO this week.\n"), ["OOO"]);
   });
 
   it("ja: 単位の前でも、同じ文字の繰り返しでない略語は数える", () => {
