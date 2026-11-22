@@ -116,7 +116,7 @@ $ npx chaffjs explain title-case-consistency --genre docs/manual
   Levels:
     strict   reported when the minority style has 3 headings or fewer
   → normal   reported when the minority style has 2 headings or fewer
-    relaxed  reported when the minority style has 1 headings or fewer
+    relaxed  reported when the minority style has 1 heading or fewer
     off      not checked
 
   Now: normal.

@@ -43,7 +43,7 @@ faq.md   docs/faq · English   genre from --genre
 
   ·  One word spelled two ways
 
-     "e-mail" here, where the document usually writes "email" (1 of 3)
+     "e-mail" here, where the document usually writes "email" (1 of 5)
      Writing one word two ways in one document (e-mail and email, GitHub and Github) makes search treat them as different words and leaves the reader wondering whether two things are meant. chaff does not decide which way is right and keeps no list of words; it groups the document's own words, by reading in Japanese and by spelling without hyphens and case in English, and points at whichever way the document uses less. The case of the first letter is left out, since a sentence or a title gives it (Email, email), and so are words in capitals only, a name in capitals with an ending (SENDs) and the letters of an acronym picked out (CLImatology next to CLIPER). It says nothing when the minority is more than a third, since the document then uses both on purpose.
 
      → Match the way the rest of the document writes it. If the team has decided, list it under prefer in chaff.yaml, and preferred-term checks that direction from then on.

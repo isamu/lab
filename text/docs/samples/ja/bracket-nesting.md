@@ -106,7 +106,7 @@ $ npx chaffjs explain bracket-nesting --genre docs/manual
     relaxed  括弧の重なり 3 重まで
     off      見ない
 
-  この数字は docs/manual のものです。ほかに literature で別の数字を持っています。
+  この数字は既定のもので、docs/manual はこれを使います。literature は別の数字を持っています。
 
   いまは normal です。
 

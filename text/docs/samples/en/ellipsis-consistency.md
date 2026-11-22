@@ -30,7 +30,7 @@ export.md   docs/manual · English   genre from --genre
 
 ─── line 6 ───────────────────────────────────────────────────
 
-    mpany, choose Export... and save it as a PD
+    To send it outside the company, choose Export...
 
   ·  Ellipses written two ways
 

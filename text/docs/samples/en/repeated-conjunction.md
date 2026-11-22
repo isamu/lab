@@ -100,7 +100,7 @@ $ npx chaffjs explain repeated-conjunction --genre business/report
   How to fix: Keep one. Start the others with what you want to say.
 
   Levels:
-    strict   up to 1 paragraphs in a row opening with a connective
+    strict   up to 1 paragraph in a row opening with a connective
   → normal   up to 2 paragraphs in a row opening with a connective
     relaxed  up to 4 paragraphs in a row opening with a connective
     off      not checked

@@ -110,7 +110,7 @@ $ npx chaffjs explain title-length --genre blog/tech
     relaxed  題や見出しが 50 文字を超えたら指摘
     off      見ない
 
-  この数字は blog/tech のものです。ほかに business/report / business/press-release / business/meeting-notes / technical/spec / academic で別の数字を持っています。
+  この数字は既定のもので、blog/tech はこれを使います。business/report / business/press-release / business/meeting-notes / technical/spec / academic は別の数字を持っています。
 
   いまは normal です。
 

@@ -111,7 +111,7 @@ $ npx chaffjs explain contraction-consistency --genre business/email
   Levels:
     strict   reported when the minority form of a word appears 4 times or fewer
   → normal   reported when the minority form of a word appears 2 times or fewer
-    relaxed  reported when the minority form of a word appears 1 times or fewer
+    relaxed  reported when the minority form of a word appears 1 time or fewer
     off      not checked
 
   Now: normal.

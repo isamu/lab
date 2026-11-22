@@ -137,7 +137,7 @@ $ npx chaffjs explain title-length --genre blog/tech
     relaxed  reported when a title or heading runs past 18 words
     off      not checked
 
-  These numbers are for blog/tech. business/report / business/press-release / business/meeting-notes / technical/spec / academic have numbers of their own.
+  These numbers are the default ones, which blog/tech takes. business/report / business/press-release / business/meeting-notes / technical/spec / academic have numbers of their own.
 
   Now: normal.
 

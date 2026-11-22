@@ -137,7 +137,7 @@ $ npx chaffjs explain numbered-generic-heading --genre blog/owned-media
   Rewrite depth: structure (sections, headings and paragraphs are reorganised). With a shallower chaff fix-plan --depth, the plan names this rule without fixing it.
 
   Levels:
-    strict   reported from 1 such headings
+    strict   reported from 1 such heading
   → normal   reported from 2 such headings
     relaxed  reported from 3 such headings
     off      not checked

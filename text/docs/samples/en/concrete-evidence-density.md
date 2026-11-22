@@ -136,7 +136,7 @@ $ npx chaffjs explain concrete-evidence-density --genre business/report
   How to fix: Add one example. If you cannot, the section may belong inside another one.
 
   Levels:
-    strict   reported once 1 sections have nothing concrete
+    strict   reported once 1 section has nothing concrete
   → normal   reported once 3 sections have nothing concrete
     relaxed  reported once 6 sections have nothing concrete
     off      not checked

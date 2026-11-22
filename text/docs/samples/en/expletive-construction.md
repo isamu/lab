@@ -45,7 +45,7 @@ minutes.md   business/meeting-notes · English   genre from --genre
 
   ·  Expletive construction
 
-     "There is ..." appears 5 times (limit 3)
+     "There were ..." is one of 5 sentences that open with "There is" or "It is ... that" (limit 3)
      "There is" and "it is ... that" push the subject to the back and drop who does what.
 
      → Put the subject first. "There is a need to review" becomes "the board must review".
@@ -59,7 +59,7 @@ minutes.md   business/meeting-notes · English   genre from --genre
 
   ·  Expletive construction
 
-     "It is ..." appears 5 times (limit 3)
+     "It was ..." is one of 5 sentences that open with "There is" or "It is ... that" (limit 3)
      "There is" and "it is ... that" push the subject to the back and drop who does what.
 
      → Put the subject first. "There is a need to review" becomes "the board must review".
@@ -73,7 +73,7 @@ minutes.md   business/meeting-notes · English   genre from --genre
 
   ·  Expletive construction
 
-     "There is ..." appears 5 times (limit 3)
+     "There is ..." is one of 5 sentences that open with "There is" or "It is ... that" (limit 3)
      "There is" and "it is ... that" push the subject to the back and drop who does what.
 
      → Put the subject first. "There is a need to review" becomes "the board must review".
@@ -87,7 +87,7 @@ minutes.md   business/meeting-notes · English   genre from --genre
 
   ·  Expletive construction
 
-     "There is ..." appears 5 times (limit 3)
+     "There were ..." is one of 5 sentences that open with "There is" or "It is ... that" (limit 3)
      "There is" and "it is ... that" push the subject to the back and drop who does what.
 
      → Put the subject first. "There is a need to review" becomes "the board must review".
@@ -101,7 +101,7 @@ minutes.md   business/meeting-notes · English   genre from --genre
 
   ·  Expletive construction
 
-     "It is ..." appears 5 times (limit 3)
+     "It is ..." is one of 5 sentences that open with "There is" or "It is ... that" (limit 3)
      "There is" and "it is ... that" push the subject to the back and drop who does what.
 
      → Put the subject first. "There is a need to review" becomes "the board must review".
@@ -150,7 +150,7 @@ Only the last sentence, "Leo will put up signs", names who acts.
 The fix puts the person or the thing first in each sentence: "Ana will have the radiators checked", "Grace will get a quote", "Leo thinks".
 The guess about the parking spaces is now Leo's, not an anonymous "it is likely".
 
-chaff counts the sentences of both forms together, five here, and labels each finding with its own form; so "It is ..." appears 5 times means five such sentences in all, two of them "It".
+chaff counts the sentences of both forms together, five here, and names each sentence's own opening; so "It was ..." is one of 5 sentences means five such sentences in all, of either form.
 
 ## Settings
 
@@ -175,7 +175,7 @@ $ npx chaffjs explain expletive-construction --genre business/meeting-notes
   How to fix: Put the subject first. "There is a need to review" becomes "the board must review".
 
   Levels:
-    strict   up to 1 such sentences
+    strict   up to 1 such sentence
   → normal   up to 3 such sentences
     relaxed  up to 6 such sentences
     off      not checked

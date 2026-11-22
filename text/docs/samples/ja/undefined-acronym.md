@@ -140,7 +140,7 @@ $ npx chaffjs explain undefined-acronym --genre business/report
     relaxed  説明のない略語が 5 種類あれば指摘。文書が自分で略語を 5 個展開していれば、1 つの抜けから指摘
     off      見ない
 
-  この数字は business/report のものです。ほかに technical / business / speech / docs/faq / docs/manual で別の数字を持っています。
+  この数字は business のもので、business/report はこれを使います。technical / speech / docs/faq / docs/manual は別の数字を持っています。
 
   いまは normal です。
 

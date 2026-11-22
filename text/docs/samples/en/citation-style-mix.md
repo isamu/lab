@@ -135,7 +135,7 @@ $ npx chaffjs explain citation-style-mix --genre academic/paper
   Levels:
     strict   reported when the minority style appears 3 times or fewer
   → normal   reported when the minority style appears 2 times or fewer
-    relaxed  reported when the minority style appears 1 times or fewer
+    relaxed  reported when the minority style appears 1 time or fewer
     off      not checked
 
   Now: normal.

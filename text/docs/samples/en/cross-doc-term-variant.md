@@ -53,7 +53,7 @@ orders.md   docs/manual · English   genre from --genre
      "e-mail" here, but "email" in 2 other files checked with it (as in accounts.md)
      In a manual or a bundle of documents, each file can be consistent on its own while the files disagree with each other: one page writes "e-mail", the others "email". It happens when different people write at different times. A reader wonders whether they are different things, and a site search misses one. The files given together are compared, and a word written one way in some files and another way in the rest is pointed out. Three kinds of spelling are compared: the final ー of a katakana word (サーバ / サーバー), British and American spellings (colour / color), and a Latin word with and without a hyphen (e-mail / email). chaff does not pick a side; it points at the way fewer files use.
 
-     → Change it to "email". If the team has decided which way, list the pair under prefer in chaff.yaml, and every file is checked against it.
+     → Change it to "email". If the team has decided which way, list the pair (the spelling to avoid, then the one to use) under prefer in chaff.yaml, and preferred-term checks every file against it.
 
      Relax this rule:  npx chaffjs relax cross-doc-term-variant
 
@@ -113,7 +113,7 @@ $ npx chaffjs explain cross-doc-term-variant --genre docs/manual
 
   In a manual or a bundle of documents, each file can be consistent on its own while the files disagree with each other: one page writes "e-mail", the others "email". It happens when different people write at different times. A reader wonders whether they are different things, and a site search misses one. The files given together are compared, and a word written one way in some files and another way in the rest is pointed out. Three kinds of spelling are compared: the final ー of a katakana word (サーバ / サーバー), British and American spellings (colour / color), and a Latin word with and without a hyphen (e-mail / email). chaff does not pick a side; it points at the way fewer files use.
 
-  How to fix: Change it to "the other files' spelling". If the team has decided which way, list the pair under prefer in chaff.yaml, and every file is checked against it.
+  How to fix: Change it to the other files' spelling. If the team has decided which way, list the pair (the spelling to avoid, then the one to use) under prefer in chaff.yaml, and preferred-term checks every file against it.
 
   Levels (there is no limit to count to; a level sets how a finding is marked):
     strict   warning

@@ -97,7 +97,7 @@ $ npx chaffjs explain bracket-nesting --genre technical/readme
     relaxed  brackets nested up to 3 deep
     off      not checked
 
-  These numbers are for technical/readme. literature have numbers of their own.
+  These numbers are the default ones, which technical/readme takes. literature has numbers of its own.
 
   Now: normal.
 

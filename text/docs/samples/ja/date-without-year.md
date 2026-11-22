@@ -106,7 +106,7 @@ $ npx chaffjs explain date-without-year --genre business/report
     off      見ない
 
   オプション（chaff.yaml の options で決めます）:
-    dated_genres: [business/meeting-notes, business/email, speech]   (既定)
+    dated_genres: [business/meeting-notes, business/email, speech]   （既定）
       頭の日付が、書かれたことの起きた日（会議の日、手紙の日、演説や公聴会の日）になっている genre。その日付から5か月以内の月日は、その年と読む。Web ページの頭の日付は載せた日で、月日はどの年のこともある
 
   決める:  chaff.yaml に options: { date-without-year: { <名前>: <値> } } を書く

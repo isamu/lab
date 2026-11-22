@@ -32,7 +32,7 @@ course.md   business/proposal · English   genre from --genre
 
 ─── line 8 ───────────────────────────────────────────────────
 
-    ning company quotes 450-500 pounds a course, de
+    The training company quotes 450-500 pounds a course, depending on the size of the group.
 
   ·  Ranges written with two marks
 

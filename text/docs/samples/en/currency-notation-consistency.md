@@ -30,7 +30,7 @@ costs.md   business/report · English   genre from --genre
 
 ─── line 6 ───────────────────────────────────────────────────
 
-    es were invoiced at USD 650 by the local printe
+    The printed brochures were invoiced at USD 650 by the local printer.
 
   ·  A currency written two ways
 

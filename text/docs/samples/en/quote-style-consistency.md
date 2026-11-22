@@ -128,8 +128,8 @@ $ npx chaffjs explain quote-style-consistency --genre business/meeting-notes
   Rewrite depth: light (words and sentences; the structure and the voice stay). With a shallower chaff fix-plan --depth, the plan names this rule without fixing it.
 
   Levels:
-    strict   reported once the less common way appears 1 times
-  → normal   reported once the less common way appears 1 times
+    strict   reported once the less common way appears 1 time
+  → normal   reported once the less common way appears 1 time
     relaxed  reported once the less common way appears 3 times
     off      not checked
 

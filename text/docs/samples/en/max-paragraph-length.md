@@ -98,7 +98,7 @@ $ npx chaffjs explain max-paragraph-length --genre business/report
     relaxed  up to 8 sentences in a paragraph
     off      not checked
 
-  These numbers are for business/report. legal / legal/statute / legal/judgment / academic have numbers of their own.
+  These numbers are the default ones, which business/report takes. legal / legal/statute / legal/judgment / academic have numbers of their own.
 
   Now: normal.
 
