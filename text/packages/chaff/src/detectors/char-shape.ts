@@ -146,8 +146,6 @@ type NameWords = {
   readonly references: readonly string[];
   /** 並べた物の後ろに付く語（等）と、範囲の端や除くものを示す語（以外、以上）。連なりの尻にあれば、名前の後ろに付いた語。 */
   readonly listSuffixes: readonly string[];
-  /** 連なりの中ほどで語の切れ目を見せる語: 並べた物の後ろに付く語（等）と範囲の語と、後ろの語の頭に付く指示の語（事業当連結会計年度の「当」）。 */
-  readonly innerBreaks: readonly string[];
   /** 連なりを閉じる、読み手が一つの語と知っている長い語（内閣総理大臣、許可事業者）。その前で連なりを割る。 */
   readonly knownWords: ReadonlySet<string>;
   /** 制度が区分に入れることを言う句（として認定）。連なりのすぐ後ろに続けば、連なりは区分の名前。 */
@@ -287,19 +285,18 @@ const surfaceWithin = (token: Token, span: Span): string =>
 /**
  * 連なりの、知っている語（文書がほかで単独で使う組織の名前と法令の名前、連なりを閉じる決まった語、職名の前後の人の名前）を外した残りのうち、最も長いもの。
  * 安全保障理事会常任理事国は（安全保障理事会を単独で使う文書なら）「常任理事国」、日本国内閣総理大臣は「日本国」を数える。
- * 名前に普通の語が続く連なり（日本弁護士連合会臨時総会決議）は、名前がその文書で単独で使われていなければ、まるごと数える。
- * 連なりの中ほどの、並べた物の後ろに付く語（高齢運転者等専用駐車区間の「等」）は、語の終わりを見せるので、その前後を別に数える。
+ * 名前に普通の語が続く連なり（日本弁護士連合会臨時総会決議）は、名前がその文書で単独で使われていなければ、まるごと数える。連なりの中ほどの、並べた物の後ろに付く語（高齢運転者等専用駐車区間の「等」）は語の終わりを、前を指す語（事業当連結会計年度の「当」）は語の頭を見せるので、その前後を別に数える。
  */
 const longestUnknown = (tokens: readonly Token[], rest: Span, keptHead: string, context: RunContext): string => {
   const runTokens = coveringOf(tokens, rest).flatMap((index) => tokens.slice(index, index + 1));
   const words = runTokens.map((token) => surfaceWithin(token, rest));
-  const whole = words.join("");
+  const breaks = [...context.words.listSuffixes, ...context.words.references];
   // A run as long as the text holds no known word; reading it word by word would take a pass per word.
-  if (!holdsKnown(words, [...context.terms, ...context.words.knownWords], context.words.innerBreaks)) return keptHead + whole;
+  if (!holdsKnown(words, [...context.terms, ...context.words.knownWords], breaks)) return keptHead + words.join("");
   const isKnown = (start: number, end: number): boolean => {
     const piece = words.slice(start, end).join("");
     return (
-      (end === start + 1 && isInnerSuffix(words, start, context.words.innerBreaks)) ||
+      (end === start + 1 && isInnerSuffix(words, start, breaks)) ||
       context.terms.has(piece) ||
       (end === words.length && context.words.knownWords.has(piece)) ||
       isTitledPerson(runTokens, words, { start, end }, context.words.knownWords, context.maxKnownWords)
@@ -380,7 +377,6 @@ const nameWordsOf = (doc: ProseDocument): NameWords => {
     addressees: { prefixes: patterns("addressee-prefix"), titles: patterns("addressee-title"), endings: organisation.units, forms: organisation.closingForms },
     references: patterns("reference-prefix"),
     listSuffixes: [...patterns("list-suffix"), ...patterns("range-suffix")],
-    innerBreaks: [...patterns("list-suffix"), ...patterns("range-suffix"), ...patterns("reference-prefix")],
     knownWords: new Set(patterns("kanji-known-word")),
     designations: patterns("designation-phrase"),
     noticeEndings: patterns("notice-title-ending"),
