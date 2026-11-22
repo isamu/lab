@@ -1,6 +1,6 @@
 {
   "name": "@chaffjs/lang-ja",
-  "version": "0.48.0",
+  "version": "0.49.0",
   "description": "Japanese language adapter for chaff",
   "license": "MIT",
   "author": "isamu",

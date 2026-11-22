@@ -2,6 +2,73 @@
 
 Newest first.
 
+## 0.50.0 — 2026-11-22
+
+This release completes the rule samples: every rule that runs as a lint has a page in each language it runs on. Writing
+the pages showed where a rule missed natural wording, quoted the wrong span, or said its rule text badly, and those are
+fixed here too.
+
+### Samples
+
+- `docs/samples/ja/` and `docs/samples/en/` now cover every lint rule: wording, AI-likeness, structure, consistency,
+  readability, slips, team and facts rules (#2570–#2667). The four rules judged by AI under `chaff test` have no page.
+
+### Explain and messages
+
+- explain names the genre whose numbers it shows, says when the genre does not run the rule, reads a placeholder's
+  description without quotation marks, keeps a long option choice apart from its meaning and writes （既定） in
+  Japanese (#2574, #2578, #2609, #2644, #2645).
+- Level lines agree with their number at 1 (#2576). ai-generated-composite names its signals, not their ids (#2579).
+- Consistency rules for figures and marks, ordinal-suffix-mismatch and vague-deadline quote their sentence, not a window
+  cut mid-word (#2592, #2611). one-sentence-paragraph-run and demonstrative-opener-run quote their own sentences (#2628,
+  #2630).
+- bracket-width-consistency reports a half-width pair once, kutoten-consistency a sentence's odd marks once,
+  chat-citation-residue one mark once (#2614, #2616, #2626).
+- double-negative names every double negative in a sentence, internal-jargon every listed word, and
+  expletive-construction its sentence's own form (#2617, #2623, #2642).
+- misconversion and nonstandard-word say that `names` in chaff.yaml keeps a form; cross-doc-term-variant's advice names
+  preferred-term (#2606, #2629). repeated-sentence-head says how much of each opening it compares (#2638).
+
+### AI-likeness
+
+- contrast-framing counts a denial its own subject answers (#2584). まるで and the figure it opens count as one figure
+  (#2582). A doubled dash set as one counts once in no-em-dash (#2583).
+- ngram-repetition leaves the words touching a figure's aside (#2567). nominalization reads the compound a verbal noun
+  ends (#2585). agentless-passive quotes the passive verb, and a time から is not an agent (#2586).
+- A lexicon phrase's head verb matches its inflections (moved the needle) (#2591). expletive-construction counts a
+  perfect or modal be (#2625). cliche reads at the end of the day and on the same page only as the figure (#2618).
+- proper-noun-density points at the sentence with the most names (#2640). email-greeting-closing takes thanks for the
+  reader's time as an opening (#2639).
+
+### Rules
+
+- numbering-gap reads Rule, Clause and Regulation headings as Sections (#2608). unfilled-placeholder reads a capitalised
+  bracket a closing word ends ([Candidate Name]) (#2633).
+- requirement-smell reads as quickly as possible as a loophole about time (#2594); unqualified-superlative reads the
+  lightest and the cheapest (#2598); very-adjective counts an adjective the tagger read as a noun (#2599).
+- agreement-slip and less-for-fewer read a plural before to, leave fewer comparing counts (a third fewer requests) and
+  leave homophone pairs to homophone-slip (#2632, #2636). homophone-slip leaves "your welcome email" (#2595).
+- use-before-definition checks a party's single-kanji short name (#2596); defined-name-repeated reads the second party
+  after and (#2610).
+- outside-announced-list reads a list after は、 (#2605); a count in an earlier clause is not what a later 以下の
+  announces (#2580); words said to the writer are received, not quoted (#2581).
+- list-item-form-mix reads an unclosed item opening with a subject and its verb as a sentence (#2613); a noun + 連用形
+  compound at a sentence end reads as a noun (#2615); oxford-comma-consistency leaves a relative clause set off after
+  a name (#2635).
+- hiragana-fukushi reads 直ぐ (#2619); misconversion finds 始めて before 食べる, 見る, 使う and 乗る (#2627);
+  orthographic-variant reads an English heading's words with the body's and leaves the desk 受付 apart from 受け付け
+  (#2620, #2648).
+- request-without-deadline reads その日のうちに and 当日中に as deadlines (#2631); obligation-without-deadline reads "by
+  the" as a deadline only before a time (#2602).
+- title-case-consistency, required-listed-as-preferred, vague-figure-reference, missing-final-period,
+  max-sentence-length and preferred-term each leave a shape they misread (#2600, #2603, #2604, #2637, #2641, #2643).
+
+### Facts
+
+- arrival-before-departure reads 東京発 07:45; connection-time-short reads a row opening with its time and Arrive;
+  deadline-after-event compares a yearless deadline with a single yearless event; phone-number-variant reads a number
+  after at, on or us (#2650–#2653).
+
 ## 0.49.0 — 2026-11-21
 
 This release fixes false positives found by judging the 0.48.0 findings in isamu/chaff-corpus, and adds a page per

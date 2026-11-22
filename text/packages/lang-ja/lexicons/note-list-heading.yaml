@@ -1,0 +1,7 @@
+# 脚注の節の見出し。注は一つずつ段落に立つ項目で、一文ずつ分けた地の文ではない。見出しとまるごと同じときだけ。
+id: note-list-heading
+language: ja
+entries:
+  - pattern: 脚注
+  - pattern: 注
+  - pattern: Footnotes
