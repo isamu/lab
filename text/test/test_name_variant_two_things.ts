@@ -306,4 +306,28 @@ describe("name-variant: two things, not one name", () => {
       '"Zendesk" is written "ZenDesk" elsewhere in the document (case, width or punctuation)',
     ]);
   });
+
+  it("a form quoted by itself shows its spelling, not a slip", () => {
+    // From a National Park Service FAQ (public domain).
+    const history =
+      "Yellowstone National Park is named after the Yellowstone River. In 1797, explorer-geographer David Thompson used the English translation\u2014\u201cYellow Stone.\u201d Lewis and Clark called the Yellowstone River by the French and English forms.\n\nIs Yellowstone the largest national park? Yellowstone is the first.\n";
+    assert.deepEqual(variants(history), []);
+    const slip = "Is Yellowstone the largest national park? Yellowstone is the first. Thompson came to Yellow Stone in 1797.\n";
+    assert.deepEqual(variants(slip), ['"Yellow Stone" is written "Yellowstone" elsewhere in the document (case, width or punctuation)']);
+  });
+
+  it("a name only after the, and the same words run together without it, are two things", () => {
+    const record =
+      "He spoke at the White House. The White House replied. White House Press Secretary Jean-Pierre spoke.\n\n## YEAS\n\n- Warren\n- Whitehouse\n- Wyden\n";
+    assert.deepEqual(variants(record), []);
+    const slip = "He spoke at the White House. Visitors saw White House gardens. Then the Whitehouse replied.\n";
+    assert.deepEqual(variants(slip), ['"Whitehouse" is written "White House" elsewhere in the document (case, width or punctuation)']);
+  });
+
+  it("an Italian ending and a period spelling of a final s are other forms of the word", () => {
+    assert.equal(isOtherEnding("Paradiso", "Paradise", [{ ending: "o", insteadOf: "e" }]), true);
+    assert.equal(isOtherEnding("Arkansaw", "Arkansas", [{ ending: "w", insteadOf: "s" }]), true);
+    const poem = "Paradise was near, and Paradise was lost.\nAs the poets tell, the Paradiso, the straying thence.\n";
+    assert.deepEqual(variants(poem), []);
+  });
 });

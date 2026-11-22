@@ -29,6 +29,12 @@ export const MINOR_WORDS: ReadonlySet<string> = new Set([
   "via",
 ]);
 
+/**
+ * AP・APA の Title Case は短い接続詞 if・nor を小文字で書き、Chicago・MLA は大文字で書くことがある（What To Do if You…）。
+ * どちらの書き方も Title Case なので、どちらの流儀の証拠にもしない。
+ */
+const SHORT_CONJUNCTIONS: ReadonlySet<string> = new Set(["if", "nor"]);
+
 /** 大文字だけの語（PR・FCPs）は略語で、どちらの流儀でも大文字のまま。Title Case の証拠にならない。 */
 const ACRONYM = /^[A-Z]{2,}s?$/u;
 
@@ -61,7 +67,7 @@ const LETTER_LABEL = /^\s*\(?(?:[A-Za-z]|[ivxlc]{2,6}|[IVXLC]{2,6})[.)]\s+/u;
 export const isTitleCase = (heading: string, fixedCase: ReadonlySet<string> = new Set()): boolean | undefined => {
   const words = [...withoutCodeWords(straightApostrophes(withoutLeadingLabel(heading).replace(LETTER_LABEL, ""))).matchAll(WORD)]
     .map((match) => match[0])
-    .filter((word) => !MINOR_WORDS.has(word.toLowerCase()) && !ACRONYM.test(word) && !fixedCase.has(word));
+    .filter((word) => !MINOR_WORDS.has(word.toLowerCase()) && !SHORT_CONJUNCTIONS.has(word.toLowerCase()) && !ACRONYM.test(word) && !fixedCase.has(word));
   // 1 語の見出しは、どちらの流儀でも先頭が大文字になる。判定できない。
   if (words.length < 2) return undefined;
   const capitalized = words.filter((word) => word[0] === word[0]?.toUpperCase()).length;

@@ -10,7 +10,10 @@
 # phrase: a set phrase ending in a comparative, set off by a comma or a colon ("or to be more precise, it"); it restates
 # the words before it and compares nothing. Matched on the words up to the comparative, joined by spaces.
 # pointer: a word opening the sentence that points at the example just shown ("This is much better!"); right after two
-# code examples, the baseline is the first one.
+# code examples, the baseline is the first one; right after one example whose text names a baseline ("// Used to error,
+# now doesn't."), the baseline is the behaviour that text names.
+# shown: words that, inside such an example, name the behaviour before ("used to"), besides the baselines. Not read in
+# prose, where "is used to build" means something else.
 # cause: a word after another word and before the comparative that sets the clause before it against the comparison
 # ("Print statements work, but a real debugger is better"); that clause is the baseline.
 # opener: a word opening the sentence that puts the comparison after a change or a topic it names ("As the application
@@ -48,6 +51,7 @@ entries:
   - { pattern: vs, group: baseline }
   - { pattern: whereas, group: baseline }
   - { pattern: that follows, group: baseline }
+  - { pattern: used to, group: shown }
   - { pattern: but, group: cause }
   - { pattern: as, group: opener }
   - { pattern: by, group: opener }

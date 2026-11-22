@@ -1,7 +1,7 @@
 import type { Detector, Finding, Lexicon, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { quotedIn } from "../quoted-span.ts";
 import { followsInlineCode } from "./code-before.ts";
-import { followsTwoExamples } from "./example-baseline.ts";
+import { followsExampleNaming, followsTwoExamples } from "./example-baseline.ts";
 import { isNamedStep, plainStepKeys } from "./graded-step.ts";
 import { comparesComparatives, comparesKinds, followsCause, madeComparative, opensWithCause, withoutNegation } from "./comparative-context.ts";
 
@@ -17,6 +17,8 @@ import { comparesComparatives, comparesKinds, followsCause, madeComparative, ope
  * pointer は文の頭で、いま見せた例を指す語（This is much better!）。二つのコードの例のすぐ後ろなら、相手は前の例。
  * cause は比べた形より前で、比較が何の結果か、何に対してかを言う語（これにより、…できるため、…, but）。opener は文の頭で同じことをする語（As …, By …）。
  * 英語の aim は比べた形の少し前で、今の状態から変えると言う動詞（to make results more predictable、do better）。
+ * pointer の文が一つのコードの例のすぐ後ろで、例の中に相手を言う語（baseline か shown: used to）があれば、相手は例が示す前の振る舞い。
+ * alternative は程度を言う語に続く名詞の並びの後ろで、ほかの手立てがあると言う語（より安全な書き方がある）。相手は、いま述べている手立て。
  * 同じ文か前の二文に相手を言う語があれば、相手は書いてある。
  */
 
@@ -35,6 +37,8 @@ export type ComparativeLists = {
   readonly causes: ReadonlySet<string>;
   readonly openers: ReadonlySet<string>;
   readonly layers: ReadonlySet<string>;
+  readonly alternatives: ReadonlySet<string>;
+  readonly shown: readonly string[];
 };
 
 /** head は英語の比べた形の前の述語（is faster の is）。 */
@@ -110,6 +114,20 @@ const afterGradable = (tokens: readonly Token[], at: number): number =>
 /** 程度を言う語（at）の後ろが、層の並びの中の位置を言う語か（より低い層）。相手は、いま述べている層。 */
 const namesLayer = (tokens: readonly Token[], at: number, layers: ReadonlySet<string>): boolean => layers.has(tokens[afterGradable(tokens, at)]?.surface ?? "");
 
+/** at から続く名詞の並び（反復処理の書き方）の後ろの語の位置。名詞のあいだの「の」は並びの一部。 */
+const afterNounPhrase = (tokens: readonly Token[], at: number): number => {
+  const ends = tokens
+    .slice(at)
+    .findIndex((token, index) => token.pos !== "NOUN" && !(token.surface === "の" && index > 0 && tokens[at + index + 1]?.pos === "NOUN"));
+  return ends === -1 ? tokens.length : at + ends;
+};
+
+/** 程度を言う語（at）の名詞の並びに、ほかの手立てがあると言う語が続くか（より安全な書き方がある）。比べる相手は、いま述べている手立て。 */
+const namesAlternative = (tokens: readonly Token[], at: number, alternatives: ReadonlySet<string>): boolean => {
+  const next = afterGradable(tokens, at);
+  return tokens[next]?.pos === "NOUN" && runsFrom(tokens, afterNounPhrase(tokens, next)).some(({ run }) => alternatives.has(run));
+};
+
 /** 程度を言う語（at）の後ろが、今より良くする目当てか（より良い社会、より豊かな暮らし、より良いものにする、より良い共生の実現）。 */
 const namesAim = (tokens: readonly Token[], at: number, aims: ReadonlySet<string>): boolean => {
   const next = afterGradable(tokens, at);
@@ -127,6 +145,7 @@ const markedAt = (tokens: readonly Token[], at: number, lists: ComparativeLists)
   const previous = tokens[at - 1];
   if (previous !== undefined && !OPENS_WORD.has(previous.pos)) return undefined;
   if (!isGradable(tokens, at + 1) || namesAim(tokens, at + 1, lists.aims) || namesLayer(tokens, at + 1, lists.layers)) return undefined;
+  if (namesAlternative(tokens, at + 1, lists.alternatives)) return undefined;
   return { first: marker, last: word };
 };
 
@@ -178,9 +197,16 @@ const goesBeyond = (tokens: readonly Token[], found: BareComparative, beyond: Re
  */
 const CAUSE_BEFORE: ReadonlySet<string> = new Set(["た", "だ", "の", "ある", "いる"]);
 
+/** 語か、続く二語をつないだもの（と・よい）が、願いや目的を言う語か。 */
+const namesIntent = (tokens: readonly Token[], at: number, intents: ReadonlySet<string>): boolean => {
+  const token = tokens[at];
+  if (token === undefined) return false;
+  return intents.has(lower(token)) || intents.has(token.lemma?.toLowerCase() ?? "") || intents.has(`${token.surface}${tokens[at + 1]?.surface ?? ""}`);
+};
+
 const isIntentWord = (tokens: readonly Token[], at: number, intents: ReadonlySet<string>): boolean => {
   const token = tokens[at];
-  if (token === undefined || !(intents.has(lower(token)) || intents.has(token.lemma?.toLowerCase() ?? ""))) return false;
+  if (token === undefined || !namesIntent(tokens, at, intents)) return false;
   return token.surface !== "ため" || !CAUSE_BEFORE.has(tokens[at - 1]?.surface ?? "");
 };
 
@@ -255,6 +281,8 @@ export const listsOf = (lexicon: Lexicon): ComparativeLists => ({
   causes: new Set(groupOf(lexicon, "cause")),
   openers: new Set(groupOf(lexicon, "opener")),
   layers: new Set(groupOf(lexicon, "layer")),
+  alternatives: new Set(groupOf(lexicon, "alternative")),
+  shown: groupOf(lexicon, "shown"),
 });
 
 /** 鉤括弧の中の比較（「給与所得の確定申告がさらに簡単に！」ページ）は題や語を挙げたもので、書き手の比較ではない。 */
@@ -279,7 +307,11 @@ export const bareComparative: Detector = (doc): Finding[] => {
   return doc.sentences.flatMap((sentence, at) => {
     const nearby = doc.sentences.slice(Math.max(0, at - BASELINE_REACH), at + 1);
     if (sentence.embeddedLanguage !== undefined || nearby.some((near) => namesBaseline(near, lists.baselines))) return [];
-    if (pointsAtExample(sentence, lists.pointers) && followsTwoExamples(doc.source, spans, at)) return [];
+    if (
+      pointsAtExample(sentence, lists.pointers) &&
+      (followsTwoExamples(doc.source, spans, at) || followsExampleNaming(doc.source, spans, at, [...lists.baselines, ...lists.shown]))
+    )
+      return [];
     if (opensWithCause(sentence.tokens ?? [], lists.openers)) return [];
     const quoted = quotedIn(sentence);
     return bareComparativesIn(sentence.tokens ?? [], lists)

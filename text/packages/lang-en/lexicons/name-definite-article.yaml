@@ -1,0 +1,8 @@
+# Articles that make a name of several words an institution or a place (the White House). name-variant does not read
+# those words run together without the article (Whitehouse, a senator in a roll call) as the same name written another
+# way, when the document writes the name only after the article or before a noun it qualifies. Matched without regard
+# to case.
+id: name-definite-article
+language: en
+entries:
+  - pattern: "the"

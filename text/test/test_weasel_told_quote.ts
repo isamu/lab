@@ -33,6 +33,22 @@ describe("weasel-word: 言われた場面や言った人を名指す引用", () 
     assert.equal(findingsOf("Many experts say remote work raises output.", en).length, 1);
   });
 
+  it("語や名前の由来を言う節の後ろの「と言われている」は指さない", () => {
+    assert.deepEqual(findingsOf("なお、この菓子の名は、二つの町の名から作られた造語であるといわれています。"), []);
+    assert.deepEqual(findingsOf("地名の語源は川の古い呼び名だと言われている。"), []);
+    // 由来の語が別の節にあるだけなら、これまでどおり指す。
+    assert.equal(findingsOf("名前の由来は分からないが、この菓子は体に良いと言われている。").length, 1);
+  });
+
+  it("科学の解説が分野の今の見方を言う scientists believe は指さない", () => {
+    assert.deepEqual(findingsOf("Scientists believe most of the water is frozen.", en), []);
+    assert.equal(findingsOf("Experts believe most of the water is frozen.", en).length, 1);
+    // An unnamed share of scientists is still a weasel.
+    assert.equal(findingsOf("Some scientists believe most of the water is frozen.", en).length, 1);
+    assert.equal(findingsOf("Many scientists believe most of the water is frozen.", en).length, 1);
+    assert.equal(findingsOf("A few scientists believe most of the water is frozen.", en).length, 1);
+  });
+
   it("quotationStart: 末尾で閉じる引用の始まり", () => {
     assert.equal(quotationStart("申し込んだら、「先に払え」"), 7);
     assert.equal(quotationStart("彼は「上司は『急げ』と言った」"), 2);

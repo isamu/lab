@@ -62,3 +62,15 @@ export const isBoundSuffix = (text: string, boundary: Boundary, tokens: readonly
   const suffix = tokens.find((token) => token.span.start === start);
   return suffix !== undefined && suffixes.has(suffix.surface);
 };
+
+const SINGLE_LETTER = /^[A-Za-z]$/u;
+
+/**
+ * 前後を空白一つで区切って一字だけ書いた英字（「（アイ） I を小文字の（エル） l に」の I と l）の前後の境目。見分けてほしい字そのものを
+ * 例に挙げるときは、ほかの字と離して書く。語の空け方の好みではない。片側だけ空けた一字（Rを）や二字以上の語は数える。
+ */
+export const isLoneLetter = (text: string, boundary: Boundary): boolean => {
+  if (boundary.kind !== "letter" || !boundary.spaced) return false;
+  const word = latinWordAt(text, boundary);
+  return SINGLE_LETTER.test(text.slice(word.start, word.end)) && text[word.start - 1] === " " && text[word.end] === " ";
+};

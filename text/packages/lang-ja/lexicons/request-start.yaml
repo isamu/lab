@@ -1,0 +1,14 @@
+# 提案が始める時を言う語（まずは12月から3か月試してみて）。request-without-deadline は、group start の語が前の文にある文書で、
+# group consider の語で頼む結び（ご検討よろしくお願いします。）を、始める時までに決めてほしい依頼として期限があるものと見る。
+# 始める時を言わない提案（まずは3か月間試行し…ご検討をよろしくお願いいたします。）の結びは今までどおり指す。
+id: request-start
+language: ja
+entries:
+  - pattern: 月から
+    group: start
+  - pattern: 月より
+    group: start
+  - pattern: 年度から
+    group: start
+  - pattern: 検討
+    group: consider

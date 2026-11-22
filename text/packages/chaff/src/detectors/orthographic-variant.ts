@@ -80,6 +80,8 @@ const JUDGING = "orthographic-variant-judging";
  */
 const COMPARATIVE = "orthographic-variant-comparative";
 const COMPARATIVE_PARTICLES = new Set(["が", "で"]);
+/** Lexicon: verbs after が that make a listed word the person (方がいない, 方がいらっしゃる), which the comparative ほう never takes. */
+const COMPARATIVE_PERSON = "orthographic-variant-comparative-person";
 /** Lexicon: katakana spellings of a word that name a sense of their own (モノ for goods, beside the formal noun もの). */
 const SENSE = "orthographic-variant-katakana-sense";
 /** Lexicon: sentences that open a separate voice (a justice's own opinion), as regular expressions. Each voice is compared on its own. */
@@ -104,6 +106,7 @@ const NAME_JOINER = "name-joiner";
 type Skips = Uses & {
   readonly skip: ReadonlySet<string>;
   readonly comparative: ReadonlySet<string>;
+  readonly comparativePerson: ReadonlySet<string>;
   readonly wholeWords: ReadonlyMap<string, string>;
   readonly phraseSuffixes: ReadonlySet<string>;
   readonly twoReadings: ReadonlyMap<string, string>;
@@ -111,9 +114,12 @@ type Skips = Uses & {
   readonly nouns: ReadonlySet<string>;
 };
 
-/** A listed word outside the comparative frame (担当の方に): the kanji there may be the person of the same reading. */
-const isOutsideComparative = ({ token, following }: InContext, comparative: ReadonlySet<string>): boolean =>
-  comparative.has(token.lemma ?? "") && !COMPARATIVE_PARTICLES.has(following?.[0]?.surface ?? "");
+/** A listed word outside the comparative frame (担当の方に, 方がいない): the kanji there may be the person of the same reading. */
+const isOutsideComparative = ({ token, following }: InContext, { comparative, comparativePerson }: Skips): boolean => {
+  if (!comparative.has(token.lemma ?? "")) return false;
+  const particle = following?.[0]?.surface ?? "";
+  return !COMPARATIVE_PARTICLES.has(particle) || (particle === "が" && comparativePerson.has(following?.[1]?.lemma ?? ""));
+};
 
 /** A spelling listed as reading two ways, alone or with the word written onto it (様を), read as the reading in doubt. */
 const readsTwoWays = ({ token, following }: InContext, reading: string, twoReadings: ReadonlyMap<string, string>): boolean => {
@@ -130,7 +136,7 @@ const readingKeyOf = (word: InContext, skips: Skips): string | undefined => {
   const { token } = word;
   const lemma = token.lemma;
   if (!CONTENT.has(token.pos) || token.reading === undefined || lemma === undefined || !JAPANESE_WORD.test(lemma) || skip.has(lemma)) return undefined;
-  if (isOutsideComparative(word, skips.comparative)) return undefined;
+  if (isOutsideComparative(word, skips)) return undefined;
   const reading = lemmaReading(token.surface, lemma, token.reading);
   if (reading === undefined || [...reading].length < MIN_READING || skip.has(reading) || isCutFromKatakana(word) || isCopulaReadAsVerb(word)) return undefined;
   if (readsTwoWays(word, reading, skips.twoReadings) || isNotAWordOfItsOwn(word)) return undefined;
@@ -384,6 +390,7 @@ export const orthographicVariant: Detector = (doc, options): Finding[] => {
     means: new Set(patternsOf(doc, MEANS, options.genre)),
     lightVerbs: new Set(patternsOf(doc, LIGHT_VERB, options.genre)),
     comparative: new Set(patternsOf(doc, COMPARATIVE, options.genre)),
+    comparativePerson: new Set(patternsOf(doc, COMPARATIVE_PERSON, options.genre)),
     wholeWords: new Map((doc.lexicons[WHOLE_WORD] ?? []).map((entry) => [entry.pattern, entry.group ?? entry.pattern])),
     phraseSuffixes,
     twoReadings: new Map(entriesForGenre(doc.lexicons[TWO_READINGS] ?? [], options.genre).map((entry) => [entry.pattern, entry.group ?? ""])),
