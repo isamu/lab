@@ -13,6 +13,7 @@ import {
   partialForms,
 } from "../packages/chaff/src/detectors/mark-shape.ts";
 import { captionsOf, isCaptionAt } from "../packages/chaff/src/detectors/caps-caption.ts";
+import { unclosedCodeQuoteOffsets } from "../packages/chaff/src/unclosed-code-quote.ts";
 
 // Marks and shapes: quote-style-consistency, bracket-width-consistency, exclamation-width-consistency,
 // sentence-spacing-consistency, hyphen-as-dash, latin-abbreviation-form, all-caps-shouting. Every example is self-written.
@@ -57,9 +58,39 @@ describe("quote-style-consistency", () => {
     ]);
   });
 
+  it("the quotes of a value right after a code mark left unclosed are the code's, not the prose's", () => {
+    const base = "The “draft” is ready. The “final” is due. The “review” is next.\n\n";
+    assert.deepEqual(findingsOf(RULE, `${base}If your password is \`"my-secret" (don't use it), and you see a prompt, type it.\n`), []);
+    assert.deepEqual(findingsOf(RULE, `${base}If your password is \`"my-secret"\` here, type it. The "plan" is due.\n`), [
+      'The quote mark " here, where the document usually writes “” (2 of 8)',
+      'The quote mark " here, where the document usually writes “” (2 of 8)',
+    ]);
+  });
+
   it("one form throughout, or apostrophes apart from double quotes, is not reported", () => {
     assert.deepEqual(findingsOf(RULE, "The “draft” is ready. The “final” is due. The team’s plan holds.\n"), []);
     assert.deepEqual(findingsOf(RULE, 'The "draft" is ready. The "final" is due. The team’s plan holds.\n'), []);
+  });
+});
+
+describe("unclosedCodeQuoteOffsets", () => {
+  const quotesOf = (source: string): string[] => [...unclosedCodeQuoteOffsets(source)].map((at) => `${String(at)}${source[at] ?? ""}`);
+
+  it("finds the two quotes of a value right after the last of an odd count of code marks in a paragraph", () => {
+    assert.deepEqual(quotesOf('Use `{x}` here. Set `"pw" (not this).'), ['21"', '24"']);
+    assert.deepEqual(quotesOf("First.\n\nSet `“pw” now."), ["13“", "16”"]);
+  });
+
+  it("finds nothing when the code marks pair up, no quote follows, or the quote does not close on its line", () => {
+    assert.deepEqual(quotesOf('Set `"pw"` now.'), []);
+    assert.deepEqual(quotesOf("Set `pw now."), []);
+    assert.deepEqual(quotesOf('Set `"pw now.\nNext "line".'), []);
+    assert.deepEqual(quotesOf('Set ``"pw" now.'), []);
+    assert.deepEqual(quotesOf(""), []);
+  });
+
+  it("reads each paragraph on its own", () => {
+    assert.deepEqual(quotesOf('Set `a.\n\nThen `"b"` here.'), []);
   });
 });
 
