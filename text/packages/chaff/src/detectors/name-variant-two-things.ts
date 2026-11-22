@@ -75,6 +75,32 @@ const isQuotedTitleCase = (found: Found, text: string): boolean => {
   return (before.match(QUOTES)?.length ?? 0) % 2 === 1 && (after.match(QUOTES)?.length ?? 0) > 0;
 };
 
+const OPENING_QUOTE = /["“‘']$/u;
+const CLOSING_QUOTE = /^[.,;:!?]?["”’']/u;
+
+/** Whether the form fills a quotation by itself (the English translation—“Yellow Stone.”): the writer shows the spelling, not a slip. */
+const isQuotedForm = (found: Found, text: string): boolean =>
+  OPENING_QUOTE.test(text.slice(Math.max(0, found.offset - 1), found.offset)) && CLOSING_QUOTE.test(text.slice(found.offset + found.name.length));
+
+const WORD_BEFORE_FORM = /(?<!\p{L})(\p{L}+)\s+$/u;
+const wordBefore = (text: string, offset: number): string => WORD_BEFORE_FORM.exec(text.slice(Math.max(0, offset - 20), offset))?.[1]?.toLowerCase() ?? "";
+
+/** A capitalised word right after a name: the name stands before a noun it qualifies (White House Press Secretary). */
+const BEFORE_NAME = /^ \p{Lu}/u;
+
+/**
+ * Whether the usual form of several words is written only after a definite article (the White House), or before a noun it
+ * qualifies (White House Press Secretary), and the pointed form
+ * is those words run together without one (Whitehouse, a senator in a roll call): an institution and a person, two things.
+ */
+const isArticleNamePair = (found: Found, text: string, articles: readonly string[]): boolean => {
+  if (articles.length === 0 || !found.usual.includes(" ") || found.name.includes(" ")) return false;
+  if (found.name.toLowerCase() !== found.usual.replaceAll(" ", "").toLowerCase()) return false;
+  const usualPlaces = offsetsOf(text, found.usual);
+  const asName = (offset: number): boolean => articles.includes(wordBefore(text, offset)) || BEFORE_NAME.test(text.slice(offset + found.usual.length));
+  return usualPlaces.length > 0 && usualPlaces.every(asName) && !articles.includes(wordBefore(text, found.offset));
+};
+
 /** Whether a Japanese name is followed at once by an auxiliary that does not follow names (咲けり の けり): a verb stem, not a name. */
 const isVerbStem = (found: Found, tokenAt: ReadonlyMap<number, Token>, copulas: ReadonlySet<string>): boolean => {
   const next = tokenAt.get(found.offset + found.name.length);
@@ -94,6 +120,7 @@ type Reading = {
   readonly ordinary: ReadonlySet<string>;
   readonly countArticles: readonly string[];
   readonly wrongMarks: readonly string[];
+  readonly definiteArticles: readonly string[];
 };
 
 /** Where a form is written, as written, inside a longer run of letters too (RSpecで). */
@@ -137,7 +164,8 @@ const isNearPair = (reading: Reading, found: Found): boolean => {
 
 /**
  * The finding is not two forms of one name: a one-letter variant that is two names (isNearPair), ・ listing two words, a
- * direction and its inverse, a title quoted in capitals, a contraction printed with and without its apostrophe, a piece of
+ * direction and its inverse, a title quoted in capitals, a form quoted by itself, a name after "the" beside the same words
+ * run together without it, a contraction printed with and without its apostrophe, a piece of
  * a file name or URL, a form shown as wrong on purpose, a verb stem. ordinary holds the words read as names that are
  * ordinary words in small letters (name-ordinary-word.ts).
  */
@@ -159,12 +187,15 @@ export const twoThingsIn = (
     ordinary,
     countArticles: patternsOf(doc, "name-count-article"),
     wrongMarks: patternsOf(doc, "name-wrong-mark"),
+    definiteArticles: patternsOf(doc, "name-definite-article"),
   };
   return (found) =>
     (found.kind === "near" && isNearPair(reading, found)) ||
     isListedPair(found.name, found.usual) ||
     (found.kind === "order" && isInverseOrder(found.name, found.usual, reading.directions)) ||
     isQuotedTitleCase(found, reading.text) ||
+    isQuotedForm(found, reading.text) ||
+    (found.kind === "spelling" && isArticleNamePair(found, reading.text, reading.definiteArticles)) ||
     (found.kind === "spelling" && isContractionPair(found.name, found.usual, reading.text)) ||
     isInFileName(reading.text, found.offset, found.name.length) ||
     isShownWrong(reading, found) ||
