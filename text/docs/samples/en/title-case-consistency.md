@@ -44,7 +44,7 @@ guide.md   docs/manual · English   genre from --genre
   ·  Heading capitalisation is inconsistent
 
      This heading's capitalisation differs from the rest (1 in this document)
-     Neither Title Case nor sentence case is wrong. Mixed within one document, the headings look like they change level. The document's title (the first heading, when no other heading is as shallow) is a name and is not compared; when the section headings split evenly, the title's style decides. A leading label (Section 3., b., Day 1:), the names of weekdays and months, and the names the body itself capitalises mid-sentence, all written the same in either style, count as evidence for neither.
+     Neither Title Case nor sentence case is wrong. Mixed within one document, the headings look like they change level. The document's title (the first heading, when no other heading is as shallow) is a name and is not compared; when the section headings split evenly, the title's style decides. A leading label (Section 3., b., Day 1:), the names of weekdays and months, the short conjunctions title case writes either way (if, nor), and the names the body itself capitalises mid-sentence, none of which tells the styles apart, count as evidence for neither.
 
      → Match the majority.
 
@@ -109,7 +109,7 @@ $ npx chaffjs explain title-case-consistency --genre docs/manual
 
   Heading capitalisation is inconsistent   (title-case-consistency)
 
-  Neither Title Case nor sentence case is wrong. Mixed within one document, the headings look like they change level. The document's title (the first heading, when no other heading is as shallow) is a name and is not compared; when the section headings split evenly, the title's style decides. A leading label (Section 3., b., Day 1:), the names of weekdays and months, and the names the body itself capitalises mid-sentence, all written the same in either style, count as evidence for neither.
+  Neither Title Case nor sentence case is wrong. Mixed within one document, the headings look like they change level. The document's title (the first heading, when no other heading is as shallow) is a name and is not compared; when the section headings split evenly, the title's style decides. A leading label (Section 3., b., Day 1:), the names of weekdays and months, the short conjunctions title case writes either way (if, nor), and the names the body itself capitalises mid-sentence, none of which tells the styles apart, count as evidence for neither.
 
   How to fix: Match the majority.
 

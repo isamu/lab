@@ -95,7 +95,7 @@ gijiroku.md   business/meeting-notes · 日本語   ジャンルは内容から
                   date-weekday-mismatch
   4:10    info    日本語と前の数字のあいだを詰めています（この文書はふつう空ける。3 箇所のうち 1 箇所が違う）
                   latin-spacing
-  4:15    info    日本語と英字のあいだを詰めています（この文書はふつう空ける。7 箇所のうち 1 箇所が違う）
+  4:15    info    日本語と英字のあいだを詰めています（この文書はふつう空ける。5 箇所のうち 1 箇所が違う）
                   latin-spacing
   10:1    info    この文だけ他と文末の調子が違います（本文の中で 3 文）
                   no-mixed-desumasu
