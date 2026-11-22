@@ -80,7 +80,35 @@ describe("cross-doc-fact-conflict: what it leaves alone", () => {
 
   it("a file that gives the item two values does not vote", () => {
     const files = { "a.md": "# A\n\n## Basic\n\nFee: $12\n\n## Pro\n\nFee: $30\n", "b.md": "Fee: $30\n", "c.md": "Fee: $12\n" };
-    assert.deepEqual(facts(files), ["c.md@5 label=Fee value=$12 other=$30 count=1 example=b.md"]);
+    assert.deepEqual(facts(files), ["b.md@5 label=Fee value=$30 other=$12 count=1 example=c.md", "c.md@5 label=Fee value=$12 other=$30 count=1 example=b.md"]);
+  });
+});
+
+describe("cross-doc-fact-conflict: an even split", () => {
+  it("two files that disagree are both reported, neither being fewer", () => {
+    const files = { "faq.md": "# FAQ\n\nJoining fee: £25\n", "membership.md": "# Membership\n\nJoining fee: £20\n" };
+    assert.deepEqual(facts(files), [
+      "faq.md@20 label=Joining fee value=£25 other=£20 count=1 example=membership.md",
+      "membership.md@27 label=Joining fee value=£20 other=£25 count=1 example=faq.md",
+    ]);
+  });
+
+  it("two files against two are all reported, in the run's order of the values", () => {
+    const fee = (value: string): string => `# P\n\nFee: ${value}\n`;
+    const files = { "a.md": fee("$12"), "b.md": fee("$15"), "c.md": fee("$15"), "d.md": fee("$12") };
+    assert.deepEqual(
+      facts(files).map((line) => line.split(" ")[0]),
+      ["a.md@10", "d.md@10", "b.md@10", "c.md@10"],
+    );
+  });
+
+  it("a minority is still reported alone, and agreeing files not at all", () => {
+    const fee = (value: string): string => `# P\n\nFee: ${value}\n`;
+    assert.deepEqual(
+      facts({ "a.md": fee("$12"), "b.md": fee("$15"), "c.md": fee("$12") }).map((line) => line.split(" ")[0]),
+      ["b.md@10"],
+    );
+    assert.deepEqual(facts({ "a.md": fee("$12"), "b.md": fee("$12") }), []);
   });
 });
 

@@ -8,7 +8,7 @@ import { tallyVotes, type Vote } from "../cross-votes.ts";
 /** A file's labelled facts, by its path. */
 export type FileFacts = { readonly path: string; readonly facts: readonly ScopedFact[] };
 
-/** A file whose value for a label differs from the value most files give it: its first fact, and one file of the usual value. */
+/** A file whose value for a label differs from the value most files give it (or, on an even split, from the other value): its first fact, and one file of the other value. */
 export type FactOutOfStep = { readonly path: string; readonly fact: ScopedFact; readonly usual: Vote<ScopedFact>; readonly files: number };
 
 /** Two values the files can be said to agree or disagree on: comparable, and the same. */
@@ -37,11 +37,17 @@ const comparableGroups = (votes: readonly Vote<ScopedFact>[]): Vote<ScopedFact>[
 /** Two values across the files, as with fact-conflict in one section: three or more is read as a list, and left alone. */
 const MAX_VALUES = 2;
 
+const against = (side: readonly Vote<ScopedFact>[], other: readonly Vote<ScopedFact>[]): FactOutOfStep[] => {
+  const [usual] = other;
+  return usual === undefined ? [] : side.map((vote) => ({ path: vote.path, fact: vote.value, usual, files: other.length }));
+};
+
+/** The files of the fewer value. When as many files give one value as the other, neither is fewer, and both sides are reported. */
 const outOfStep = (votes: readonly Vote<ScopedFact>[]): FactOutOfStep[] => {
   const tally = tallyVotes(votes, sameFact);
-  const [usual] = tally?.usual ?? [];
-  if (tally === undefined || usual === undefined || tally.values !== MAX_VALUES) return [];
-  return tally.odd.map((vote) => ({ path: vote.path, fact: vote.value, usual, files: tally.usual.length }));
+  if (tally === undefined || tally.values !== MAX_VALUES) return [];
+  const odd = against(tally.odd, tally.usual);
+  return tally.odd.length === tally.usual.length ? [...against(tally.usual, tally.odd), ...odd] : odd;
 };
 
 /** The files whose value for a label differs from the value most files of the run give it. */
