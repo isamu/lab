@@ -8,7 +8,7 @@ import { digitRunAround, endsWithDivisionLabel, isNumberName, sequenceLabelStart
 import { isSpacedLocationPart, type FloorWords } from "../location-part.ts";
 import { isFieldSeparator, isNameSeparator, type OrganizationWords } from "../name-separator.ts";
 import { addressSpans, clockTimeSpans, identifierSpans, isInsideSpan } from "../spacing-code.ts";
-import { followsHandle, isBoundSuffix, isJoinerSpace } from "../latin-word-boundary.ts";
+import { followsHandle, isBoundSuffix, isJoinerSpace, isLoneLetter } from "../latin-word-boundary.ts";
 import { licenceNoticeSentences } from "./licence-notice.ts";
 import { followsCaptionLabel, isCitedEntryLine, isNumberTableBoundary, lineAt } from "../latin-spacing-source.ts";
 
@@ -133,6 +133,7 @@ const isCounted = (sentence: Sentence, boundary: Boundary, context: NumberContex
       !besideSpan(codes.addresses, boundary) &&
       !isNameSeparator(sentence.text, boundary, sentence.tokens, sentence.span.start, context.organizations) &&
       !isJoinerSpace(sentence.text, boundary, context.latinWords.joiners) &&
+      !isLoneLetter(sentence.text, boundary) &&
       !isBoundSuffix(sentence.text, boundary, sentence.tokens, sentence.span.start, context.latinWords.boundSuffixes)
     );
   if (isInsideSpan(codes.clockTimes, digitBeside(boundary))) return false;
