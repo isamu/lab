@@ -5,12 +5,15 @@ import { basename, join } from "node:path";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { SAMPLE_LANGUAGES, expectedIndex, indexPath, readSample, runSamples, sampleFiles, shownScreens, type SampleRun } from "../scripts/samples.ts";
 import { sampleableRules, withoutCoverage } from "../scripts/samples-index.ts";
+import { inPart, partOf } from "../scripts/sample-part.ts";
 
 // docs/samples/<言語>/<rule>.md の見本は、元の文章でその rule が出て、直した文章で出ず、載せた画面が chaff のいま出すものと
 // 同じでなければならない。古い画面は、読み手に今の chaff と違うものを見せる。直すのは yarn samples:update。
 
 const UPDATE = "run yarn samples:update and read the diff";
 const GUIDE = join(import.meta.dirname, "..", "site", "src", "content", "guide", "en");
+/** CI splits the samples over several jobs (CHAFF_SAMPLE_PART=2/3); locally every sample runs. */
+const FILES = inPart(sampleFiles(), partOf(process.env["CHAFF_SAMPLE_PART"]));
 
 /** Every chaff.yaml key the English guide writes as `key` or `key:`; a sample's settings may use only these. */
 const documentedKeys = (): Set<string> => {
@@ -28,11 +31,11 @@ const failures = (runs: readonly SampleRun[], problem: (run: SampleRun) => strin
 describe("ルールの見本", () => {
   const runs: SampleRun[] = [];
   before(async () => {
-    runs.push(...(await runSamples()));
+    runs.push(...(await runSamples(FILES)));
   });
 
   it("ファイルの名前は rule の id で、その rule はその言語で動き、lint として出る", () => {
-    const problems = sampleFiles().flatMap((file) => {
+    const problems = FILES.flatMap((file) => {
       const run = runs.find((entry) => entry.path === file.path);
       const known = sampleableRules(loadRules(file.language), file.language).map((rule) => rule.id);
       if (run === undefined) return [`${file.path}: not run`];
