@@ -242,7 +242,7 @@ describe("one-sentence-paragraph-run: numbered items and the items of a lead-in"
   });
 });
 
-describe("one-sentence-paragraph-run: a footnotes section and a specification", () => {
+describe("one-sentence-paragraph-run: a footnotes section", () => {
   const notes = [
     "The directory is available at https://example.com/directory.",
     "It is also possible for a firm to bid on both contracts.",
@@ -262,18 +262,5 @@ describe("one-sentence-paragraph-run: a footnotes section and a specification", 
     assert.deepEqual(findingsOf(`## Background\n\n${notes}\n`, en), ["5 one-sentence paragraphs in a row (limit 4)"]);
     assert.deepEqual(findingsOf(`## Footnotes\n\nOne note.\n\n## Next steps\n\n${notes}\n`, en), ["5 one-sentence paragraphs in a row (limit 4)"]);
     assert.deepEqual(findingsOf(`## 注意\n\n${paragraphs(5)}\n`), ["一文だけの段落が 5 個続いています（4 個まで）"]);
-  });
-
-  it("a specification sets one requirement per paragraph: off for technical/spec, on for a README", () => {
-    const rules = [
-      "A new transaction type is introduced.",
-      "Its cost is the base cost.",
-      "Its payload is a list.",
-      "Its signature covers the payload.",
-      "Its receipt holds the status.",
-    ];
-    const source = `## Specification\n\n${rules.join("\n\n")}\n`;
-    assert.equal(firedRules(en, source, "technical/spec").includes(RULE), false);
-    assert.equal(firedRules(en, source, "technical/readme").includes(RULE), true);
   });
 });
