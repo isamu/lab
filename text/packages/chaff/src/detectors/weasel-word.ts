@@ -10,6 +10,15 @@ const cuesOf = (doc: ProseDocument): TellingCues => {
   return { occasion: inGroup("occasion"), sayer: inGroup("sayer") };
 };
 
+/** The clause a phrase closes: the text after the last comma before it (…、魚釣りと洗練から作られた造語である). */
+const lastClause = (before: string): string => before.slice(Math.max(before.lastIndexOf("、"), before.lastIndexOf("，"), before.lastIndexOf(",")) + 1);
+
+/** The phrase hedges where a word or a name comes from (…から作られた造語であるといわれています): an origin has no one source to name. */
+const hedgesOrigin = (before: string, origins: readonly string[]): boolean => {
+  const clause = lastClause(before);
+  return origins.some((origin) => clause.includes(origin));
+};
+
 /** Where the document names its sources: its reference lists, and the in-text citations ([11, 49], Smith (2020)). */
 type Sources = { readonly referenceLists: readonly Span[]; readonly citations: readonly Span[] };
 
@@ -31,16 +40,18 @@ const namesSource = (sources: Sources, sentence: Sentence, phraseStart: number):
 
 /**
  * A weasel phrase counts unless every use of it in the sentence reports a quotation told on a named occasion or by a named
- * sayer (申し込んだら、「…」と言われています), or names its source. Without tokens the uses cannot be placed, so each one counts.
+ * sayer (申し込んだら、「…」と言われています), hedges where a word comes from, or names its source. Without tokens the uses cannot be placed, so each one counts.
  */
 const isWeaselUse = (doc: ProseDocument, sources: Sources, sentence: Sentence, entry: LexiconEntry): boolean => {
   const tokens = sentence.tokens ?? [];
   const ranges = entryRanges(sentence, entry);
   if (ranges.length === 0) return true;
   const cues = cuesOf(doc);
+  const origins = (doc.lexicons["origin-hedge"] ?? []).map((entry) => entry.pattern);
   return !ranges.every((range) => {
     const start = tokens[range.start]?.span.start ?? sentence.span.start;
-    return followsToldQuote(doc.source.slice(sentence.span.start, start), cues) || namesSource(sources, sentence, start);
+    const before = doc.source.slice(sentence.span.start, start);
+    return followsToldQuote(before, cues) || hedgesOrigin(before, origins) || namesSource(sources, sentence, start);
   });
 };
 
