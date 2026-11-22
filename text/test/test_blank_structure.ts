@@ -174,6 +174,7 @@ describe("empty-table-cell: 表の空欄", () => {
         tableBlanks(table("| 10月16日 | 伊藤 | 修正 |", "| 10月21日 | 鈴木 | 配布 |", "| 合計 |  | 二件 |"), [], {
           isTotalRow: (row) => row.includes("合計"),
           totalWords: [],
+          catchAllWords: [],
         }),
       ),
       ["担当"],
