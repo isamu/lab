@@ -164,6 +164,8 @@ $ npx chaffjs explain contrast-framing --genre blog/essay
     relaxed  対比の枠で書いた文が 7% まで
     off      見ない
 
+  この数字は blog/essay のものです。ほかのジャンルは既定の数字を使います。
+
   いまは normal です。
 
   変える:  npx chaffjs relax contrast-framing --why "理由"

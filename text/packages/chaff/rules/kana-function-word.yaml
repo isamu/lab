@@ -55,4 +55,4 @@ not_flagged:
   en: Words in their full meaning (資料を下さい, 本を置いて帰る, 事が起きた, 時が経つ) are not reported. 時 is reported only as a condition (〜時は, 〜時には); 時 for a point in time (達した時から) stays in kanji. 〜て行く, 〜て来る, 〜て見る, 所 and 物 are not checked, since the tagger cannot tell them from their full meaning (持って行く, 開いて見る "open and read", 家を建てる所). Without the koyobun style the rule does not run.
 level_meaning:
   ja: 当てはまる語が {limit} 箇所あれば指摘
-  en: reported once there are {limit}
+  en: reported once there {limit|is|are} {limit}

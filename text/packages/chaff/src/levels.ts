@@ -18,11 +18,17 @@ export type Resolved = { readonly level: Level; readonly limit: number; readonly
  * ジャンル別の閾値。"business/email" は "business" より細かいので先に当たる。
  * 仕様書の一文と社内メールに同じ文長を課すと、どちらかが必ず間違う。spec §9。
  */
-const tableFor = (rule: RuleDefinition, genre: string | undefined): LevelTable => {
-  if (genre === undefined) return rule.levels;
+/** The by_genre key whose numbers a genre takes, or undefined when it takes the rule's default levels. */
+export const genreKeyFor = (rule: RuleDefinition, genre: string | undefined): string | undefined => {
+  if (genre === undefined) return undefined;
   const parts = genre.split("/");
   const keys = parts.map((_, index) => parts.slice(0, parts.length - index).join("/"));
-  return keys.reduce<LevelTable | undefined>((found, key) => found ?? rule.by_genre[key], undefined) ?? rule.levels;
+  return keys.find((key) => rule.by_genre[key] !== undefined);
+};
+
+const tableFor = (rule: RuleDefinition, genre: string | undefined): LevelTable => {
+  const key = genreKeyFor(rule, genre);
+  return (key === undefined ? undefined : rule.by_genre[key]) ?? rule.levels;
 };
 
 export const resolve = (rule: RuleDefinition, level: Level, genre?: string): Resolved => {

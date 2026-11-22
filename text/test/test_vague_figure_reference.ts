@@ -65,6 +65,16 @@ describe("vague-figure-reference (en)", () => {
     assert.deepEqual(found(en, "The figure below a caption shows sales.", ...figures), ["3:The figure below"]);
   });
 
+  it("the chart, graph or diagram below points at a figure, and is checked where figures are numbered", () => {
+    assert.deepEqual(found(en, "Sales rose, as the chart below shows. The graph above and the diagram below agree.", "", "Figure 1: Sales"), [
+      "3:the chart below",
+      "3:The graph above",
+      "3:the diagram below",
+    ]);
+    assert.deepEqual(found(en, "Sales rose, as the chart below shows.", "", "Table 1: Costs"), []);
+    assert.deepEqual(found(en, "Sales rose, as the chart below 1 shows. The flowchart below is Figure 1.", "", "Figure 1: Sales"), []);
+  });
+
   it("the tablet below is not the table below", () => {
     assert.deepEqual(found(en, "Put the tablet below the screen.", "", "Table 1: Costs"), []);
   });

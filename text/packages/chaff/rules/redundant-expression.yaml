@@ -50,7 +50,7 @@ not_flagged:
   en: Idioms that are sometimes needed ("whether or not", "period of time", "past experience", "plan ahead") are not reported. The literature preset turns it off.
 level_meaning:
   ja: 重言を含む文が {limit} 文あれば指摘
-  en: reported once {limit} sentences hold one
+  en: reported once {limit} {limit|sentence holds|sentences hold} one
 rewrite:
   depth: light
   ja:

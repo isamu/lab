@@ -53,11 +53,11 @@ example:
       The new prices start next month and will show on invoices. Payment is due at the end of the month, as before.
 
 not_flagged:
-  ja: 短い文書は測りません。英語では、ダッシュそのものを誤りとは言いません。
-  en: Short documents are not measured. In English a dash is not called wrong; only a heavy hand is.
+  ja: 短い文書は測りません。二つ重ねて一本に組むダッシュ（——、――）は一つと数えます。英語では、ダッシュそのものを誤りとは言いません。
+  en: Short documents are not measured. A doubled dash set as one (——, ――) counts once. In English a dash is not called wrong; only a heavy hand is.
 level_meaning:
   ja: 1000 字あたりダッシュ {limit} 個まで
-  en: up to {limit} dashes per 1000 words
+  en: up to {limit} {limit|dash|dashes} per 1000 words
 rewrite:
   depth: light
   ja:

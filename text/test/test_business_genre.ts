@@ -76,7 +76,8 @@ describe("business/report で既定の検査が弱くならない", () => {
 
   it("chaff.yaml で名指しすれば、動作主の無い受け身も指摘する", () => {
     const named = runRules(buildDocument("report.md", PADDED_REPORT, ja), loadRules("ja"), { "agentless-passive": "normal" }, false, "business/report");
-    assert.deepEqual(firedIn(named, "agentless-passive"), [15]);
+    // 9 行目の「多く見られました」も動作主が無い。「分からない」の中の「から」は動作主の語ではない。
+    assert.deepEqual(firedIn(named, "agentless-passive"), [9, 15]);
   });
 });
 

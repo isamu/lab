@@ -1,4 +1,13 @@
-import type { Finding } from "./plugin.ts";
+import type { Finding, RuleDefinition } from "./plugin.ts";
+import { localized } from "./render/text.ts";
+
+/** The signals as a reader knows them: each rule's name in the language, its id where no rule of that id is loaded. */
+export const signalNames = (ids: readonly string[], rules: readonly Pick<RuleDefinition, "id" | "name">[], language: string): string[] =>
+  ids.map((id) => {
+    const name = rules.find((rule) => rule.id === id)?.name;
+    const words = name === undefined ? "" : localized(name, language);
+    return words === "" ? id : words;
+  });
 
 /** A finding that adds up measures names here the rules that read the same shapes as some of them (ai-structure). */
 export const SAME_SHAPE_VALUE = "same_shape_rules";

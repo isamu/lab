@@ -47,7 +47,7 @@ not_flagged:
   en: Code is not read (an article that explains the parameter in backticks). Other utm_source values (newsletter, twitter) are not counted.
 level_meaning:
   ja: 名残の印が {limit} 個あれば指摘
-  en: reported once there are {limit}
+  en: reported once there {limit|is|are} {limit}
 rewrite:
   depth: light
   ja:

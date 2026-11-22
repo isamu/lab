@@ -47,7 +47,7 @@ not_flagged:
   en: Only the space after a sentence ending in a period, question or exclamation mark, before the next sentence on the same line. Spaces at the end of a line (a Markdown line break) are not counted, nor a pause inside a verse line of a poem ("I'm nobody!  Who are you?"), nor the space before a field's label ("Affiliation:") in an author block.
 level_meaning:
   ja: 少ないほうの空け方が {limit} 箇所あれば指摘
-  en: reported once the less common spacing appears {limit} times
+  en: reported once the less common spacing appears {limit} {limit|time|times}
 rewrite:
   depth: light
   en:

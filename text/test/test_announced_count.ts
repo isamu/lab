@@ -183,6 +183,15 @@ describe("announced-count-mismatch", () => {
     assert.deepEqual(found(doc("The following three members voted:", "- Tanaka", "- Suzuki")), ["three members/2"]);
   });
 
+  it("a count in an earlier clause is not what a later word pointing ahead announces", () => {
+    const items = ["- 社内用語が多い", "- 手順書が古い", "- 質問先が分からない", "- 権限の申請が遅い"];
+    assert.deepEqual(found(doc("新しく入った二人に聞いて分かった、困っていたことは以下のとおりです：", ...items), ja), []);
+    assert.deepEqual(found(doc("We asked two new hires, and they named the following:", ...items)), []);
+    assert.deepEqual(found(doc("確認事項は3点、以下のとおりです：", ...items), ja), ["3点/4"]);
+    assert.deepEqual(found(doc("There are two reasons, as follows:", ...items)), ["two reasons/4"]);
+    assert.deepEqual(found(doc("新しく入った人に聞いて分かった、困っていたことは以下の3点です：", ...items), ja), ["3点/4"]);
+  });
+
   it("a count with others besides is not compared", () => {
     assert.deepEqual(found(doc("次の5名ほかが出席しました。", "- 田中", "- 鈴木"), ja), []);
     assert.deepEqual(found(doc("The following five people and others attended:", "- Tanaka", "- Suzuki")), []);

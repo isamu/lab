@@ -31,7 +31,19 @@ const EN_LIMITS = [
 const ja_ = (...lines: string[]): string => [...JA_LIMITS, ...lines, ""].join("\n");
 const en_ = (...lines: string[]): string => [...EN_LIMITS, ...lines, ""].join("\n");
 
+const quotesIn = (adapter: LanguageAdapter, source: string): string[] =>
+  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), {}, false, "legal/contract")
+    .findings.filter((finding) => finding.rule === "vague-deadline")
+    .map((finding) => finding.quote);
+
 describe("vague-deadline", () => {
+  it("quotes the whole sentence, not the rest of the line from the word", () => {
+    assert.deepEqual(quotesIn(en, en_("3. A reported defect shall be fixed promptly.")), ["A reported defect shall be fixed promptly."]);
+    assert.deepEqual(quotesIn(ja, ja_("第3条　乙は、甲の求めを受けたときは、速やかに資料を提出する。")), [
+      "第3条　乙は、甲の求めを受けたときは、速やかに資料を提出する。",
+    ]);
+  });
+
   it("reports a vague limit in a contract that writes its other limits as numbers", () => {
     assert.deepEqual(wordsIn(ja, ja_("第3条　乙は、甲の求めを受けたときは、速やかに資料を提出する。")), ["速やかに"]);
     assert.deepEqual(wordsIn(ja, ja_("第3条　甲は、前項の請求を受けたときは、遅滞なく修補する。")), ["遅滞なく"]);

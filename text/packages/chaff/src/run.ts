@@ -19,7 +19,7 @@ import { PatternTimeout } from "./custom/pattern-timeout.ts";
 import { PluginRuleFailure } from "./extension/module-detector.ts";
 import { failureReason } from "./extension/failure-text.ts";
 import { tagCoverage } from "./tag-coverage.ts";
-import { compositeSignals } from "./composite-signals.ts";
+import { compositeSignals, signalNames } from "./composite-signals.ts";
 
 export type Skipped = {
   readonly rule: string;
@@ -157,6 +157,10 @@ const untagged = (rule: RuleDefinition, doc: ProseDocument): string | undefined 
 
 const suitsGenre = (rule: RuleDefinition, genre: string): boolean => rule.use_for.some((target) => genre.startsWith(target));
 
+/** Why the genre keeps the rule from running, in a run's words: use_for leaves the genre out, or its preset turns the rule off and chaff.yaml does not name it. */
+export const genreStop = (rule: RuleDefinition, settings: Settings, preset: Settings, genre: string, reasons: Reasons): string | undefined =>
+  !suitsGenre(rule, genre) || (settings[rule.id] === undefined && preset[rule.id] === "off") ? reasons.presetOff(genre) : undefined;
+
 const forGenre = (rules: readonly RuleDefinition[], genre: string): RuleDefinition[] => rules.filter((rule) => suitsGenre(rule, genre));
 
 /** A rule use_for keeps out of the genre. A rule for another language says that first: no genre would run it here. */
@@ -212,7 +216,10 @@ export const place = (starts: readonly number[], finding: Finding): Finding => {
  * 元の指摘は消さない。`padded-intro` のように単独でも正しい指摘が混ざっており、
  * まとめるために消すと本物の指摘が見えなくなる。
  */
-const compositeOf = (rule: RuleDefinition, found: readonly Finding[], limit: number, starts: readonly number[], language: string): Finding[] => {
+type CompositeContext = { readonly starts: readonly number[]; readonly language: string; readonly rules: readonly RuleDefinition[] };
+
+const compositeOf = (rule: RuleDefinition, found: readonly Finding[], limit: number, context: CompositeContext): Finding[] => {
+  const { starts, language, rules } = context;
   const fired = compositeSignals(rule.from, found);
   if (fired.length < limit) return [];
   // 数えなかった signal も含めて、最初に出た所に置く。同じ形を 1 種に数えても、指摘の位置は動かない。
@@ -224,7 +231,13 @@ const compositeOf = (rule: RuleDefinition, found: readonly Finding[], limit: num
       line: 0,
       column: 0,
       quote: first?.quote ?? "",
-      values: { word: joinWords(fired, language), count: fired.length, limit, offset: first === undefined ? 0 : Number(first.values["offset"] ?? 0) },
+      values: {
+        word: joinWords(fired, language),
+        signals: joinWords(signalNames(fired, rules, uiLanguageOf(language)), language),
+        count: fired.length,
+        limit,
+        offset: first === undefined ? 0 : Number(first.values["offset"] ?? 0),
+      },
     }),
   ];
 };
@@ -233,6 +246,17 @@ const compositeOf = (rule: RuleDefinition, found: readonly Finding[], limit: num
 export type Limits = Readonly<Record<string, number>>;
 
 export const limitFor = (rule: RuleDefinition, level: Level, genre: string, limits: Limits): number => limits[rule.id] ?? resolve(rule, level, genre).limit;
+
+type CompositeLevels = {
+  readonly levelOf: (rule: RuleDefinition) => Level;
+  readonly limitOf: (rule: RuleDefinition, level: Level) => number;
+  readonly context: CompositeContext;
+};
+
+const compositesOf = (applicable: readonly RuleDefinition[], found: readonly Finding[], levels: CompositeLevels): Finding[] =>
+  applicable
+    .filter((rule) => rule.from.length > 0 && levels.levelOf(rule) !== "off")
+    .flatMap((rule) => compositeOf(rule, found, levels.limitOf(rule, levels.levelOf(rule)), levels.context));
 
 /** 文書と違う言語で書いた文の上限。chaff.yaml の数値は文書の言語の単位で書いたものなので、ここには効かせない。 */
 const embeddedLimitsFor = (rule: RuleDefinition, level: Level, genre: string, embedded: readonly string[]): Record<string, number> =>
@@ -326,11 +350,11 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
     },
     { findings: [], skipped: [] },
   );
-  const composites = applicable
-    .filter((rule) => rule.from.length > 0 && levelFor(rule, settings, experimental, preset) !== "off")
-    .flatMap((rule) =>
-      compositeOf(rule, outcome.findings, limitFor(rule, levelFor(rule, settings, experimental, preset), genre, limits), starts, doc.language),
-    );
+  const composites = compositesOf(applicable, outcome.findings, {
+    levelOf: (rule) => levelFor(rule, settings, experimental, preset),
+    limitOf: (rule, level) => limitFor(rule, level, genre, limits),
+    context: { starts, language: doc.language, rules },
+  });
   const all = [...outcome.findings, ...composites];
   return { ...outcome, findings: all.toSorted(byPosition), forcedExperimental: forced, presetExperimental: presetOn };
 };

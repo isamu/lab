@@ -43,7 +43,7 @@ not_flagged:
   en: 'Only between words. A list marker ("- "), a number range ("1 - 2"), a hyphen inside a word ("well-known") and code are not reported. Nor is the hyphen that sets a numbered division''s label apart from its title in a heading ("PART I - THE AGENCIES GENERALLY"). Nor is "--" in a document that sets no dash as a character (— or –), where it is how the document types its dash, as plain-text standards and Markdown typographers do. Nor is a separator in copied text: before a capital inside a quotation that reproduces a label or a sign ("Unhelpful - Post needs no note"), in a numbered reference entry ([12] … My robot friend - a study), in a short name given as a field''s value (Office Space - Monthly after Category and a colon), in a log or bot line (one that holds an address, a setting such as exit_code=99 or a dotted name such as sre.mediawiki.restart, or starts with <bot>), and inside an HTML tag shown as text. Nor is a hyphen that joins one capitalised word onto a name ("Iraq and Syria - Khorasan,"). The literature presets turn it off, since older printed texts set the dash as "--".'
 level_meaning:
   ja: "{limit} 箇所あれば指摘"
-  en: reported once there are {limit}
+  en: reported once there {limit|is|are} {limit}
 rewrite:
   depth: light
   en:

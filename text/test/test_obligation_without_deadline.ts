@@ -42,6 +42,13 @@ describe("obligation-without-deadline", () => {
     assert.deepEqual(wordsIn(en, en_("3. The Company will notify you of any change to these Terms by email.")), ["notify"]);
   });
 
+  it('reads "by the" followed by a party as who, not when', () => {
+    assert.deepEqual(wordsIn(en, en_("3. On termination, the Designer shall return all materials supplied by the Client.")), ["return"]);
+    assert.deepEqual(wordsIn(en, en_("3. The Designer shall return all materials by the end of the month.")), []);
+    assert.deepEqual(wordsIn(en, en_("3. The Designer shall return all materials by the fifth business day after termination.")), []);
+    assert.deepEqual(wordsIn(en, en_("3. The Customer shall pay the invoice by the due date.")), []);
+  });
+
   it("does not report where the duties without a limit are not the minority", () => {
     assert.deepEqual(wordsIn(ja, "第1条　甲は、委託料を支払う。\n\n第2条　乙は、資料を提出する。\n"), []);
     const half = ["1. The Customer shall pay the fees.", "", "2. The Supplier shall deliver the goods within ten days.", ""].join("\n");

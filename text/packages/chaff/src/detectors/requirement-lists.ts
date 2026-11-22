@@ -16,6 +16,8 @@ const valuedOf = (doc: ProseDocument, lexicon: string, group?: string): ValuedWo
 const wordsOf = (doc: ProseDocument): RequirementWords => ({
   required: patternsOf(doc, "requirement-heading", "required"),
   preferred: patternsOf(doc, "requirement-heading", "preferred"),
+  subjects: patternsOf(doc, "requirement-heading", "subject"),
+  joiners: patternsOf(doc, "requirement-heading", "joiner"),
   units: valuedOf(doc, "requirement-length-unit"),
   before: patternsOf(doc, "requirement-length-word", "before"),
   after: patternsOf(doc, "requirement-length-word", "after"),

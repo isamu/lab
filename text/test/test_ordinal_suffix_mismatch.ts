@@ -5,6 +5,9 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { ordinalSlips } from "../packages/chaff/src/detectors/ordinal-suffix.ts";
 import type { Lexicon } from "../packages/chaff/src/plugin.ts";
+import { buildDocument } from "../packages/chaff/src/document.ts";
+import { loadRules } from "../packages/chaff/src/rule-load.ts";
+import { runRules } from "../packages/chaff/src/run.ts";
 
 // 数に合わない序数の字（ordinal-suffix-mismatch）。例文はすべて自作。
 
@@ -24,7 +27,17 @@ const SUFFIXES: Lexicon = [
 
 const slipsIn = (text: string): string[] => ordinalSlips(text, SUFFIXES).map((slip) => `${slip.written}>${slip.expected.join("/")}`);
 
+const quotesOf = (source: string): readonly string[] =>
+  runRules(buildDocument("a.md", source, en), loadRules("en"), {}, false, "business/report")
+    .findings.filter((finding) => finding.rule === RULE)
+    .map((finding) => finding.quote);
+
 describe("ordinal-suffix-mismatch: 数に合わない序数の字", () => {
+  it("引用は語の途中で切らず、序数のある文をそのまま見せる", () => {
+    const source = "The town festival celebrates its 23th year this autumn. Tickets go on sale in May.\n";
+    assert.deepEqual(quotesOf(source), ["The town festival celebrates its 23th year this autumn."]);
+  });
+
   it("数の終わりに合わない字を言う", () => {
     assert.deepEqual(findingsOf("This is our 22th annual meeting.\n"), ['"22th" is written "22nd"']);
     assert.deepEqual(slipsIn("1th 2th 3th 11st 12nd 13rd 21th 113rd"), ["1th>st", "2th>nd", "3th>rd", "11st>th", "12nd>th", "13rd>th", "21th>st", "113rd>th"]);

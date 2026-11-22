@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
-import { isTitleCase, minorityCase, pageTitleOf } from "../packages/chaff/src/detectors/heading-case.ts";
+import { isTitleCase, minorityCase, pageTitleOf, withoutLeadingLabel } from "../packages/chaff/src/detectors/heading-case.ts";
 import { namesWrittenMidSentence } from "../packages/chaff/src/detectors/heading-names.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 
@@ -309,6 +309,14 @@ describe("isTitleCase と番号の札・曜日と月の名", () => {
     assert.equal(isTitleCase("Budget 2026: cuts"), false);
   });
 
+  it("札の後ろの括弧に入れた題（Section 1 (Labels)）も、札は語に数えない", () => {
+    assert.equal(isTitleCase("Section 1 (Labels)"), undefined);
+    assert.equal(isTitleCase("Section 2 (Clearing out)"), false);
+    assert.equal(isTitleCase("Section 2 (Clearing Out)"), true);
+    const source = ["# Kitchen rules", "## Section 1 (Labels)\n\nText.", "## Section 2 (Clearing out)\n\nText.", "## Section 4 (Dishes)\n\nText."].join("\n\n");
+    assert.deepEqual(quotesFor(source), []);
+  });
+
   it("invalid: May は月の名でもふつうの語でもあるので、証拠から外さない", () => {
     const source = ["## Release Notes\n\nText.", "## Deployment Guide\n\nText.", "## Support Contacts\n\nText.", "## May updates\n\nText."].join("\n\n");
     assert.deepEqual(quotesFor(source), ["May updates"]);
@@ -411,5 +419,34 @@ describe("title-case-consistency と本文が名前として書く語", () => {
       "## Running Example\n\nText.",
     ].join("\n\n");
     assert.deepEqual(quotesFor(source), ["Running Example"]);
+  });
+});
+
+describe("withoutLeadingLabel over generated headings", () => {
+  const LEADS = ["", " ", "\t", "x"];
+  const WORDS = ["Section", "Rule", "Day", "A", "ab", "SECTION", "Été"];
+  const GAPS = [" ", "  ", "", "\t"];
+  const NUMBERS = ["1", "12", "123", "1234", "1.2", "1.2.3", "1.", ".2", "IV", "XLC", "iv", ""];
+  const ENDS = [".", ":", ")", "-", "–", "—", " ", "(", " (", ". ", ": ", " - ", "x", ""];
+  const TITLES = ["", "Labels", "(Labels)", "Clearing out", " Setup", "2 (Dishes)"];
+  const SEED = 7;
+  const COUNT = 20000;
+  const MULTIPLIER = 48271;
+  const MODULUS = 2147483647;
+
+  it(`removes only a prefix, ends it at a mark or before a bracket, and keeps the title (seed ${String(SEED)})`, () => {
+    let seed = SEED;
+    const pick = (list: readonly string[]): string => {
+      seed = (seed * MULTIPLIER) % MODULUS;
+      return list[seed % list.length] ?? "";
+    };
+    const LABEL = /^\s*\p{Lu}\p{Ll}+\s+\S+?(?:\s*[.:)\-\u2013\u2014]\s+|\s+)$/u;
+    Array.from({ length: COUNT }, () => [pick(LEADS), pick(WORDS), pick(GAPS), pick(NUMBERS), pick(ENDS), pick(TITLES)].join("")).forEach((heading) => {
+      const rest = withoutLeadingLabel(heading);
+      assert.ok(heading.endsWith(rest), heading);
+      const removed = heading.slice(0, heading.length - rest.length);
+      if (removed !== "") assert.match(removed, LABEL, heading);
+      if (removed !== "" && !/[.:)\-\u2013\u2014]\s+$/u.test(removed)) assert.ok(rest.startsWith("("), heading);
+    });
   });
 });

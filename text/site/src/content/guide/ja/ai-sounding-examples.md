@@ -60,7 +60,7 @@ ai-generated-composite が出ています。文の言い回しを直しても、
 
 ## 文書全体の目印
 
-- `ai-generated-composite`: 「ai-tell、padded-intro、closing-cliche」が同じ文書にそろっています（3 種、2 種から）
+- `ai-generated-composite`: 生成文の特徴が 3 種、同じ文書にそろっています（2 種から）。生成文にありがちな言い回し、水増しの導入、定型の結び
 - `ai-tell`: 「現代社会において、と言えるでしょう、深く掘り下げる、本記事では、地味に効く、時間を溶かす、静かに壊れる」が揃っています（点 30、4 まで）
 - `padded-intro`: 「現代社会において」は、どの記事にも当てはまる書き出しです
 - `closing-cliche`: 「いかがでしたか」で締めています
@@ -333,7 +333,7 @@ ai.md   blog/tech · 日本語   ジャンルは --genre から
 
   3:1     info    「詳しく解説していきます、鍵となる、本記事では、地味に効く、効いてくる、時間を溶かす、一つずつ潰す、静かに壊れる、黙って無視される」が揃っています（点 35、4 まで）
                   ai-tell
-  3:1     warning 「ai-tell、honesty-marker、rule-of-three、closing-cliche、contrast-framing、announcing-opener」が同じ文書にそろっています（6 種、2 種から）
+  3:1     warning 生成文の特徴が 6 種、同じ文書にそろっています（2 種から）。生成文にありがちな言い回し、「正直」と前置きする、3 項目の箇条書きばかり、定型の結び、対比の枠が多い、予告で始まる文が多い
                   ai-generated-composite
   9:1     info    「単なる」など、対比の枠で書いた文が 10.3% あります（6% まで）
                   contrast-framing
@@ -576,7 +576,7 @@ study.md   blog/tech · 日本語   ジャンルは --genre から
                   ai-tell
   5:1     info    構成の 3 項目が、人の記事の 9 割を超えています（3 項目から）。見出しの多さ、3 つの小見出しに分けた見出し、太字の見出しで始まる項目
                   ai-structure
-  5:1     warning 「ai-tell、honesty-marker、rule-of-three、closing-cliche、contrast-framing、announcing-opener、ai-structure」が同じ文書にそろっています（7 種、2 種から）
+  5:1     warning 生成文の特徴が 7 種、同じ文書にそろっています（2 種から）。生成文にありがちな言い回し、「正直」と前置きする、3 項目の箇条書きばかり、定型の結び、対比の枠が多い、予告で始まる文が多い、構成が人の記事から外れている
                   ai-generated-composite
   7:1     warning 「非常に重要」は、中身を言わずに強調だけしています
                   empty-intensifier

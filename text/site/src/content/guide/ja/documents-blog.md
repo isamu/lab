@@ -104,7 +104,7 @@ kiji.md   blog/tech · 日本語   ジャンルは --genre から
                   sentence-rhythm
   3:32    info    「詳しく解説していきます、本記事では、黙って捨てられる」が揃っています（点 13、4 まで）
                   ai-tell
-  3:32    warning 「ai-tell、honesty-marker、rule-of-three、section-length-uniformity、sentence-rhythm、padded-intro、closing-cliche、contrast-framing、announcing-opener」が同じ文書にそろっています（9 種、2 種から）
+  3:32    warning 生成文の特徴が 9 種、同じ文書にそろっています（2 種から）。生成文にありがちな言い回し、「正直」と前置きする、3 項目の箇条書きばかり、節の長さが揃いすぎている、文の長さが単調、水増しの導入、定型の結び、対比の枠が多い、予告で始まる文が多い
                   ai-generated-composite
   9:1     info    「単なる」など、対比の枠で書いた文が 8.3% あります（6% まで）
                   contrast-framing

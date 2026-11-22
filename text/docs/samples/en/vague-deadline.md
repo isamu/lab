@@ -31,7 +31,7 @@ cleaning-agreement.md   legal/contract · English   genre from --genre
 
 ─── line 9 ───────────────────────────────────────────────────
 
-    promptly.
+    The Contractor shall replace any damaged equipment promptly.
 
   ·  A time limit left to the reader (promptly)
 

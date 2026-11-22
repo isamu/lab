@@ -1,19 +1,24 @@
 # 応募の条件の見出しと札（required-listed-as-preferred）。group の required は必ず要るもの、preferred はあれば歓迎するもの。
 # 見出しは「・」「（」の前までを、行に一つだけ立つ札（必須：、【歓迎】）は行の全体を、この語と照らす。
+# その語に subject（経験、資格）が、joiner（する、の）を挟んで、または挟まずに続くものも同じ見出し（歓迎する経験・資格、必須スキル）。
+# subject でない語が続くもの（歓迎会のご案内、必須科目）は見出しに読まない。
 id: requirement-heading
 language: ja
 entries:
   - { pattern: 必須, group: required }
-  - { pattern: 必須スキル, group: required }
-  - { pattern: 必須条件, group: required }
-  - { pattern: 必須要件, group: required }
-  - { pattern: 必須資格, group: required }
-  - { pattern: 必須経験, group: required }
   - { pattern: 応募資格, group: required }
   - { pattern: 歓迎, group: preferred }
-  - { pattern: 歓迎スキル, group: preferred }
-  - { pattern: 歓迎条件, group: preferred }
-  - { pattern: 歓迎要件, group: preferred }
-  - { pattern: 歓迎経験, group: preferred }
   - { pattern: 尚可, group: preferred }
   - { pattern: あれば尚可, group: preferred }
+  - { pattern: スキル, group: subject }
+  - { pattern: 経験, group: subject }
+  - { pattern: 資格, group: subject }
+  - { pattern: 条件, group: subject }
+  - { pattern: 要件, group: subject }
+  - { pattern: 能力, group: subject }
+  - { pattern: 知識, group: subject }
+  - { pattern: する, group: joiner }
+  - { pattern: される, group: joiner }
+  - { pattern: となる, group: joiner }
+  - { pattern: の, group: joiner }
+  - { pattern: な, group: joiner }

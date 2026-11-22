@@ -322,12 +322,21 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   return alone.map(([acronym, hit]) => acronymFinding(acronym, hit, alone.length, options.limit));
 };
 
+/** 二つ重ねて一本に組むダッシュ（——、――）。重ねた二つ目からは、同じ一本の続き。 */
+const DOUBLED_DASH = /[—―]/u;
+const continuesDash = (source: string, offset: number): boolean => DOUBLED_DASH.test(source[offset] ?? "") && DOUBLED_DASH.test(source[offset - 1] ?? "");
+
+/** 重ねたダッシュの最後の字の位置。段落の終わりで箇条を導くかは、そこから後ろで見る。 */
+const dashEnd = (source: string, offset: number): number => (continuesDash(source, offset + 1) ? dashEnd(source, offset + 1) : offset);
+
 /**
  * ダッシュの多用。英語では正当な用法が多いが、2026 年時点で最も知られた生成文のシグナルでもある。
  * 日本語の組版ではそもそも扱いが難しい。どちらが正しいかは severity の言語別指定で分ける。spec §12.4。
  */
 export const dashDensity: Detector = (doc, options): Finding[] => {
-  const hits = findIn(doc, DASH).filter((hit) => !introducesList(doc.source, hit.offset) && !opensLine(doc.source, hit.offset));
+  const hits = findIn(doc, DASH).filter(
+    (hit) => !continuesDash(doc.source, hit.offset) && !introducesList(doc.source, dashEnd(doc.source, hit.offset)) && !opensLine(doc.source, hit.offset),
+  );
   const first = hits[0];
   const rate = density(doc, hits.length);
   if (wordsOf(doc) < MIN_DOCUMENT_LENGTH[doc.lengthUnit] || first === undefined || rate <= options.limit) return [];

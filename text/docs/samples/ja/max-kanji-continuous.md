@@ -129,7 +129,7 @@ $ npx chaffjs explain max-kanji-continuous --genre business/report
     relaxed  漢字の連続 14 字まで
     off      見ない
 
-  この数字は business/report のものです。ほかに business で別の数字を持っています。
+  この数字は business のもので、business/report はこれを使います。ほかのジャンルは既定の数字を使います。
 
   オプション（chaff.yaml の options で決めます）:
     headword_genres: [docs/glossary]   (既定)

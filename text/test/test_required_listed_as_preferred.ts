@@ -53,6 +53,18 @@ describe("required-listed-as-preferred, Japanese", () => {
     assert.deepEqual(found(["# 求人", "", "## 応募資格", "", "### 技術", "", "- Go", "", "## 歓迎", "", "- Go", ""].join("\n"), ja), ["11:Go"]);
   });
 
+  it("a heading whose kind word is followed by what the list is of, with a joiner or none", () => {
+    assert.deepEqual(found(posting(["Go"], ["Go"], ["## 必須の経験", "## 歓迎する経験・資格"]), ja), ["9:Go"]);
+    assert.deepEqual(found(posting(["Go"], ["Go"], ["## 必須要件・歓迎要件", "## 歓迎されるスキル"]), ja), ["9:Go"]);
+    assert.deepEqual(found(posting(["Go"], ["Go"], ["## 応募資格（必須）", "## 歓迎経験"]), ja), ["9:Go"]);
+  });
+
+  it("a heading that starts with 歓迎 or 必須 in another sense is not a list of conditions", () => {
+    assert.deepEqual(found(posting(["Go"], ["Go"], ["## 必須", "## 歓迎会のご案内"]), ja), []);
+    assert.deepEqual(found(posting(["Go"], ["Go"], ["## 必須科目", "## 歓迎"]), ja), []);
+    assert.deepEqual(found(posting(["Go"], ["Go"], ["## 必須", "## 歓迎の言葉"]), ja), []);
+  });
+
   it("the preferred list may come first", () => {
     assert.deepEqual(found(posting(["Go"], ["Go"], ["## 歓迎", "## 必須"]), ja), ["5:Go"]);
   });
@@ -131,6 +143,8 @@ describe("required-listed-as-preferred, English", () => {
 const WORDS: RequirementWords = {
   required: ["必須"],
   preferred: ["歓迎"],
+  subjects: [],
+  joiners: [],
   units: [{ word: "年", value: 12 }],
   before: [],
   after: ["以上"],

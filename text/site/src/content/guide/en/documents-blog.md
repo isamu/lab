@@ -102,7 +102,7 @@ article.md   blog/tech · English   genre from --genre
                   ai-tell
   3:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro
-  3:1     warning "ai-tell, honesty-marker, rule-of-three, section-length-uniformity, padded-intro, closing-cliche, announcing-opener" occur together in this document (7 signals, 2 needed)
+  3:1     warning 7 signals of generated text occur together in this document (2 needed): Phrasing common in generated text, An honesty marker, Everything comes in threes, Section lengths are too uniform, Padded opening, Cliched closing, Too many sentences that announce before they say
                   ai-generated-composite
   11:1    info    "Honestly," and other announcing openers start 3 sentences (3 needed)
                   announcing-opener

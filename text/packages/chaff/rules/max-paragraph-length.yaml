@@ -75,4 +75,4 @@ not_flagged:
   en: A paragraph of many short sentences is not reported, as long as it is shorter than that many sentences of ordinary length. A line holding only a 【】 label (a Japanese paragraph number or heading, 【０００１】) ends a paragraph, and a paragraph whose numbered 【】 heading runs straight into its body (a copy that lost its line breaks) is not measured, since where its paragraphs end is unknown.
 level_meaning:
   ja: 一つの段落に {limit} 文まで
-  en: up to {limit} sentences in a paragraph
+  en: up to {limit} {limit|sentence|sentences} in a paragraph

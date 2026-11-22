@@ -177,6 +177,16 @@ describe("very-adjective", () => {
     const source = `It went very well and ran very smoothly. The very first step and the very same plan took very few hours. It was very \`not\` good. It was very \`not\` important. ${padding}\n`;
     assert.deepEqual(findingsOf(RULE, source), []);
   });
+
+  it("an adjective the tagger reads as a noun or an adverb after very is counted (very light, very fast)", () => {
+    const source = `The frame is very light. It is a very fast parser. The bike is very light and very fast, and the grip is very firm. ${padding}\n`;
+    assert.deepEqual(findingsOf(RULE, source).length, 5);
+  });
+
+  it("an adverb after a verb, and a noun after the very, are not counted (runs very fast, the very light of day)", () => {
+    const source = `It runs very fast. It is very well documented. They met in the very light of day. ${padding}\n`;
+    assert.deepEqual(findingsOf(RULE, source), []);
+  });
 });
 
 describe("very-adjective in Japanese: とても, すごく, 非常に before an adjective", () => {

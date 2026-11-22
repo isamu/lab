@@ -113,7 +113,7 @@ $ npx chaffjs explain closing-exhortation --genre blog/tech
   How to fix: Drop the cheering and name the one thing from the text you want the reader to take away.
 
   Levels:
-    strict   reported once 1 closing sentences cheer the reader on
+    strict   reported once 1 closing sentence cheers the reader on
   → normal   reported once 2 closing sentences cheer the reader on
     relaxed  reported once 3 closing sentences cheer the reader on
     off      not checked

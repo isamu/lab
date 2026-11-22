@@ -303,9 +303,10 @@ const CAPITAL_OR_NON_LATIN = /\p{Lu}|[^\p{Script=Latin}\p{N}\s\p{P}]/u;
 
 /**
  * 前で使ったと言える語。小文字の英語（("vendors")）はふつうの語としても使うので、前の現れが定義した語の使用とは限らない。
- * 一字の漢字（「法」「令」）は、令和や方法の一部にも当たる。
+ * 一字の漢字（「法」「令」）は、ふつうの語としても書くので、当事者の呼び名（甲・乙）だけ。
  */
-const isDistinctive = (term: string): boolean => CAPITAL_OR_NON_LATIN.test(term) && !SINGLE_KANJI.test(term);
+const isDistinctive = (term: string, singleKanjiNames: ReadonlySet<string>): boolean =>
+  CAPITAL_OR_NON_LATIN.test(term) && (!SINGLE_KANJI.test(term) || singleKanjiNames.has(term));
 
 /** 文の途中の定義ごとの、括弧の前の名前。 */
 const definingNames = (terms: readonly DefinedTerm[], texts: readonly BodyText[]): Map<DefinedTerm, DefiningName> =>
@@ -395,6 +396,16 @@ const citesSource = (texts: readonly BodyText[], markers: readonly string[], off
 };
 
 /**
+ * 言語の語の一覧。selfPrefixes は文書自身の名前の頭（この、本、this）、sourceMarkers は語の意味の出どころを言う言葉（所定の）、
+ * singleKanjiNames は前の使用を探す一字の漢字の語（当事者の呼び名の甲・乙）。
+ */
+export type EarlyUseWords = {
+  readonly selfPrefixes?: readonly string[];
+  readonly sourceMarkers?: readonly string[];
+  readonly singleKanjiNames?: ReadonlySet<string>;
+};
+
+/**
  * 文の途中で括弧に入れて定義した語（(the "Seller")、以下「甲」という）を、その定義の文より前で使っている所。最初の一つだけ。
  * 定義の文の中の現れ（株式会社GovTech東京（以下「GovTech東京」という。））は、定義する名前そのものなので数えない。札の文も、
  * isTitle が言う題・見出し・目次の行も、漢字で終わる語にさらに漢字が続く長い語の一部も、定義の括弧の前の長い名前を写した所も、
@@ -410,14 +421,13 @@ export const usesBeforeDefinition = (
   texts: readonly BodyText[],
   mentioned: Mentioned = NEVER_MENTIONED,
   isTitle: IsTitle = NEVER_TITLE,
-  selfPrefixes: readonly string[] = [],
-  sourceMarkers: readonly string[] = [],
+  { selfPrefixes = [], sourceMarkers = [], singleKanjiNames = new Set() }: EarlyUseWords = {},
 ): TermUse[] => {
   const inline = terms.filter((term) => term.inline);
   const names = definingNames(terms, texts);
   const insideLongerName = insideLongerNameIn(texts, terms, names);
   return groupsOf(terms)
-    .filter((group) => group.first.inline && isDistinctive(group.first.term))
+    .filter((group) => group.first.inline && isDistinctive(group.first.term, singleKanjiNames))
     .flatMap(({ first: defined, spans }) => {
       const defining = sentenceAt(texts, defined.span.start)?.start ?? defined.span.start;
       const uses = usesOf(defined.term, texts, spans, "exact", defined.bare === true ? mentioned : NEVER_MENTIONED).filter((offset) => offset < defining);

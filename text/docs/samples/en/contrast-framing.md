@@ -150,7 +150,7 @@ $ npx chaffjs explain contrast-framing --genre blog/tech
     relaxed  up to 9% of sentences in contrast frames
     off      not checked
 
-  These numbers are for blog/tech. blog/essay have numbers of their own.
+  These numbers are the default ones, which blog/tech takes. blog/essay has numbers of its own.
 
   Now: normal.
 

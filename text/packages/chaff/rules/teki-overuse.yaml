@@ -46,7 +46,7 @@ not_flagged:
   en: Only the suffix 的 is counted; words such as 目的 and 的確, terms the law defines (電磁的方法, 反社会的勢力), and anything in 「」 are not. The options of one choice joined by か (連続的か断続的か、一時的) and a pair written together with only nouns between (信仰的主観的, 時間的空間的) count once. A list written inside the sentence with circled numbers (①…、②…) is counted item by item. A table a converter ran into one sentence (rows of ditto cells, 〃) is not counted.
 level_meaning:
   ja: 一文の「〜的」{limit} 個まで
-  en: up to {limit} 〜的 words in a sentence
+  en: up to {limit} {limit|〜的 word|〜的 words} in a sentence
 rewrite:
   depth: light
   ja:

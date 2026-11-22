@@ -61,6 +61,12 @@ describe("nominalization (ja): a verbal noun carried by を行う / を実施す
     ]);
   });
 
+  it("a verbal noun that ends a compound is read with the whole compound (塗り直し, not 直し)", () => {
+    assert.deepEqual(hidden("壁の塗り直しを実施しました。", ja), ["塗り直しを実施する→塗り直しする"]);
+    assert.deepEqual(hidden("品質調査を実施した。", ja), ["品質調査を実施する→品質調査する"]);
+    assert.deepEqual(hidden("満足度の調査を実施した。", ja), ["調査を実施する→調査する"]);
+  });
+
   it("〜をする is ordinary and not counted", () => {
     assert.deepEqual(hidden("毎日、勉強をする。", ja), []);
   });
@@ -77,6 +83,14 @@ describe("nominalization (ja): a verbal noun carried by を行う / を実施す
 describe("nominalization (en): a phrase hiding a verb", () => {
   it("matches the phrase in any form of its verb, and names the verb", () => {
     assert.deepEqual(hidden("We made a decision. They will conduct an analysis of the data.", en), ["made a decision→decide", "conduct an analysis→analyze"]);
+  });
+
+  it("matches the past tense of a verb the phrase alone reads as a noun (conduct)", () => {
+    assert.deepEqual(hidden("They conducted an analysis. She conducted a review. We are conducting an investigation.", en), [
+      "conducted an analysis→analyze",
+      "conducted a review→review",
+      "conducting an investigation→investigate",
+    ]);
   });
 
   it("the verb itself, and a phrase not on the list, are not counted", () => {

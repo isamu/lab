@@ -22,10 +22,16 @@ const FLOOR = { word: 200, char: 500 };
 
 type Hit = { readonly sentence: Sentence; readonly matched: string; readonly group?: string | undefined };
 
-const hitsFor = (doc: ProseDocument, lexicon: Lexicon): Hit[] =>
-  doc.sentences.flatMap((sentence) =>
-    lexicon.filter((entry) => entryIn(sentence, entry)).map((entry) => ({ sentence, matched: entry.pattern, group: entry.group })),
-  );
+/** 後ろの語を導く語（まるで）。同じ文にほかの語が当たれば、それと合わせて一つ（まるで魔法のように）と数える。 */
+const OPENER_GROUP = "opener";
+
+const sentenceHits = (sentence: Sentence, lexicon: Lexicon): Hit[] => {
+  const hits = lexicon.filter((entry) => entryIn(sentence, entry)).map((entry) => ({ sentence, matched: entry.pattern, group: entry.group }));
+  const closed = hits.some((hit) => hit.group !== OPENER_GROUP);
+  return closed ? hits.filter((hit) => hit.group !== OPENER_GROUP) : hits;
+};
+
+const hitsFor = (doc: ProseDocument, lexicon: Lexicon): Hit[] => doc.sentences.flatMap((sentence) => sentenceHits(sentence, lexicon));
 
 /**
  * A lexicon word in group address says how the document speaks to its reader (あなたの). Alone it is the writer's chosen

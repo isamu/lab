@@ -139,6 +139,14 @@ export const partReferenceSpans = (text: string, unit: LengthUnit): Span[] =>
   unit === "word" ? spansOf(text, LABEL_AND_NUMBER, (match) => PART_LABELS.has((match[1] ?? "").toLowerCase())) : spansOf(text, JA_PART_REFERENCE, () => true);
 
 /**
+ * 日本語の、数を入れた短い括弧の注（（前期比99.6％）、(同101.6％)、（前期は営業損失3,887千円））の範囲。報告は数ごとに比べた数を括弧で
+ * 添え、同じ結び（〜となりました。）で閉じる。中身は数で、注に触れる語句は数を並べる書式。長い注は書き手の文なので外さない。
+ */
+const JA_FIGURE_ASIDE = /[（(][^（）()\n]{0,20}[\d０-９][^（）()\n]{0,20}[）)]/gu;
+
+export const figureAsideSpans = (text: string, unit: LengthUnit): Span[] => (unit === "char" ? spansOf(text, JA_FIGURE_ASIDE, () => true) : []);
+
+/**
  * 角括弧でくくった画面の部品の名前（[許可]、［ブックマーク］、[内容を確認]リンク）と、それに付く助詞一つの範囲。画面の手引きは手順ごとに
  * 違う部品を指して同じ形で書く（[…]をクリックすると）。名前にかかる語句と同じく、部品の名前に付いた所からの語句は数えない。
  * 後ろの片仮名の語（ボタン、リンク）も名前に入れる。

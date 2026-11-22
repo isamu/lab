@@ -73,4 +73,4 @@ not_flagged:
   en: A name counts once, not once per word. Name words written together (Federal Reserve System), a short form in brackets right after a name ((OCC)), a quoted title, and a name listed under names in chaff.yaml each count as one. Lines that are not sentences (a letterhead, a list of attendees, a signature, a list of titles) and the months, weekdays and era names are not counted. Short documents (under 200 words) are not measured.
 level_meaning:
   ja: 1000 字あたり固有名詞 {limit} 個まで
-  en: up to {limit} proper nouns per 1000 words
+  en: up to {limit} {limit|proper noun|proper nouns} per 1000 words
