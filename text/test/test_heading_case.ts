@@ -255,6 +255,45 @@ describe("isTitleCase と vs・v.・via", () => {
   });
 });
 
+describe("isTitleCase と短い接続詞 if・nor", () => {
+  it("AP・APA の Title Case が小文字で書く if・nor は、どちらの流儀の証拠にもしない", () => {
+    assert.equal(isTitleCase("What To Do if You Suspect a Phishing Attack"), true);
+    assert.equal(isTitleCase("What To Do If You Suspect a Phishing Attack"), true);
+    assert.equal(isTitleCase("Neither Here nor There"), true);
+  });
+
+  it("ほかの語が小文字なら sentence case のまま", () => {
+    assert.equal(isTitleCase("What to do if you suspect a phishing attack"), false);
+    assert.equal(isTitleCase("What to do If you suspect a phishing attack"), false);
+  });
+});
+
+describe("title-case-consistency と短い接続詞 if", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+  });
+
+  it("valid: if だけを小文字にした Title Case の見出しは、Title Case の文書の中で指摘しない", () => {
+    const source = [
+      "## How To Recognize Scams\n\nText.",
+      "## How To Protect Yourself\n\nText.",
+      "## What To Do if You Suspect a Scam\n\nText.",
+      "## How To Report Scams\n\nText.",
+    ].join("\n\n");
+    assert.deepEqual(quotesFor(source), []);
+  });
+
+  it("invalid: sentence case の文書の中の Title Case の見出しは、if があっても指摘する", () => {
+    const source = [
+      "## How to recognize scams\n\nText.",
+      "## How to protect yourself\n\nText.",
+      "## What To Do if You Suspect a Scam\n\nText.",
+      "## How to report scams\n\nText.",
+    ].join("\n\n");
+    assert.deepEqual(quotesFor(source), ["What To Do if You Suspect a Scam"]);
+  });
+});
+
 describe("title-case-consistency と vs", () => {
   before(async () => {
     await en.prepare?.({ pos: true });
