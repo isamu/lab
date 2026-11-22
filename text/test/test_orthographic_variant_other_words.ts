@@ -44,6 +44,21 @@ describe("orthographic-variant: 前の語に続けて書いたかなの動詞", 
   });
 });
 
+describe("orthographic-variant: かなで書いた語の頭", () => {
+  it("かなの語の頭（つきたて、かきかけ、かみさま）を、同じ読みの漢字の名詞（月、柿、紙）と比べない", () => {
+    assert.deepEqual(
+      findingsOf("# お知らせ\n\n4月1日から4月7日まで開きます。期間中は、つきたての餅をふるまいます。5月1日にも開きます。\n", "business/press-release"),
+      [],
+    );
+    assert.deepEqual(findingsOf("# 記録\n\n柿を買った。柿を食べた。柿をむいた。かきかけの手紙が残る。\n"), []);
+    assert.deepEqual(findingsOf("# 記録\n\n紙を買った。紙に書いた。紙を折った。かみさまの話を聞く。\n"), []);
+  });
+
+  it("それだけで書いたかなの名詞は今までどおり比べる", () => {
+    assert.equal(findingsOf("# 記録\n\n柿を買った。柿を食べた。柿をむいた。かきの実が落ちた。\n").length, 1);
+  });
+});
+
 describe("orthographic-variant: 複合動詞の頭", () => {
   it("複合動詞の頭（出来上る）を、それだけの「できる」と比べない", () => {
     assert.deepEqual(findingsOf("# 講演\n\nやがて出来上ってみると驚いた。窓口でできる。郵送でもできる。代理でもできる。\n"), []);

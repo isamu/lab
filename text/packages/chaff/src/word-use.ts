@@ -56,6 +56,15 @@ export const HIRAGANA_ONLY = /^[ぁ-ゖー]+$/u;
 const isKanaSuffix = ({ token, previous }: InContext): boolean =>
   token.pos === "NOUN" && previous?.pos === "NOUN" && isTouching(previous, token) && HIRAGANA_ONLY.test(token.surface);
 
+/**
+ * A kana noun with a kana noun written onto it (つき of つきたて, かき of かきかけ, かみ of かみさま): the head of a word written in kana,
+ * whose reading meets a free noun of the same sound (月, 柿, 紙) by chance.
+ */
+const isKanaCompoundHead = ({ token, following }: InContext): boolean => {
+  const next = following?.[0];
+  return token.pos === "NOUN" && next?.pos === "NOUN" && isTouching(token, next) && HIRAGANA_ONLY.test(token.surface) && HIRAGANA_ONLY.test(next.surface);
+};
+
 /** The verb of an idiom (気をつける): the noun, the particle and the verb's dictionary form are in the idiom lexicon. */
 const isIdiomVerb = ({ token, previous, before }: InContext, idioms: ReadonlySet<string>): boolean =>
   token.pos === "VERB" && previous?.pos === "ADP" && before !== undefined && idioms.has(`${before.surface}${previous.surface}${token.lemma ?? token.surface}`);
@@ -173,7 +182,8 @@ const helperUseOf = (word: InContext, lightVerbs: ReadonlySet<string>): string =
  * The two uses are compared apart, so a document that follows that convention is consistent. A suffix (業務用, 全員ぶん) is a third use:
  * it is not the dependent noun of the same reading (このように). The verb of an idiom (気をつける) is a fourth, and a
  * conjunction (あわせて、, さらに、) a fifth, a verb of judging (〜とみられる) a sixth, a katakana spelling with a sense of its own (モノ)
- * a seventh, the head of a compound verb (出来上る) an eighth, its tail (貼り付ける) a ninth and 以て (〜でもって) a tenth. A light verb
+ * a seventh, the head of a compound verb (出来上る) an eighth, its tail (貼り付ける) a ninth, 以て (〜でもって) a tenth and
+ * the head of a word written in kana (つきたて) an eleventh. A light verb
  * after と (議題といたします) is a helper.
  */
 export const useOf = (word: InContext, { idioms, conjunctions, judging, senses, means, lightVerbs }: Uses): string => {
@@ -185,6 +195,7 @@ export const useOf = (word: InContext, { idioms, conjunctions, judging, senses, 
   if (isCompoundVerbHead(word)) return "compound-verb";
   if (isCompoundVerbTail(word)) return "compound-tail";
   if (isKanaSuffix(word)) return "suffix";
+  if (isKanaCompoundHead(word)) return "kana-head";
   return helperUseOf(word, lightVerbs);
 };
 
