@@ -82,15 +82,36 @@ const sidedFinding = (item: Sided, values: Finding["values"], variant?: string):
   values: { ...values, offset: item.offset },
 });
 
-/** The less common way, one finding each, or one finding for a document written both ways (spacing-minority.ts). */
-const minorityFindings = <T extends Sided>(items: readonly T[], limit: number, valuesOf: (item: T) => Finding["values"]): Finding[] => {
+/** The odd items, each its own slip, or with the one before it when joins says they are one slip. */
+const slipsOf = <T>(odd: readonly T[], joins: (previous: T, item: T) => boolean): T[][] =>
+  odd.reduce<T[][]>((slips, item) => {
+    const last = slips.at(-1);
+    const previous = last?.at(-1);
+    if (last !== undefined && previous !== undefined && last.length === 1 && joins(previous, item)) last.push(item);
+    else slips.push([item]);
+    return slips;
+  }, []);
+
+/**
+ * The less common way, one finding per slip, or one finding for a document written both ways (spacing-minority.ts). The
+ * counts stay in items: a slip of two items is two of the places that differ.
+ */
+const minorityFindings = <T extends Sided>(
+  items: readonly T[],
+  limit: number,
+  valuesOf: (slip: readonly T[]) => Finding["values"],
+  joins: (previous: T, item: T) => boolean = () => false,
+): Finding[] => {
   const report = minorityReport(items, limit);
   if (report === undefined) return [];
   if (report.mode === "mixed") {
     const { first, odd, spaced, touching } = report;
-    return [sidedFinding(first, { ...valuesOf(first), spaced, touching, count: odd, of: items.length, limit }, "mixed")];
+    return [sidedFinding(first, { ...valuesOf([first]), spaced, touching, count: odd, of: items.length, limit }, "mixed")];
   }
-  return report.odd.map((item) => sidedFinding(item, { ...valuesOf(item), count: report.odd.length, of: items.length, limit }));
+  return slipsOf(report.odd, joins).flatMap((slip) => {
+    const first = slip[0];
+    return first === undefined ? [] : [sidedFinding(first, { ...valuesOf(slip), count: report.odd.length, of: items.length, limit })];
+  });
 };
 
 /** Sentences written in the document's own language; a quoted sentence in another language follows its own marks. */
@@ -203,6 +224,12 @@ const withNoteAddressKind = (mark: Mark, addresses: ReadonlySet<number>): Mark =
 const withNoteKind = (mark: Mark, notes: ReadonlySet<number>): Mark =>
   notes.has(mark.offset) && !mark.form.kind.endsWith(ENUMERATOR_KIND) ? { ...mark, form: { ...mark.form, kind: `${mark.form.kind}${NOTE_KIND}` } } : mark;
 
+/** A closing bracket of the same width right after its opening one, with no bracket between (資料(案)): one slip, not two. */
+const closesPair = (source: string, opening: Mark, closing: Mark): boolean =>
+  opening.sentence === closing.sentence &&
+  CLOSER_OF[opening.char] === closing.char &&
+  !/[()（）[\]［］]/u.test(source.slice(opening.offset + 1, closing.offset));
+
 /**
  * A mark written two ways in one document (（ and (, “ and "), the less common way reported. The two ways come from the
  * lexicon; neither is called right. Only marks next to a letter of the document's script count, so a bracket in code-like
@@ -229,7 +256,8 @@ export const markConsistency: Detector = (doc, options): Finding[] => {
     minorityFindings(
       marks.filter((mark) => mark.form.kind === kind && !isWithinAny(titles, { start: mark.offset, end: mark.offset + 1 })),
       options.limit,
-      (mark) => ({ mark: mark.char, usual: mark.form.other }),
+      (slip) => ({ mark: slip.map((mark) => mark.char).join(""), usual: slip.map((mark) => mark.form.other).join("") }),
+      (opening, closing) => closesPair(doc.source, opening, closing),
     ),
   );
 };
@@ -263,9 +291,9 @@ export const sentenceGaps = (doc: ProseDocument): Sided[] => {
 
 /** One space between sentences and two, mixed in one document: the less common is reported. */
 export const sentenceSpacing: Detector = (doc, options): Finding[] =>
-  minorityFindings(sentenceGaps(doc), options.limit, (gap) => ({
-    spaces: gap.spaced ? TWO_SPACES.length : ONE_SPACE.length,
-    usual: gap.spaced ? ONE_SPACE.length : TWO_SPACES.length,
+  minorityFindings(sentenceGaps(doc), options.limit, ([gap]) => ({
+    spaces: gap?.spaced === true ? TWO_SPACES.length : ONE_SPACE.length,
+    usual: gap?.spaced === true ? ONE_SPACE.length : TWO_SPACES.length,
   }));
 
 type Hit = { readonly sentence: Sentence; readonly matched: string; readonly offset: number };

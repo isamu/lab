@@ -36,8 +36,8 @@ describe("bracket-width-consistency on line labels and item addresses", () => {
   it("still counts a bracket after a Latin word, a figure's bracket in a table and a Japanese word at a line's head", () => {
     assert.equal(findingsOf([...PROSE, "OSI(Open Source Initiative)の定義を見てください。", ""].join("\n")).length, 1);
     assert.equal(findingsOf([...PROSE, "所有割合は100.0(100.0)プリンター関連です。", ""].join("\n")).length, 1);
-    assert.equal(findingsOf([...PROSE, "(背景)会議を開きます。", ""].join("\n")).length, 2);
-    assert.equal(findingsOf([...PROSE, "次の(1)及び(2)を送ってください。", ""].join("\n")).length, 4);
-    assert.equal(findingsOf([...PROSE, "前回の議題(2)を続けます。", ""].join("\n")).length, 2);
+    assert.equal(findingsOf([...PROSE, "(背景)会議を開きます。", ""].join("\n")).length, 1);
+    assert.equal(findingsOf([...PROSE, "次の(1)及び(2)を送ってください。", ""].join("\n")).length, 2);
+    assert.equal(findingsOf([...PROSE, "前回の議題(2)を続けます。", ""].join("\n")).length, 1);
   });
 });

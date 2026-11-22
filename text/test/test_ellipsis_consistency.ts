@@ -1,6 +1,6 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { namedRuleRun } from "./rule-run.ts";
+import { namedRuleRun, ruleQuotes } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { ellipsesIn } from "../packages/chaff/src/detectors/ellipsis.ts";
@@ -15,6 +15,11 @@ describe("ellipsis-consistency: 省略記号の書き方の混在", () => {
   before(async () => {
     await ja.prepare?.({ pos: true });
     await en.prepare?.({ pos: true });
+  });
+
+  it("引用は語の途中で切らず、記号のある文をそのまま見せる", () => {
+    const source = "準備中です……。確認中です……。少々お待ちください・・・。お急ぎの方は窓口までお越しください。\n";
+    assert.deepEqual(ruleQuotes(RULE, source, ja), ["少々お待ちください・・・。"]);
   });
 
   it("少ないほうの書き方を指す", () => {

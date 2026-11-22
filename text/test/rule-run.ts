@@ -65,6 +65,12 @@ export const namedRuleRun = (
   };
 };
 
+/** The excerpt each finding of one rule quotes, run as namedRuleRun runs it. */
+export const ruleQuotes = (rule: string, source: string, adapter: LanguageAdapter, genre = "business/report"): string[] =>
+  runRules(buildDocument("a.md", source, adapter), rulesOf(adapter.id), { [rule]: "normal" }, false, genre)
+    .findings.filter((finding) => finding.rule === rule)
+    .map((finding) => finding.quote);
+
 /** The rules with these marked experimental: a test of how chaff treats an experimental rule, whichever rules are experimental today. */
 export const asExperimental = (rules: readonly RuleDefinition[], ids: readonly string[]): RuleDefinition[] =>
   rules.map((rule) => (ids.includes(rule.id) ? { ...rule, status: "experimental" } : rule));

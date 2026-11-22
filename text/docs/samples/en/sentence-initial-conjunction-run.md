@@ -97,7 +97,7 @@ $ npx chaffjs explain sentence-initial-conjunction-run --genre blog/essay
   How to fix: Keep one. Join the others to the previous sentence, or let them stand alone.
 
   Levels:
-    strict   up to 1 sentences in a row opening with a conjunction
+    strict   up to 1 sentence in a row opening with a conjunction
   → normal   up to 2 sentences in a row opening with a conjunction
     relaxed  up to 4 sentences in a row opening with a conjunction
     off      not checked

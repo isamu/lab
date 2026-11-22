@@ -31,9 +31,9 @@ $ npx chaffjs --no-guide --genre business/report trip.md
 
 trip.md   business/report · English   genre from --genre
 
-─── line 3 ───────────────────────────────────────────────────
+─── line 5 ───────────────────────────────────────────────────
 
-    I spent three days at the fair with Lena from the buying team.
+    On Tuesday we met Jonas Weber of Nordkorn and Marta Silva of Quinta Verde at the Nordkorn stand, then Pieter de Vries of…
 
   ·  Too many proper nouns
 

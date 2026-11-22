@@ -73,10 +73,10 @@ npx chaffjs explain katakana-long-vowel     このルールの設定と、決め
 
 ```
   オプション（chaff.yaml の options で決めます）:
-    ending: drop   (style: ieice から)
+    ending: drop   （style: ieice から）
       語末の「ー」をどちらに寄せるか
-        consistent 決めない。文書の中でそろっているかだけを見る
-      → drop       min_morae 音以上の語の語末の「ー」を省く（電子情報通信学会、JIS Z 8301:2011 まで）
+        consistent  決めない。文書の中でそろっているかだけを見る
+      → drop        min_morae 音以上の語の語末の「ー」を省く（電子情報通信学会、JIS Z 8301:2011 まで）
 ```
 
 ## チームだけのルールを足す

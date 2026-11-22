@@ -57,6 +57,18 @@ describe("level_meaning agrees with its number", () => {
     assert.match(nowLine(rule, 1, "ja"), /結びの励ます・請け合う文が 1 個あれば指摘/u);
   });
 
+  it("the note on other genres' numbers agrees with how many genres it names", () => {
+    const rule = ruleOf("unqualified-superlative");
+    const noteOf = (byGenre: RuleDefinition["by_genre"]): string =>
+      renderExplain({ ...rule, by_genre: byGenre }, "normal", "en")
+        .split("\n")
+        .find((line) => line.includes("These numbers"))
+        ?.trim() ?? "";
+    const levels = { strict: 1, normal: 2, relaxed: 3 };
+    assert.equal(noteOf({ "blog/tech": levels }), "These numbers are for the default genre. blog/tech has numbers of its own.");
+    assert.equal(noteOf({ "blog/tech": levels, business: levels }), "These numbers are for the default genre. blog/tech / business have numbers of their own.");
+  });
+
   it("a rule that does not say what a level means counts times, one time at 1", () => {
     const rule = ruleOf("closing-exhortation");
     const unsaid: RuleDefinition = rule.guide === undefined ? rule : { ...rule, guide: { ...rule.guide, levelMeaning: {} } };

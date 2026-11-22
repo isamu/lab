@@ -31,7 +31,7 @@ budget.md   business/proposal · English   genre from --genre
 
 ─── line 7 ───────────────────────────────────────────────────
 
-    new floors come to $2,400,000. We ask the counci
+    Furniture, shelving and computers for the new floors come to $2,400,000.
 
   ·  Amounts of one size written two ways
 

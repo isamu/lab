@@ -22,10 +22,7 @@ const MANUAL = [
 
 describe("bracket-width-consistency on square brackets", () => {
   it("points at the half-width square brackets when the full-width ones are usual", () => {
-    assert.deepEqual(findingsOf(MANUAL), [
-      "括弧を「[」と書いています（この文書はふつう「［」。6 箇所のうち 2 箇所が違う）",
-      "括弧を「]」と書いています（この文書はふつう「］」。6 箇所のうち 2 箇所が違う）",
-    ]);
+    assert.deepEqual(findingsOf(MANUAL), ["括弧を「[]」と書いています（この文書はふつう「［］」。6 箇所のうち 2 箇所が違う）"]);
   });
 
   it("compares square brackets apart from parentheses", () => {
@@ -42,7 +39,7 @@ describe("bracket-width-consistency on square brackets", () => {
   });
 
   it("still counts a bracket holding a word with a number", () => {
-    assert.equal(findingsOf([...BUTTONS, "[手順2]を見てください。", ""].join("\n")).length, 2);
+    assert.equal(findingsOf([...BUTTONS, "[手順2]を見てください。", ""].join("\n")).length, 1);
   });
 
   it("says nothing when one width is used throughout, or for Markdown links, footnotes and task boxes", () => {

@@ -148,4 +148,18 @@ describe("missing-final-period: 「。」で終わらない段落", () => {
     assert.ok(paragraph !== undefined);
     assert.equal(paragraphEnd(source, paragraph, MARKS)?.offset, source.indexOf(last) + last.length - 1);
   });
+
+  it("ヘッダーの項目の行（件名：…）は、述語で終わっても文として数えない", () => {
+    const email = [
+      "件名：経費精算のページが新しくなりました",
+      "お疲れさまです。総務部の佐藤です。",
+      "本日から、経費精算のページが新しくなりました。申請の画面が一つにまとまりました。",
+      "古いページは今月末まで使えますが、来月からは新しいページだけになります。",
+      "使い方の説明は、社内ポータルの総務の欄に載せています。",
+    ].join("\n\n");
+    assert.deepEqual(findingsOf(`${email}\n`), []);
+    assert.deepEqual(findingsOf(documentWith("Subject: 経費精算のページが新しくなりました")), []);
+    assert.equal(findingsOf(documentWith("経費精算のページが新しくなりました")).length, 1);
+    assert.equal(findingsOf(documentWith("新しい件名：経費精算のページが新しくなりました")).length, 1);
+  });
 });

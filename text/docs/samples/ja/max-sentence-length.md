@@ -122,7 +122,7 @@ $ npx chaffjs explain max-sentence-length --genre business/email
     relaxed  一文 100 字まで
     off      見ない
 
-  この数字は business/email のものです。ほかに technical / blog / blog/essay / business / docs / legal / legal/statute / legal/judgment / academic で別の数字を持っています。
+  この数字は business/email のものです。technical / blog / blog/essay / business / docs / legal / legal/statute / legal/judgment / academic は別の数字を持っています。
 
   いまは normal です。
 

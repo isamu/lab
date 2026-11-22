@@ -28,6 +28,16 @@ type SentenceWords = {
 const unwrittenWords = (sentence: Sentence, text: string, listItems: SentenceWords["listItems"]): number =>
   termSeriesSaving(text) + authorListSaving(text) + (isInListItem(sentence.span, listItems) || isReferenceLine(text) ? quotedTitleWords(text) : 0);
 
+/**
+ * A comma or a stop typed with one space before it ("the same brick , and"). It is no word of its own. One space only:
+ * the spaces that hide markup ("**TITLE**.", "[link](url),") are left counted, as the measure has always read them.
+ */
+const TYPED_LOOSE_STOP = /(?<=[\p{L}\p{N}]) [,.;:!?]+(?=\s|$)/gu;
+
+/** A sentence's length; where words are the unit, a typed loose comma or stop is not counted. */
+const sentenceSize = (sentence: Sentence, unit: LengthUnit): number =>
+  lengthOf(sentence, unit) - (unit === "word" ? [...sentence.text.matchAll(TYPED_LOOSE_STOP)].length : 0);
+
 const sizeOf = (text: string, unit: LengthUnit): number =>
   unit === "word" ? text.split(/\s+/u).filter((word) => word.length > 0).length : text.replace(/\s+/gu, "").length;
 
@@ -48,7 +58,7 @@ const measureOf = (sentence: Sentence, unit: LengthUnit, options: DetectorOption
   const embedded = sentence.embeddedLanguage;
   const limit = embedded === undefined ? undefined : options.embeddedLimits?.[embedded.id];
   if (embedded === undefined || limit === undefined) return { size: ownSize(sentence, unit, words), limit: options.limit };
-  return { size: lengthOf(sentence, embedded.lengthUnit), limit, variant: `embedded-${embedded.id}` };
+  return { size: sentenceSize(sentence, embedded.lengthUnit), limit, variant: `embedded-${embedded.id}` };
 };
 
 /** Code or a citation string: nothing in it is the writer's sentence. A title line too, where words are the unit. */
@@ -70,7 +80,7 @@ const ownSize = (sentence: Sentence, unit: LengthUnit, words: SentenceWords): nu
   const remark = unit === "word" ? remarkAfterTitle(text) : undefined;
   if (remark !== undefined) return sizeOf(remark, unit);
   const unwritten = unit === "word" ? unwrittenWords(sentence, text, words.listItems) : 0;
-  const size = lengthOf(sentence, unit) - pageMarkerSize(text, words.markers, unit) - unwritten;
+  const size = sentenceSize(sentence, unit) - pageMarkerSize(text, words.markers, unit) - unwritten;
   return unit === "char" ? longestQuotedPart(text, size, words.markers) : size;
 };
 

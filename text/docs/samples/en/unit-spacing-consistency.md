@@ -29,7 +29,7 @@ storage.md   technical/spec · English   genre from --genre
 
 ─── line 6 ───────────────────────────────────────────────────
 
-    team folder passes 450GB, its owner gets a w
+    When a team folder passes 450GB, its owner gets a warning by email.
 
   ·  Units spaced two ways
 

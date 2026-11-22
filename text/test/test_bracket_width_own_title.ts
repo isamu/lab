@@ -23,12 +23,12 @@ describe("bracket-width-consistency on a quotation of the document's own heading
 
   it("still counts the same brackets in a sentence that does not repeat the heading", () => {
     const source = ["# 共有データ管理計画(DMP)の動向", "", ...BODY, "", "管理計画(DMP)を作る。", ""].join("\n");
-    assert.equal(findingsOf(source).length, 2);
+    assert.equal(findingsOf(source).length, 1);
   });
 
   it("still counts a table of contents' line that is only the heading", () => {
     const source = ["- 共有データ管理計画(DMP)の動向", "", ...BODY, "", "# 共有データ管理計画(DMP)の動向", ""].join("\n");
-    assert.equal(findingsOf(source).length, 2);
+    assert.equal(findingsOf(source).length, 1);
   });
 
   it("finds the quotations outside the heading only, and not of a short heading", () => {

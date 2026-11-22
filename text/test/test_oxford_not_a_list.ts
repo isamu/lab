@@ -111,6 +111,15 @@ describe("oxford-comma-consistency: what is not a list", () => {
     assert.equal(reportedWithout("“FIM has been a game changer for managers, responders, and communities,” said the director."), true);
     assert.equal(reportedWithout("She said 'we need posters, cards, and calendars' at the meeting."), true);
   });
+
+  it("does not count a relative clause set off by commas after a name, and reads a list after it", () => {
+    const tom = "Tom, who repaired radios for forty years before he retired, gently opened the back and quickly found a loose wire.";
+    assert.equal(reportedWith(tom), false);
+    assert.equal(reportedWithout("Tom, who repaired radios for forty years before he retired, gently opened the back, and quickly found a loose wire."), false);
+    assert.equal(reportedWith("The mayor, whose office is on Elm Street, thanked the volunteers and closed the meeting."), false);
+    assert.equal(reportedWith("We hired Alice, who leads design, Bob, Carol and Dan."), true);
+    assert.equal(reportedWithout("Alice, who leads design, Bob, Carol, and Dan joined the team."), true);
+  });
 });
 
 describe("excerptSpans", () => {

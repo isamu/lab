@@ -100,7 +100,7 @@ $ npx chaffjs explain latin-spacing --genre blog/tech
     relaxed  少ないほうの空け方が 3 箇所あれば指摘
     off      見ない
 
-  この数字は blog/tech のものです。ほかに technical で別の数字を持っています。
+  この数字は既定のもので、blog/tech はこれを使います。technical は別の数字を持っています。
 
   いまは normal です。
 

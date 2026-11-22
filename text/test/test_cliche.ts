@@ -44,6 +44,22 @@ describe("cliche: a worn phrase", () => {
     assert.deepEqual(findingsOf("Each base station reports its load."), []);
   });
 
+  it("reads at the end of the day as the time of day after a verb and its object, and as the figure opening a clause", () => {
+    assert.deepEqual(findingsOf("Empty the grounds tray at the end of the day."), []);
+    assert.deepEqual(findingsOf("Back up the files at the end of the day and lock the room."), []);
+    assert.deepEqual(findingsOf("We do this because at the end of the day, we are stewards of the budget."), ['"at the end of the day" is a cliché']);
+    assert.deepEqual(findingsOf("At the end of the day it is about trust."), ['"at the end of the day" is a cliché']);
+    assert.deepEqual(findingsOf("The cache is faster, but at the end of the day nobody noticed."), ['"at the end of the day" is a cliché']);
+  });
+
+  it("reads on the same page as agreement only with a person as its subject or object", () => {
+    assert.deepEqual(findingsOf("Every version is on the same page."), []);
+    assert.deepEqual(findingsOf("Print both tables on the same page."), []);
+    assert.deepEqual(findingsOf("For a review to work, we all need to be on the same page."), ['"on the same page" is a cliché']);
+    assert.deepEqual(findingsOf("A short call gets everyone on the same page."), ['"on the same page" is a cliché']);
+    assert.deepEqual(findingsOf("Check that you're on the same page before you start."), ['"on the same page" is a cliché']);
+  });
+
   it("reports more worn phrases, and not the same words used literally", () => {
     assert.deepEqual(findingsOf("Upgrading the cache is a no-brainer."), ['"no-brainer" is a cliché']);
     assert.deepEqual(findingsOf("We should not reinvent the wheel here."), ['"reinvent the wheel" is a cliché']);
@@ -63,7 +79,10 @@ describe("cliche: a worn phrase", () => {
   it("every lexicon phrase is found in a sentence", () => {
     const lexicon = en.lexicons[RULE] ?? [];
     assert.ok(lexicon.length > 0);
-    lexicon.forEach((entry) => assert.equal(findingsOf(`They said ${entry.pattern} again.`).length, 1, entry.pattern));
+    // A phrase read only as the figure (cliche-figurative) is tried where its figure stands: after a person, before a comma.
+    const figurative = new Set((en.lexicons["cliche-figurative"] ?? []).map((entry) => entry.group));
+    const sentenceOf = (pattern: string): string => (figurative.has(pattern) ? `We are all ${pattern}, they said.` : `They said ${pattern} again.`);
+    lexicon.forEach((entry) => assert.equal(findingsOf(sentenceOf(entry.pattern)).length, 1, entry.pattern));
   });
 
   it("does not read headings", () => {

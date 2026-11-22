@@ -70,6 +70,13 @@ describe("orthographic-variant: 読みで束ねる", () => {
     ]);
   });
 
+  it("窓口の「受付」と行いの「受け付け」は書き分け。「受け付け」と「受付け」は言う", () => {
+    assert.deepEqual(findingsOf("受付は一階にあります。\n\n来客の受け付けを始めます。受け付けの時間は九時からです。受け付けの場所は一階です。\n"), []);
+    assert.deepEqual(findingsOf("来客の受け付けを始めます。受け付けの時間は九時からです。受け付けの場所は一階です。受付けは窓口でします。\n"), [
+      "「受付け」と書いています（この文書はふつう「受け付け」と書く語です。4 箇所のうち 1 箇所が違う）",
+    ]);
+  });
+
   it("どちらも同じ数なら、どちらの側にも立たない", () => {
     assert.deepEqual(findingsOf("窓口で申請できます。代理の人も申請出来ます。\n"), []);
   });
@@ -103,6 +110,37 @@ describe("orthographic-variant: カタカナ語と英字", () => {
   it("ウィンドウ と ウインドウ", () => {
     assert.deepEqual(findingsOf("ウィンドウを開きます。ウィンドウを閉じます。ウインドウの大きさを変えます。\n"), [
       "「ウインドウ」と書いています（この文書はふつう「ウィンドウ」と書く語です。3 箇所のうち 1 箇所が違う）",
+    ]);
+  });
+
+  it("reads an English heading's words with the body's", () => {
+    const source = [
+      "# Email help",
+      "",
+      "You can sign in with your email address. Each email we send has a link. Check your email for the code.",
+      "",
+      "## Can I have two accounts with one e-mail address?",
+      "",
+      "No. One email address holds one account.",
+      "",
+    ].join("\n");
+    assert.deepEqual(findingsOf(source, en), ['"e-mail" here, where the document usually writes "email" (1 of 6)']);
+    const code = [
+      "# Maps",
+      "",
+      "A ConfigMap holds settings. Each ConfigMap has a name. Mount the ConfigMap as a volume.",
+      "",
+      "## Create one with `kubectl create configmap`",
+      "",
+    ];
+    assert.deepEqual(findingsOf(code.join("\n"), en), []);
+  });
+
+  it("日本語の見出しの語は数えない（見出しは送り仮名を省く札、分類の語）", () => {
+    const source = ["# 好きな店", "", "## コーヒー", "", "珈琲を淹れる店です。珈琲の豆も買えます。珈琲に合う菓子もあります。", ""].join("\n");
+    assert.deepEqual(findingsOf(source), []);
+    assert.deepEqual(findingsOf(source.replace("## コーヒー", "コーヒーも出します。")), [
+      "「コーヒー」と書いています（この文書はふつう「珈琲」と書く語です。4 箇所のうち 1 箇所が違う）",
     ]);
   });
 

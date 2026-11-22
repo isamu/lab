@@ -1,5 +1,5 @@
 import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span } from "../plugin.ts";
-import { conjugatedStartsOutside } from "./conjugated-entry.ts";
+import { conjugatedSpansOutside } from "./conjugated-entry.ts";
 import { calendarRuns, calendarUnitsOf, type CalendarUnits } from "../calendar-number.ts";
 import { escapeRegExp, latinBoundaries, occurrencesOutside, type Boundary, type SpacingKind } from "../orthography.ts";
 import { minorityReport, withoutSideOnTie } from "../spacing-minority.ts";
@@ -13,18 +13,28 @@ import { licenceNoticeSentences } from "./licence-notice.ts";
 import { followsCaptionLabel, isCitedEntryLine, isNumberTableBoundary, lineAt } from "../latin-spacing-source.ts";
 
 /** 書いた形の出現に、動詞の活用した形（行う → 行います）を足したもの。同じ位置は一度だけ。 */
-const avoidedStarts = (sentence: Sentence, entry: LexiconEntry, use: string): number[] => {
-  const written = occurrencesOutside(sentence.text, entry.pattern, use);
-  const conjugated = conjugatedStartsOutside(sentence, entry, use).filter((at) => !written.includes(at));
-  return [...written, ...conjugated].toSorted((left, right) => left - right);
+const avoidedSpans = (sentence: Sentence, entry: LexiconEntry, use: string): Span[] => {
+  const written = occurrencesOutside(sentence.text, entry.pattern, use).map((start) => ({ start, end: start + entry.pattern.length }));
+  const conjugated = conjugatedSpansOutside(sentence, entry, use).filter((span) => !written.some((other) => other.start === span.start));
+  return [...written, ...conjugated].toSorted((left, right) => left.start - right.start);
+};
+
+type PreferPair = { readonly entry: LexiconEntry; readonly avoid: string; readonly use: string };
+type PreferHit = { readonly sentence: Sentence; readonly span: Span; readonly pair: PreferPair };
+
+const isInsideLonger = (hit: PreferHit, other: PreferHit): boolean =>
+  other.span.end - other.span.start > hit.span.end - hit.span.start && other.span.start <= hit.span.start && hit.span.end <= other.span.end;
+
+/** 並べた書き方が重なれば（e-mail の中の mail）、長い方だけ。短い方は長い方の一部で、別の書き方ではない。 */
+const sentenceHits = (sentence: Sentence, pairs: readonly PreferPair[]): PreferHit[] => {
+  const hits = pairs.flatMap((pair) => avoidedSpans(sentence, pair.entry, pair.use).map((span) => ({ sentence, span, pair })));
+  return hits.filter((hit) => !hits.some((other) => isInsideLonger(hit, other))).toSorted((left, right) => left.span.start - right.span.start);
 };
 
 /** チームが chaff.yaml の prefer に書いた「使わない書き方」。書いていなければ何も言わない。 */
 export const preferredTerm: Detector = (doc, options): Finding[] => {
   const pairs = (options.lexicon ?? []).flatMap((entry) => (entry.instead_of === undefined ? [] : [{ entry, avoid: entry.pattern, use: entry.instead_of }]));
-  const hits = doc.sentences.flatMap((sentence) =>
-    pairs.flatMap((pair) => avoidedStarts(sentence, pair.entry, pair.use).map((at) => ({ sentence, at, pair }))),
-  );
+  const hits = doc.sentences.flatMap((sentence) => sentenceHits(sentence, pairs));
   if (hits.length === 0 || hits.length < options.limit) return [];
   return hits.map((hit) => ({
     rule: "",
@@ -32,7 +42,7 @@ export const preferredTerm: Detector = (doc, options): Finding[] => {
     line: 0,
     column: 0,
     quote: hit.sentence.text.trim(),
-    values: { matched: hit.pair.avoid, preferred: hit.pair.use, count: hits.length, limit: options.limit, offset: hit.sentence.span.start + hit.at },
+    values: { matched: hit.pair.avoid, preferred: hit.pair.use, count: hits.length, limit: options.limit, offset: hit.sentence.span.start + hit.span.start },
   }));
 };
 

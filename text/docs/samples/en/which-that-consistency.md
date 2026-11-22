@@ -106,7 +106,7 @@ $ npx chaffjs explain which-that-consistency --genre technical/spec
   Levels:
     strict   reported when the fewer form appears 4 times or fewer
   → normal   reported when the fewer form appears 2 times or fewer
-    relaxed  reported when the fewer form appears 1 times or fewer
+    relaxed  reported when the fewer form appears 1 time or fewer
     off      not checked
 
   Now: normal.

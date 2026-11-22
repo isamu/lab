@@ -37,7 +37,7 @@ welcome.md   docs/manual · English   genre from --genre
   ⚠  Repeated sentence opening
 
      4 sentences in a row open with "Your account lets" (limit 3)
-     Identical openings blur the boundary between sentences.
+     Identical openings blur the boundary between sentences. A sentence counts when its first three words (six characters in Japanese) match the sentence before it.
 
      → Reorder, or fold one sentence into the one before it.
 
@@ -92,7 +92,7 @@ $ npx chaffjs explain repeated-sentence-head --genre docs/manual
 
   Repeated sentence opening   (repeated-sentence-head)
 
-  Identical openings blur the boundary between sentences.
+  Identical openings blur the boundary between sentences. A sentence counts when its first three words (six characters in Japanese) match the sentence before it.
 
   How to fix: Reorder, or fold one sentence into the one before it.
 

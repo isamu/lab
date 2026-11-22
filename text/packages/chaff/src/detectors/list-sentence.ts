@@ -28,6 +28,8 @@ export type ListWords = {
   readonly elision?: readonly string[];
   /** 並びの残りを言う語（so forth / the like）。and so forth の前まで並びが続く。 */
   readonly openListEnd?: ReadonlySet<string>;
+  /** 読点で挟んで名前に添える関係節を始める語（who / which）。Tom, who repaired radios, opened … の節は並びの項目ではない。 */
+  readonly asideRelative?: ReadonlySet<string>;
 };
 
 const LIST_CONJUNCTION: ReadonlySet<string> = new Set(["and", "or"]);

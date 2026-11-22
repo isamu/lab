@@ -114,7 +114,7 @@ $ npx chaffjs explain max-paragraph-length --genre business/report
     relaxed  一つの段落に 8 文まで
     off      見ない
 
-  この数字は business/report のものです。ほかに legal / legal/statute / legal/judgment / academic で別の数字を持っています。
+  この数字は既定のもので、business/report はこれを使います。legal / legal/statute / legal/judgment / academic は別の数字を持っています。
 
   いまは normal です。
 

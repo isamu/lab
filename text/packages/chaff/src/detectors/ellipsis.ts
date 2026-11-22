@@ -1,7 +1,7 @@
 import type { Detector, Finding } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { formMinority } from "./form-minority.ts";
-import { quoteAround } from "./quote-around.ts";
+import { quoteAround, sentenceQuoteAt } from "./quote-around.ts";
 
 // One document writing an ellipsis two ways ("..." and "…", "……" and "・・・"). Neither is called right; the less common is
 // reported. The forms come from each language's lexicon "ellipsis".
@@ -83,7 +83,7 @@ export const ellipsisConsistency: Detector = (doc, options): Finding[] => {
     severity: "info",
     line: 0,
     column: 0,
-    quote: quoteAround(text, ellipsis.offset, ellipsis.offset + ellipsis.form.length),
+    quote: sentenceQuoteAt(doc.sentences, ellipsis.offset) ?? quoteAround(text, ellipsis.offset, ellipsis.offset + ellipsis.form.length),
     values: { written: ellipsis.form, usual: minority.usual.form, count: minority.odd.length, of: ellipses.length, offset: ellipsis.offset },
   }));
 };

@@ -37,7 +37,7 @@ post.md   blog/owned-media · English   genre from --genre
 
 ─── line 3 ───────────────────────────────────────────────────
 
-    Last Saturday we opened the bakery kitchen to the public for the first time. We
+    Last Saturday we opened the bakery kitchen to the public for the first time.
 
   ·  Run of one-sentence paragraphs
 

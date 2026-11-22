@@ -208,6 +208,33 @@ describe("email-greeting-closing: a greeting and a closing", () => {
     assert.deepEqual(variantsOf(en, "email-greeting-closing", "# Notes\n\nThe meeting is at two.\n", "business/report"), []));
 });
 
+describe("email-greeting-closing: an email that opens with thanks for the reader's time", () => {
+  const AFTER_MEETING = [
+    "山田様",
+    "",
+    "本日はお忙しいところ、打ち合わせのお時間をいただきありがとうございました。",
+    "",
+    "資料を添付します。ご確認ください。",
+    "",
+    "よろしくお願いいたします。",
+    "",
+  ].join("\n");
+
+  it("takes 本日はお忙しいところ…ありがとうございました for a greeting", () => {
+    assert.deepEqual(variantsOf(ja, "email-greeting-closing", AFTER_MEETING), []);
+    assert.deepEqual(variantsOf(ja, "email-greeting-closing", AFTER_MEETING.replace("本日は", "先日は")), []);
+    assert.deepEqual(variantsOf(ja, "email-greeting-closing", AFTER_MEETING.replace("本日はお忙しいところ、打ち合わせの", "お忙しいところ")), []);
+  });
+
+  it("does not take お忙しいところ alone, which also opens a closing request", () => {
+    const request = AFTER_MEETING.replace(
+      "本日はお忙しいところ、打ち合わせのお時間をいただきありがとうございました。",
+      "お忙しいところ恐縮ですが、資料をご確認ください。",
+    );
+    assert.deepEqual(variantsOf(ja, "email-greeting-closing", request), ["greeting"]);
+  });
+});
+
 describe("email-greeting-closing: a confirmation email that opens with このたびは", () => {
   const JA_CONFIRMATION = [
     "# お申し込み受付のお知らせ",

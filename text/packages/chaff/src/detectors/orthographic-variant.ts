@@ -29,6 +29,7 @@ import { bracketedTitleRuns, titleCaseNameRuns } from "../title-case-name.ts";
 import { withoutQuotedSpellings, type Quoted } from "../quoted-spelling.ts";
 import { teFormOf, withTeFormFullVerbs, type TeForm } from "../te-form-helper.ts";
 import { citedSpans, isOpenIn, namesOf, patternsOf, type IsOpen, type Names } from "./orthographic-variant-open.ts";
+import { headingSentences } from "./heading-sentences.ts";
 
 /**
  * A word found in the document: where it is, which sentence it is in, its key and spelling, how it is written when that differs, and
@@ -302,8 +303,17 @@ const findingOf = (words: readonly Placed[], odd: OddSpelling<Placed>): Finding 
 /** A cell that is one Latin word in lower case (openapi, contentType): a field name or a value, spelled by the data and not by the writer. */
 const DATA_KEY_CELL = /^\p{Ll}[A-Za-z0-9]*$/u;
 
-/** A sentence or a table cell, where its words are the writer's, whether its Latin words are read, and its cited works. */
-type Place = { readonly sentence: Sentence; readonly isOpen: IsOpen; readonly readsLatin: boolean; readonly cited: readonly Span[] };
+/**
+ * A sentence, a heading or a table cell, where its words are the writer's, whether its Latin and its Japanese words are
+ * read, and its cited works.
+ */
+type Place = {
+  readonly sentence: Sentence;
+  readonly isOpen: IsOpen;
+  readonly readsLatin: boolean;
+  readonly readsJapanese: boolean;
+  readonly cited: readonly Span[];
+};
 
 /** What the words of a document are read with besides the lexicons of uses: the dictionary, and the small words inside a name (of). */
 type Reading = { readonly isWord: (word: string) => boolean; readonly nameJoiners: readonly string[] };
@@ -317,16 +327,41 @@ const withoutLinkChrome = (text: string): string => text.replaceAll(LINK_CHROME,
 const cellPlace = (cell: TableCell, names: Names): Place => {
   const text = withoutLinkChrome(cell.text);
   const sentence: Sentence = { span: { start: cell.start, end: cell.end }, text, tokens: cell.tokens ?? [] };
-  return { sentence, isOpen: isOpenIn(sentence, names), readsLatin: !DATA_KEY_CELL.test(text.trim()), cited: citedSpans(sentence, names) };
+  return {
+    sentence,
+    isOpen: isOpenIn(sentence, names),
+    readsLatin: !DATA_KEY_CELL.test(text.trim()),
+    readsJapanese: true,
+    cited: citedSpans(sentence, names),
+  };
 };
+
+/**
+ * A body sentence, read whole; or a heading, read for its Latin words only. An English heading spells its words as the
+ * body does (e-mail, email); a Japanese heading is a label, whose compound nouns drop okurigana (申込受付期間 beside 申込み)
+ * and whose category word (コーヒー) stands beside names in the body (大坊珈琲店).
+ */
+const textPlace = (written: Sentence, names: Names, heading: boolean): Place => {
+  const sentence = heading ? withoutInlineCode(written) : written;
+  return { sentence, isOpen: isOpenIn(sentence, names), readsLatin: true, readsJapanese: !heading, cited: citedSpans(sentence, names) };
+};
+
+const INLINE_CODE = /`[^`]*`/gu;
+
+/** A heading with its code blanked out (`kubectl create configmap`): the body's prose masks code, a heading's text keeps it. */
+const withoutInlineCode = (sentence: Sentence): Sentence => ({
+  ...sentence,
+  text: sentence.text.replaceAll(INLINE_CODE, (code) => " ".repeat(code.length)),
+});
 
 /** The odd spellings among places that speak in one voice. */
 const findingsIn = (placed: readonly Place[], skips: Skips, { isWord, nameJoiners }: Reading, limit: number): Finding[] => {
+  const japanese = placed.filter((place) => place.readsJapanese);
   const reading = byKanji(
-    withTeFormFullVerbs(placed.flatMap(({ sentence, isOpen }) => readingWords(withCutNounsJoined(sentence, skips.nouns), isOpen, skips))),
+    withTeFormFullVerbs(japanese.flatMap(({ sentence, isOpen }) => readingWords(withCutNounsJoined(sentence, skips.nouns), isOpen, skips))),
   );
-  const katakana = placed.flatMap(({ sentence, isOpen }) => katakanaWords(sentence, isOpen));
-  const runs = placed.flatMap(({ sentence, isOpen }) => katakanaRunWords(sentence, isOpen));
+  const katakana = japanese.flatMap(({ sentence, isOpen }) => katakanaWords(sentence, isOpen));
+  const runs = japanese.flatMap(({ sentence, isOpen }) => katakanaRunWords(sentence, isOpen));
   const latin = withoutQuotedSpellings(
     withoutCoinedNames(
       placed.flatMap((place) => (place.readsLatin ? latinWords(place, skips.skip, nameJoiners) : [])),
@@ -349,7 +384,8 @@ const findingsIn = (placed: readonly Place[], skips: Skips, { isWord, nameJoiner
 export const orthographicVariant: Detector = (doc, options): Finding[] => {
   const names = namesOf(doc, options.genre);
   const placed: Place[] = [
-    ...doc.sentences.map((sentence) => ({ sentence, isOpen: isOpenIn(sentence, names), readsLatin: true, cited: citedSpans(sentence, names) })),
+    ...doc.sentences.map((sentence) => textPlace(sentence, names, false)),
+    ...headingSentences(doc).map((sentence) => textPlace(sentence, names, true)),
     ...(doc.tableCells?.() ?? []).map((cell) => cellPlace(cell, names)),
   ];
   const phraseSuffixes = new Set(patternsOf(doc, PHRASE_SUFFIX, options.genre));
@@ -366,7 +402,7 @@ export const orthographicVariant: Detector = (doc, options): Finding[] => {
     phraseSuffixes,
     twoReadings: new Map(entriesForGenre(doc.lexicons[TWO_READINGS] ?? [], options.genre).map((entry) => [entry.pattern, entry.group ?? ""])),
     nouns: documentNounKeys(
-      placed.map(({ sentence }) => sentence.tokens ?? []),
+      placed.flatMap(({ sentence, readsJapanese }) => (readsJapanese ? [sentence.tokens ?? []] : [])),
       phraseSuffixes,
     ),
   };

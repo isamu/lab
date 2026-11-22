@@ -1,4 +1,4 @@
-import type { Detector, DetectorOptions, Finding, Lexicon, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
+import type { Detector, DetectorOptions, Finding, LengthUnit, Lexicon, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { isWithinAny, quotedIn } from "../quoted-span.ts";
 import { entryOpens } from "./lexicon-match.ts";
@@ -222,14 +222,17 @@ export const CONTINUING_LEXICON = "demonstrative-continuing";
 const runCount = (run: readonly Opened[], continuing: ReadonlySet<string>): number =>
   run.filter((opened, at) => !(opened.opener !== undefined && continuing.has(opened.opener) && run[at - 1]?.opener === opened.opener)).length;
 
-const runFinding = (run: readonly Opened[], count: number, options: DetectorOptions): Finding => {
+/** Words are set apart by spaces, so sentences quoted together are too (…small purchases. This means …); characters are not. */
+const joinerOf = (unit: LengthUnit): string => (unit === "char" ? "" : " ");
+
+const runFinding = (run: readonly Opened[], count: number, options: DetectorOptions, unit: LengthUnit): Finding => {
   const first = run[0];
   return {
     rule: "",
     severity: "info",
     line: 0,
     column: 0,
-    quote: run.map(({ sentence }) => sentence.text.trim()).join(""),
+    quote: run.map(({ sentence }) => sentence.text.trim()).join(joinerOf(unit)),
     values: { word: first?.opener ?? "", count, limit: options.limit, offset: first?.sentence.span.start ?? 0 },
   };
 };
@@ -243,6 +246,6 @@ export const openerRun: Detector = (doc, options): Finding[] => {
     openerRuns(paragraph.sentences, lexicon, notOpeners)
       .map((run) => ({ run, count: runCount(run, continuing) }))
       .filter(({ count }) => count > options.limit)
-      .map(({ run, count }) => runFinding(run, count, options)),
+      .map(({ run, count }) => runFinding(run, count, options, doc.lengthUnit)),
   );
 };

@@ -350,3 +350,23 @@ describe("proper-noun-density の英語の上限は、人の書いた文書の�
     assert.equal(densityAt(NAMES, "relaxed"), 1);
   });
 });
+
+describe("proper-noun-density points at the densest sentence", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+  });
+
+  it("quotes the sentence with the most names, not the first name in the document", () => {
+    const plain = "The team reviewed the plan and agreed on the next steps for the month ahead.";
+    const crowd = "Alice Moreno from Contoso met Bob Tanaka from Fabrikam and Carol Diaz from Northwind in Seattle.";
+    const source = [`Maria planned the trip. ${plain}`, ...Array.from({ length: 16 }, () => plain), crowd].join("\n\n");
+    const findings = runRules(buildDocument("t.md", source, en), loadRules("en"), { "proper-noun-density": "strict" }, true, "business/report", {
+      "proper-noun-density": 1,
+    }).findings.filter((finding) => finding.rule === "proper-noun-density");
+    assert.deepEqual(
+      findings.map((finding) => finding.quote),
+      [crowd],
+    );
+    assert.equal(findings[0]?.values["offset"], source.indexOf("Alice"));
+  });
+});

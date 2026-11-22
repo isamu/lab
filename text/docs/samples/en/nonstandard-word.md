@@ -36,7 +36,7 @@ mentoring-proposal.md   business/proposal · English   genre from --genre
      "is comprised of" is nonstandard in formal writing; write "comprises"
      "Irregardless", "comprised of" and "anyways" are common in speech, but a formal reader takes them as mistakes and starts to doubt the care taken over the rest. The pairs of nonstandard and standard form are in each language's lexicon, and chaff reports only the forms listed there.
 
-     → Use the standard form ("irregardless" becomes "regardless", "is comprised of" becomes "comprises").
+     → Use the standard form ("irregardless" becomes "regardless", "is comprised of" becomes "comprises"). If the form is part of a name written that way on purpose (a title, a product), add the name to names in chaff.yaml.
 
      Relax this rule:  npx chaffjs relax nonstandard-word
 
@@ -50,7 +50,7 @@ mentoring-proposal.md   business/proposal · English   genre from --genre
      "Irregardless" is nonstandard in formal writing; write "Regardless"
      "Irregardless", "comprised of" and "anyways" are common in speech, but a formal reader takes them as mistakes and starts to doubt the care taken over the rest. The pairs of nonstandard and standard form are in each language's lexicon, and chaff reports only the forms listed there.
 
-     → Use the standard form ("irregardless" becomes "regardless", "is comprised of" becomes "comprises").
+     → Use the standard form ("irregardless" becomes "regardless", "is comprised of" becomes "comprises"). If the form is part of a name written that way on purpose (a title, a product), add the name to names in chaff.yaml.
 
      Relax this rule:  npx chaffjs relax nonstandard-word
 
@@ -103,7 +103,7 @@ $ npx chaffjs explain nonstandard-word --genre business/proposal
 
   "Irregardless", "comprised of" and "anyways" are common in speech, but a formal reader takes them as mistakes and starts to doubt the care taken over the rest. The pairs of nonstandard and standard form are in each language's lexicon, and chaff reports only the forms listed there.
 
-  How to fix: Use the standard form ("irregardless" becomes "regardless", "is comprised of" becomes "comprises").
+  How to fix: Use the standard form ("irregardless" becomes "regardless", "is comprised of" becomes "comprises"). If the form is part of a name written that way on purpose (a title, a product), add the name to names in chaff.yaml.
 
   Rewrite depth: light (words and sentences; the structure and the voice stay). With a shallower chaff fix-plan --depth, the plan names this rule without fixing it.
 

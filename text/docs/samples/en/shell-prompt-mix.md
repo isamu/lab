@@ -142,7 +142,7 @@ $ npx chaffjs explain shell-prompt-mix --genre technical/readme
   Levels:
     strict   reported when the fewer style appears in 3 blocks or fewer
   → normal   reported when the fewer style appears in 2 blocks or fewer
-    relaxed  reported when the fewer style appears in 1 blocks or fewer
+    relaxed  reported when the fewer style appears in 1 block or fewer
     off      not checked
 
   Now: normal.

@@ -195,7 +195,11 @@ describe("agreement-slip — 純関数", () => {
     [".", ";", ":", "?", "!", ")"].forEach((mark) =>
       assert.equal(endsNounPhrase({ span: { start: 0, end: 1 }, surface: mark, pos: "PUNCT" }, LISTS.finite), true, mark),
     );
-    ["NOUN", "PROPN", "VERB", "ADJ", "NUM", "CCONJ", "PART", "X", "SYM"].forEach((pos) =>
+    ["to", "not"].forEach((word) => assert.equal(endsNounPhrase({ span: { start: 0, end: 1 }, surface: word, pos: "PART" }, LISTS.finite), true, word));
+    ["'s", "'", "’s", "’"].forEach((mark) =>
+      assert.equal(endsNounPhrase({ span: { start: 0, end: 1 }, surface: mark, pos: "PART" }, LISTS.finite), false, mark),
+    );
+    ["NOUN", "PROPN", "VERB", "ADJ", "NUM", "CCONJ", "X", "SYM"].forEach((pos) =>
       assert.equal(endsNounPhrase({ span: { start: 0, end: 1 }, surface: "x", pos }, LISTS.finite), false, pos),
     );
     [",", "(", "-"].forEach((mark) => assert.equal(endsNounPhrase({ span: { start: 0, end: 1 }, surface: mark, pos: "PUNCT" }, LISTS.finite), false, mark));
@@ -247,6 +251,14 @@ describe("agreement-slip — 英語", () => {
     assert.deepEqual(findingsOf("The problem remains ones of the most intriguing questions."), ["1:21 ones of the most"]);
     assert.deepEqual(findingsOf("Keep in mind the some roads are closed part of the year."), ["1:14 the some"]);
     assert.deepEqual(findingsOf("The results show a significant changes in accuracy."), ["1:18 a significant changes"]);
+    assert.deepEqual(findingsOf("We made a significant changes to the plan."), ["1:9 a significant changes"]);
+    assert.deepEqual(findingsOf("Send a reminders to everyone, not a notes."), ["1:6 a reminders", "1:35 a notes"]);
+  });
+
+  it("valid: 数を比べる fewer の後ろの複数（a third fewer requests）。more は比べる語にもなるので数える", () => {
+    assert.deepEqual(findingsOf("Managers will have about a third fewer requests to approve each month."), []);
+    assert.deepEqual(findingsOf("We expect a few fewer visitors."), []);
+    assert.deepEqual(findingsOf("She wrote a more detailed reports for the board."), ["1:11 a more detailed reports"]);
   });
 
   it("valid: 前置詞の後ろの所有の語と名詞の will（at its will）", () => {
@@ -274,7 +286,15 @@ describe("agreement-slip — 英語", () => {
     assert.deepEqual(findingsOf("These new version will ship in May."), ["1:1 These new version"]);
     assert.deepEqual(findingsOf("These key result is missing."), ["1:1 These key result"]);
     assert.deepEqual(findingsOf("Each new users is sent a welcome email."), ["1:1 Each new users"]);
-    assert.deepEqual(findingsOf("Their is no limit on requests."), ["1:1 Their is"]);
+  });
+
+  it("leaves a pair homophone-slip lists (Their are) to that rule", () => {
+    const source = "Their are three options for the board.";
+    const rules = runRules(buildDocument("t.md", source, en), RULES.en, {}, true, "business/report").findings.map((finding) => finding.rule);
+    assert.deepEqual(findingsOf(source), []);
+    assert.deepEqual(findingsOf("Their is no limit on requests."), []);
+    assert.ok(rules.includes("homophone-slip"));
+    assert.deepEqual(findingsOf("Your can check it, and their will be done."), ["1:1 Your can", "1:24 their will"]);
   });
 
   it("valid: 正しい文と、読みが一通りに決まらない文", () => {
@@ -290,6 +310,8 @@ describe("agreement-slip — 英語", () => {
       "The Some Roads Act was passed, and all the roads reopened.",
       "We took the a priori approach, and the this pointer stays valid.",
       "We need a sales and marketing team.",
+      "We read a children's book and a users' guide.",
+      "It makes an object where every key maps to an array.",
       "We need a sales team and a data driven approach.",
       "One of the most important features is speed.",
       "I know some one of the name of Cecily.",

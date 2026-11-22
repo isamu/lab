@@ -108,7 +108,7 @@ $ npx chaffjs explain clause-chain --genre business/report
     relaxed  一文の節 7 つまで
     off      見ない
 
-  この数字は business/report のものです。ほかに legal で別の数字を持っています。
+  この数字は既定のもので、business/report はこれを使います。legal は別の数字を持っています。
 
   いまは normal です。
 

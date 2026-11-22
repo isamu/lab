@@ -41,13 +41,11 @@ const occurrencesOf = (text: string, word: string): Span[] =>
       }));
 
 /**
- * prefer の「使わない書き方」が動詞のとき、活用した形の始まり（文の中の字の位置）。「使う書き方」の中に出たものは除く。
+ * prefer の「使わない書き方」が動詞のとき、活用した形の範囲（文の中の字の位置）。「使う書き方」の中に出たものは除く。
  * 大文字小文字だけ違う組（Javascript・JavaScript）は語で照らすと区別が消えるので、字で探す側に任せる。
  */
-export const conjugatedStartsOutside = (sentence: Sentence, entry: LexiconEntry, use: string): number[] => {
+export const conjugatedSpansOutside = (sentence: Sentence, entry: LexiconEntry, use: string): Span[] => {
   if (entry.pattern.toLowerCase() === use.toLowerCase()) return [];
   const covered = occurrencesOf(sentence.text, use);
-  return conjugatedSpans(sentence, entry)
-    .filter((span) => !covered.some((cover) => cover.start <= span.start && span.end <= cover.end))
-    .map((span) => span.start);
+  return conjugatedSpans(sentence, entry).filter((span) => !covered.some((cover) => cover.start <= span.start && span.end <= cover.end));
 };

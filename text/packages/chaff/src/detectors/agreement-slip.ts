@@ -26,6 +26,8 @@ export type AgreementLists = {
   readonly afterArticle: ReadonlySet<string>;
   /** 名詞句を目的語に取る前置詞（on / of）。この後ろの this / these は主語にならない。 */
   readonly prepositions?: ReadonlySet<string>;
+  /** homophone-slip が言う組（their are）。その規則が正しい語まで言うので、ここでは数えない。 */
+  readonly homophones?: ReadonlySet<string>;
 };
 
 export type Slip = { readonly variant: "number" | "possessive" | "determiner"; readonly first: Token; readonly last: Token; readonly word: string };
@@ -42,6 +44,8 @@ const CLOSING_MARK = new Set([".", ";", ":", "?", "!", ")"]);
  */
 const PHRASE_END = new Set(["AUX", "ADP", "SCONJ", "PRON", "DET", "ADV"]);
 const PREDICATE_TAIL = new Set(["DET", "ADJ", "PRON", "NUM"]);
+/** 所有の印（'s / '）。不変化詞のうち、これだけが名詞を重ねた語の途中（a children's book）。to や not は名詞句の外。 */
+const POSSESSIVE_MARK = /^['’]/u;
 
 const lower = (token: Token): string => token.surface.toLowerCase();
 
@@ -54,6 +58,7 @@ const isPlural = (token: Token): boolean => token.features?.["Number"] === "Plur
 /** 名詞の後ろの語で、名詞句が終わるか。分詞（a data driven approach）も名詞を重ねた語の途中。 */
 export const endsNounPhrase = (next: Token | undefined, finite: ReadonlySet<string>): boolean => {
   if (next === undefined || finite.has(lower(next))) return true;
+  if (next.pos === "PART") return !POSSESSIVE_MARK.test(next.surface);
   return next.pos === "PUNCT" ? CLOSING_MARK.has(next.surface) : PHRASE_END.has(next.pos);
 };
 
@@ -128,7 +133,8 @@ const mayBeNoun = (token: Token): boolean => token.features?.["AlsoNoun"] === "Y
 /**
  * 名詞が動詞にも読め（works）、その前に名詞句の頭になれる語があれば、限定詞と名詞ではなく主語と動詞かもしれない。
  * an individual works（individual は名詞にもなる）/ Those responsible report to the board（those は代名詞にもなる）。
- * 後ろが is / has なら、名詞は動詞ではない（these key result is）。
+ * 後ろが is / has なら、名詞は動詞ではない（these key result is）。後ろが to なら、解析器が動詞と知らない語も動詞かもしれない
+ * （every key maps to an array の maps）。
  */
 const mayBeVerb = (
   determiner: Determiner,
@@ -138,7 +144,7 @@ const mayBeVerb = (
   finite: ReadonlySet<string>,
   bound: boolean,
 ): boolean =>
-  noun.features?.["AlsoVerb"] === "Yes" &&
+  (noun.features?.["AlsoVerb"] === "Yes" || next?.pos === "PART") &&
   !(next !== undefined && finite.has(lower(next))) &&
   ((standsAlone(determiner) && !bound) || modifiers.some(mayBeNoun));
 
@@ -188,7 +194,8 @@ const possessiveSlipAt = (source: string, tokens: readonly Token[], at: number, 
   const auxiliary = verb.pos === "AUX" && isBaseVerb(tokens[at + 2]) && !isNounAfterPreposition(tokens, at);
   const verbal = LOWER.test(verb.surface) && (lists.finite.has(lower(verb)) || auxiliary);
   if (!verbal || !joinedBySpace(source, [possessive, verb]) || isPartOfLongerWord(source, possessive, verb)) return undefined;
-  return slipOf("possessive", source, possessive, verb);
+  const slip = slipOf("possessive", source, possessive, verb);
+  return lists.homophones?.has(slip.word.toLowerCase()) === true ? undefined : slip;
 };
 
 /** ones of the most。前に限定詞・形容詞・代名詞があれば、ones は代名詞（the ones of the most use）。 */
@@ -236,6 +243,7 @@ const listsOf = (lexicons: Readonly<Record<string, Lexicon>>): AgreementLists =>
   misnumbered: lexicons["misnumbered-phrase"] ?? [],
   afterArticle: setOf(lexicons["determiner-after-article"]),
   prepositions: setOf(lexicons["object-preposition"]),
+  homophones: setOf(lexicons["homophone-slip"]),
 });
 
 export const agreementSlip: Detector = (doc): Finding[] => {

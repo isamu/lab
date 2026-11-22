@@ -124,8 +124,8 @@ $ npx chaffjs explain double-negative --genre business/report
   How to fix: Say it positively ("common", "similar to"), or say how far it holds ("in about a third of cases").
 
   Levels:
-    strict   reported once 1 sentences hold one
-  → normal   reported once 1 sentences hold one
+    strict   reported once 1 sentence holds one
+  → normal   reported once 1 sentence holds one
     relaxed  reported once 2 sentences hold one
     off      not checked
 

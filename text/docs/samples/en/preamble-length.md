@@ -99,7 +99,7 @@ $ npx chaffjs explain preamble-length --genre business/proposal
   How to fix: Put the conclusion first, or move the preamble under a heading.
 
   Levels:
-    strict   up to 1 paragraphs before the first heading
+    strict   up to 1 paragraph before the first heading
   → normal   up to 2 paragraphs before the first heading
     relaxed  up to 4 paragraphs before the first heading
     off      not checked

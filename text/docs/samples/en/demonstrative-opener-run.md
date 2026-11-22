@@ -32,7 +32,7 @@ notice.md   business/report · English   genre from --genre
 
 ─── line 4 ───────────────────────────────────────────────────
 
-    This applies to travel, meals and small purchases.This means most claims will be paid within three working days instead …
+    This applies to travel, meals and small purchases. This means most claims will be paid within three working days instead…
 
   ·  Sentences in a row opening with a demonstrative
 
@@ -99,7 +99,7 @@ $ npx chaffjs explain demonstrative-opener-run --genre business/report
   Rewrite depth: light (words and sentences; the structure and the voice stay). With a shallower chaff fix-plan --depth, the plan names this rule without fixing it.
 
   Levels:
-    strict   up to 1 such sentences in a row
+    strict   up to 1 such sentence in a row
   → normal   up to 2 such sentences in a row
     relaxed  up to 3 such sentences in a row
     off      not checked
