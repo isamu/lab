@@ -1,7 +1,6 @@
 18f-handbook-one-on-ones  1
 18f-handbook-travel  1
 ecfr-16-cfr-310-telemarketing  2
-ftc-phishing-scams  2
 ghdocs-basic-writing-and-formatting  1
 gitlab-meetings  1
 govuk-incident-safe-browsing  1
