@@ -94,13 +94,29 @@ const withoutUnclosedBracket = (written: string): string => written.replace(UNCL
 /** URLs covered with spaces, so neither a path segment (/call/) nor an id in one is read. Offsets stay the same. */
 export const withoutUrls = (text: string): string => text.replaceAll(URL, (url) => " ".repeat(url.length));
 
-/** The phone numbers of a text that have a label shortly before them on their line; unlabelled digits and URLs are not read. */
-export const labelledPhoneNumbers = (source: string, labels: readonly LexiconEntry[]): PhoneNumber[] => {
+/** Link words (at, on, us) written whole right before a number, as one run: "line at ", "us on ". */
+const linkRunOf = (links: readonly string[]): RegExp | undefined =>
+  links.length === 0 ? undefined : new RegExp(String.raw`(?:(?<!\p{L})(?:${links.map(escapeRegExp).join("|")})\s+)+$`, "iu");
+
+/** Where a number's label is looked for: before the link words that join it to the number (Call us on, our recall line at). */
+const labelEnd = (text: string, offset: number, linkRun: RegExp | undefined): number => {
+  if (linkRun === undefined) return offset;
+  const lineStart = text.lastIndexOf("\n", offset - 1) + 1;
+  const run = linkRun.exec(text.slice(lineStart, offset));
+  return run === null ? offset : offset - run[0].length;
+};
+
+/**
+ * The phone numbers of a text that have a label shortly before them on their line; unlabelled digits and URLs are not read.
+ * links are the words that may stand between a label and its number (the language's phone-label-link lexicon).
+ */
+export const labelledPhoneNumbers = (source: string, labels: readonly LexiconEntry[], links: readonly string[] = []): PhoneNumber[] => {
   const text = withoutUrls(source);
+  const linkRun = linkRunOf(links);
   const read = (match: RegExpExecArray, spaced: boolean): PhoneNumber[] => {
     const digits = match[0].replaceAll(NOT_DIGIT, "");
     if (digits.length < MIN_DIGITS || digits.length > MAX_DIGITS) return [];
-    const label = labelBefore(text, match.index, labels);
+    const label = labelBefore(text, labelEnd(text, match.index, linkRun), labels);
     if (label === undefined) return [];
     if (spaced && !COUNTRY_CODE_START.test(match[0]) && !LABEL_TO_NUMBER.test(label.between)) return [];
     const matched = match[0].trim();
