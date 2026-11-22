@@ -15,6 +15,7 @@ import { isInCopiedText } from "./hyphen-copied-text.ts";
 import { joinsNameSuffix } from "./hyphen-name-suffix.ts";
 import { verseBlockSpans } from "./verse-block.ts";
 import { inlineItemLabelOffsets } from "./inline-item-label.ts";
+import { unclosedCodeQuoteOffsets } from "../unclosed-code-quote.ts";
 
 /** The letters a mark must touch to count as part of the document's text, by language. */
 const SCRIPT: Readonly<Record<string, RegExp>> = {
@@ -240,10 +241,11 @@ export const markConsistency: Detector = (doc, options): Finding[] => {
   const doubled = doubledParenOffsets(doc.source);
   const notes = noteMarkerOffsets(doc.source);
   const noteAddresses = noteAddressOffsets(doc.source);
+  const codeQuotes = unclosedCodeQuoteOffsets(doc.source);
   const marks = ownSentences(doc).flatMap((sentence) =>
-    marksIn(doc.source, sentence, forms, script).map((mark) =>
-      withNoteAddressKind(withNoteKind(withDoubledKind(withEnumeratorKind(mark, enumerators), doubled), notes), noteAddresses),
-    ),
+    marksIn(doc.source, sentence, forms, script)
+      .filter((mark) => !codeQuotes.has(mark.offset))
+      .map((mark) => withNoteAddressKind(withNoteKind(withDoubledKind(withEnumeratorKind(mark, enumerators), doubled), notes), noteAddresses)),
   );
   const kinds = [...new Set(marks.map((mark) => mark.form.kind))];
   return kinds.flatMap((kind) =>
