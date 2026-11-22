@@ -1,0 +1,10 @@
+# 「方が」の後ろに続くと、その「方」が人（かた）になる語。人がいる・いないを言う動詞で、比べる「ほう」（早いほうがよい）は
+# この語を取らない（手伝える方がいない、詳しい方がいらっしゃる、見識のある方がおられましたら）。
+# orthographic-variant は、orthographic-variant-comparative の語の後ろに「が」とこの語が続くところを比べない。辞書の形で挙げる。
+id: orthographic-variant-comparative-person
+language: ja
+entries:
+  - pattern: いる
+  - pattern: いらっしゃる
+  - pattern: おる
+  - pattern: おられる

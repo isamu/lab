@@ -7,6 +7,7 @@ import { lawTitleSpans } from "../packages/chaff/src/law-title.ts";
 import { quoteGlossSpans } from "../packages/chaff/src/quote-gloss.ts";
 import { nameEndingRuns, namesWrittenOneWay } from "../packages/chaff/src/name-ending-run.ts";
 import { isNameInCapitals } from "../packages/chaff/src/capitals-with-small.ts";
+import { runInTitleSpans } from "../packages/chaff/src/run-in-title.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 
 // The spans orthographic-variant leaves out: an acronym's expansion, a capitalised name, a statute's title, a quotation's gloss,
@@ -172,5 +173,25 @@ describe("isNameInCapitals", () => {
     assert.equal(isNameInCapitals(title, title.indexOf("McCAUL"), "McCAUL"), false);
     assert.equal(isNameInCapitals("McCAUL", 0, "McCAUL"), false);
     assert.equal(isNameInCapitals("MICHAEL McCaul", 8, "McCaul"), false);
+  });
+});
+
+describe("runInTitleSpans", () => {
+  it("a line's head up to a medium's name in brackets, before a space and the blurb", () => {
+    const source =
+      "# 記事\n\nまちの取り組みについて（市の公式ブログ） 市のまちづくりの取組を紹介しています。\n- 新しい窓口の案内（市報） 窓口の場所が変わります。\n";
+    assert.deepEqual(textsOf(source, runInTitleSpans(source)), ["まちの取り組みについて（市の公式ブログ）", "新しい窓口の案内（市報）"]);
+  });
+
+  it("not a title: a name inside a sentence (をご覧ください), a gloss with kana in brackets, a table's dashes, no space, a sentence before", () => {
+    const source = [
+      "詳しくは案内のページ（市の公式サイト） をご覧ください。",
+      "謄本の認証（写しが原本と同じことの認証） 付きの書類は使えません。",
+      "株式（自己株式等） －－－",
+      "まちの取り組み（市報）市の取組を紹介しています。",
+      "取組を進めます。まちの取り組み（市報） 市の取組を紹介しています。",
+    ].join("\n");
+    assert.deepEqual(runInTitleSpans(source), []);
+    assert.deepEqual(runInTitleSpans(""), []);
   });
 });
