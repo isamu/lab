@@ -76,6 +76,20 @@ export const markAttachedBefore = (head: string, marks: readonly Mark[]): Mark |
   );
 };
 
+/** 時刻と次の語の間: 空白か、表の升の区切り。 */
+const WORD_GAP = /^(?:[ \t]*\|[ \t]*|[ \t]+)/u;
+const LATIN_LETTER = /^[A-Za-z]/u;
+
+/**
+ * 時刻の次の語として書いた、英字の印（「09:45 Arrive at Leeds」の Arrive）。英字の印は一語として照らせるので、間に空白を挟んでよい。
+ * ほかの字の印は時刻のすぐ後ろだけ（「10:00 発表会」の発は印ではない）。
+ */
+export const wordMarkAfter = (text: string, end: number, marks: readonly Mark[]): Mark | undefined => {
+  const gap = WORD_GAP.exec(text.slice(end))?.[0].length;
+  if (gap === undefined) return undefined;
+  return longestFirst(sidesOf(marks, "after")).find((mark) => LATIN_LETTER.test(mark.pattern) && isWordAt(text, end + gap, mark.pattern));
+};
+
 /** 時刻の後ろで、空白と開き括弧と発着の印を飛ばした所に書いた印。「0:15（翌日）」「9:50着 +1」。 */
 const SKIPPED_AFTER = /^[\s(（[［]*/u;
 
