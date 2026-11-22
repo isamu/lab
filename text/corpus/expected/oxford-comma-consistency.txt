@@ -1,5 +1,5 @@
 arxiv-2609-38219-abs-tamazight-speech  1
-ghdocs-basic-writing-and-formatting  2
+ghdocs-basic-writing-and-formatting  1
 gitlab-jd-instructional-designer  1
 govuk-guidance-academy-senior-pay  1
 govuk-style-guide-a-to-z  2
