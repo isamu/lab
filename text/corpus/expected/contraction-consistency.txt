@@ -14,7 +14,7 @@ docusaurus-admonitions-mdx  1
 eip-1559-fee-market  1
 ghdocs-basic-writing-and-formatting  2
 github-general-privacy-statement  2
-github-terms-of-service  5
+github-terms-of-service  2
 gitlab-meetings  5
 gitlab-values  3
 govuk-cddo-roadmap-2022-2025  1

@@ -1,7 +1,7 @@
 import { pairMinority, type PairUses } from "./contraction-minority.ts";
 import { blankRanges, isTermList, withoutMentions, withoutQuotations } from "./contraction-mention.ts";
 import { stressedWords } from "./contraction-emphasis.ts";
-import { noticeSentences, talksAboutContractions, warningSentences } from "./contraction-set-apart.ts";
+import { noticeSentences, plainSummarySentences, talksAboutContractions, warningSentences } from "./contraction-set-apart.ts";
 import { escapeRegExp, straightApostrophes } from "../orthography.ts";
 import type { Detector, Finding, ProseDocument, Sentence, Span } from "../plugin.ts";
 
@@ -76,6 +76,12 @@ const emphasisOf = (doc: ProseDocument): readonly Span[] => (doc.prose === undef
 export const contractionMix: Detector = (doc, options): Finding[] => {
   const stressed = emphasisOf(doc);
   const notices = noticeSentences(doc.paragraphs, doc.lexicons["notice-phrase"] ?? []);
+  const summaries = plainSummarySentences(
+    doc.paragraphs,
+    doc.sections,
+    doc.source,
+    (doc.lexicons["summary-label"] ?? []).map((entry) => entry.pattern),
+  );
   const terms = doc.lexicons["contraction-term"] ?? [];
   const warnings = warningSentences(
     doc.paragraphs,
@@ -90,7 +96,7 @@ export const contractionMix: Detector = (doc, options): Finding[] => {
     return pair === undefined || pair.count > options.limit ? [] : [pair];
   });
   const hits = doc.sentences.flatMap((sentence) => {
-    if (!isWriters(sentence) || warnings.has(sentence)) return [];
+    if (!isWriters(sentence) || warnings.has(sentence) || summaries.has(sentence)) return [];
     const pointable = pointableText(sentence, stressed);
     const pair = mixed.find((candidate) => usesMinority(pointable, candidate));
     return pair === undefined ? [] : [{ sentence, pair }];

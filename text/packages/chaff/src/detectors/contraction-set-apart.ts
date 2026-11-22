@@ -1,9 +1,9 @@
 import { entryIn } from "./lexicon-match.ts";
 import { warningTextStart } from "../warning-action.ts";
-import type { LexiconEntry, Paragraph, Sentence } from "../plugin.ts";
+import type { LexiconEntry, Paragraph, Section, Sentence } from "../plugin.ts";
 
 // Sentences whose forms say nothing about the writer's choice of register. Pure: reads paragraphs, sentences and the source;
-// the words come from the language's notice-phrase, contraction-term and warning-label lexicons.
+// the words come from the language's notice-phrase, contraction-term, summary-label and warning-label lexicons.
 
 /**
  * The sentences of a paragraph of disclaimer wording (…does not constitute or imply its endorsement…). A publisher appends
@@ -40,6 +40,26 @@ const opensWarning = (text: string, labels: readonly string[]): boolean => {
   const shortcode = shortcodeAt(text);
   if (shortcode !== undefined) return isLabel(shortcode.name, labels) || isLabel(SHORTCODE_TITLE.exec(shortcode.attributes)?.[1], labels);
   return isLabel(ADMONITION.exec(text)?.[1], labels);
+};
+
+const opensWith = (paragraph: Paragraph, source: string, labels: readonly string[]): boolean =>
+  warningTextStart(source.slice(paragraph.span.start, paragraph.span.end).trimStart(), labels) !== undefined;
+
+/**
+ * The plain-language register of a document that sums its clauses up beside them (**Short version:** _You may close your
+ * Account at any time._): the labelled summaries and the introduction before the first heading. Its forms are a register the
+ * writer chose apart from the clauses: counted, never pointed at. Without a labelled summary, nothing is set apart.
+ */
+export const plainSummarySentences = (
+  paragraphs: readonly Paragraph[],
+  sections: readonly Section[],
+  source: string,
+  labels: readonly string[],
+): Set<Sentence> => {
+  const summaries = paragraphs.filter((paragraph) => opensWith(paragraph, source, labels));
+  if (summaries.length === 0) return new Set();
+  const introduction = sections.filter((section) => section.depth === 0).flatMap((section) => section.sentences);
+  return new Set([...summaries.flatMap((paragraph) => paragraph.sentences), ...introduction]);
 };
 
 /**
