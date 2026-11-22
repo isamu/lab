@@ -58,6 +58,7 @@ describe("eventTitleSpans", () => {
     const one = ["- KPI の見直し（2024/1/9）", "- 次回の議題"].join("\n");
     assert.deepEqual(eventTitleSpans(one), []);
     assert.deepEqual(eventTitleSpans("- 「KPI」を決めて共有する"), []);
+    assert.deepEqual(eventTitleSpans("- 「公園で転落し、頭部を骨折。ICU入室。」(4歳)"), []);
     assert.deepEqual(eventTitleSpans("「世帯消費の指数（CTI）の改善」"), []);
   });
 

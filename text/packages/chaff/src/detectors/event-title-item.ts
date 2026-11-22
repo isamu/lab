@@ -8,7 +8,8 @@ type Span = { readonly start: number; readonly end: number };
 const ITEM = /^[ \t]*(?:[-*+]|\d+[.)])[ \t]+(?<content>\S.*)$/gmu;
 /** Brackets after the title that only annotate it: its date, the file it links (（2014/2/21）（PDF）). */
 const NOTE = String.raw`[(（][^()（）\n]{1,20}[)）]`;
-const QUOTED_TITLE = new RegExp(String.raw`^「[^「」\n]+」(?:\s*${NOTE})*$`, "u");
+/** A title holds no full stop: a quote of whole sentences (- 「…で転落。ICU入室。」(4歳)) reports what someone said, and is the writer's choice. */
+const QUOTED_TITLE = new RegExp(String.raw`^「[^「」。\n]+」(?:\s*${NOTE})*$`, "u");
 const DATE = String.raw`\d{4}(?:[/／.-]\d{1,2}){1,2}|\d{4}年\d{1,2}月(?:\d{1,2}日)?`;
 const DATED = new RegExp(String.raw`[(（](?:${DATE})[)）](?:\s*${NOTE})*$`, "u");
 /** A list dates its items when this many of them close with a date. */
