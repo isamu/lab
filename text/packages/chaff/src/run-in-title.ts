@@ -53,7 +53,7 @@ const titleStarts = (text: string, lineStart: number): number[] => {
 
 /** open の開き括弧から、媒体の名前を入れて閉じた括弧の後ろの位置。名前でなければ undefined。 */
 const nameBracketEnd = (text: string, open: number): number | undefined => {
-  const chars = [...text.slice(open + OPEN.length, open + OPEN.length + 2 * (MAX_NAME_LENGTH + 1))];
+  const chars = Array.from(text.slice(open + OPEN.length, open + OPEN.length + 2 * (MAX_NAME_LENGTH + 1)));
   const length = chars.findIndex((char) => char !== NAME_PARTICLE && NAME_STOP.test(char));
   if (length < 1 || length > MAX_NAME_LENGTH || chars[length] !== CLOSE) return undefined;
   return open + OPEN.length + chars.slice(0, length).join("").length + CLOSE.length;
