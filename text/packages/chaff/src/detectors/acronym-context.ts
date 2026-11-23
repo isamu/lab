@@ -266,5 +266,5 @@ export const unreportedAcronymSpans = (
   ...referenceEntrySpans(source),
   ...chatLogSpans(source),
   ...quotedLabelSpans(source, wordsOf("control-noun")),
-  ...eventTitleSpans(source),
+  ...eventTitleSpans(source, wordsOf("talk-kind")),
 ];
