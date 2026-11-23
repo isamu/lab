@@ -127,6 +127,14 @@ describe("teki-overuse: 一文の「〜的」", () => {
     assert.deepEqual(findingsOf(RULE, "# 通知\n\n前の段落です。\n\n反社会的勢力との関係は、電磁的方式で具体的に確認します。\n"), []);
     assert.deepEqual(findingsOf(RULE, "電磁的方法により、効果的かつ効率的な施策を、積極的に通知する。\n"), ["一文に「〜的」が 3 個あります（2 個まで）"]);
   });
+
+  it("文書が定義した語（「効果的な技術的保護手段」とは）の中の「的」は数えない", () => {
+    const definition = "## 第1条 定義\n\n- 「効果的な技術的保護手段」とは、正当な権限なしに回避されてはならない手段をいいます。\n\n";
+    assert.deepEqual(findingsOf(RULE, `${definition}## 第2条 改変\n\n効果的な技術的保護手段を回避する技術的な改変を、具体的に禁止します。\n`), []);
+    assert.deepEqual(findingsOf(RULE, `${definition}## 第2条 改変\n\n技術的な改変を、具体的かつ積極的に禁止します。\n`), [
+      "一文に「〜的」が 3 個あります（2 個まで）",
+    ]);
+  });
 });
 
 describe("adversative-ga-repeat: 一文の逆接の「が」", () => {

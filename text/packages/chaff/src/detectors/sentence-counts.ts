@@ -6,6 +6,7 @@ import { laterAlternatives, laterJoined } from "../alternative-words.ts";
 import { isContrastiveGa } from "./adversative-ga.ts";
 import { isFlattenedTable } from "./sentence-parts.ts";
 import { bareListCommas } from "./bare-word-list.ts";
+import { definedTerms } from "../structure/definition-use.ts";
 
 type TokenTest = (token: Token, at: number, tokens: readonly Token[]) => boolean;
 
@@ -15,11 +16,11 @@ const wordsOf = (lexicon: Lexicon | undefined): ReadonlySet<string> => new Set((
 export const FIXED_TERM_LEXICON = "teki-fixed-term";
 
 /** Where the sentence holds one of the terms, in the document's coordinates. */
-const termSpans = (sentence: Sentence, terms: Lexicon): Span[] =>
-  terms.flatMap((entry) =>
-    [...sentence.text.matchAll(new RegExp(escapeRegExp(entry.pattern), "gu"))].map((match) => ({
+const termSpans = (sentence: Sentence, terms: readonly string[]): Span[] =>
+  terms.flatMap((term) =>
+    [...sentence.text.matchAll(new RegExp(escapeRegExp(term), "gu"))].map((match) => ({
       start: sentence.span.start + match.index,
-      end: sentence.span.start + match.index + entry.pattern.length,
+      end: sentence.span.start + match.index + term.length,
     })),
   );
 
@@ -27,7 +28,7 @@ const termSpans = (sentence: Sentence, terms: Lexicon): Span[] =>
  * The tokens of a sentence that pass the test, outside anything quoted in 「」『』 and outside the fixed terms: neither a
  * quotation nor a term the law defines (電磁的方法) is the writer's to rephrase.
  */
-const countedTokens = (sentence: Sentence, test: TokenTest, fixedTerms: Lexicon): Token[] => {
+const countedTokens = (sentence: Sentence, test: TokenTest, fixedTerms: readonly string[]): Token[] => {
   const kept = [...quotedIn(sentence), ...termSpans(sentence, fixedTerms)];
   return (sentence.tokens ?? []).filter((token, at, tokens) => test(token, at, tokens) && !isWithinAny(kept, token.span));
 };
@@ -43,7 +44,11 @@ const findingOf = (sentence: Sentence, counted: readonly Token[], limit: number)
 
 const sentencesOver = (doc: ProseDocument, limit: number, test: TokenTest, fixedTerms: Lexicon = []): Finding[] =>
   doc.sentences.flatMap((sentence) => {
-    const counted = countedTokens(sentence, test, fixedTerms);
+    const counted = countedTokens(
+      sentence,
+      test,
+      fixedTerms.map((entry) => entry.pattern),
+    );
     return counted.length > limit ? [findingOf(sentence, counted, limit)] : [];
   });
 
@@ -61,6 +66,13 @@ const largestItem = (sentence: Sentence, counted: readonly Token[]): readonly To
   const items = counted.reduce((byItem, token) => byItem.set(itemOf(token), [...(byItem.get(itemOf(token)) ?? []), token]), new Map<number, Token[]>());
   return [...items.values()].reduce<readonly Token[]>((largest, item) => (item.length > largest.length ? item : largest), []);
 };
+
+/**
+ * The terms the document defines (「効果的な技術的保護手段」とは…) that hold one of the counted words. The word belongs to the
+ * term, which the document uses as it defined it, not to the writer's style.
+ */
+const termsHolding = (doc: ProseDocument, words: ReadonlySet<string>): readonly string[] =>
+  (doc.structure === undefined ? [] : definedTerms(doc.structure)).map(({ term }) => term).filter((term) => [...words].some((word) => term.includes(word)));
 
 /**
  * A sentence holding more than limit tokens written as one of the lexicon's words (the suffix 的). The options of one choice
@@ -82,11 +94,18 @@ export const sentenceWordCount: Detector = (doc, options): Finding[] => {
     return found;
   };
   const isCounted: TokenTest = (token, at, tokens) => words.has(token.surface) && !laterOf(tokens).has(at);
-  const fixedTerms = doc.lexicons[FIXED_TERM_LEXICON] ?? [];
+  const fixedTerms = (doc.lexicons[FIXED_TERM_LEXICON] ?? []).map((entry) => entry.pattern);
+  const cache: { defined?: readonly string[] } = {};
+  // Read only when a sentence is over the limit: building the structure is the costly part.
+  const defined = (): readonly string[] => (cache.defined ??= termsHolding(doc, words));
   return doc.sentences.flatMap((sentence) => {
     if (isFlattenedTable(sentence.text)) return [];
-    const counted = largestItem(sentence, countedTokens(sentence, isCounted, fixedTerms));
-    return counted.length > options.limit ? [findingOf(sentence, counted, options.limit)] : [];
+    const over = (terms: readonly string[]): readonly Token[] => {
+      const counted = largestItem(sentence, countedTokens(sentence, isCounted, terms));
+      return counted.length > options.limit ? counted : [];
+    };
+    const counted = over(fixedTerms).length === 0 ? [] : over([...fixedTerms, ...defined()]);
+    return counted.length === 0 ? [] : [findingOf(sentence, counted, options.limit)];
   });
 };
 
