@@ -24,6 +24,7 @@ import {
   lastNoun,
   openingKind,
   openingOf,
+  opensAsPreposition,
   participleOpening,
   shapeOf,
   shapeOfHead,
@@ -131,7 +132,7 @@ const afterClosedList = (view: View): View => {
 const afterVerbAside = (view: View): View => {
   const { scope } = view.list;
   const [verb, aside] = [firstOf(view), secondOf(view)];
-  if (verb === undefined || aside === undefined || lastContent(scope, verb.item)?.pos !== "VERB" || openingOf(scope, aside.item)?.pos !== "ADP") return view;
+  if (verb === undefined || aside === undefined || lastContent(scope, verb.item)?.pos !== "VERB" || !opensAsPreposition(scope, aside.item)) return view;
   const object = firstOf(after(view, aside));
   return object !== undefined && opensAsNoun(scope, object.item) ? after(view, aside) : view;
 };

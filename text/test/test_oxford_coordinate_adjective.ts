@@ -32,6 +32,22 @@ describe("oxford-comma-consistency: coordinate adjectives", () => {
     assert.equal(firedAfter(WITHOUT_COMMA, "We hired full-time, part-time, and seasonal staff."), true);
   });
 
+  it("does not read a run of modifiers after a / an as items when it ends in the one noun phrase (a non-exclusive, revocable, limited right and license)", () => {
+    assert.equal(firedAfter(WITH_COMMA, "The owner grants the club a non-exclusive, revocable, limited right and license to use the logo."), false);
+    assert.equal(
+      firedAfter(
+        WITH_COMMA,
+        "The owner grants the club a non-exclusive, non-transferable, non-assignable, revocable, royalty-free, limited right and license to use the logo.",
+      ),
+      false,
+    );
+  });
+
+  it("still counts a list after a / an whose items carry nouns of their own", () => {
+    assert.equal(firedAfter(WITH_COMMA, "We need a pen, pencils and paper."), true);
+    assert.equal(firedAfter(WITH_COMMA, "The club sells a single, return, day and season ticket."), true);
+  });
+
   it("endsWithModifier and opensWithModifiedNoun", () => {
     assert.equal(endsWithModifier(words(["the", "DET"], ["fresh", "ADJ"])), false);
     assert.equal(endsWithModifier(words(["long", "ADJ"], ["-", "X"], ["term", "NOUN"])), true);
