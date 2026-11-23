@@ -162,6 +162,19 @@ describe("shell-prompt-mix: commands with and without a prompt", () => {
     assert.equal(promptStyleOf(block("npm install"), prompts), "bare");
     assert.equal(promptStyleOf(block("$ node -v", "v24.0.0"), prompts), undefined);
     assert.equal(promptStyleOf(block("$PATH=/bin run"), prompts), "bare");
+    assert.equal(promptStyleOf(block("  0x1081 <+33>:  lea 0xd9(%rip),%rdi"), prompts), undefined);
+  });
+
+  it("does not take a debugger session or a block of output for bare commands", () => {
+    const prompted = [fence("sh", "$ cc -c main.c", "$ cc -c add.c"), fence("sh", "$ gdb ./a.out")];
+    const sessions = [fence("sh", "(gdb) b _start", "Breakpoint 1 at 0x1060"), fence("sh", "(gdb) r", "Breakpoint 1, 0x5060 in _start ()")];
+    const output = [fence("sh", "   0x1081 <+33>:    lea    0xd9(%rip),%rdi")];
+    assert.deepEqual(findingsOf(en, "shell-prompt-mix", doc(...prompted, ...sessions, ...output, fence("sh", "(gdb) disas", "End of dump."))), []);
+    assert.deepEqual(
+      findingsOf(ja, "shell-prompt-mix", ["# 使い方", "", ...[...prompted, ...sessions, ...output].flatMap((text) => [text, ""])].join("\n")),
+      [],
+    );
+    assert.equal(findingsOf(en, "shell-prompt-mix", doc(...prompted, fence("sh", "make"), fence("sh", "make test"), fence("sh", "make install"))).length, 2);
   });
 
   it("reports the block in the minority style, in both languages", () => {

@@ -1,5 +1,6 @@
 # シェルのコマンドの前に書くプロンプト。後ろに空白が続く（$ npm install、PS> Get-Item）。
 # 「#」は入れない。シェルのブロックでは、root のプロンプトよりコメントのほうがずっと多い。
+# デバッガのプロンプト（(gdb) b main）も入れる。シェルのブロックに書いたその操作は、コマンドと出力を一緒に見せるもの。
 id: shell-prompt
 language: ja
 entries:
@@ -7,3 +8,6 @@ entries:
   - pattern: "%"
   - pattern: PS>
   - pattern: ❯
+  - pattern: (gdb)
+  - pattern: (lldb)
+  - pattern: (Pdb)
