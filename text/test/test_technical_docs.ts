@@ -128,8 +128,10 @@ describe("code-fence-language-mix: a block without a language among blocks with 
 
   it("does not report a block of output whose lines open with a status mark", () => {
     const tagged = [fence("bash", "npx tidy init"), fence("json", '{ "strict": true }')];
-    const report = fence("", "$ npx tidy", "✖ Missing keys in config:", "  - port", "", "Found 1 problem.");
+    const report = fence("", "✖ Missing keys in config:", "  - port", "", "Found 1 problem.");
     assert.deepEqual(findingsOf(en, "code-fence-language-mix", doc(report, ...tagged)), []);
+    const typed = fence("", "$ npx tidy", "✖ Missing keys in config:", "  - port");
+    assert.equal(findingsOf(en, "code-fence-language-mix", doc(typed, ...tagged)).length, 1);
     const warning = ["足りない枠を一覧で表示します。", "", fence("", "⚠ 必要人数を満たせない枠があります", "  1月9日 夜: 必要 4人 / 割り当て 3人")].join("\n");
     assert.deepEqual(findingsOf(ja, "code-fence-language-mix", doc(...tagged, warning)), []);
     const session = fence("", "$ npx tidy", "Found 1 problem.");

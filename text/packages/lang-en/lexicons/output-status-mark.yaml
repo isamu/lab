@@ -1,6 +1,6 @@
 # Marks a program prints at the head of a line to say how a check went: "✖ Missing variables", "⚠ 2 slots short". A code
-# block with a line opening this way is what a program shows, which is in no language: code-fence-language-mix does not
-# ask it for one.
+# block with a line opening this way, and no line opening with a shell prompt, is what a program shows, which is in no
+# language: code-fence-language-mix does not ask it for one.
 id: output-status-mark
 language: en
 entries:
