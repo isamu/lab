@@ -12,7 +12,7 @@ const WORD_REACH = 40;
  * of the emphasis the name is set in follows (your **OneDrive - Alder** folder).
  * A word all in capitals after it (I - JURISDICTION) is a heading's title set off by a dash.
  */
-const SUFFIX_AFTER = /^ -{1,2} \p{Lu}\p{Ll}[\p{L}'’]*(?=[,.;:)\]]|\*{1,2}(?!\p{L})|_{1,2}(?!\p{L})|$)/u;
+const SUFFIX_AFTER = /^ -{1,2} \p{Lu}\p{Ll}[\p{L}'’]*(?=[,.;:)\]]|[*_]{1,2}(?!\p{L})|$)/u;
 
 const lineEnd = (text: string, offset: number): number => {
   const end = text.indexOf("\n", offset);
