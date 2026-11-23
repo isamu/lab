@@ -77,6 +77,22 @@ describe("ai-tell: the colloquial praise of a generated post (ja)", () => {
     assert.equal(aiTell("# 異動して\n\n営業と工場の橋渡しをしています。\n", ja).length, 1);
     assert.deepEqual(aiTell("# 報告\n\n両部署の橋渡しを担当しました。\n", ja, "business/report"), []);
   });
+
+  it("reports one 意外と見落としがち in a blog post, and leaves it alone in a report", () => {
+    assert.equal(aiTell("# 内見\n\n意外と見落としがちなのが窓の向きです。\n", ja, "blog/owned-media").length, 1);
+    assert.deepEqual(aiTell("# 報告\n\n意外と見落としがちな点を三つ挙げます。\n", ja, "business/report"), []);
+  });
+});
+
+describe("ai-tell: the one-tip pitch of a generated post (en)", () => {
+  it("reports one in a blog post, whatever the verb's form", () => {
+    assert.equal(aiTell("# Receipts\n\nIf you only do one thing on this list, make it this one.\n", en, "blog/owned-media").length, 1);
+    assert.equal(aiTell("# Winter\n\nIf you only make one change for winter, make it fenders.\n", en, "blog/owned-media").length, 1);
+  });
+
+  it("leaves it alone in a report", () => {
+    assert.deepEqual(aiTell("# Report\n\nIf you only do one review, do the security one.\n", en, "business/report"), []);
+  });
 });
 
 describe("ai-tell: a request recast as a benefit (ja); honesty markers are honesty-marker's", () => {

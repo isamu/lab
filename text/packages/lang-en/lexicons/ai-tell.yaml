@@ -145,3 +145,9 @@ entries:
     weight: 0.3
   - pattern: a powerful solution
     weight: 0.4
+  # The one-tip pitch of a generated owned-media post ("If you only do one thing on this list, make it this one").
+  # In no human document of the judged corpus or the lab corpus, so one is enough in a blog.
+  - pattern: if you only do one
+    weight: 0.5
+  - pattern: if you only make one
+    weight: 0.5
