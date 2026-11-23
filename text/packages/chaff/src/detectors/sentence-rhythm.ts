@@ -1,5 +1,6 @@
 import { charLength, proseText } from "../measure.ts";
 import type { Detector, Finding, ProseDocument, Sentence } from "../plugin.ts";
+import { inRelease, releaseSpansOf } from "./release-notes.ts";
 
 /** 文が少ないと変動係数は当てにならない。ここを下回る文書は見ない。 */
 const MIN_SENTENCES = 8;
@@ -11,8 +12,11 @@ const coefficientOfVariation = (sizes: readonly number[]): number => {
   return Math.sqrt(variance) / mean;
 };
 
-/** 箇条書きの項目は揃えて書くのが正しい形なので、地の文の文だけを測る。 */
-const proseSentences = (doc: ProseDocument): readonly Sentence[] => doc.paragraphs.flatMap((paragraph) => paragraph.sentences);
+/** 箇条書きの項目は揃えて書くのが正しい形なので、地の文の文だけを測る。変更履歴の版ごとの記事も、揃えて書く項目と同じ。 */
+const proseSentences = (doc: ProseDocument): readonly Sentence[] => {
+  const releases = releaseSpansOf(doc);
+  return doc.paragraphs.flatMap((paragraph) => paragraph.sentences).filter((sentence) => !inRelease(releases, sentence.span.start));
+};
 
 export const sentenceRhythm: Detector = (doc, options): Finding[] => {
   const sentences = proseSentences(doc);
