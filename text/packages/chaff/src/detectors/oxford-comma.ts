@@ -96,9 +96,27 @@ const withoutSequenceWord = (view: View): View | undefined => {
   return hasContent(scope, rest) ? { ...withoutFirst(view), pre: rest } : withoutFirst(view);
 };
 
+/**
+ * 文頭の接続詞（And if you have questions about any of this, come in and ask / But when …,）を外した並び。接続詞は前の文とつなぐ語で、
+ * その後ろの導入の句（if …,）を導入の句として確かめるため。
+ */
+const withoutOpeningConjunction = (view: View): View | undefined => {
+  const { scope } = view.list;
+  const first = firstOf(view);
+  if (first === undefined || secondOf(view) === undefined) return undefined;
+  const at = firstAt(scope, "open", first.item);
+  const { tokens } = scope.sentence;
+  const opensSentence = tokens.slice(0, at).every((token) => SENTENCE_MARKS.has(token.pos));
+  if (!opensSentence || tokens[at]?.pos !== "CCONJ") return undefined;
+  const rest = { start: at + 1, end: first.item.end };
+  return hasContent(scope, rest) ? { ...withoutFirst(view), pre: rest } : undefined;
+};
+
 const withoutLead = (view: View): View => {
   const afterSequence = withoutSequenceWord(view);
   if (afterSequence !== undefined) return withoutLead(afterSequence);
+  const afterConjunction = withoutOpeningConjunction(view);
+  if (afterConjunction !== undefined) return withoutLead(afterConjunction);
   const { scope } = view.list;
   const [first, second] = [firstOf(view), secondOf(view)];
   const opening = first === undefined ? undefined : openingOf(scope, first.item);
