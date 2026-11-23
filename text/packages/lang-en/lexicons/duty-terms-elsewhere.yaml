@@ -1,5 +1,6 @@
 # Words that send the reader to other terms for how a duty is done ("pay the Fees according to the terms in the Order
-# Form"): the time is set there, and obligation-without-deadline leaves the duty.
+# Form"): the time is set there, and obligation-without-deadline leaves the duty. A payment schedule sets when each
+# payment falls, and a court's final award sets when damages are paid.
 id: duty-terms-elsewhere
 language: en
 entries:
@@ -8,3 +9,5 @@ entries:
   - pattern: as set out in
   - pattern: as set forth in
   - pattern: as specified in
+  - pattern: payment schedule
+  - pattern: finally awarded
