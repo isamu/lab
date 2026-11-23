@@ -46,13 +46,38 @@ export const isRunTogetherList = (text: string, words: readonly string[] = []): 
   return items.length >= MIN_INNER_ITEMS && median(items.map((item) => [...item].length)) > MAX_WORD_ITEM_CHARS;
 };
 
+/** 片仮名と中黒の一続き（クリエイティブ・コモンズ・パブリック・ライセンス）。 */
+const KATAKANA_RUN = /[\p{Script=Katakana}ー・]+/gu;
+const MIN_NAME_WORDS = 2;
+
+/** 一続きの、前後の中黒を外した片仮名の語。中黒が続く所（・・）があれば語の並びと読まない。 */
+const chainOf = (run: string): string | undefined => {
+  const parts = run.split("・");
+  const first = parts.findIndex((part) => part !== "");
+  const last = parts.findLastIndex((part) => part !== "");
+  const words = first < 0 ? [] : parts.slice(first, last + 1);
+  return words.length >= MIN_NAME_WORDS && words.every((part) => part !== "") ? words.join("・") : undefined;
+};
+
+/** 文書が同じ一続きを何度書けば、名前と見るか。一度きりの片仮名の並び（トマト・キュウリ・ナス）は並べた語。 */
+const NAME_REPEATS = 3;
+
+/** 文書が繰り返し書く片仮名の名前。中黒は名前の語の切れ目で、項目を並べてはいない。 */
+const repeatedKatakanaNames = (source: string): string[] => {
+  const chains = [...source.matchAll(KATAKANA_RUN)].flatMap((match) => chainOf(match[0]) ?? []);
+  const counts = chains.reduce((byChain, chain) => byChain.set(chain, (byChain.get(chain) ?? 0) + 1), new Map<string, number>());
+  return [...counts].flatMap(([chain, count]) => (count >= NAME_REPEATS ? [chain] : []));
+};
+
 /**
  * 中黒で並べると、どこまでが 1 つの項目か分からなくなる。
  * 「企画・開発・運用・保守体制」は、保守体制が 1 つなのか保守と体制なのか読めない。
- * 語彙表（nakaguro-word）の、中黒を含めて 1 語の語（キャッシュ・フロー）の中黒は並べていないので数えない。
+ * 語彙表（nakaguro-word）の、中黒を含めて 1 語の語（キャッシュ・フロー）と、文書が繰り返し書く片仮名の名前の中黒は並べていないので数えない。
  */
 export const middleDot: Detector = (doc, options): Finding[] => {
-  const words = (options.lexicon ?? []).map((entry) => entry.pattern).toSorted((left, right) => right.length - left.length);
+  const words = [...(options.lexicon ?? []).map((entry) => entry.pattern), ...repeatedKatakanaNames(doc.source)].toSorted(
+    (left, right) => right.length - left.length,
+  );
   // 表や箇条書きを変換が一続きにした文（年表の行、一行一項目の箇条書き）は、中黒が並べた語の切れ目か、項目の印か読めない。
   return doc.sentences
     .filter((sentence) => !isFlattenedTable(sentence.text) && !isRunTogetherList(sentence.text, words))
