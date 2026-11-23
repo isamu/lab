@@ -4,7 +4,6 @@ nodejs-tsc-minutes-2026-05-06  1
 rust-lang-minutes-2022-11-22  1
 saikosai-h26-09-02-nagano  1
 us-scotus-gideon-v-wainwright  1
-vite-plugin-legacy-changelog  1
 wikipedia-en-markdown  4
 wikivoyage-ja-shikoku-henro  1
 wikivoyage-ja-shimoda  6

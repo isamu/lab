@@ -90,3 +90,38 @@ describe("empty-section: 中身の無い節", () => {
     assert.deepEqual(namedRuleRun(RULE, "準備\n", ja, "a.txt").skipped, ["Markdown の文書ではないため"]);
   });
 });
+
+describe("empty-section: a release with nothing to note in a changelog", () => {
+  it("does not report a release heading in a run of release headings", () => {
+    const changelog = [
+      "# Changelog",
+      "",
+      "## 2.1.0 (2022-09-05)",
+      "## 2.1.0-beta.0 (2022-08-29)",
+      "### Bug Fixes",
+      "",
+      "* fix the build",
+      "",
+      "## 2.0.1 (2022-08-11)",
+      "",
+      "* fix the types",
+      "",
+    ];
+    assert.deepEqual(findingsOf(changelog.join("\n"), en), []);
+    const linked = [
+      "# Changelog",
+      "",
+      "## [2.1.0](https://example.com/compare/2.0.1...2.1.0) (2022-09-05)",
+      "## [2.0.1](https://example.com/compare/2.0.0...2.0.1) (2022-08-11)",
+      "",
+      "* fix the types",
+      "",
+    ];
+    assert.deepEqual(findingsOf(linked.join("\n"), en), []);
+  });
+
+  it("still reports an empty heading that names no release", () => {
+    const changelog = ["# Changelog", "", "## Unreleased", "", "## 2.0.1 (2022-08-11)", "", "* fix the types", "", "## 2.0.0 (2022-08-01)", "", "* first", ""];
+    assert.equal(findingsOf(changelog.join("\n"), en).length, 1);
+  });
+});
