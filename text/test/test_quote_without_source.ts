@@ -56,6 +56,7 @@ describe("quote-without-source: 人の言葉として引いた文に出典がな
     assert.deepEqual(findingsOf("たとえば「来週の会議で予算の配分を決める」と書いて送る。\n"), []);
     assert.deepEqual(findingsOf('For instance, a new user says, "the setup screen never loads for me."\n', en), []);
     assert.deepEqual(findingsOf("「画面の容量がいっぱいになりました」と言われて、写真が保存できない。\n"), []);
+    assert.deepEqual(findingsOf("「夏の湖畔は大使館の庭のようだった」と言われるほど、多くの外国人が訪れた。\n", ja, "blog/essay"), []);
     ["と言われた。", "と言われました。", "と言われ、涙が出た。"].forEach((tail) =>
       assert.deepEqual(findingsOf(`レジで奥さんに「長いあいだ、ありがとうございました」${tail}\n`, ja, "blog/essay"), [], tail),
     );

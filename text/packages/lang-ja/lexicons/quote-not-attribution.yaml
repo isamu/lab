@@ -15,3 +15,6 @@ entries:
   - { pattern: と言われ、, group: received }
   - { pattern: と言われた, group: received }
   - { pattern: と言われました, group: received }
+  # 「…」と言われるほど（…ロビーのようだったと言われるほど、外国人が訪れた）は、言い習わしで程度を言うだけで、誰かの言葉を引いていない。
+  - { pattern: と言われるほど, group: received }
+  - { pattern: といわれるほど, group: received }
