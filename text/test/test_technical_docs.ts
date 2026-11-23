@@ -116,6 +116,16 @@ describe("code-fence-language-mix: a block without a language among blocks with 
     assert.equal(findingsOf(en, "code-fence-language-mix", doc(...tagged, noColon)).length, 1);
   });
 
+  it("does not report a block of an error a lead-in quotes", () => {
+    const tagged = [fence("ts", "let a = 1;"), fence("ts", "let b = 2;")];
+    const error = ["This code now fails with an error like the following:", "", fence("", "Cannot redeclare 'a'.")].join("\n");
+    assert.deepEqual(findingsOf(en, "code-fence-language-mix", doc(...tagged, error)), []);
+    const japanese = ["次のようなエラーが出ます：", "", fence("", "Cannot redeclare 'a'.")].join("\n");
+    assert.deepEqual(findingsOf(ja, "code-fence-language-mix", doc(...tagged, japanese)), []);
+    const fix = ["To clear the errors, run:", "", fence("", "yarn lint --fix")].join("\n");
+    assert.equal(findingsOf(en, "code-fence-language-mix", doc(...tagged, fix)).length, 1);
+  });
+
   it("still reports an untagged block of code beside a template", () => {
     const tagged = [fence("json", '{ "version": "1.2.0" }'), fence("json", '{ "version": "2.0.0" }')];
     assert.equal(findingsOf(en, "code-fence-language-mix", doc(...tagged, fence("", "release <MAJOR>.<MINOR>"))).length, 1);
