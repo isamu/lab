@@ -6,6 +6,7 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import type { Section } from "../packages/chaff/src/plugin.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
+import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 
 // The notice excerpts are from Federal Register documents (US federal works, public domain); the others are self-written.
 
@@ -130,5 +131,42 @@ describe("hasOnlyMatterHeadings: a document whose headings are only front or bac
     ].join("\n\n");
     assert.equal(preambleFindings(letter), 0);
     assert.equal(preambleFindings(letter.replace("## Contact", "## Decision")), 1);
+  });
+});
+
+describe("preamble-length: a press release's lead and a Japanese letter's 記", () => {
+  const story = Array.from({ length: 4 }, (_, at) => `Paragraph ${String(at + 2)} of the story adds one more fact about the new library.`);
+  const release = (lead: string): string =>
+    ["# Town Opens a New Library", `${lead} The town of Alder opened its new library today.`, ...story, "### About Alder", "Alder is a town."].join("\n\n");
+
+  it("does not measure a release whose first paragraph opens with a dateline", () => {
+    assert.equal(preambleFindings(release("**ALDER, Ore. — November 24, 2026** —")), 0);
+    assert.equal(preambleFindings(release("ALDER, Ore., November 24, 2026 --")), 0);
+  });
+
+  it("still measures a lead with a date but no place, or a place but no date", () => {
+    assert.equal(preambleFindings(release("On November 24, 2026 —")), 1);
+    assert.equal(preambleFindings(release("ALDER, Ore. —")), 1);
+  });
+
+  const japanese = (source: string): number =>
+    runRules(buildDocument("t.md", source, ja), loadRules("ja"), {}, true, "business/press-release").findings.filter(
+      (finding) => finding.rule === "preamble-length",
+    ).length;
+
+  it("does not measure a notice letter whose body heading is 記", () => {
+    const letter = (heading: string): string =>
+      [
+        "# 料金改定のお知らせ",
+        "平素は格別のご愛顧を賜り、厚く御礼申し上げます。",
+        "さて、当社ではこれまで料金の維持に努めてまいりました。",
+        "つきましては、下記のとおり料金を改定いたします。",
+        "何卒ご理解を賜りますよう、お願い申し上げます。",
+        heading,
+        "### 1. 改定の時期",
+        "4月1日より",
+      ].join("\n\n");
+    assert.equal(japanese(letter("## 記")), 0);
+    assert.equal(japanese(letter("## 改定の内容")), 1);
   });
 });
