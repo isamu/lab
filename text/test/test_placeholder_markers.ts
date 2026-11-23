@@ -120,6 +120,16 @@ describe("placeholderSpans: a note to the writer in parentheses", () => {
     assert.deepEqual(matched("【会社名】の田中です。", jaWords), ["【会社名】"]);
     assert.deepEqual(matched("【氏名】山田", jaWords), []);
   });
+
+  it("finds a blank glued into a mail or web address", () => {
+    assert.deepEqual(matched("Contact us at hello@[yourcoworkingspace].com today.", enWords), ["[yourcoworkingspace]"]);
+    assert.deepEqual(matched("See example.com/[yourname]/settings.", enWords), ["[yourname]"]);
+  });
+
+  it("leaves a bracket outside an address, or one not opening with a bracket word", () => {
+    assert.deepEqual(matched("It is [yours] to keep.", enWords), []);
+    assert.deepEqual(matched("Write to hello@[example].com today.", enWords), []);
+  });
 });
 
 const findings = (source: string, adapter: LanguageAdapter, path = "t.md", level?: Level) =>
@@ -368,6 +378,7 @@ describe("placeholderSpans: blank marks (〇〇) where a letter needs a name, a 
     ["株式会社〇〇\n〇〇部　〇〇", ["〇〇", "〇〇部　〇〇"], "blanks on two lines stay two"],
     ["〇〇大学 経営学部", ["〇〇大学"], "a university"],
     ["本社のある〇〇市で開く大会です。", ["〇〇市"], "a city"],
+    ["所在地：東京都品川区〇〇", ["〇〇"], "a blank after the ward, where the town and number belong"],
   ];
   blanks.forEach(([text, expected, label]) => {
     it(`finds ${label}`, () => {
