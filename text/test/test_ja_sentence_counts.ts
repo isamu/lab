@@ -131,6 +131,8 @@ describe("teki-overuse: 一文の「〜的」", () => {
   it("文書が定義した語（「効果的な技術的保護手段」とは）の中の「的」は数えない", () => {
     const definition = "## 第1条 定義\n\n- 「効果的な技術的保護手段」とは、正当な権限なしに回避されてはならない手段をいいます。\n\n";
     assert.deepEqual(findingsOf(RULE, `${definition}## 第2条 改変\n\n効果的な技術的保護手段を回避する技術的な改変を、具体的に禁止します。\n`), []);
+    const spaced = definition.replace("」とは", "」 とは");
+    assert.deepEqual(findingsOf(RULE, `${spaced}## 第2条 改変\n\n効果的な技術的保護手段を回避する技術的な改変を、具体的に禁止します。\n`), []);
     assert.deepEqual(findingsOf(RULE, `${definition}## 第2条 改変\n\n技術的な改変を、具体的かつ積極的に禁止します。\n`), [
       "一文に「〜的」が 3 個あります（2 個まで）",
     ]);
