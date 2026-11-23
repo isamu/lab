@@ -8,7 +8,7 @@ import type { Span } from "./plugin.ts";
 const SET_IN = /^[*_[(]+/u;
 
 /** The place: a word in capitals (AUSTIN, ST. LOUIS, NEW YORK), then a comma. */
-const PLACE = /^\p{Lu}{2,}[\p{Lu}\s.'’-]*,/u;
+const PLACE = /^\p{Lu}\p{Lu}[\p{Lu}\s.'’-]*,/u;
 
 /** The dash that ends the dateline right after its date, past the emphasis it is set in: an em or en dash, or two hyphens. */
 const DATELINE_END = /^[*_)\]]*\s*(?:—|–|--)\s/u;
