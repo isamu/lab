@@ -148,10 +148,13 @@ const predicateNounTakesGa = (tokens: readonly Token[], at: number, last: number
  * 収益は、…の積上げであり、…ストック型が主要を占めております: the copula's continuing form closes the topic's clause when a new
  * topic follows, or a subject of its own (が, a clause made a noun too: 〜することが求められている) whose predicate is not again a
  * copula or ある, or the subject of the final copula's noun (〜を図ることが必要である). 信頼型は、…ものであり、…ものではありません
- * and これは…リンクであり、ユーザーが…ということです say two things of the same topic.
+ * and これは…リンクであり、ユーザーが…ということです say two things of the same topic. With another topic between the topic and it
+ * (復興は、…進んでいる一方で、…状況は様々であり、), the copula is that topic's, not the first one's. A が there (〜ことは、パレスチナが
+ * …共存することであり、) is inside a clause the topic's own predicate takes, and does not count.
  */
-const closesWithCopulaContinuing = (tokens: readonly Token[], at: number, last: number, subject: number): boolean =>
+const closesWithCopulaContinuing = (tokens: readonly Token[], topic: number, at: number, last: number, subject: number): boolean =>
   isCopulaContinuing(tokens, at) &&
+  !newTopicAfter(tokens, topic, at) &&
   (newTopicAfter(tokens, at + 1, last) ||
     ((subject > at || finalGaAfter(tokens, at, last)) && !endsOnCopulaOrBeing(tokens, last)) ||
     predicateNounTakesGa(tokens, at, last));
@@ -336,7 +339,7 @@ export const topicClauseEnd = (tokens: readonly Token[], topic: number, last: nu
   const closes = (at: number): boolean =>
     closesSurely(tokens, at, last) ||
     (closesIfNewSubject(tokens, at) && subject > at) ||
-    closesWithCopulaContinuing(tokens, at, last, subject) ||
+    closesWithCopulaContinuing(tokens, topic, at, last, subject) ||
     closesFirstClauseWithNoun(tokens, topic, at, last) ||
     closesWithPoliteGa(tokens, topic, at, last, subject) ||
     closesAfterPredicate(tokens, topic, at, words) ||
