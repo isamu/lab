@@ -12,11 +12,16 @@ const at = (line: string): boolean => joinsNameSuffix(line, line.indexOf(" -"));
 const findingsOf = (source: string): readonly string[] => namedRuleRun(RULE, source, en, "s.md").findings;
 
 describe("joinsNameSuffix", () => {
-  ["the Islamic State of Iraq and Syria - Khorasan, as before", "ISIS - Khorasan.", "we met in Kabul - Province)", "the branch in Iraq - Khorasan", "your **OneDrive - Alder** folder", "the _Teams - Alder_ channel"].forEach(
-    (line) => {
-      it(`valid: ${line}`, () => assert.equal(at(line), true));
-    },
-  );
+  [
+    "the Islamic State of Iraq and Syria - Khorasan, as before",
+    "ISIS - Khorasan.",
+    "we met in Kabul - Province)",
+    "the branch in Iraq - Khorasan",
+    "your **OneDrive - Alder** folder",
+    "the _Teams - Alder_ channel",
+  ].forEach((line) => {
+    it(`valid: ${line}`, () => assert.equal(at(line), true));
+  });
 
   [
     ["a lower-case word before", "the tactics - Replacing, as before"],
