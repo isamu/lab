@@ -202,7 +202,8 @@ const extendedFindings = (doc: ProseDocument, texts: readonly BodyText[], term: 
     .flatMap((offset) => {
       const before = extendedBefore(doc.source, offset, term.term, definition, pointers);
       const written = before ?? (isSentenceStart(doc.source, offset) ? undefined : extendedAfter(doc.source, offset, term.term, definition));
-      if (written === undefined || defined.includes(written)) return [];
+      // The term written twice in a row (ライセンス対象物ライセンス対象物) is a run-in heading joined to its text, not a longer name.
+      if (written === undefined || defined.includes(written) || written === term.term.repeat(2)) return [];
       const start = before === undefined ? offset : offset + term.term.length - written.length;
       return [finding(doc, "defined-term-form", start, "extended", { term: term.term, written, line: term.line })];
     });
