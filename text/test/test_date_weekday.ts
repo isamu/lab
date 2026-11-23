@@ -175,6 +175,15 @@ describe("English: the weekday beside a date", () => {
     assert.deepEqual(found("# 2024 events\n\nThe fair was on Wednesday, October 9.\n", en, "en"), []);
   });
 
+  it("a date without its year that the document also writes with its year and the same weekday is read in that year", () => {
+    const record = (closing: string): string => `# Hearings\n\nWednesday, June 11, 2025\n\n## Testimony\n\nSee the report (June 30, 2021).\n\n${closing}\n`;
+    assert.deepEqual(found(record("[Whereupon, at 4:40 p.m., Wednesday, June 11, the hearing was recessed.]"), en, "en"), []);
+    assert.deepEqual(found(record("[Whereupon, at 4:40 p.m., Thursday, June 11, the hearing was recessed.]"), en, "en"), ["June 11, 2021:Thursday:Friday"]);
+    // A dated example with another weekday does not give its year to a day written in a different example.
+    assert.deepEqual(found("# Dates\n\nToday (Thursday 14 June 2012) is fine. On Tuesday 14 June we met.\n", en, "en"), ["14 June 2012:Tuesday:Thursday"]);
+    assert.deepEqual(found("# 日程\n\n2025年6月11日（水）に開く。\n\n## 資料\n\n2021年6月30日の報告を見る。6月11日（水）に終える。\n", ja, "ja"), []);
+  });
+
   it("a date quoted alone with its weekday is an example of the mistake, not a date of the document (#621)", () => {
     assert.deepEqual(found('# Mistakes\n\n| A weekday that is wrong | "Monday, December 5, 2026" falls on a Saturday |\n', en, "en"), []);
     assert.deepEqual(found("# 誤り\n\n「2026年12月5日（月）」は土曜日です。\n", ja, "ja"), []);
