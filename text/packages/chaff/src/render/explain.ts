@@ -5,6 +5,7 @@ import { uiLanguageOf, type Texts } from "../ui.ts";
 import type { Level, RuleDefinition } from "../plugin.ts";
 import { optionLines } from "./options.ts";
 import type { OptionLayer } from "../rule-options.ts";
+import type { PathRuleLevel } from "../config/by-path-rules.ts";
 import { depthMeaning } from "../rewrite-depth.ts";
 
 const TEXT: Texts<{
@@ -27,6 +28,7 @@ const TEXT: Texts<{
   readonly notRun: (why: string) => string;
   readonly from: (source: string) => string;
   readonly change: (id: string) => string;
+  readonly byPath: string;
 }> = {
   ja: {
     off: "見ない",
@@ -53,6 +55,7 @@ const TEXT: Texts<{
     notRun: (why) => `いまは動きません（${why}）。`,
     from: (source) => `（${source} で決めています）`,
     change: (id) => `変える:  npx chaffjs relax ${id} --why "理由"`,
+    byPath: "chaff.yaml の by_path で、次のファイルだけ変えています（そのファイルでは上の段階より強く効きます）:",
   },
   en: {
     off: "not checked",
@@ -79,6 +82,7 @@ const TEXT: Texts<{
     notRun: (why) => `Now: not run (${why}).`,
     from: (source) => ` (set by ${source})`,
     change: (id) => `Change it:  npx chaffjs relax ${id} --why "reason"`,
+    byPath: "by_path in chaff.yaml changes it for these files (there it wins over the level above):",
   },
 };
 
@@ -137,7 +141,15 @@ export type ExplainSettings = {
   readonly offOnlyAsExperimental?: boolean;
   /** Why the genre keeps the rule from running, as a run lists it: then no level is current. */
   readonly genreStop?: string | undefined;
+  /** The by_path entries that set this rule for the files they match, in the order written. */
+  readonly byPath?: readonly PathRuleLevel[];
 };
+
+/** Each by_path entry that sets the rule, with the level or number it sets, so a rule off for one folder is not a surprise. */
+const byPathLines = (byPath: readonly PathRuleLevel[], text: (typeof TEXT)["ja"]): string[] =>
+  byPath.length === 0
+    ? []
+    : ["", `  ${text.byPath}`, ...byPath.map((entry) => `    ${entry.files.join(", ")}: ${entry.limit === undefined ? entry.level : String(entry.limit)}`)];
 
 const nowLine = (rule: RuleDefinition, current: Level, limit: number | undefined, language: string): string => {
   const text = TEXT[uiLanguageOf(language)];
@@ -174,6 +186,7 @@ export const renderExplain = (rule: RuleDefinition, current: Level, language: st
     ...optionLines(rule, optionLayers, language),
     "",
     `  ${now}`,
+    ...byPathLines(settings.byPath ?? [], text),
     ...experimental,
     "",
     `  ${text.change(rule.id)}`,

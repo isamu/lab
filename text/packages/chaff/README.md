@@ -134,7 +134,7 @@ may not share can be recorded by URL and hash only. Its README explains both.
 A `chaff.yaml` at the top of the repository sets:
 
 - `genre:` and `style:`
-- which rules run, and at what level
+- which rules run, and at what level, for every file or per path (`by_path`)
 - your preferred spellings
 - the genre's guide
 - `custom_rules:` your own rules, written as `words`, a `pattern`, `tokens` for a

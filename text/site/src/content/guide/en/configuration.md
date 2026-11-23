@@ -360,6 +360,66 @@ The last match wins. Paths are matched from the folder that holds the settings f
 so the result is the same wherever you run it.
 `by_path` is a list of entries with `files`. Any other shape, such as a folder mapped to a genre (`guides: docs/manual`), and an entry without `files` are not used, and chaff says so before it checks anything.
 
+### Changing rules per path
+
+An entry also takes `rules` and `options`, written as at the top of the file: a level, `off` or a number under `rules`, a rule's options under `options`.
+One `chaff.yaml` can then hold contracts and manuals side by side.
+
+```yaml
+genre: blog/tech
+
+rules:
+  max-sentence-length: strict
+
+by_path:
+  - files: ["legal/**/*.md"]
+    genre: legal/contract
+    rules:
+      max-sentence-length: 60
+  - files: ["legal/archive/**/*.md"]
+    rules:
+      max-sentence-length: off
+```
+
+A file's level comes from the strongest place that sets it. Weakest first:
+
+| Place | Strength |
+| --- | --- |
+| The rule's default | Weakest |
+| The genre (and the kind of document) | |
+| `style:` | |
+| `rules` at the top of `chaff.yaml` | |
+| `rules` of the `by_path` entries that match the file | Strongest; of several, the one written later wins |
+
+A level written in `by_path` also replaces a number set above it: `relaxed` there is the setting, not `260` at the top.
+Options go the same way: a matching entry's `options` win over the top-level `options`, and the style's.
+
+A rule a `by_path` entry turns off is listed under "did not run" with that entry as the reason:
+
+```
+  max-sentence-length (turned off in the settings by by_path: legal/archive/**/*.md)
+```
+
+`explain` names every entry that changes the rule:
+
+```
+$ npx chaffjs explain max-sentence-length
+…
+  Now: strict.
+
+  by_path in chaff.yaml changes it for these files (there it wins over the level above):
+    legal/**/*.md: 60
+    legal/archive/**/*.md: off
+…
+```
+
+`rules --json` lists the same entries under each rule's `by_path`.
+A rule name `by_path` does not know, a value that is not a level, and `rules` or `options` that are not a map are reported before the check, as they are at the top, with the entry named:
+
+```
+chaff: …/chaff.yaml (by_path: legal/**/*.md): there is no rule named max-sentense-length (npx chaffjs rules --json lists them)
+```
+
 ## Checking files other than Markdown
 
 Given a folder, chaff checks the Markdown in it (`.md`, `.markdown`, `.mdx`).

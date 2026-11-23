@@ -1,5 +1,6 @@
 import { loadAdapter } from "./adapter-load.ts";
 import { applyByPath } from "./config/by-path.ts";
+import { configForPath } from "./config/by-path-rules.ts";
 import type { Config } from "./config/load.ts";
 import { optionLayersOf } from "./config/option-problems.ts";
 import { limitsFor } from "./config/style.ts";
@@ -43,7 +44,8 @@ export const adapterNeedsOf = (
 ): AdapterNeeds => neededBy(rules, config.rules, experimental, genre, language);
 
 /** Lints one text as `chaff <file>` does. The file need not exist: `chaff grade` checks a model's output from memory. */
-export const checkSource = async (path: string, source: string, config: Config, choice: CheckChoice): Promise<SourceCheck> => {
+export const checkSource = async (path: string, source: string, written: Config, choice: CheckChoice): Promise<SourceCheck> => {
+  const config = configForPath(written, path);
   const language = choice.language ?? documentLanguage(path, source, config);
   const adapter = await loadAdapter(language);
   const genre = resolveGenre(path, source, config, choice.genre);
@@ -57,6 +59,7 @@ export const checkSource = async (path: string, source: string, config: Config, 
     limits: limitsFor(config, language),
     optionLayers: optionLayersOf(config),
     detectors: config.extensions?.detectors ?? {},
+    levelsFrom: config.pathLevelsFrom ?? {},
   };
   const raw = runRulesWith(doc, rules, context);
   return { language, genre, rules, doc, context, raw, applied: suppressedIn(source, doc, raw) };
