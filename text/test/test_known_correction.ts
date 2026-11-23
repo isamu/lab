@@ -32,6 +32,14 @@ describe("known-misspelling: よくある書き誤り", () => {
     assert.deepEqual(misspelt("来週、シミュレーションの結果を共有します。"), []);
   });
 
+  it("English: a period spelling in a document written in that age's orthography is left", () => {
+    const period = "The publick good is shewn in the maintainance of the poor.";
+    assert.deepEqual(misspelt(period, en), []);
+    assert.deepEqual(misspelt("The public good is shown in the maintainance of the poor.", en), ['"maintainance" is a misspelling of "maintenance"']);
+    assert.deepEqual(misspelt("The publick good is shown in the maintainance of the poor.", en), ['"maintainance" is a misspelling of "maintenance"']);
+    assert.deepEqual(misspelt("The publick good is shewn, and the account occured last year.", en), ['"occured" is a misspelling of "occurred"']);
+  });
+
   it("English: a whole word only, with the capital kept", () => {
     assert.deepEqual(misspelt("The two reports are seperate documents.", en), ['"seperate" is a misspelling of "separate"']);
     assert.deepEqual(misspelt("Teh results are in.", en), ['"Teh" is a misspelling of "The"']);

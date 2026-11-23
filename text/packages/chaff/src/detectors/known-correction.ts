@@ -14,6 +14,22 @@ const pairsOf = (entries: readonly LexiconEntry[]): Pair[] =>
     entry.instead_of === undefined || entry.pattern === "" ? [] : [{ entry, wrong: entry.pattern, edit: editBetween(entry.pattern, entry.instead_of) }],
   );
 
+/** 語彙表 period-spelling の古い綴り（publick、shew）がこれだけ出れば、文書はその時代の綴りのまま。一語だけなら引用や名前のこともある。 */
+const MIN_PERIOD_MARKS = 2;
+
+const PERIOD_GROUP = "period-spelling";
+
+/** 文書が 1800 年ごろより前の綴りで書かれているか。そうなら、その時代の綴りだった組（maintainance）は誤りではない。 */
+const writesPeriodSpelling = (doc: ProseDocument): boolean => {
+  const marks = new Set((doc.lexicons[PERIOD_GROUP] ?? []).map((entry) => entry.pattern.toLowerCase()));
+  if (marks.size === 0) return false;
+  const words = (doc.prose ?? doc.source).toLowerCase().match(/\p{L}+/gu) ?? [];
+  return words.filter((word) => marks.has(word)).length >= MIN_PERIOD_MARKS;
+};
+
+const entriesFor = (doc: ProseDocument, entries: readonly LexiconEntry[]): readonly LexiconEntry[] =>
+  entries.some((entry) => entry.group === PERIOD_GROUP) && writesPeriodSpelling(doc) ? entries.filter((entry) => entry.group !== PERIOD_GROUP) : entries;
+
 const LATIN_EDGE = /[A-Za-z0-9]/u;
 
 /** 英字の語は語の途中に当てない（"teh" は "Tehran" の中に無い）。かなと漢字は字で語の切れ目を決められないので、品詞が無ければ字の並びで照らす。 */
@@ -81,7 +97,7 @@ const firstAtEachOffset = (hits: readonly Hit[]): Hit[] => hits.filter((hit, at)
  * どの組を誤りとするかは語彙表が決め、detector は語の切れ目と大文字と、組のどこが違うかだけを扱う。
  */
 export const knownCorrection: Detector = (doc, options): Finding[] => {
-  const pairs = pairsOf(options.lexicon ?? []);
+  const pairs = pairsOf(entriesFor(doc, options.lexicon ?? []));
   const hits = doc.sentences.flatMap((sentence) => hitsIn(sentence, pairs, doc.source));
   return firstAtEachOffset(hits.toSorted((left, right) => left.offset - right.offset))
     .filter((hit) => !isInTeamName(doc, hit))
