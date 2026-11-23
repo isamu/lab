@@ -12,7 +12,7 @@ const at = (line: string): boolean => joinsNameSuffix(line, line.indexOf(" -"));
 const findingsOf = (source: string): readonly string[] => namedRuleRun(RULE, source, en, "s.md").findings;
 
 describe("joinsNameSuffix", () => {
-  ["the Islamic State of Iraq and Syria - Khorasan, as before", "ISIS - Khorasan.", "we met in Kabul - Province)", "the branch in Iraq - Khorasan"].forEach(
+  ["the Islamic State of Iraq and Syria - Khorasan, as before", "ISIS - Khorasan.", "we met in Kabul - Province)", "the branch in Iraq - Khorasan", "your **OneDrive - Alder** folder", "the _Teams - Alder_ channel"].forEach(
     (line) => {
       it(`valid: ${line}`, () => assert.equal(at(line), true));
     },
@@ -24,6 +24,7 @@ describe("joinsNameSuffix", () => {
     ["more words after the capital", "the Senate - Republicans say so"],
     ["a sentence start after", "We left London - The rest stayed."],
     ["a heading's title in capitals after", "II - JUSTICIABILITY"],
+    ["more words after the capital inside emphasis", "**B. Physical Damage - Collision Damage Waiver**"],
   ].forEach(([form, line]) => {
     it(`invalid: ${String(form)}`, () => assert.equal(at(String(line)), false));
   });
@@ -39,5 +40,10 @@ describe("hyphen-as-dash: a hyphen inside a name", () => {
   it("does not report the hyphen of a name, and reports a dash in the same text", () => {
     const text = "They named the Islamic State of Iraq and Syria - Khorasan, as being the threat. Influence - is a vital part. Tactics - replacing routes.\n";
     assert.deepEqual(findingsOf(text), ['"-" stands in for a dash', '"-" stands in for a dash']);
+  });
+
+  it("does not report the hyphen of a name set in bold, and reports a dash inside bold", () => {
+    const text = "Save your files in your **OneDrive - Alder** folder. See **B. Physical Damage - Collision Damage Waiver** below.\n";
+    assert.deepEqual(findingsOf(text), ['"-" stands in for a dash']);
   });
 });
