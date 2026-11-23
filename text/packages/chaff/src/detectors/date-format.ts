@@ -38,7 +38,7 @@ export const dateFormat: Detector = (doc, options): Finding[] => {
   };
   const text = doc.prose ?? doc.source;
   const stampLabels = (doc.lexicons["date-stamp-label"] ?? []).map((entry) => entry.pattern);
-  const places = { stampLabels, cited: citedSpans(doc), source: doc.source };
+  const places = { stampLabels, cited: citedSpans(doc), source: doc.source, headings: (doc.markup?.headings ?? []).map((heading) => heading.start) };
   return dateGroups(text, datesIn(text, words), places).flatMap((group) => {
     const minority = dateMinority(group, options.limit);
     return minority === undefined ? [] : findingsOf(doc, minority);

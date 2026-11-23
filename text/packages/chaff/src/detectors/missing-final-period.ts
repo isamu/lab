@@ -1,3 +1,4 @@
+import { isLinkLabel } from "./link-label.ts";
 import type { Detector, Finding, LexiconEntry, Paragraph, ProseDocument, Token } from "../plugin.ts";
 import { formMinority } from "./form-minority.ts";
 import { captionParagraphs, slotParagraphs } from "./final-period-captions.ts";
@@ -120,6 +121,12 @@ const isFieldLine = (source: string, paragraph: Paragraph, fields: readonly stri
   return !line.includes("\n") && isHeaderField(line, fields);
 };
 
+/** A paragraph of one line that is the words of a link (Google Arts & Cultureで見る): it points somewhere, and is no sentence. */
+const isLinkLine = (text: string, paragraph: Paragraph, endings: readonly string[]): boolean => {
+  const body = bodyOf(text, paragraph);
+  return !body.includes("\n") && isLinkLabel(body, endings);
+};
+
 export const missingFinalPeriod: Detector = (doc: ProseDocument, options): Finding[] => {
   const text = doc.prose ?? doc.source;
   const marks = marksOf(doc.lexicons["final-period"] ?? []);
@@ -129,8 +136,9 @@ export const missingFinalPeriod: Detector = (doc: ProseDocument, options): Findi
     doc.sections,
     slotParagraphs(text, doc.paragraphs, (line) => isClosed(line, marks.ends)),
   );
+  const linkEndings = (doc.lexicons["link-label-ending"] ?? []).map((entry) => entry.pattern);
   const ends = doc.paragraphs.flatMap((paragraph, index) =>
-    captions.has(index) || isFieldLine(doc.source, paragraph, fields)
+    captions.has(index) || isFieldLine(doc.source, paragraph, fields) || isLinkLine(text, paragraph, linkEndings)
       ? []
       : (paragraphEnd(text, paragraph, marks, doc.paragraphs[index + 1], doc.paragraphs[index - 1]) ?? []),
   );

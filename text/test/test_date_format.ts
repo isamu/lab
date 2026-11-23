@@ -167,6 +167,46 @@ describe("opensLine and dateGroups", () => {
   });
 });
 
+describe("date-format-consistency: 一覧ごとの日付", () => {
+  it("行の頭の日付は節ごとに比べる（予定表の節の月名と、更新の記録の節の ISO）", () => {
+    const page = [
+      "## Timeline",
+      "",
+      "* October 2026: We will open the new service.",
+      "* October 9, 2026: We will close the old one.",
+      "",
+      "## Updates",
+      "",
+      "* 2026-09-01: Added the timeline.",
+      "* 2026-09-12: Added a checklist.",
+      "* 2026-09-20: Fixed a link.",
+    ].join("\n");
+    assert.deepEqual(mixed(page, en), []);
+  });
+
+  it("一つの節の中で混ざった行の頭の日付は今までどおり指す", () => {
+    const page = ["* 2026-09-01: Added the timeline.", "* 2026-09-12: Added a checklist.", "* October 20, 2026: Fixed a link."].join("\n");
+    assert.deepEqual(mixed(page, en), ['The date "October 20, 2026" is written differently from 2 other dates in the document (such as "2026-09-01")']);
+  });
+
+  it("箇条書きの項目の終わりの括弧の日付（過去の催しの一覧）は、本文の和暦と比べない", () => {
+    const page = [
+      "令和8年11月19日に研究集会を開きます。申込みは令和8年11月5日までです。",
+      "",
+      "- 研究集会（2025/11/20）",
+      "- 講習会（2025/2/3）（PDF）",
+      "- 研究集会（2024/11/18）",
+    ].join("\n");
+    assert.deepEqual(mixed(page), []);
+  });
+
+  it("文の中の括弧の日付は今までどおり本文と比べる", () => {
+    assert.deepEqual(mixed("令和8年11月19日に開きます。申込みは令和8年11月5日から令和8年11月9日まで、説明会（2026/11/1）は別の会場です。"), [
+      "日付「2026/11/1」の書き方が、この文書のほかの日付（「令和8年11月5日」など 2 箇所）と違います",
+    ]);
+  });
+});
+
 describe("date-format-consistency: ページの更新日の刻印", () => {
   it("更新日の刻印の西暦は、本文の和暦と比べない", () => {
     const page =

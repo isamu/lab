@@ -1,11 +1,10 @@
 cc-by-4-legalcode-ja  1
-da-machine-readability-limitations  2
 denkiyagi-shugyo-kisoku  1
 env-nikko-national-park-story  1
 etax-oshirase-mail-templates  4
 jma-faq-typhoon  2
 jma-press-hot-2026-07  6
-jma-tokubetsu-keiho  3
+jma-tokubetsu-keiho  1
 jma-yougo-kaze  2
 jsprimer-loop  1
 mext-heatstroke-after-holidays  1

@@ -119,6 +119,34 @@ describe("list-item-form-mix: the minority form in one list", () => {
   it("reports a sentence among noun phrases (ja)", () =>
     assert.deepEqual(flagged(ja, list("申込書の記入", "本人確認書類の用意", "手数料を払う")), ["ending-sentence:手数料を払う"]));
 
+  it("does not compare a ※ note set as an item with the items it notes (ja)", () =>
+    assert.deepEqual(
+      flagged(ja, list("（１）郵送　東京都千代田区の受付窓口", "（２）電子メールの受付窓口", "※電話によるご意見はお受けできませんので、ご了承ください。")),
+      [],
+    ));
+
+  it("still compares items that all open with ※ among themselves (ja)", () =>
+    assert.deepEqual(flagged(ja, list("※申込書の記入", "※本人確認書類の用意", "※手数料を払う")), ["ending-sentence:※手数料を払う"]));
+
+  it("does not judge the titles of a dated list of notices, cited as they were published (ja)", () =>
+    assert.deepEqual(
+      flagged(
+        ja,
+        list(
+          "令和6年8月23日説明会の日程の公表",
+          "令和6年8月2日講演会『暮らしを守るために』を開催します",
+          "令和6年7月31日募集の基準の改定",
+          "令和6年5月31日改正規則の公布",
+        ),
+      ),
+      [],
+    ));
+
+  it("still judges dated items that are sentences of the writer's own (ja)", () =>
+    assert.deepEqual(flagged(ja, list("令和6年8月23日に申込書を記入する", "令和6年8月24日に本人確認書類を用意する", "令和6年8月25日に手数料の支払い")), [
+      "ending-phrase:令和6年8月25日に手数料の支払い",
+    ]));
+
   it("reports a noun phrase among sentences (ja)", () =>
     assert.deepEqual(flagged(ja, list("毎朝ログを確認する", "週に一度バックアップを取る", "月末の請求書の発行")), ["ending-phrase:月末の請求書の発行"]));
 

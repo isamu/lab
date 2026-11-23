@@ -43,6 +43,11 @@ describe("missing-final-period: 「。」で終わらない段落", () => {
     assert.deepEqual(formsOf(documentWith("詳しい手順は担当者から説明します", "この方法が手続きとしていちばん望ましい")).slice(-2), ["open", "open"]);
   });
 
+  it("リンクの言葉だけの一行の段落（〜で見る）は文として数えない", () => {
+    assert.deepEqual(findingsOf(documentWith("公園の四季の写真をフォトギャラリーで見る")), []);
+    assert.deepEqual(findingsOf(documentWith("公園の四季の写真をフォトギャラリーで見た")).length, 1);
+  });
+
   it("閉じ括弧や引用で閉じた段落は閉じたものと数える", () => {
     assert.deepEqual(formsOf("担当者は「明日までに送ります。」\n\n係の人が「受付は終わりました」\n").slice(0, 2), ["closed", "closed"]);
   });

@@ -117,3 +117,16 @@ describe("no-nakaguro-parallel: 一続きにされた箇条書きと表", () => 
     assert.ok(!isRunTogetherList("水・電力・通信等のライフラインの確保・復旧や、避難者・支援者の生活・活動環境の改善"));
   });
 });
+
+describe("no-nakaguro-parallel: 文書が繰り返し書く片仮名の名前", () => {
+  const NAME = "サンプル・ソフトウェア・ファウンデーション";
+  const sentence = `${NAME}は、${NAME}の規約に従い、サンプル・ソフトウェアの名前と${NAME}のロゴを管理します。`;
+
+  it("valid: 片仮名の語を中黒でつないだ名前を文書が三度以上書くなら、名前の中の中黒は数えない", () => {
+    assert.ok(!firedRules(ja, `# 規約\n\n${NAME}について。\n\n${sentence}\n`).includes("no-nakaguro-parallel"));
+  });
+
+  it("invalid: 一度しか書かない片仮名の並びは今までどおり数える", () => {
+    assert.ok(firedRules(ja, "# 買物\n\nトマト・キュウリ・ナス・ピーマン・キャベツ・レタス・ニンジンを買います。\n").includes("no-nakaguro-parallel"));
+  });
+});
