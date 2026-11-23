@@ -182,28 +182,63 @@ export const bracketedDate = (text: string, date: WrittenDate): boolean => {
 
 /**
  * 日付の置き場所の手がかり。stampLabels は刻印のラベル（語彙表 date-stamp-label）、cited は文献一覧と注の並びの範囲、
- * source は記法を覆う前の文書（文書の頭の日付の行を見分ける）。
+ * source は記法を覆う前の文書（文書の頭の日付の行を見分ける）、headings は見出しの頭の位置。
  */
-export type DatePlaces = { readonly stampLabels?: readonly string[]; readonly cited?: readonly Span[]; readonly source?: string };
+export type DatePlaces = {
+  readonly stampLabels?: readonly string[];
+  readonly cited?: readonly Span[];
+  readonly source?: string;
+  readonly headings?: readonly number[];
+};
 
-type DateGroup = "head" | "body" | "stamp" | "cited";
+type DateGroup = "head" | "body" | "stamp" | "cited" | "listed";
 
 const isWithin = (spans: readonly Span[], offset: number): boolean => spans.some((span) => offset >= span.start && offset < span.end);
+
+/** 箇条書きの項目の行。 */
+const LIST_ITEM_LINE = /^\s*(?:[-*+]|\d+[.)])\s/u;
+const OPENS_ASIDE = /[(（]$/u;
+/** 括弧を閉じて行が終わる。後ろに続く括弧書き（（PDF））も項目の印。 */
+const CLOSES_LINE = /^[)）](?:\s*[(（][^)）\n]*[)）])*\s*$/u;
+
+/** 箇条書きの項目の終わりの括弧の日付（- 研究集会（2025/11/20））。text は項目の印が残っている文書。催しや記事の一覧が項目ごとに付ける日付で、本文の書き方とは別のもの。 */
+const listedDate = (text: string, date: WrittenDate): boolean => {
+  const line = lineAround(text, date.offset);
+  return (
+    LIST_ITEM_LINE.test(text.slice(line.start, line.end)) &&
+    OPENS_ASIDE.test(text.slice(line.start, date.offset)) &&
+    CLOSES_LINE.test(text.slice(date.offset + date.written.length, line.end))
+  );
+};
 
 const groupOf = (text: string, date: WrittenDate, places: DatePlaces): DateGroup => {
   if (isWithin(places.cited ?? [], date.offset)) return "cited";
   if (stampedDate(text, date.offset, places.stampLabels ?? []) || bracketedDate(text, date)) return "stamp";
   if (places.source !== undefined && headerDate(places.source, date)) return "stamp";
-  return opensLine(text, date.offset) ? "head" : "body";
+  if (opensLine(text, date.offset)) return "head";
+  return listedDate(places.source ?? text, date) ? "listed" : "body";
 };
 
 /** 比べる組。文献一覧と注の日付（cited）は比べない。題の中の日付は引いた文書の書き方で、参照日は文献の書き方の決まりに従う。 */
-const GROUP_ORDER: readonly DateGroup[] = ["head", "body", "stamp"];
+const GROUP_ORDER: readonly DateGroup[] = ["head", "body", "stamp", "listed"];
+
+/** 節（見出しから次の見出しまで）の頭。見出しの前は -1。 */
+const sectionOf = (headings: readonly number[], offset: number): number => headings.filter((start) => start <= offset).at(-1) ?? -1;
+
+/** 行の頭の日付を節ごとに分ける。予定表の節と更新の記録の節は、それぞれの中でそろえる。 */
+const bySection = (dates: readonly WrittenDate[], headings: readonly number[]): WrittenDate[][] => {
+  const keys = [...new Set(dates.map((date) => sectionOf(headings, date.offset)))];
+  return keys.map((key) => dates.filter((date) => sectionOf(headings, date.offset) === key));
+};
 
 /**
- * 行の頭の日付と、文の中の日付と、更新日・公開日の刻印の日付を分ける。予定表を 2026-10-16 で並べ、文では 14 October 2026 と
- * 書くのは使い分けで、混ざりではない。刻印のラベルは言語パッケージの語彙表（date-stamp-label）が渡す。書き方はそれぞれの組の中でだけ比べる。
+ * 行の頭の日付と、文の中の日付と、更新日・公開日の刻印の日付と、項目の終わりの括弧の日付を分ける。予定表を 2026-10-16 で並べ、
+ * 文では 14 October 2026 と書くのは使い分けで、混ざりではない。行の頭の日付は、節ごとに分ける（予定表の節と
+ * 更新の記録の節）。刻印のラベルは言語パッケージの語彙表（date-stamp-label）が渡す。書き方はそれぞれの組の中でだけ比べる。
  * 文献一覧と注の並びの中の日付は、どの組にも入れない。
  */
 export const dateGroups = (text: string, dates: readonly WrittenDate[], places: DatePlaces = {}): WrittenDate[][] =>
-  GROUP_ORDER.map((group) => dates.filter((date) => groupOf(text, date, places) === group)).filter((group) => group.length > 0);
+  GROUP_ORDER.flatMap((group) => {
+    const inGroup = dates.filter((date) => groupOf(text, date, places) === group);
+    return group === "head" ? bySection(inGroup, places.headings ?? []) : [inGroup];
+  }).filter((group) => group.length > 0);
