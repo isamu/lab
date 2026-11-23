@@ -103,6 +103,19 @@ entries:
   - pattern: 課
     group: blank-prefix
     genres: [business]
+  # 役職に続けた名前（議事録の「取締役〇〇より」「部長〇〇が説明」）。役職と名前の間に空白が無い形。
+  - pattern: 取締役
+    group: blank-prefix
+    genres: [business]
+  - pattern: 社長
+    group: blank-prefix
+    genres: [business]
+  - pattern: 部長
+    group: blank-prefix
+    genres: [business]
+  - pattern: 課長
+    group: blank-prefix
+    genres: [business]
   # 数の代わりの伏せ字に付く単位（月額〇万円、2026年〇月〇日、〇か月）。行頭の「○」は箇条書きの印なので数えない。
   - pattern: 万円
     group: blank-unit
