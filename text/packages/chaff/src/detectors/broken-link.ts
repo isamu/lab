@@ -143,8 +143,21 @@ export const unresolvedReferences = (source: string, markup: Markup): Span[] => 
 const emptyLinks = (doc: ProseDocument, markup: Markup): Finding[] =>
   markup.links.filter((link) => link.destination.trim() === "").map((link) => findingAt(doc, link, { link: quoteOf(doc.source, link) }, "empty"));
 
+/**
+ * MDN の決まった節を作るマクロと、その節に MDN が付ける名前。訳した文書でも見出しの字からではなく、この名前で指す
+ * （「## ブラウザーの互換性」の下の {{Compat}} は #browser_compatibility）。
+ */
+const MDN_SECTION_MACROS: readonly (readonly [string, string])[] = [
+  ["{{Compat", "browser_compatibility"],
+  ["{{Specifications", "specifications"],
+];
+
+/** 文書が書いたマクロが名前を付ける節。 */
+const macroAnchors = (source: string): string[] => MDN_SECTION_MACROS.filter(([macro]) => source.includes(macro)).map(([, id]) => id);
+
 const missingAnchors = (doc: ProseDocument, markup: Markup): Finding[] => {
-  const anchors = anchorsOf(markup);
+  const written = anchorsOf(markup);
+  const anchors = { ...written, ids: new Set([...written.ids, ...macroAnchors(doc.source)]) };
   return markup.links
     .filter((link) => link.destination.startsWith("#") && !reachesAnchor(link.destination, anchors))
     .map((link) => findingAt(doc, link, { link: quoteOf(doc.source, link), target: link.destination }, "anchor"));
