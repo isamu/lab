@@ -28,6 +28,7 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
   it("the rest of a word split by emphasis or a bracketed letter is not a word", () => {
     assert.deepEqual(unknown("Your avatar is a **G**lobally **R**ecognized image."), []);
     assert.deepEqual(unknown('The court said that "[e]xpressions in the opinion" were dicta.'), []);
+    assert.deepEqual(unknown("It stands for e<strong>X</strong>press <strong>E</strong>dition <strong>D</strong>ata<strong>B</strong>ase."), []);
     assert.deepEqual(unknown("The **report** is attched to this email."), ['"attched" is not in the dictionary; did you mean "attached"?']);
     assert.deepEqual(unknown("See [the notes] attched below."), ['"attched" is not in the dictionary; did you mean "attached"?']);
   });
@@ -118,6 +119,22 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
   });
 });
 
+describe("unknown-word: a name the document also writes with an inner capital", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+  });
+
+  it("valid: a name in lower case that the document writes as a name elsewhere", () => {
+    assert.deepEqual(unknown("Drop the polyfills for systemjs.\n\nDo not ship SystemJS to modern browsers."), []);
+  });
+
+  it("invalid: the same letters nowhere written as a name", () => {
+    assert.deepEqual(unknown("Drop the polyfills for systemjs.\n\nDo not ship Systemjs to modern browsers."), [
+      '"systemjs" is not in the dictionary; did you mean "systems"?',
+    ]);
+  });
+});
+
 describe("unknown-word: a name the document also writes in code", () => {
   before(async () => {
     await en.prepare?.({ pos: true });
@@ -194,6 +211,9 @@ describe("spelling: the pieces", () => {
     assert.equal(at("a **G**lobally b", "lobally"), true);
     assert.equal(at("a _G_lobally b", "lobally"), true);
     assert.equal(at('said "[e]xpressions"', "xpressions"), true);
+    assert.equal(at("<strong>E</strong>dition", "dition"), true);
+    assert.equal(at("<b>E</b>dition", "dition"), true);
+    assert.equal(at("<strong>Edition</strong> report", "report"), false);
     assert.equal(at("a **globally** b", "globally"), false);
     assert.equal(at("see [1] report", "report"), false);
     assert.equal(at("see [note]report", "report"), false);

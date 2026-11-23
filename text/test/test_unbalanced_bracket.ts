@@ -298,3 +298,20 @@ describe("unbalanced-bracket: the mouth of an emoticon is not a bracket", () => 
     assert.deepEqual(findingsOf("目標を，｢英語で何ができるかという観点から示す。\n"), ["「｢」が閉じていません"]);
   });
 });
+
+describe("unbalanced-bracket: a title's open bracket for its date", () => {
+  it("does not report a title line that opens a bracket for its date and never closes it", () => {
+    const poem = ["Song of the Harbour [1861-62", "", "  The ships come in at dawn,", "  and leave before the night.", ""].join("\n");
+    assert.deepEqual(findingsOf(poem, en, "a.txt"), []);
+    const dated = ["", "Lines for the Bridge [June 3, 1870", "", "  The river runs below.", ""].join("\n");
+    assert.deepEqual(findingsOf(dated, en, "a.txt"), []);
+  });
+
+  it("still reports an open bracket inside a paragraph, without a number, on a long line, or with no title", () => {
+    assert.equal(findingsOf("The ships come in [1861 and leave\nbefore the night.\n", en, "a.txt").length, 1);
+    assert.equal(findingsOf("Song of the Harbour [an old tune\n\n  The ships come in.\n", en, "a.txt").length, 1);
+    const long = `${"The ships come in at dawn and leave before the night, ".repeat(2)}[1861\n\nMore.\n`;
+    assert.equal(findingsOf(long, en, "a.txt").length, 1);
+    assert.equal(findingsOf("[1861-62\n\nMore.\n", en, "a.txt").length, 1);
+  });
+});

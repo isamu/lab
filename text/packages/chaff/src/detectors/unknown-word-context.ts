@@ -130,6 +130,12 @@ export const besideForeignWord = (source: string, offset: number, word: string):
   );
 };
 
+const INNER_CAPITAL = /\p{Ll}\p{Lu}/u;
+
+/** Words the source writes with a capital after a small letter (SystemJS), lower-cased: the same letters in lower case are that name. */
+export const innerCapitalWordsOf = (source: string): Set<string> =>
+  new Set((source.match(/\p{L}+/gu) ?? []).filter((word) => INNER_CAPITAL.test(word)).map((word) => word.toLowerCase()));
+
 /** The letters of every URL and email address in the source, lower-cased: a word also in an address names what it points at. */
 export const addressWordsOf = (source: string): Set<string> =>
   new Set((source.match(/\S+/gu) ?? []).filter(isAddress).flatMap((chunk) => chunk.toLowerCase().match(/\p{L}+/gu) ?? []));

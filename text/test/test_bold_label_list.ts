@@ -346,3 +346,32 @@ describe("bold-label-list", () => {
     assert.ok(!idsFor(`# Report\n\n${quoted}\n`, en, "business/report").includes("bold-label-list"));
   });
 });
+
+describe("bold-label-list: a changelog's commit scopes", () => {
+  /** A generated changelog: each release's entries open with their commit scope in bold. */
+  const changelog = (scope: (index: number) => string): string =>
+    [
+      "# Changelog",
+      "",
+      ...["2.2.0 (2022-09-19)", "2.1.0 (2022-09-05)", "2.0.1 (2022-08-11)"].flatMap((version, release) => [
+        `## ${version}`,
+        "",
+        "### Bug Fixes",
+        "",
+        ...Array.from({ length: 8 }, (_unused, index) => `* ${scope(release * 8 + index)} update all non-major dependencies (#${String(9000 + index)})`),
+        "",
+      ]),
+    ].join("\n");
+
+  const scopes = (index: number): string => `**${["deps", "build", "legacy", "types"][index % 4] ?? ""}:**`;
+
+  const unversioned = (): string => changelog(scopes).replace(/## \d[^\n]*/gu, "## Notes");
+
+  it("valid: entries under release headings that open with their commit scope", () => {
+    assert.ok(!idsFor(changelog(scopes), en).includes("bold-label-list"));
+  });
+
+  it("invalid: the same labels in a list under headings that name no release", () => {
+    assert.ok(idsFor(unversioned(), en).includes("bold-label-list"));
+  });
+});

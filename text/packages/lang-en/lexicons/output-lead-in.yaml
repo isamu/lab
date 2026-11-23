@@ -1,5 +1,5 @@
 # Words of a lead-in that says the block after it is what a program shows, not code: "we'd expect to see:", "The output
-# is:". code-fence-language-mix does not ask such a block for a language: plain output is in none.
+# is:", "fails with an error like the following:". code-fence-language-mix does not ask such a block for a language: plain output is in none.
 id: output-lead-in
 language: en
 entries:
@@ -10,3 +10,5 @@ entries:
   - pattern: output
   - pattern: prints
   - pattern: displays
+  - pattern: an error
+  - pattern: error message

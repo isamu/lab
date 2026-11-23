@@ -10,6 +10,7 @@ import {
   besideForeignWord,
   hasDrugStem,
   hasSiblingName,
+  innerCapitalWordsOf,
   inSearchTermList,
   isClosedCompound,
   isMention,
@@ -77,7 +78,12 @@ const isTermByPlace = (source: string, offset: number, word: string): boolean =>
 export const unknownWord: Detector = (doc): Finding[] => {
   if (doc.dictionary === undefined) return [];
   const speller = spellerOf(doc, doc.dictionary());
-  const known = new Set([...patternsOf(doc, "known-misspelling"), ...codeWordsOf(doc.source), ...addressWordsOf(doc.source)]);
+  const known = new Set([
+    ...patternsOf(doc, "known-misspelling"),
+    ...codeWordsOf(doc.source),
+    ...addressWordsOf(doc.source),
+    ...innerCapitalWordsOf(doc.source),
+  ]);
   const drugStems = patternsOf(doc, "drug-stem");
   const words = wordsToCheck(doc.prose ?? doc.source, MIN_LENGTH, MAX_LENGTH).filter(({ offset }) => !isSplitWord(doc.source, offset));
   const used = new Set(words.map(({ word }) => word).filter((word) => isKnownWord(word, speller)));

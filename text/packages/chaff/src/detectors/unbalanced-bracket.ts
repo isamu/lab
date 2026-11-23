@@ -5,6 +5,7 @@ import { quoteAround } from "./quote-around.ts";
 import { mergeSpans } from "../span-merge.ts";
 import { firstEndingAfter } from "../soft-break.ts";
 import { isLabelClose, isLabelInAside } from "./bracket-label.ts";
+import { isTitleDateOpen } from "./bracket-title-date.ts";
 import { isInchMark } from "./inch-mark.ts";
 import { isEmoticonMouth } from "./emoticon.ts";
 
@@ -129,7 +130,7 @@ const openWith = (scan: Scan, text: string, bracket: Bracket, offset: number, he
 
 /**
  * 一つの節の中の括弧の組を読む。text は節の文字列で、offset は text の中の位置。
- * 詩の連や、段落をまたぐ引用があるので、括弧は段落を越えて組にする。節の終わりまで閉じない開きを指摘する。
+ * 詩の連や、段落をまたぐ引用があるので、括弧は段落を越えて組にする。節の終わりまで閉じない開きを指摘する。題の行で日付を添える開き（Year of Meteors [1859-60）は除く。
  */
 export const bracketProblems = (text: string): BracketProblem[] => {
   const scan: Scan = { open: [], problems: [] };
@@ -142,7 +143,8 @@ export const bracketProblems = (text: string): BracketProblem[] => {
     if (opening !== undefined) openWith(scan, text, opening, match.index, heads);
     else if (closing !== undefined) closeWith(scan, text, closing, match.index);
   });
-  return [...scan.problems, ...scan.open.map(unclosedOf)].toSorted((left, right) => left.offset - right.offset);
+  const unclosed = scan.open.filter((entry) => !isTitleDateOpen(text, entry.offset)).map(unclosedOf);
+  return [...scan.problems, ...unclosed].toSorted((left, right) => left.offset - right.offset);
 };
 
 /** sorted（昇順・接しもしない）で、offset の後ろの最初の境目: offset を含む範囲の終わりか、次の範囲の始まり。 */

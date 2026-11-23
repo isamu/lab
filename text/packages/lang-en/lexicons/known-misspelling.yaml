@@ -1,6 +1,8 @@
 # Common misspellings. pattern is the misspelling, instead_of the spelling. Read by known-misspelling.
 # Only forms that are wrong in every variety of English: British and American spellings (colour, judgement, dependant)
-# are left to spelling-consistency. A form is matched as a whole word, never inside a longer one.
+# are left to spelling-consistency. A form is matched as a whole word, never inside a longer one. An entry with
+# group: period-spelling was the spelling of English printed before about 1800, and is left in a document that writes the
+# orthography of that age (the period-spelling lexicon: publick, shew).
 # Self-compiled; not copied from any published list.
 id: known-misspelling
 language: en
@@ -63,6 +65,7 @@ entries:
     instead_of: independent
   - pattern: maintainance
     instead_of: maintenance
+    group: period-spelling
   - pattern: millenium
     instead_of: millennium
   - pattern: neccessary
