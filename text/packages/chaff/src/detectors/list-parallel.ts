@@ -219,8 +219,20 @@ const openingSeries = (tokens: readonly Token[], at: number): readonly Token[] =
   return after === -1 || after === at + 1 ? [word] : [word, ...openingSeries(tokens, after)];
 };
 
-/** A series one of whose later words is a verb in its base form (Instrument, monitor and profile): it is a series of verbs. */
-const seriesOfVerbs: HeadReader = (tokens, at) => (openingSeries(tokens, at).slice(1).some(isBaseVerb) ? "verb" : undefined);
+/** The tags a verb the tagger misread may carry (Dry as an adjective, lube as a noun); a preposition (from) never is one. */
+const VERB_SHAPED = new Set(["VERB", "NOUN", "ADJ"]);
+
+/**
+ * A series one of whose later words is a verb in its base form (Instrument, monitor and profile), or that "the", "a" or
+ * "your" follows (Dry and lube the chain): it is a series of verbs.
+ */
+const seriesOfVerbs: HeadReader = (tokens, at) => {
+  const series = openingSeries(tokens, at);
+  const last = series.at(-1);
+  const takesObject =
+    series.length > 1 && series.every((word) => VERB_SHAPED.has(word.pos)) && last !== undefined && opensObject(tokens[tokens.indexOf(last) + 1]);
+  return takesObject || series.slice(1).some(isBaseVerb) ? "verb" : undefined;
+};
 
 /**
  * The first two words overrule the first word's tag. "Open the console" and "Press the button" open with a verb. "Clean up
