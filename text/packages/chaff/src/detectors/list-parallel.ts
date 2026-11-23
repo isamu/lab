@@ -1,6 +1,7 @@
 // Whether the items of one bulleted list share a form: all phrases or all sentences, all opening with a verb or all with
 // a noun. Pure; reads the item sentences' tokens. Which form is right is the writer's choice, so only the minority within
 // one list is reported. です/ます against plain endings inside a list is no-mixed-desumasu's, not this.
+import { isDatedTitle, noteItems } from "./list-item-asides.ts";
 import { minorityWithin } from "../orthography.ts";
 import { isQuotedAt } from "./bold-label.ts";
 import { endsAsHeadline, markOrSkipped, withoutFootnoteReference, withoutTrailingMarks } from "./list-item-ending.ts";
@@ -449,10 +450,11 @@ const groupFindings = (doc: ProseDocument, itemSpans: readonly Span[], heads: re
   const linkEndings = (doc.lexicons["link-label-ending"] ?? []).map((entry) => entry.pattern);
   const sentencesOf = itemSpans.map((span) => ownSentences(doc, span, noteLeads));
   if (sentencesOf.some(runsOn)) return [];
+  const writtenOf = itemSpans.map((span, index) => doc.source.slice(span.start, writtenEnd(doc, span, sentencesOf[index] ?? [], noteLeads)));
+  const notes = noteItems(writtenOf, noteLeads);
   const judged = sentencesOf.filter((sentences, index) => {
-    const span = itemSpans[index];
-    if (span === undefined) return false;
-    const written = doc.source.slice(span.start, writtenEnd(doc, span, sentences, noteLeads));
+    const [span, written] = [itemSpans[index], writtenOf[index]];
+    if (span === undefined || written === undefined || notes.has(index) || isDatedTitle(written)) return false;
     return isJudged(written, sentences) && !isLinkLabel(written, linkEndings) && !(heads.includes(span) && isGroupLabel(sentences, doc.language));
   });
   const context = headContext(doc, judged);

@@ -9,9 +9,7 @@ gitlab-jd-instructional-designer  2
 gitlab-meetings  1
 govuk-guidance-academy-senior-pay  1
 govuk-style-guide-a-to-z  6
-jma-tokubetsu-keiho  1
 koenote-requirements  7
-mhlw-pubcomment-rodohoken  1
 moriguchi-satsuki-gakuen-ijime-houshin  1
 neeview-changelog-ja  9
 nttcom-onboarding-week1  1
