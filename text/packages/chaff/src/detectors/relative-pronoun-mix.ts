@@ -44,11 +44,23 @@ const verbAfter = (tokens: readonly Token[], at: number): number => {
   return next;
 };
 
+/** 決まった言い方を照らす、which / that の後ろの語数。語彙表の最も長い言い方より長く取る。 */
+const FORMULA_REACH = 8;
+
+/** 後ろの語が語彙表 aside-relative-formula の決まった言い方で始まる（consent which will not be unreasonably withheld）。前の語に条件を添える節で、限定ではない。 */
+const opensFormula = (tokens: readonly Token[], at: number, formulas: Lexicon): boolean => {
+  const after = tokens
+    .slice(at + 1, at + 1 + FORMULA_REACH)
+    .map((token) => token.surface.toLowerCase())
+    .join(" ");
+  return formulas.some((formula) => formula.pattern !== "" && `${after} `.startsWith(`${formula.pattern.toLowerCase()} `));
+};
+
 /** 語彙表の組（which / that）で、tokens の中の限定の関係節の頭。 */
-export const relativeUses = (tokens: readonly Token[], kinds: Lexicon): RelativeUse[] =>
+export const relativeUses = (tokens: readonly Token[], kinds: Lexicon, formulas: Lexicon = []): RelativeUse[] =>
   tokens.flatMap((word, at) => {
     const entry = kinds.find((candidate) => candidate.pattern.toLowerCase() === word.surface.toLowerCase());
-    if (entry?.group === undefined) return [];
+    if (entry?.group === undefined || opensFormula(tokens, at, formulas)) return [];
     const verb = verbAfter(tokens, at);
     if (!opensRelative(tokens[at - 1], tokens[verb], tokens[verb + 1])) return [];
     return [{ word, kind: entry.group }];
@@ -66,6 +78,7 @@ export const oddRelatives = (uses: readonly RelativeUse[], limit: number): { rea
 
 export const relativePronounMix: Detector = (doc, options): Finding[] => {
   const kinds = doc.lexicons["restrictive-relative"] ?? [];
+  const formulas = doc.lexicons["aside-relative-formula"] ?? [];
   // A block quotation of another text (an earlier opinion) keeps that text's wording, so it does not vote.
   const quotations = quotationParagraphIndexes(
     doc.source,
@@ -77,7 +90,9 @@ export const relativePronounMix: Detector = (doc, options): Finding[] => {
   const uses = doc.sentences.flatMap((sentence) => {
     if (sentence.embeddedLanguage !== undefined || blockQuoted.has(sentence)) return [];
     const quoted = quotedIn(sentence, QUOTATION_MARKS);
-    return relativeUses(sentence.tokens ?? [], kinds).filter((use) => !isWithinAny(quoted, use.word.span) && !isWithinAny(singleQuoted, use.word.span));
+    return relativeUses(sentence.tokens ?? [], kinds, formulas).filter(
+      (use) => !isWithinAny(quoted, use.word.span) && !isWithinAny(singleQuoted, use.word.span),
+    );
   });
   const { odd, usual } = oddRelatives(uses, options.limit);
   return odd.map((use) => ({
