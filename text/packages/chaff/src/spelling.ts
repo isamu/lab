@@ -110,10 +110,10 @@ export const wordsToCheck = (text: string, minLength: number, maxLength: number)
     .map((match) => ({ offset: match.index, word: match[0] }));
 };
 
-/** 頭の字を強調（**G**lobally）や角括弧（引用を変えた [e]xpressions）で分けた語の残りの、直前の形。 */
-const SPLIT_HEAD = /(?:\p{L}[*_~]+|\[\p{L}\])$/u;
-/** 直前を見る字の数。強調の印と頭の字が収まればよい。 */
-const SPLIT_LOOKBACK = 8;
+/** 頭の字を強調（**G**lobally、<strong>E</strong>dition）や角括弧（引用を変えた [e]xpressions）で分けた語の残りの、直前の形。 */
+const SPLIT_HEAD = /(?:\p{L}(?:[*_~]+|<\/[a-z]+>)|\[\p{L}\])$/u;
+/** 直前を見る字の数。強調の印か閉じのタグ（</strong>）と頭の字が収まればよい。 */
+const SPLIT_LOOKBACK = 16;
 
 /** source（Markdown のままの文書）の offset から始まる語が、頭の字を分けた語の残りか。 */
 export const isSplitWord = (source: string, offset: number): boolean => SPLIT_HEAD.test(source.slice(Math.max(0, offset - SPLIT_LOOKBACK), offset));
