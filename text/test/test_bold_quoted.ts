@@ -5,6 +5,7 @@ import { isQuotedMention } from "../packages/chaff/src/detectors/bold-quoted.ts"
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { isFieldLabel } from "../packages/chaff/src/detectors/bold-field-label.ts";
+import { isReleaseScopeLabel } from "../packages/chaff/src/detectors/release-notes.ts";
 
 // bold-density does not count a bold run that only quotes words, nor a field label opening a line. Every example is self-written.
 
@@ -15,6 +16,7 @@ const quoted = (bold: string): boolean => isQuotedMention(bold, { start: 0, end:
 
 before(async () => {
   await ja.prepare?.({ pos: true });
+  await en.prepare?.({ pos: true });
 });
 
 describe("isQuotedMention: a bold run that is only a quotation", () => {
@@ -113,5 +115,43 @@ describe("bold-density: a field label opening a line is a name, not emphasis", (
       .replaceAll("**Absent:**", "- **Absent:**")
       .replaceAll("**Also present:**", "- **Also present:**");
     assert.equal(firedRules(en, list, "business/meeting-notes").includes(RULE), true);
+  });
+});
+
+describe("bold-density: a changelog's commit scopes", () => {
+  /** A generated changelog: each release's entries open with their commit scope in bold. */
+  const changelog = (scope: (index: number) => string): string =>
+    [
+      "# Changelog",
+      "",
+      ...["2.2.0 (2022-09-19)", "2.1.0 (2022-09-05)", "2.0.1 (2022-08-11)"].flatMap((version, release) => [
+        `## ${version}`,
+        "",
+        "### Bug Fixes",
+        "",
+        ...Array.from({ length: 8 }, (_unused, index) => `* ${scope(release * 8 + index)} update all non-major dependencies (#${String(9000 + index)})`),
+        "",
+      ]),
+    ].join("\n");
+
+  const scopes = (index: number): string => `**${["deps", "build", "legacy", "types"][index % 4] ?? ""}:**`;
+
+  const unversioned = (): string => changelog(scopes).replace(/## \d[^\n]*/gu, "## Notes");
+
+  it("valid: the bold scope opening each entry under a release heading", () => {
+    assert.ok(!firedRules(en, changelog(scopes), "technical/readme").includes(RULE));
+  });
+
+  it("invalid: the same bold labels under headings that name no release", () => {
+    assert.ok(firedRules(en, unversioned(), "technical/readme").includes(RULE));
+  });
+
+  it("isReleaseScopeLabel: a bold run opening a list item inside a release", () => {
+    const source = "## 1.0.0\n\n* **deps:** update\n\n**Note:** text\n";
+    const at = (bold: string) => ({ start: source.indexOf(bold), end: source.indexOf(bold) + bold.length });
+    const releases = [{ start: 0, end: source.length }];
+    assert.equal(isReleaseScopeLabel(source, releases, at("**deps:**")), true);
+    assert.equal(isReleaseScopeLabel(source, releases, at("**Note:**")), false);
+    assert.equal(isReleaseScopeLabel(source, [], at("**deps:**")), false);
   });
 });
