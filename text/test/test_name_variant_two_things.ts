@@ -330,4 +330,11 @@ describe("name-variant: two things, not one name", () => {
     const poem = "Paradise was near, and Paradise was lost.\nAs the poets tell, the Paradiso, the straying thence.\n";
     assert.deepEqual(variants(poem), []);
   });
+
+  it("a period singular with a silent final e (Turke) beside the plural (Turks) is another form of the word", () => {
+    const essay = "The Turks were near. The Turks held the sea. A Turk came. Bring the Turke, soldiers, and the like.\n";
+    assert.deepEqual(variants(essay), []);
+    const slip = "The Affiliates agree. The Affiliates sign. The Affliates pay.\n";
+    assert.deepEqual(variants(slip), ['"Affliates" is one letter away from "Affiliates", which the document uses more than once']);
+  });
 });
