@@ -167,6 +167,12 @@ describe("defined-term-form: a term written longer with a word of its definition
     assert.equal(extendedBefore("x当該文書管理責任者が", 5, "管理責任者", "文書の管理の責任者", ["当該"]), "文書管理責任者");
   });
 
+  it("does not report the term written twice in a row, a run-in heading joined to its text (ライセンス対象物ライセンス対象物の受領者)", () => {
+    const definition = "## 第1条 定義\n\n- 「ライセンス対象物」 とは、許諾者が本ライセンスを適用した著作物その他のライセンス対象物をいう。\n\n";
+    const source = `${definition}## 第2条 申出\n\n- 許諾者からの申出－ライセンス対象物ライセンス対象物の受領者は、申出を受け取る。\n`;
+    assert.deepEqual(valuesOf(ja, "defined-term-form", source, "written"), []);
+  });
+
   it("reports the Application where the Pinecone Notes application is defined as the App", () => {
     const source = [
       "# Terms",
