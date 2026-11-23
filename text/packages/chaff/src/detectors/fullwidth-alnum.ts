@@ -95,13 +95,15 @@ const widthExampleSpans = (text: string): Span[] =>
  * 日付で始まり、句点の無い箇条書きの項目（- 平成25年8月23日命を守るために…～８月３０日運用開始～）。報道発表やお知らせの一覧で、
  * 日付に続けた題は出したときのまま引いたもの。書き手の書き方の票ではない。日付は一覧の書き手のもので、票に入れる。
  */
-const DATED_TITLE_ITEM = /^([ \t]*[-*+][ \t]+(?:(?:令和|平成|昭和)[0-9０-９元]{1,2}|[0-9]{4})年[0-9０-９]{1,2}月[0-9０-９]{1,2}日)[^\s。\n][^。\n]*$/u;
+const LIST_ITEM_DATE = /^[ \t]*[-*+][ \t]+(?:(?:令和|平成|昭和)[\d０-９元]{1,2}|\d{4})年[\d０-９]{1,2}月[\d０-９]{1,2}日/u;
+const TITLE_AFTER_DATE = /^[^\s。][^。]*$/u;
 
 const isInDatedTitle = (source: string, offset: number): boolean => {
   const lineStart = source.lastIndexOf("\n", offset - 1) + 1;
   const lineEnd = source.indexOf("\n", offset);
-  const dated = DATED_TITLE_ITEM.exec(source.slice(lineStart, lineEnd < 0 ? source.length : lineEnd));
-  return dated !== null && offset >= lineStart + (dated[1]?.length ?? 0);
+  const line = source.slice(lineStart, lineEnd < 0 ? source.length : lineEnd);
+  const date = LIST_ITEM_DATE.exec(line)?.[0];
+  return date !== undefined && TITLE_AFTER_DATE.test(line.slice(date.length)) && offset >= lineStart + date.length;
 };
 
 export type AlnumRun = {
