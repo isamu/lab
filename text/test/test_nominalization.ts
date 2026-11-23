@@ -54,6 +54,11 @@ describe("nominalization (ja): a verbal noun carried by を行う / を実施す
     assert.deepEqual(hidden("動物取扱業の適正化等の施策を実施した。福祉タクシーの導入等に対する支援措置を実施している。", ja), []);
   });
 
+  it("a compound whose する form is not written (計画運休を実施する is not 計画運休する) is not a hidden verb", () => {
+    assert.deepEqual(hidden("台風の接近に備えて計画運休を実施する場合がある。", ja), []);
+    assert.deepEqual(hidden("台風の接近に備えて運休を実施する場合がある。", ja), ["運休を実施する→運休する"]);
+  });
+
   it("the same carrying verbs after another verbal noun are still counted (指導を行う, 調査を実施する)", () => {
     assert.deepEqual(hidden("夜間に学生の指導を行う。将来の野生復帰を想定した生息状況の調査を実施する。", ja), [
       "指導を行う→指導する",

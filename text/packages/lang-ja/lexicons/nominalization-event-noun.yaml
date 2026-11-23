@@ -8,6 +8,8 @@ entries:
   - pattern: 研修
   - pattern: 試験
   - pattern: 会議
+  # 複合語は書いたとおりに引く: 「計画運休を実施する」の「計画運休する」は言わず、「運休する」は計画を落とす。
+  - pattern: 計画運休
   - pattern: 選挙
   - pattern: 講習
   - pattern: 演習

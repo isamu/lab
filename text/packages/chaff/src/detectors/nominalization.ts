@@ -42,6 +42,13 @@ const compoundStart = (tokens: readonly Token[], at: number): number =>
   tokens[at - 1]?.pos === "NOUN" && touches(tokens[at - 1], tokens[at]) ? compoundStart(tokens, at - 1) : at;
 
 /**
+ * The verbal noun is an event noun, or ends a compound that is one as written (計画運休, whose する form is not written, even
+ * where the tagger leaves 計画 out of the compound).
+ */
+const isEventNoun = (source: string, noun: Token, eventNouns: ReadonlySet<string>): boolean =>
+  eventNouns.has(noun.surface) || [...eventNouns].some((word) => word.length > noun.surface.length && source.startsWith(word, noun.span.end - word.length));
+
+/**
  * A carrying verb right after a verbal noun: 調査 + を実施した, the noun read with the compound it ends (塗り直し). Both sides are named in the dictionary form, the noun and the
  * entry (調査を実施する), and the verb to write is the noun and the entry's instead_of (調査 + する).
  */
@@ -50,7 +57,7 @@ const lightVerbsIn = (sentence: Sentence, source: string, lightVerbs: Lexicon, e
   return lightVerbs.flatMap((entry) =>
     entryRanges(sentence, entry).flatMap((range): Hidden[] => {
       const noun = tokens[range.start - 1];
-      if (!isVerbalNoun(noun) || eventNouns.has(noun.surface)) return [];
+      if (!isVerbalNoun(noun) || isEventNoun(source, noun, eventNouns)) return [];
       const compound = source.slice(tokens[compoundStart(tokens, range.start - 1)]?.span.start ?? noun.span.start, noun.span.end);
       return [{ sentence, offset: noun.span.start, matched: `${compound}${entry.pattern}`, preferred: `${compound}${entry.instead_of ?? ""}` }];
     }),
