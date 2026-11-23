@@ -38,7 +38,9 @@ describe("closing-cliche: 最後の段落でだけ定型になる言い回し", 
   });
 
   it("invalid: 「ぜひ始めてみてくださいね」と始めるよう勧めて締める", () => {
-    assert.deepEqual(matchedFor("# 歯みがき\n\n夜に一分足すだけです。\n\nできるところから、ぜひ始めてみてくださいね。\n", ja, "blog/owned-media"), ["始めてみてください"]);
+    assert.deepEqual(matchedFor("# 歯みがき\n\n夜に一分足すだけです。\n\nできるところから、ぜひ始めてみてくださいね。\n", ja, "blog/owned-media"), [
+      "始めてみてください",
+    ]);
   });
 
   it("valid: 本文の途中の「始めてみてください」は手順の勧めで、結びではない", () => {
@@ -52,7 +54,8 @@ describe("closing-cliche: 最後の段落でだけ定型になる言い回し", 
   });
 
   it("valid: the same offer earlier in the text", () => {
-    const source = "# Receipts\n\n## Our office\n\nWe're here to help with receipts.\n\nKeep every receipt in one folder.\n\nScan them each week.\n\nFile them by month.\n";
+    const source =
+      "# Receipts\n\n## Our office\n\nWe're here to help with receipts.\n\nKeep every receipt in one folder.\n\nScan them each week.\n\nFile them by month.\n";
     assert.deepEqual(matchedFor(source, en, "blog/owned-media"), []);
   });
 
