@@ -1,7 +1,8 @@
 import { lengthOf, proseText } from "../measure.ts";
-import type { Detector, DetectorOptions, Finding, LengthUnit, Sentence } from "../plugin.ts";
+import type { Detector, DetectorOptions, Finding, LengthUnit, ProseDocument, Sentence } from "../plugin.ts";
 import { authorListSaving, citationLead, withoutEarlierReference } from "./citation-sentence.ts";
 import { isCitationString, wordsAroundCitation } from "./citation-string.ts";
+import { documentSubjects } from "./email-letter.ts";
 import { isNameList } from "./name-list-sentence.ts";
 import { pageMarkerPattern, pageMarkerSize } from "./page-marker.ts";
 import { quotedSentenceParts } from "./quoted-sentences.ts";
@@ -84,6 +85,18 @@ const ownSize = (sentence: Sentence, unit: LengthUnit, words: SentenceWords): nu
   return unit === "char" ? longestQuotedPart(text, size, words.markers) : size;
 };
 
+/**
+ * The texts of the document's subject fields: each subject line (Subject: …) and each value (the line under a bare SUBJECT:).
+ * A subject is no sentence; email-subject-length measures it.
+ */
+const subjectTexts = (doc: ProseDocument): ReadonlySet<string> =>
+  new Set(
+    documentSubjects(doc)
+      .flatMap((line) => [line.subject, doc.source.slice(line.start).split("\n", 1)[0] ?? ""])
+      .map((text) => text.trim())
+      .filter((text) => text !== ""),
+  );
+
 export const sentenceLength: Detector = (doc, options): Finding[] => {
   const words: SentenceWords = {
     markers: pageMarkerPattern((options.lexicon ?? []).map((entry) => entry.pattern)),
@@ -94,6 +107,7 @@ export const sentenceLength: Detector = (doc, options): Finding[] => {
   const long = doc.sentences
     .map((sentence) => ({ sentence, measure: measureOf(sentence, doc.lengthUnit, options, words) }))
     .filter(({ sentence, measure }) => measure.size > measure.limit && !isNameList(proseText(sentence)));
+  const subjects = long.length === 0 ? new Set<string>() : subjectTexts(doc);
   // 他の文書から引き写した文（法律の条、「reads as follows:」の後の段落）は書き手の文ではない。探すのに文書の木を組むので、長い文があるときだけ。
   const reproduced =
     long.length === 0
@@ -105,7 +119,7 @@ export const sentenceLength: Detector = (doc, options): Finding[] => {
           (doc.lexicons["verbatim-lead"] ?? []).map((entry) => entry.pattern),
         );
   return long
-    .filter(({ sentence }) => !isReproduced(sentence.span, reproduced))
+    .filter(({ sentence }) => !isReproduced(sentence.span, reproduced) && !subjects.has(proseText(sentence).trim()))
     .map(({ sentence, measure }) => ({
       rule: "max-sentence-length",
       severity: "warning",

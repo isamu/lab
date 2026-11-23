@@ -63,4 +63,11 @@ describe("max-sentence-length: titles and quoted term runs", () => {
       'The key words "MUST", "MUST NOT", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", and "MAY" in this note are read as the lending desk explains them.';
     assert.deepEqual(findingsOf(keyWords), []);
   });
+
+  it("the value under a subject label is a subject, not a sentence; the same words in a sentence are measured", () => {
+    const subject = "Second review of the community lending programs in the northern river counties in response to the spring floods of this year";
+    assert.deepEqual(findingsOf(`SUBJECT:\n\n${subject}\n\nThe desk will reply by Friday.`), []);
+    assert.deepEqual(findingsOf(`Subject: ${subject}\n\nThe desk will reply by Friday.`), []);
+    assert.equal(findingsOf(`Notes:\n\nThe desk wrote ${subject}.`).length, 1);
+  });
 });

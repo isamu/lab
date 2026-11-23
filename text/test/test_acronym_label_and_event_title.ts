@@ -14,6 +14,7 @@ const covered = (text: string, spans: readonly { readonly start: number; readonl
 
 const EN_NOUNS = (en.lexicons["control-noun"] ?? []).map((entry) => entry.pattern);
 const JA_NOUNS = (ja.lexicons["control-noun"] ?? []).map((entry) => entry.pattern);
+const JA_KINDS = (ja.lexicons["talk-kind"] ?? []).map((entry) => entry.pattern);
 
 describe("quotedLabelSpans", () => {
   it("valid: capitals quoted right before a control noun", () => {
@@ -46,25 +47,50 @@ describe("eventTitleSpans", () => {
     "- 講演（EBPM研修の取り組み）",
   ].join("\n");
 
-  it("valid: an item that is one quoted title, and the items a list dates", () => {
-    assert.deepEqual(covered(list, eventTitleSpans(list)), [
+  it("valid: an item that is one quoted title, the items a list dates, and a kind of talk's bracketed title", () => {
+    assert.deepEqual(covered(list, eventTitleSpans(list, JA_KINDS)), [
       "「世帯消費の指数（CTIミクロ）の改善」",
       "研究集会「データの二次利用」（2014/2/21）（PDF）",
       "データを使いこなす！～KUMAの利用手続き～（2014/1/9）",
+      "EBPM研修の取り組み",
     ]);
+  });
+
+  it("valid: a talk's title that runs onto the next line", () => {
+    const wrapped = ["- 研究集会（2017/11/17）", "- 見学会（2017/11/11）", "- 講演（データによる人材育成", "– 総務省EBPM研修への取り組み -）", "- 見学"].join(
+      "\n",
+    );
+    assert.deepEqual(covered(wrapped, eventTitleSpans(wrapped, JA_KINDS)), [
+      "研究集会（2017/11/17）",
+      "見学会（2017/11/11）",
+      "データによる人材育成\n– 総務省EBPM研修への取り組み -",
+    ]);
+  });
+
+  it("invalid: a kind of talk in a list that dates nothing, another head, a full stop, a bracket closed before the item ends", () => {
+    assert.deepEqual(eventTitleSpans("- 講演（EBPM研修の取り組み）\n- 次回の議題", JA_KINDS), []);
+    const dates = "- 研究集会（2017/11/17）\n- 見学会（2017/11/11）\n";
+    const titles = (item: string): string[] => covered(dates + item, eventTitleSpans(dates + item, JA_KINDS)).slice(2);
+    assert.deepEqual(titles("- 議題（KPI の見直し）"), []);
+    assert.deepEqual(titles("- 講演（KPI を見直した。次に進む）"), []);
+    assert.deepEqual(titles("- 講演（EBPM）で KPI を説明"), []);
+    assert.deepEqual(titles("- 講演（データによる人材育成\n\nKPI を見直す）"), []);
+    assert.deepEqual(titles("- 講演（データによる人材育成\n- KPI の見直し）"), []);
   });
 
   it("invalid: one dated item alone, a quote inside the writer's sentence, a line that is not an item", () => {
     const one = ["- KPI の見直し（2024/1/9）", "- 次回の議題"].join("\n");
-    assert.deepEqual(eventTitleSpans(one), []);
-    assert.deepEqual(eventTitleSpans("- 「KPI」を決めて共有する"), []);
-    assert.deepEqual(eventTitleSpans("- 「公園で転落し、頭部を骨折。ICU入室。」(4歳)"), []);
-    assert.deepEqual(eventTitleSpans("「世帯消費の指数（CTI）の改善」"), []);
+    assert.deepEqual(eventTitleSpans(one, JA_KINDS), []);
+    assert.deepEqual(eventTitleSpans("- 「KPI」を決めて共有する", JA_KINDS), []);
+    assert.deepEqual(eventTitleSpans("- 「公園で転落し、頭部を骨折。ICU入室。」(4歳)", JA_KINDS), []);
+    assert.deepEqual(eventTitleSpans("「世帯消費の指数（CTI）の改善」", JA_KINDS), []);
   });
 
-  it("abnormal input: empty text, an empty item", () => {
-    assert.deepEqual(eventTitleSpans(""), []);
-    assert.deepEqual(eventTitleSpans("- \n-"), []);
+  it("abnormal input: empty text, an empty item, no kinds of talk", () => {
+    assert.deepEqual(eventTitleSpans("", JA_KINDS), []);
+    assert.deepEqual(eventTitleSpans("- \n-", JA_KINDS), []);
+    const dated = "- 研究集会（2017/11/17）\n- 見学会（2017/11/11）\n- 講演（EBPM研修）";
+    assert.deepEqual(covered(dated, eventTitleSpans(dated, [])), ["研究集会（2017/11/17）", "見学会（2017/11/11）"]);
   });
 });
 
@@ -85,6 +111,7 @@ describe("undefined-acronym: labels and event titles are counted but not reporte
       "- 「世帯消費の指数（CTIミクロ）の改善」",
       "- データを使いこなす！～KUMAの利用手続き～（2014/1/9）",
       "- 研究集会「データの二次利用」（2014/2/21）（PDF）",
+      "- 講演（総務省EBPM研修への取り組み）",
       "",
       "申し込みは SRE が受け付けます。",
       "",

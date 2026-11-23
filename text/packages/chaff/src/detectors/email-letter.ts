@@ -323,7 +323,8 @@ export const withoutReplyMarks = (subject: string, marks: readonly string[]): st
   return subject.slice(dropped).trim();
 };
 
-export const emailSubject: Detector = (doc, options): Finding[] =>
+/** The document's subject lines, read with its language's subject, reply-mark, header, greeting and sentence-end words. */
+export const documentSubjects = (doc: ProseDocument): SubjectLine[] =>
   subjectLines(
     doc.source,
     {
@@ -334,7 +335,10 @@ export const emailSubject: Detector = (doc, options): Finding[] =>
       sentenceEnds: patternsOf(doc, "email-sentence-end"),
     },
     doc.replyQuotes ?? [],
-  ).flatMap((line): Finding[] => {
+  );
+
+export const emailSubject: Detector = (doc, options): Finding[] =>
+  documentSubjects(doc).flatMap((line): Finding[] => {
     const length = [...withoutReferenceSuffix(line.subject)].length;
     if (length > 0 && length <= options.limit) return [];
     return [
