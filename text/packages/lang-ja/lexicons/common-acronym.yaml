@@ -17,6 +17,8 @@ entries:
   - pattern: GPU
   - pattern: RAM
   - pattern: USB
+  # テレビとケーブルに書いてある端子の名前。USB と同じく、この字のまま呼ぶ。
+  - pattern: HDMI
   - pattern: AI
   - pattern: ID
   - pattern: FAQ
