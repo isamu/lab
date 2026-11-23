@@ -124,13 +124,37 @@ const endsOnCopulaOrBeing = (tokens: readonly Token[], last: number): boolean =>
   return isCopula(token) || (token !== undefined && isParticle(token, "が") && tokens[head + 1]?.lemma === "ある");
 };
 
+/** A が on a noun, a nominaliser too (感染するものが増えている), past at and past the last comma: the final predicate's subject. */
+const finalGaAfter = (tokens: readonly Token[], at: number, last: number): boolean => {
+  const lastComma = tokens.findLastIndex((token, index) => index < last && isComma(token));
+  return tokens.some((token, index) => index > Math.max(at, lastComma) && index < last && isParticle(token, "が") && NOMINAL.has(tokens[index - 1]?.pos ?? ""));
+};
+
+/** The sentence ends on a noun and a copula, and a が straight before the noun is its subject (〜を図ることが必要である), past at. */
+const predicateNounTakesGa = (tokens: readonly Token[], at: number, last: number): boolean => {
+  const copula = beforeTail(tokens, last);
+  const ga = tokens[copula - 2];
+  return (
+    copula - 2 > at &&
+    isCopula(tokens[copula]) &&
+    isOwnNoun(tokens[copula - 1]) &&
+    ga !== undefined &&
+    isParticle(ga, "が") &&
+    NOMINAL.has(tokens[copula - 3]?.pos ?? "")
+  );
+};
+
 /**
  * 収益は、…の積上げであり、…ストック型が主要を占めております: the copula's continuing form closes the topic's clause when a new
- * topic follows, or a subject of its own (が) whose predicate is not again a copula or ある. 信頼型は、…ものであり、…ものではありません
+ * topic follows, or a subject of its own (が, a clause made a noun too: 〜することが求められている) whose predicate is not again a
+ * copula or ある, or the subject of the final copula's noun (〜を図ることが必要である). 信頼型は、…ものであり、…ものではありません
  * and これは…リンクであり、ユーザーが…ということです say two things of the same topic.
  */
 const closesWithCopulaContinuing = (tokens: readonly Token[], at: number, last: number, subject: number): boolean =>
-  isCopulaContinuing(tokens, at) && (newTopicAfter(tokens, at + 1, last) || (subject > at && !endsOnCopulaOrBeing(tokens, last)));
+  isCopulaContinuing(tokens, at) &&
+  (newTopicAfter(tokens, at + 1, last) ||
+    ((subject > at || finalGaAfter(tokens, at, last)) && !endsOnCopulaOrBeing(tokens, last)) ||
+    predicateNounTakesGa(tokens, at, last));
 
 /**
  * 〜する想定のため: a clause, a noun it ends on, and の before ため, the copula's attributive form (想定であるため). A bare noun
@@ -207,12 +231,6 @@ const isPoliteGa = (tokens: readonly Token[], at: number): boolean => {
 
 /** A topic on a noun that sets the time or the case (普及以前は, 決定後は): it frames a clause, not the whole sentence. */
 const isSettingTopic = (tokens: readonly Token[], topic: number): boolean => tokens[topic - 1]?.features?.["Adverbial"] === "Yes";
-
-/** A が on a noun, a nominaliser too (感染するものが増えている), past at and past the last comma: the final predicate's subject. */
-const finalGaAfter = (tokens: readonly Token[], at: number, last: number): boolean => {
-  const lastComma = tokens.findLastIndex((token, index) => index < last && isComma(token));
-  return tokens.some((token, index) => index > Math.max(at, lastComma) && index < last && isParticle(token, "が") && NOMINAL.has(tokens[index - 1]?.pos ?? ""));
-};
 
 /** A new topic on a noun after at, before the last word, bare or on に or で (プログラムには, 国内では). */
 const frameTopicAfter = (tokens: readonly Token[], at: number, last: number): boolean =>
