@@ -150,3 +150,8 @@ entries:
     rewrite: name the meetings, and what replaces them
   - pattern: could probably have been an email
     rewrite: name the meetings, and what replaces them
+  # "Punches (way) above its weight", without the verb so an adverb between them still matches.
+  - pattern: above its weight
+    rewrite: say what it does better than its size suggests
+  - pattern: above their weight
+    rewrite: say what they do better than their size suggests
