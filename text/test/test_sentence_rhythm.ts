@@ -101,6 +101,15 @@ describe("sentence-rhythm on changelogs and lists", () => {
   it("invalid: even prose split over paragraphs is still reported", () => {
     assert.ok(fires(ja, `${evenSentences(6, 40)}\n\n${evenSentences(6, 40)}\n`));
   });
+  it("valid: a changelog's releases that each point at another changelog are entries, not prose", () => {
+    const releases = Array.from({ length: 10 }, (_unused, index) => {
+      const version = `8.${String(9 - index)}.0`;
+      return `## ${version} (2026-06-15)\n\nSee the [${version} changelog](https://example.com/${version}/CHANGELOG.md) for the details.\n`;
+    });
+    const changelog = `# Changelog\n\n${releases.join("\n")}`;
+    assert.ok(!fires(en, changelog));
+    assert.ok(fires(en, changelog.replace(/## 8\.\d\.0/gu, "## Notes")));
+  });
 });
 
 // Japanese blog prose is held to a higher spread than English: generated Japanese sits just under the human low end.
