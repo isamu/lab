@@ -24,6 +24,8 @@ export type NumberWords = {
   readonly nameWords: readonly string[];
   /** Kanji counts read the native way (二通り, ふたとおり): written in kanji whatever the document's style for counts. */
   readonly nativeCounts: readonly string[];
+  /** Words that make a number and its counter the name of a thing (十円玉, 千円札): written either way, not a count. */
+  readonly nameSuffixes: readonly string[];
 };
 
 const alternation = (words: readonly string[]): string =>
@@ -78,11 +80,16 @@ const isInsideWord = (written: string, offset: number, tokens: readonly Token[])
   return word.surface.slice(written.length) !== ORDINAL_SUFFIX;
 };
 
+/** A number and counter that a name word follows (十円玉, 100円玉, 五円硬貨): the name of a coin or a note, not a count of yen. */
+const namesThing = (text: string, end: number, words: NumberWords): boolean =>
+  words.nameSuffixes.some((suffix) => suffix !== "" && text.startsWith(suffix, end));
+
 const countMarks = (text: string, base: number, words: NumberWords, tokens: readonly Token[]): NumberMark[] => {
   const pattern = countPattern(words);
   if (pattern === undefined) return [];
   return [...text.matchAll(pattern)].flatMap((match): NumberMark[] => {
     const [written, digits, kanji] = match;
+    if (namesThing(text, match.index + written.length, words)) return [];
     if (kanji !== undefined && (isIdiomNumeral(kanji) || words.nativeCounts.includes(written) || isInsideWord(written, base + match.index, tokens))) return [];
     if (isBeforeLongerWord(digits ?? kanji ?? "", written, base + match.index, tokens)) return [];
     return [{ kind: "count", style: digits === undefined ? "kanji" : "digits", written, offset: base + match.index }];
@@ -274,6 +281,7 @@ const wordsOf = (doc: ProseDocument): NumberWords => {
     figureNouns: patterns("figure-noun"),
     nameWords: patterns("number-name-word"),
     nativeCounts: patterns("numeral-native-count"),
+    nameSuffixes: patterns("numeral-name-suffix"),
   };
 };
 
