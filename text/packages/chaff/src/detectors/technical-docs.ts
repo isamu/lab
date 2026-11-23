@@ -37,12 +37,19 @@ export const untaggedFewer = (fences: readonly CodeFence[], limit: number): read
   return untagged.length > 0 && untagged.length < tagged.length && untagged.length <= limit ? untagged : [];
 };
 
+/** A block with a line that opens with a status mark (✖ Missing keys, ⚠ 2 slots short) shows what a program printed. */
+export const showsStatusLine = (fence: CodeFence, marks: readonly string[]): boolean =>
+  fence.lines.some((line) => marks.some((mark) => mark !== "" && line.trimStart().startsWith(mark)));
+
 export const codeFenceLanguage: Detector = (doc, options): Finding[] => {
   const outputWords = patternsOf(doc, "output-lead-in");
+  const statusMarks = patternsOf(doc, "output-status-mark");
   const fences = codeFences(doc.source).filter(wantsLanguage);
   const tagged = fences.filter((fence) => fence.language !== "").length;
   // A block of plain output (after "we'd expect to see:") is in no language: it still counts, but is not pointed at.
-  const reported = untaggedFewer(fences, options.limit).filter((fence) => !afterOutputLeadIn(doc.source, fence.start, outputWords));
+  const reported = untaggedFewer(fences, options.limit).filter(
+    (fence) => !afterOutputLeadIn(doc.source, fence.start, outputWords) && !showsStatusLine(fence, statusMarks),
+  );
   return reported.map((fence) => finding(doc, "code-fence-language-mix", fence.start, { tagged, untagged: fences.length - tagged }));
 };
 
