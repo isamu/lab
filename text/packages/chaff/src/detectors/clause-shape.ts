@@ -3,6 +3,7 @@ import { isWithinAny, quotedIn } from "../quoted-span.ts";
 import { definitionWordsOf, isParallelDefinition } from "./parallel-definition.ts";
 import { continuesThrough } from "./register.ts";
 import { beatsOf } from "./ending-refrain.ts";
+import { isFlattenedTable } from "./sentence-parts.ts";
 
 // The shape of a clause read from its words: how it ends, a paired word left alone, an adverb that needs a
 // negation, a particle used where another one belongs. Every word comes from a lexicon; this file knows parts of speech.
@@ -63,13 +64,15 @@ const opensItem = (sentence: Sentence): boolean => ITEM_LABEL.test(sentence.text
 /**
  * Runs of consecutive sentences with the same ending. A sentence with no ending to compare closes a run, and so does a
  * question run together with the next one inside a single sentence (これはリストか？順序付きか？などです。): it is not the writer's ending.
- * A sentence opening a labelled item (［通信関連］…) starts a new run: entries of a list end alike by design.
+ * A table a converter flattened into a sentence (its cells and the note after it) closes a run too: its stop is the note's, not
+ * the end of a sentence the writer built on the one before. A sentence opening a labelled item (［通信関連］…) starts a new run:
+ * entries of a list end alike by design.
  */
-export const endingRuns = (sentences: readonly Sentence[]): Ended[][] =>
+export const endingRuns = (sentences: readonly Sentence[], eras: readonly string[] = []): Ended[][] =>
   sentences
     .map((sentence, index) => ({
       sentence,
-      ending: continuesThrough(sentences, index) ? undefined : endingOf(sentence),
+      ending: continuesThrough(sentences, index) || isFlattenedTable(sentence.text, eras) ? undefined : endingOf(sentence),
       opensItem: opensItem(sentence),
     }))
     .reduce<Ended[][]>((runs, ended) => {
@@ -97,8 +100,9 @@ const runFinding = (run: readonly Ended[], limit: number): Finding => {
  */
 export const endingRun: Detector = (doc, options): Finding[] => {
   const words = definitionWordsOf(options.lexicon);
+  const eras = (doc.lexicons["calendar-era"] ?? []).map((entry) => entry.pattern);
   return doc.paragraphs.flatMap((paragraph) =>
-    endingRuns(paragraph.sentences)
+    endingRuns(paragraph.sentences, eras)
       .map((run) => ({ run, sentences: run.map(({ sentence }) => sentence) }))
       .filter(({ sentences }) => beatsOf(sentences, patternsOf(options.lexicon, "being")) > options.limit && !isParallelDefinition(sentences, words))
       .map(({ run }) => runFinding(run, options.limit)),
