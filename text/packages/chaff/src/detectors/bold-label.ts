@@ -1,4 +1,5 @@
 import type { Detector, DetectorOptions, Finding, Lexicon, Paragraph, ProseDocument, Span, Token } from "../plugin.ts";
+import { inRelease, releaseSpansOf } from "./release-notes.ts";
 
 /** A bold run longer than this is a bold sentence, not a label. */
 const MAX_LABEL_CHARS = 40;
@@ -87,13 +88,17 @@ export const isParagraphList = (doc: ProseDocument, items: readonly Span[]): boo
   median(items.map((span) => explanationLength(doc.source.slice(span.start, span.end), doc.lengthUnit))) >= PARAGRAPH_ITEM_LENGTH[doc.lengthUnit];
 
 /** The bold-opened items of lists that are captions, not paragraphs, in document order. */
-const captionItems = (doc: ProseDocument, opens: (item: string) => string | undefined): Span[] =>
-  doc.lists
+/** A changelog's entries open with their commit scope in bold (* **deps:** ...), the generator's format, not a writer's labels. */
+const captionItems = (doc: ProseDocument, opens: (item: string) => string | undefined): Span[] => {
+  const releases = releaseSpansOf(doc);
+  return doc.lists
     .flatMap((list) => {
       const items = unquotedItemsOf(doc, list.itemSpans, opens);
       return isParagraphList(doc, items) ? [] : items;
     })
+    .filter((item) => !inRelease(releases, item.start))
     .toSorted((left, right) => left.start - right.start);
+};
 
 /** The list items, in document order, that open with a bold label and are not quoted. */
 export const boldLabelItems = (doc: ProseDocument): Span[] => unquotedItems(doc, boldLabelOf);
