@@ -12,3 +12,6 @@ entries:
   - pattern: if I am honest
   - pattern: if I am being honest
   - pattern: my honest take
+  # A post that opens by owning up ("Let's be honest: it rains here."). In no human document of the corpus.
+  - pattern: let's be honest
+  - pattern: let us be honest
