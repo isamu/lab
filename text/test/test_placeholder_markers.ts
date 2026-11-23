@@ -357,6 +357,8 @@ describe("placeholderSpans: blank marks (〇〇) where a letter needs a name, a 
     ["報告者：〇〇", ["〇〇"], "a field at the head of a line"],
     ["総務部長 〇〇", ["〇〇"], "a name after a title and a space"],
     ["代表取締役 〇〇 〇〇", ["〇〇 〇〇"], "a family and a given name after a title, as one blank"],
+    ["これに対し、取締役〇〇より、実績を示すよう求めがあった。", ["〇〇"], "a name glued to a title mid-sentence"],
+    ["製造部長〇〇が説明した。", ["〇〇"], "a name glued to a department head's title"],
     ["新電話番号：03-〇〇〇〇-〇〇〇〇", ["〇〇〇〇-〇〇〇〇"], "the groups of a phone number, as one blank"],
     ["〒〇〇〇-〇〇〇〇　東京都〇〇区", ["〇〇〇-〇〇〇〇", "〇〇区"], "a postcode and a ward, a filled word between them"],
     ["〇丁目〇番〇号 〇〇ビル5階", ["〇丁目〇番〇号 〇〇ビル"], "a street number and a building, as one blank"],
