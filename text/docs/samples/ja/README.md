@@ -11,7 +11,7 @@ chaff が見つけるまちがいを、ルールごとに一つずつ見本に�
 
 English samples: [../en/README.md](../en/README.md)
 
-見本のあるルール: 272 / 272
+見本のあるルール: 273 / 273
 
 ## 読みやすさ
 
@@ -185,6 +185,7 @@ English samples: [../en/README.md](../en/README.md)
 | [見出しの番号の付け方が揃っていない](heading-numbering-mix.md)（`heading-numbering-mix`） | 「1. 概要」「手順」「3. 費用」や「1.」「2.」「3）」のように、兄弟の見出しで番号の付け方が混ざっている所 |
 | [画像に代替テキストが無い](image-alt-text.md)（`image-alt-text`） | 「![](図.png)」のように、代替テキストの無い画像 |
 | [画像の代替テキストがファイル名](image-file-name-alt.md)（`image-file-name-alt`） | 「![IMG_1234.png](…)」のように、代替テキストがファイル名のままの画像 |
+| [使われないリンクの定義](link-definition-unused.md)（`link-definition-unused`） | どのリンクも使わない「[名前]: URL」の定義と、別の行き先で二度書いた定義 |
 | [同じ行為への逆の決まり](modal-conflict.md)（`modal-conflict`） | 同じ主語の同じ行為を、ある文では義務や許可に、別の文では禁止にしている所 |
 | [題の後の段落が題を言い直しているだけ](no-lead.md)（`no-lead`） | 題のすぐ後の段落が、題を言い直すだけで何も足していない所 |
 | [単位の無い数](number-without-unit.md)（`number-without-unit`） | 同じ列や同じ見出しの語のほかの値には単位があるのに、数だけを書いた値 |
