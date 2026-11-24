@@ -163,7 +163,7 @@ const notRunNotice = (why: string, what: string, envFile: string | undefined, la
  * 見出しと指摘は文書の言語、締めは文書がそろっていればその言語、混ざっていれば ui の言語。
  */
 export const runTest = async (targets: readonly string[], argv: readonly string[], context: TestContext): Promise<number> => {
-  const paths = collectTargets(targets.length > 0 ? targets : ["."], context.config.include);
+  const paths = collectTargets(targets.length > 0 ? targets : ["."], context.config.include, context.config);
   if (paths.length === 0) {
     console.error(CLI_TEXT[context.ui].noMarkdown(targets.join(", "), context.config.include ?? []));
     return 1;

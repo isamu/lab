@@ -165,6 +165,8 @@ custom_rules:                 # チーム独自のルール（コードは要ら
     example: { before: 締切は TBD です。, after: 締切は 10 月 5 日です。 }
 ```
 
+`exclude: [vendor/**, CHANGELOG.md]` と書くと、フォルダを渡したときの検査からそのファイルを外します。`.gitignore` が無視するファイルも外します。コマンドラインで名前を挙げたファイルは、それでも検査します。外した数と理由は締めに出ます。
+
 `npx chaffjs init` でひな形を作れます。いま効いている設定は `npx chaffjs rules` で一覧になります。
 AI に設定を書かせるときは、`npx chaffjs rules --json` の出力を渡します。いまの値、使える値、なぜいま `off` なのかが一つに入っています。
 書き方の詳しい説明は手引きの「[設定](https://isamu.github.io/lab/ja/guide/configuration/)」と「[チームの表記ルール](https://isamu.github.io/lab/ja/guide/house-style/)」にあります。

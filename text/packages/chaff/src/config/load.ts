@@ -38,6 +38,8 @@ export type Config = {
   readonly unreadableNames: readonly string[];
   /** File-name globs (*.yaml) a directory walk checks besides Markdown. --include adds to them. */
   readonly include?: readonly string[];
+  /** Globs a directory walk leaves out, matched from chaff.yaml's folder as by_path is. A file named on the command line is still checked. */
+  readonly exclude?: readonly string[];
   /** パスごとの上書き。設定ファイルのある場所からの相対で照合する。 */
   readonly byPath: readonly PathRule[];
   /** by_path entries that could not be read (a map instead of a list, an entry without files), as written. */
@@ -209,6 +211,7 @@ export const configOf = (raw: unknown, path: string): Config => {
     names: names.names,
     unreadableNames: names.unreadable,
     include: globsOf(raw["include"]),
+    exclude: globsOf(raw["exclude"]),
     byPath: byPath.rules,
     unreadableByPath: byPath.unreadable,
     baseDir: dirname(path),
