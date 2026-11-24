@@ -5,6 +5,7 @@ import { styleProblems } from "./config/style.ts";
 import { loadStyles } from "./style-load.ts";
 import { customRuleProblems } from "./custom/problems.ts";
 import { preferProblems } from "./config/prefer-problems.ts";
+import { allowProblems } from "./config/allow-problems.ts";
 import { extensionProblems } from "./extension/problem-text.ts";
 import { GENRES } from "./genre.ts";
 import { unknownGenres, writtenGenres } from "./genre-check.ts";
@@ -30,5 +31,6 @@ export const settingProblems = (command: string, genreFlag: string | undefined, 
   ...styleProblems(config, [...loadStyles(), ...(config.extensions?.styles ?? [])], ui),
   ...customRuleProblems(config, ui),
   ...preferProblems(config, ui),
+  ...allowProblems(config, ui),
   ...extensionProblems(config, ui),
 ];

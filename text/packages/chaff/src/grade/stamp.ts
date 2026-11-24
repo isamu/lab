@@ -49,6 +49,8 @@ export const settingsOf = (settings: GradeSettings): Record<string, unknown> => 
     ...(Object.keys(config.preferScopes ?? {}).length === 0 ? {} : { preferScopes: config.preferScopes }),
     requiredSections: config.requiredSections,
     names: config.names,
+    // Only when listed, so a chaff.yaml without terms keeps the stamp it had.
+    ...((config.terms ?? []).length === 0 ? {} : { terms: config.terms }),
     // Only when listed, so a chaff.yaml without consistent keeps the stamp it had.
     ...((config.consistent ?? []).length === 0 ? {} : { consistent: config.consistent }),
     byPath: config.byPath,

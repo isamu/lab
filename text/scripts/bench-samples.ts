@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { documentLengthOf, registerCountsOf, type TeamWords } from "./corpus-findings.ts";
 import type { PlantContext } from "./bench-text.ts";
 import { TEAM_JARGON, requiredSectionsOf } from "./bench-mutations-layout.ts";
-import { TEAM_CONSISTENT, TEAM_PREFER } from "./bench-mutations-phrasing.ts";
+import { TEAM_CONSISTENT, TEAM_PREFER, TEAM_TERMS } from "./bench-mutations-phrasing.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import type { RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import { resolve } from "../packages/chaff/src/levels.ts";
@@ -64,5 +64,6 @@ export const teamOf = (sample: Sample): TeamWords => ({
   jargon: TEAM_JARGON,
   requiredSections: requiredSectionsOf(sample.source),
   prefer: TEAM_PREFER,
+  terms: TEAM_TERMS,
   consistent: TEAM_CONSISTENT,
 });

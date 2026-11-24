@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { packageFor } from "./adapter-load.ts";
-import { checkSource, crossChecked, type SourceCheck } from "./check-source.ts";
+import { checkSource, crossChecked, silencedOf, type SourceCheck } from "./check-source.ts";
 import { CONFIG_FILE, type Config } from "./config/load.ts";
 import { applyLevel } from "./config/write.ts";
 import { collectFiles, collectTargets, readDocumentFile } from "./files.ts";
@@ -111,7 +111,8 @@ const present = (check: SourceCheck, argv: readonly string[]): Inspected => {
   const baseline = argv.includes("--show-baseline") ? undefined : readBaseline(join(process.cwd(), BASELINE_FILE));
   const split = splitByBaseline(path, applied.kept, baseline, process.cwd());
   const result = { ...raw, findings: split.fresh };
-  const { header, notes } = fileHeader(path, source, language, { genre, from, unread }, { shelved: split.shelved, hushed: applied.suppressed.length });
+  const counts = { shelved: split.shelved, hushed: applied.suppressed.length, allowed: applied.allowed.length };
+  const { header, notes } = fileHeader(path, source, language, { genre, from, unread }, counts);
   const notRun = notRunAmong(applied.named, raw.skipped);
   const text = argv.includes("--compact")
     ? renderCompact(header, result, rules, language)
@@ -122,7 +123,7 @@ const present = (check: SourceCheck, argv: readonly string[]): Inspected => {
     language,
     genre,
     outcome: { path, findings: split.fresh, notRun: raw.skipped.length },
-    perFile: { path, suppressed: applied.suppressed, reasonless: applied.unusedReasonless, notRun, ranges: applied.ranges, problems: applied.problems },
+    perFile: { path, notRun, ...silencedOf(applied) },
     checked: { findings: split.fresh, rules, language, genre, genreFrom: from, skipped: raw.skipped },
     kept: applied.kept,
   };

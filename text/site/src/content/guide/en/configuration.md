@@ -326,6 +326,31 @@ prefer:
   our firm: { use: our company, scope: [~quote] }
 ```
 
+## Keeping names and terms in their one form
+
+Product, company and technology names have one right form.
+A slip such as "Github", "ＧｉｔＨｕｂ" or "Java Script" is invisible to the rules that compare spellings when the right form never appears in the document.
+List the right forms, exactly as they must be written, under `terms`.
+
+```yaml
+terms:
+  - GitHub
+  - JavaScript
+  - Claude Code
+```
+
+`term-form` finds a form that differs only in capital letters, full or half width, hyphens or spaces, and asks for the listed one.
+
+```
+  3:16    warning Write "GitHub", not "Github"
+                  term-form
+```
+
+Code, URLs, e-mail addresses and file paths (`github.com`, `docs/github.md`) are left alone, and so is a longer word that holds the term (GitHubber).
+With nothing under `terms`, the rule does not run, and the list of rules that did not run says "nothing is listed under terms in chaff.yaml".
+A value that cannot be read as a term (not a list, an entry that is not text) and two terms that differ only in case and the like (`GitHub` and `Github`) are reported before the results.
+
+`terms` works the other way round from `names`: a name under `names` is read as one name so that it is not counted as a run of kanji or a repeated phrase, and its spelling is not checked.
 ## Keeping words that are each right from mixing
 
 Some words are each right but should not be mixed in one document: "log in" and "sign in", "customer" and "client".
@@ -411,6 +436,36 @@ Kanji outside the name are still counted: in 「個人情報保護委員会事�
 A run of kanji that fills a 「」 or 『』 quotation exactly is not counted, even without `names`.
 In 「英国大使館別荘記念公園」 the writer has marked it as one name. If the quotation also holds kana, the runs inside it are counted as before.
 
+## Allowing text that is always right
+
+Some text is right every time it appears, though a rule reports it: a product name spelt the vendor's way, a form a law
+requires, a quoted title. Writing a `stet` before each one is tedious. List it under `allow` instead, with the reason.
+
+```yaml
+allow:
+  - text: Kubernetes            # a literal string, matched as written
+    reason: product name, spelt as the vendor spells it
+  - pattern: 'v\d+\.\d+'       # a regular expression
+    reason: version numbers are not words
+    rules: [spelling-consistency] # only these rules (all rules when left out)
+    files: ["docs/**/*.md"]     # only these files (all files when left out)
+```
+
+A finding placed inside an occurrence of the text (or a match of the pattern) is not reported.
+A finding that covers more, such as a long sentence that happens to contain the text, still is.
+
+| Key | What it does |
+| --- | --- |
+| `text` | A literal string, matched as written, capital letters included |
+| `pattern` | A regular expression. The same safety checks as a team rule's `pattern` apply: a shape that can run for minutes on a long line is refused |
+| `reason` | Required. Why this text need not be reported. An entry without one stops the run, as a broken team rule does |
+| `rules` | The rule ids the entry covers. A rule chaff does not have is said before the results |
+| `files` | Globs, from the folder `chaff.yaml` is in, as in `by_path` |
+
+Each entry has exactly one of `text` and `pattern`.
+Nothing disappears silently: the file's header line counts what `allow` silenced, and `npx chaffjs suppressions`
+lists each entry with its count and reason, beside the stets.
+
 ## Changing settings per path
 
 One place can hold different kinds of documents. `by_path` changes the settings per path.
@@ -473,6 +528,7 @@ A rule a `by_path` entry turns off is listed under "did not run" with that entry
 
 `explain` names every entry that changes the rule:
 
+<!-- chaff-screen: by-path-rules -->
 ```
 $ npx chaffjs explain max-sentence-length
 …

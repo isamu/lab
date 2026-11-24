@@ -317,6 +317,23 @@ const avoidedIn = (line: string): string | undefined => {
 /** チームが決めた書き方の一つを、使わないと決めた書き方にする。 */
 export const avoidedSpelling = (source: string): Plant | undefined => rewriteFirst(source, (line) => isProse(line) && avoidedIn(line) !== undefined, avoidedIn);
 
+// --- term-form ---
+
+/** bench のチームが chaff.yaml の terms に並べた、決まった書き方の名前。植える名前と同じ。 */
+export const TEAM_TERMS: readonly string[] = ["JSON", "OCR", "SAML", "SSO", "SLA"];
+
+const TERM_WORD = new RegExp(`(?<![A-Za-z])(${TEAM_TERMS.join("|")})(?![A-Za-z])`, "u");
+
+/** The line with its first listed name in small letters (JSON → json). */
+const lowerTermIn = (line: string): string | undefined => {
+  const found = TERM_WORD.exec(line);
+  return found === null ? undefined : `${line.slice(0, found.index)}${found[0].toLowerCase()}${line.slice(found.index + found[0].length)}`;
+};
+
+/** チームが書き方を決めた名前の一つを、小文字で書く。 */
+export const lowerCasedTerm = (source: string): Plant | undefined =>
+  rewriteFirst(source, (line) => isProse(line) && !line.includes("`") && lowerTermIn(line) !== undefined, lowerTermIn);
+
 // --- term-consistency ---
 
 /** bench のチームが chaff.yaml の consistent に並べた組。先の語を文書がよく使い、植えるときに後の語へ一つだけ替える。 */
@@ -355,6 +372,7 @@ export const PHRASING_MUTATIONS: readonly Mutation[] = [
   { id: "and-chained", rule: "sentence-initial-conjunction-run", languages: ["en"], plant: chainWithConjunction },
   { id: "soshite-chained", rule: "sentence-initial-conjunction-run", languages: ["ja"], plant: chainWithConjunction },
   { id: "spelling-avoided", rule: "preferred-term", languages: ["ja", "en"], plant: avoidedSpelling },
+  { id: "term-lower-cased", rule: "term-form", languages: ["ja", "en"], plant: lowerCasedTerm },
   { id: "group-word-mixed", rule: "term-consistency", languages: ["ja", "en"], plant: mixedGroupWord },
   { id: "pet-phrase", rule: "ngram-repetition", languages: ["ja", "en"], plant: repeatPetPhrase },
 ];

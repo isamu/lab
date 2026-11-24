@@ -48,7 +48,7 @@ summary:
   ja: |-
     どのリンクも使わない「[名前]: URL」の定義と、別の行き先で二度書いた定義
   en: |-
-    A "[label]: URL" definition no link uses, or one defined twice with different addresses
+    A "[label]: URL" definition no link uses, or one defined twice to two places
 example:
   ja:
     before: |

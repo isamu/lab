@@ -78,6 +78,7 @@ calls nothing. Ask the person before a real run; the passages leave the machine.
 | --- | --- | --- |
 | Fix the text | The finding is right | Edit the sentence. Keep the meaning, the facts and the numbers; change only how it is said. |
 | Silence that spot | Right in general, wrong here (a quotation, a term that must repeat) | `<!-- stet: rule-id — reason -->` before it; `stet-section` / `stet-file` for wider scope, `<!-- stet-begin: rule-id — reason -->` … `<!-- stet-end -->` for a range, `rule-id["word"]` to silence one matched word only. Always name the rules (there is no all-rules form) and give the reason. |
+| Allow that text everywhere | The same text is always right for this team (a product name, a quoted form) | An entry under `allow:` in `chaff.yaml`: `text:` (literal) or `pattern:` (regex), `reason:` (required), optional `rules:` and `files:`. `npx chaffjs suppressions` lists what it silenced. |
 | Change the rule | Wrong for this team or genre | `npx chaffjs relax <rule-id> --why "reason"` (or `strict` / `off`). The reason and date are written into `chaff.yaml`. |
 
 `npx chaffjs explain <rule-id>` shows why a rule exists, its levels and the current one. Read it before
@@ -122,6 +123,9 @@ heading above it; if it is not a section of its own, drop the bold and write it 
   `levels_you_can_set` in `rules --json` lists them.
 - `prefer:` maps spellings to the team's (`e-mail: email`); `preferred-term: normal` turns the rule on. An entry
   limited to some parts of the document takes the object form: `our firm: { use: our company, scope: [~quote] }`.
+- `terms:` lists names and terms with one fixed form (`[GitHub, JavaScript]`); `term-form` reports a form that
+  differs only in case, width, hyphens or spaces (`Github`, `ＧｉｔＨｕｂ`, `Java Script`), outside code, URLs and paths.
+  Without `terms:` the rule does not run, and the list of rules not run says so.
 - `consistent:` lists groups of words that are each right but must not be mixed (`[[顧客, お客様], [log in, sign in]]`);
   `term-consistency` reports the less-used member within a document (a tie is one finding that takes no side), and
   `cross-doc-term-variant` compares the groups across the files of one run. Without `consistent:` the rule does not run,
@@ -168,7 +172,7 @@ names or numbers:
    number means), `levels`, `example`, `not_flagged`, and `genres` (whether it runs in each genre).
 2. Split the note into single requirements; map each to the rule whose `summary` and `level_meaning` fit. A
    number between levels is written as the number itself (`max-sentence-length: 80`). Spellings go under
-   `prefer`, words not to be mixed under `consistent`, in-house words under `jargon`, required headings under `required_sections`.
+   `prefer`, names with one fixed form under `terms`, words not to be mixed under `consistent`, in-house words under `jargon`, required headings under `required_sections`.
 3. Say plainly what no rule covers. For example, `no-mixed-desumasu` flags a register mixed into a document, but
    does not require a particular one; a document wholly in the other register is not reported.
 4. Write only what differs from the default, then check before committing: `npx chaffjs explain <rule-id>`, a
@@ -181,7 +185,7 @@ Pick the easiest way that can say the requirement:
 
 | Requirement | Use |
 | --- | --- |
-| An existing rule covers it | A level, a number, `prefer`, `consistent`, `jargon` or `required_sections` in `chaff.yaml` |
+| An existing rule covers it | A level, a number, `prefer`, `terms`, `consistent`, `jargon` or `required_sections` in `chaff.yaml` |
 | A fixed phrase or pattern, with the team's own message | `custom_rules` of type `words` or `pattern` |
 | Decided by part of speech or inflection | `custom_rules` of type `tokens` |
 | Counting or comparing that the above cannot express | a Node function, `type: module` |

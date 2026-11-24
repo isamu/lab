@@ -9,6 +9,7 @@ import type { PathRule } from "./by-path.ts";
 import type { Extensions } from "../extension/load.ts";
 import type { StyleLimits } from "../style-parse.ts";
 import type { GuideLayer } from "../genre-guide/layer.ts";
+import { foldTerm } from "../term-form.ts";
 import type { OptionLayer } from "../rule-options.ts";
 
 export const CONFIG_FILE = "chaff.yaml";
@@ -42,6 +43,10 @@ export type Config = {
   readonly names: readonly string[];
   /** names に書かれていたが名前として読めなかった値。黙って捨てると、並べたつもりの名前が効いていないことに気づけない。 */
   readonly unreadableNames: readonly string[];
+  /** The team's terms, each to be written exactly so (GitHub, not Github or ＧｉｔＨｕｂ). term-form reads them. */
+  readonly terms?: readonly string[];
+  /** terms as written that cannot be read as a term: not a list, an entry that is not text, or one that is only spaces and hyphens. */
+  readonly unreadableTerms?: readonly string[];
   /** The team's groups of words that are each right but must not be mixed in one document ([顧客, お客様]). term-consistency reads them. */
   readonly consistent?: readonly (readonly string[])[];
   /** consistent as written that cannot be read as a group: not a list, or an entry that is not two or more different words. */
@@ -75,6 +80,8 @@ export type Config = {
   readonly fixPlan?: unknown;
   /** guide as written: the team's changes to the genre guides, or off (genre-guide/of-config.ts reads it). */
   readonly guide?: unknown;
+  /** allow as written: text never to report, each entry with its reason (allow.ts reads and checks it). */
+  readonly allow?: unknown;
   /** plugins as written: package names and paths. extension/plugin-load.ts reads and checks them. */
   readonly plugins?: unknown;
   /** The code chaff.yaml names, once loaded (extension/load.ts). Reading chaff.yaml does not load it. */
@@ -196,6 +203,15 @@ const namesOf = (raw: unknown): { readonly names: string[]; readonly unreadable:
   };
 };
 
+/** A term is text with something besides spaces and hyphens in it; a number (2025) reads as text, as under names. */
+const termsOf = (raw: unknown): { readonly terms: string[]; readonly unreadable: string[] } => {
+  if (raw === undefined || raw === null) return { terms: [], unreadable: [] };
+  if (!Array.isArray(raw)) return { terms: [], unreadable: [printed(raw)] };
+  const entries: unknown[] = raw;
+  const isTerm = (entry: unknown): entry is string | number => isNameEntry(entry) && foldTerm(String(entry)) !== "";
+  return { terms: wordsOf(entries.filter(isTerm)), unreadable: entries.filter((entry) => !isTerm(entry)).map(printed) };
+};
+
 /** A group: a list of two or more different words (a number reads as text, as under names). */
 const groupOf = (entry: unknown): string[] | undefined => {
   if (!Array.isArray(entry)) return undefined;
@@ -234,6 +250,7 @@ export const configOf = (raw: unknown, path: string): Config => {
   const declared: unknown = raw["ai_backend"];
   const backend: BackendName = isBackend(declared) ? declared : DEFAULT_BACKEND;
   const names = namesOf(raw["names"]);
+  const terms = termsOf(raw["terms"]);
   const consistent = consistentOf(raw["consistent"]);
   const byPath = byPathOf(raw["by_path"]);
   const options: unknown = raw["options"];
@@ -257,6 +274,8 @@ export const configOf = (raw: unknown, path: string): Config => {
     requiredSections: wordsOf(raw["required_sections"]),
     names: names.names,
     unreadableNames: names.unreadable,
+    terms: terms.terms,
+    unreadableTerms: terms.unreadable,
     consistent: consistent.groups,
     unreadableConsistent: consistent.unreadable,
     include: globsOf(raw["include"]),
@@ -272,5 +291,6 @@ export const configOf = (raw: unknown, path: string): Config => {
     fixPlan: raw["fix_plan"],
     guide: raw["guide"],
     plugins: raw["plugins"],
+    allow: raw["allow"],
   };
 };

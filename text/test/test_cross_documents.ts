@@ -34,7 +34,7 @@ const checkOf = async (path: string, text: string, rule: RuleDefinition, level?:
   const context = { ...check.context, settings: config.rules };
   const raw = runRulesWith(check.doc, rules, context);
   const sections = check.doc.sections.map((section) => section.span);
-  return { ...check, rules, context, raw, applied: applySuppressions(check.doc.source, raw.findings, sections) };
+  return { ...check, rules, context, raw, applied: { ...applySuppressions(check.doc.source, raw.findings, sections), allowed: [] } };
 };
 
 /** A detector that reports the first "beta" of every document, and records which documents it was given. */

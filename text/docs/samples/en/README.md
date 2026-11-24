@@ -11,7 +11,7 @@ Or paste a draft into the [playground](https://isamu.github.io/lab/en/playground
 
 日本語の見本: [../ja/README.md](../ja/README.md)
 
-Rules with a sample: 267 / 267
+Rules with a sample: 268 / 268
 
 ## Readability
 
@@ -173,7 +173,7 @@ Skipped numbers, references to provisions that are not there, terms defined twic
 | [Heading numbering mixed](heading-numbering-mix.md) (`heading-numbering-mix`) | Sibling headings numbered in mixed ways: "1. Overview", "Steps", "3. Costs" |
 | [Image without alt text](image-alt-text.md) (`image-alt-text`) | An image with no alt text, as in "![](chart.png)" |
 | [Image alt text is a file name](image-file-name-alt.md) (`image-file-name-alt`) | An image whose alt text is a file name, as in "![IMG_1234.png](…)" |
-| [Link definition that does nothing](link-definition-unused.md) (`link-definition-unused`) | A "[label]: URL" definition no link uses, or one defined twice with different addresses |
+| [Link definition that does nothing](link-definition-unused.md) (`link-definition-unused`) | A "[label]: URL" definition no link uses, or one defined twice to two places |
 | [Opposite obligations on the same act](modal-conflict.md) (`modal-conflict`) | The same act required or allowed in one sentence and forbidden in another |
 | [The lead only restates the title](no-lead.md) (`no-lead`) | A first paragraph under the title that only says the title again |
 | [Number without its unit](number-without-unit.md) (`number-without-unit`) | A bare number where the other values in its column all have a unit |
@@ -185,7 +185,7 @@ Skipped numbers, references to provisions that are not there, terms defined twic
 | [A required skill listed again as preferred](required-listed-as-preferred.md) (`required-listed-as-preferred`) | A job posting that lists one skill both as required and as preferred |
 | [Link written the wrong way round](reversed-link.md) (`reversed-link`) | A link written "(text)[URL]", with the brackets the wrong way round |
 | [A reference to a step that does not exist](step-reference-missing.md) (`step-reference-missing`) | A reference such as "see step 5" past the last step the document has |
-| [Line swallowed by a table](table-absorbed-line.md) (`table-absorbed-line`) | A sentence written right under a table with no blank line, which becomes a row of the table |
+| [Line swallowed by a table](table-absorbed-line.md) (`table-absorbed-line`) | A sentence right under a table with no blank line, read as a row of the table |
 | [Table row with more cells than the header](table-row-overflow.md) (`table-row-overflow`) | A table row with more cells than the header row (the extra ones are not shown) |
 | [A table-of-contents entry with no heading](toc-heading-mismatch.md) (`toc-heading-mismatch`) | A table of contents entry that matches no heading of the document |
 | [Unclosed code fence](unclosed-code-fence.md) (`unclosed-code-fence`) | A code block opened with "```" and never closed |
@@ -335,5 +335,6 @@ Rules that check only what your team lists in chaff.yaml: spellings, jargon, req
 | [A required heading is missing](required-sections.md) (`required-sections`) | A heading the team requires (such as "Risks") missing, set in chaff.yaml |
 | [A provision's verb form is not the one the house rule uses](requirement-modal.md) (`requirement-modal`) | A requirement's verb ("must", "shall") that the team's house rule does not use |
 | [Words the team keeps to one, mixed](term-consistency.md) (`term-consistency`) | Words grouped under consistent (log in / sign in) mixed in one document |
+| [A term not written the listed way](term-form.md) (`term-form`) | A term listed under terms, in another case, width, hyphen or spacing (Github) |
 
 The checks that read meaning run under `npx chaffjs test`, which asks an AI, so they have no fixed output to show here: `empty-conclusion`, `generic-opening`, `risk-disclosure`, `unsourced-number`

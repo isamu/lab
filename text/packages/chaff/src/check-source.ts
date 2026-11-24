@@ -14,6 +14,8 @@ import { neededBy, runRulesWith, type RunContext, type RunResult } from "./run.t
 import { runCrossRules } from "./cross-run.ts";
 import { CROSS_DETECTORS } from "./detectors/index.ts";
 import { applySuppressions, knownRulesOf, type Applied } from "./stet.ts";
+import type { PerFile } from "./render/suppressions.ts";
+import { allowFor, allowOf, applyAllow, type AllowEntry, type Allowed } from "./allow.ts";
 
 /** A document's language when nothing names one for this run: its by_path entry, chaff.yaml's language, then a guess from the text. */
 export const documentLanguage = (path: string, source: string, config: Config): string =>
@@ -22,7 +24,19 @@ export const documentLanguage = (path: string, source: string, config: Config): 
 /** What this run chose over the settings: a language and a genre, when given, and whether experimental rules run. */
 export type CheckChoice = { readonly language?: string | undefined; readonly genre?: string | undefined; readonly experimental: boolean };
 
-/** One document linted: the rules that ran and why others did not, before and after stet silenced some. */
+/** Findings after stet and chaff.yaml's allow: kept holds what neither silenced; allowed what an allow entry did. */
+export type Silenced = Applied & { readonly allowed: readonly Allowed[] };
+
+/** What `chaff suppressions` lists for one file: what stet and allow silenced, stets without a reason, range stets and stet problems. */
+export const silencedOf = (applied: Silenced): Omit<PerFile, "path" | "notRun"> => ({
+  suppressed: applied.suppressed,
+  allowed: applied.allowed,
+  reasonless: applied.unusedReasonless,
+  ranges: applied.ranges,
+  problems: applied.problems,
+});
+
+/** One document linted: the rules that ran and why others did not, before and after stet and allow silenced some. */
 export type SourceCheck = {
   readonly language: string;
   readonly genre: ResolvedGenre;
@@ -31,7 +45,9 @@ export type SourceCheck = {
   /** What the rules ran with. The pass over several documents runs with it too. */
   readonly context: RunContext;
   readonly raw: RunResult;
-  readonly applied: Applied;
+  readonly applied: Silenced;
+  /** chaff.yaml's allow entries that cover this file. The pass over several documents applies them too. */
+  readonly allow: readonly AllowEntry[];
 };
 
 /** What the language adapter is asked to prepare for these rules under this chaff.yaml: what the running rules read, nothing more. */
@@ -62,17 +78,21 @@ export const checkSource = async (path: string, source: string, written: Config,
     levelsFrom: config.pathLevelsFrom ?? {},
   };
   const raw = runRulesWith(doc, rules, context);
-  return { language, genre, rules, doc, context, raw, applied: suppressedIn(source, doc, raw, rules) };
+  const allow = allowFor(allowOf(config.allow).entries, config.baseDir, path);
+  return { language, genre, rules, doc, context, raw, allow, applied: suppressedIn(source, doc, raw, rules, allow) };
 };
 
-/** stet で黙らせたものは、ここで落とす。stet は text（読んだままの本文）から読む。 */
-const suppressedIn = (text: string, doc: ProseDocument, raw: RunResult, rules: readonly RuleDefinition[]): Applied =>
-  applySuppressions(
+/** stet で黙らせたものと、chaff.yaml の allow に当たるものは、ここで落とす。stet が先、allow が後。どちらも text（読んだままの本文）から読む。 */
+const suppressedIn = (text: string, doc: ProseDocument, raw: RunResult, rules: readonly RuleDefinition[], allow: readonly AllowEntry[]): Silenced => {
+  const stetted = applySuppressions(
     text,
     raw.findings,
     doc.sections.map((section) => section.span),
     knownRulesOf(rules),
   );
+  const allowed = applyAllow(text, stetted.kept, allow);
+  return { ...stetted, kept: allowed.kept, allowed: allowed.allowed };
+};
 
 /**
  * The checks of one run's documents, with the rules that compare documents run over all of them (cross-run.ts), and
@@ -83,6 +103,6 @@ export const crossChecked = (checks: readonly SourceCheck[], detectors: Readonly
   const results = runCrossRules(checks, detectors);
   return checks.map((check, index) => {
     const raw = results[index] ?? check.raw;
-    return raw === check.raw ? check : { ...check, raw, applied: suppressedIn(check.doc.source, check.doc, raw, check.rules) };
+    return raw === check.raw ? check : { ...check, raw, applied: suppressedIn(check.doc.source, check.doc, raw, check.rules, check.allow) };
   });
 };

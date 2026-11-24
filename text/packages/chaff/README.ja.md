@@ -116,7 +116,7 @@ npx chaffjs genres                              ジャンルの一覧と、そ�
 | 種類 | 動かし方 |
 | --- | --- |
 | 試験中のルール（まだ測っていない新しいルール） | `--experimental` で全部、`npx chaffjs enable <ルール>` で一つずつ |
-| チームの言葉が要るルール（社内用語、必須の見出し、表記、まぜない語の組） | `chaff.yaml` の `jargon` `required_sections` `prefer` `consistent` に書く |
+| チームの言葉が要るルール（社内用語、必須の見出し、表記、決まった書き方の名前、まぜない語の組） | `chaff.yaml` の `jargon` `required_sections` `prefer` `terms` `consistent` に書く |
 | 意味を読む検査（例: 書き出しが「多くの企業が〜」のような一般論から始まっていないか、`generic-opening`） | `npx chaffjs test`（API key が要る） |
 
 どちらも正しい書き方が二つある所では、一つの文書の中で揃っているかだけを見て、少ないほうを指します。たとえば `enumeration-marker-mix` は、「1.」「2.」「4.」と番号を振った並びの中の「3)」を指します。
@@ -165,6 +165,10 @@ prefer:                       # チームの表記（左を見つけたら右を
   ユーザ: ユーザー
   弊社: { use: 当社, scope: [~quote] }   # 引用の中では言わない
 
+terms:                        # 決まった書き方の名前・用語（Github や ＧｉｔＨｕｂ と書いた所を指す）
+  - GitHub
+  - JavaScript
+
 consistent:                   # どちらも正しいが一つの文書でまぜない語の組（少ないほうを指す）
   - [顧客, お客様]
 
@@ -194,7 +198,8 @@ AI に設定を書かせるときは、`npx chaffjs rules --json` の出力を�
 範囲なら `<!-- stet-begin: rule-id — 理由 -->` … `<!-- stet-end -->`、1 つの語句だけなら `<!-- stet: preferred-term["サーバ"] — 理由 -->` と書きます（ルール名は必ず書きます）。
 自分たちの方針に合わないなら、`npx chaffjs relax rule-id --why "理由"` でルールのほうを変えます。
 強さは `strict` `normal` `relaxed` `off` の 4 語から選び、足りなければ上限を数で書けます（`max-sentence-length: 260`）。
-黙らせている箇所は `npx chaffjs suppressions docs/` が数えます。
+同じ語がいつも正しい（製品名、引用の決まった形）なら、`chaff.yaml` の `allow:` に `text:`（そのままの文字列）か `pattern:`（正規表現）と `reason:` を書きます。理由の無い項目は設定の誤りとして止まります。
+黙らせている箇所は、stet も allow も `npx chaffjs suppressions docs/` が理由と一緒に数えます。
 
 ## チーム独自のルールとルールの束
 

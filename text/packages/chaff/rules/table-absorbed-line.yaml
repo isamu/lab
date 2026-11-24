@@ -28,7 +28,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: structure
 summary:
   ja: 空行を空けずに表のすぐ下に書いたため、表の行になってしまった文
-  en: A sentence written right under a table with no blank line, which becomes a row of the table
+  en: A sentence right under a table with no blank line, read as a row of the table
 example:
   ja:
     before: |

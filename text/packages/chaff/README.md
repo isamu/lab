@@ -154,7 +154,8 @@ A `chaff.yaml` at the top of the repository sets:
 
 - `genre:` and `style:`
 - which rules run, and at what level, for every file or per path (`by_path`)
-- your preferred spellings, and groups of words that are each right but not to be mixed (`consistent: [[log in, sign in]]`)
+- your preferred spellings, the terms written one fixed way (`terms: [GitHub, JavaScript]`), and groups of words that
+  are each right but not to be mixed (`consistent: [[log in, sign in]]`)
 - `options:` where a rule takes a side only when the team chooses one, such as the sentence-ending register a Japanese
   document requires (`no-mixed-desumasu: { body: desumasu, list: dearu }`; Japanese only, English has no counterpart)
 - the genre's guide
@@ -162,6 +163,8 @@ A `chaff.yaml` at the top of the repository sets:
   file named on the command line is still checked
 - `custom_rules:` your own rules, written as `words`, a `pattern`, `tokens` for a
   part-of-speech pattern, or a `module` for a Node function
+- `allow:` text never to report (a product name, a quoted form), as `text:` or a regex `pattern:`, each with a
+  required `reason:` and optionally `rules:` and `files:`; `npx chaffjs suppressions` lists what it silenced
 - `scope:` on a team rule or a `prefer` entry: what it reads, from `heading`, `list`, `table`, `quote` and
   `paragraph`, with `~` to leave one out (`[heading]`, `[~quote]`)
 
