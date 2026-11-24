@@ -1,0 +1,84 @@
+id: table-absorbed-line
+layer: L1
+status: stable
+how_to_find: table-absorbed-line
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 表に取り込まれた行
+  en: Line swallowed by a table
+
+why:
+  ja: Markdown の表（GFM）は、空行が来るまで続きます。表のすぐ下に空行を空けずに文を書くと、その文は表の行として読まれ、最初の列のセルに入って表示されます。表の後の説明や合計の一文が、表の中の行に化けます。区切りの「|」が一つも無い行なので、書いた人は表の外のつもりです。
+  en: A Markdown table (GFM) runs until a blank line. A sentence written right under a table with no blank line between is read as one more row and shown in the table's first cell. The note or the total written after the table turns into a row inside it. The line has no "|" at all, so the writer meant it to stand outside the table.
+
+message:
+  ja: この行は表の行として読まれ、表の最初の列に入って表示されます
+  en: This line is read as a row of the table above and is shown in its first column
+
+how_to_fix:
+  ja: 表とこの行のあいだに空行を一つ入れてください。表の行のつもりなら、セルを「|」で区切ってください。
+  en: Put a blank line between the table and this line. If it is meant to be a row, separate its cells with "|".
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 空行を空けずに表のすぐ下に書いたため、表の行になってしまった文
+  en: A sentence written right under a table with no blank line, which becomes a row of the table
+example:
+  ja:
+    before: |
+      | 項目 | 金額 |
+      | --- | --- |
+      | 会場 | 5万円 |
+      | 飲食 | 3万円 |
+      金額はすべて税込みです。
+    after: |
+      | 項目 | 金額 |
+      | --- | --- |
+      | 会場 | 5万円 |
+      | 飲食 | 3万円 |
+
+      金額はすべて税込みです。
+  en:
+    before: |
+      | Item | Cost |
+      | --- | --- |
+      | Venue | $500 |
+      | Food | $300 |
+      All prices include tax.
+    after: |
+      | Item | Cost |
+      | --- | --- |
+      | Venue | $500 |
+      | Food | $300 |
+
+      All prices include tax.
+
+not_flagged:
+  ja: 「|」を一つでも含む行（セルの少ない行は空のセルとして表示されます）、列が一つだけの表、表の後に空行を空けた文、表の後のリストや見出し（表はそこで終わります）、コードと引用の中の表は指しません。
+  en: A row with any "|" (a row with fewer cells is shown with empty cells), a one-column table, a sentence after a blank line, a list or a heading after a table (the table ends there), and tables in code or quotations are not reported.
+rewrite:
+  depth: light
+  ja:
+    direction: 表とその後の文のあいだに空行を入れてください。文は変えません。
+    pairs:
+      - before: 表の最後の行のすぐ下の「金額はすべて税込みです。」
+        after: 空行を一つ空けて「金額はすべて税込みです。」
+    keep:
+      - 文と表の中身
+    avoid:
+      - 文を表のセルに書き直す
+  en:
+    direction: Put a blank line between the table and the sentence after it. Keep the sentence as it is.
+    pairs:
+      - before: '"All prices include tax." right under the last row'
+        after: 'a blank line, then "All prices include tax."'
+    keep:
+      - the sentence and the table's contents
+    avoid:
+      - rewriting the sentence into a table cell
