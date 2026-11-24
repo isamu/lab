@@ -59,6 +59,8 @@ rewrite:
     pairs:
       - before: 「(申込みの案内)[https://example.com/guide]」
         after: 「[申込みの案内](https://example.com/guide)」
+      - before: 「(料金表)[./prices.md]」
+        after: 「[料金表](./prices.md)」
     keep:
       - リンクの字と URL
     avoid:
@@ -68,6 +70,8 @@ rewrite:
     pairs:
       - before: '"(application guide)[https://example.com/guide]"'
         after: '"[application guide](https://example.com/guide)"'
+      - before: '"(pricing)[./pricing.md]"'
+        after: '"[pricing](./pricing.md)"'
     keep:
       - the link text and the address
     avoid:

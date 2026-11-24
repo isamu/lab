@@ -1,6 +1,7 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { buildDocument } from "../packages/chaff/src/document.ts";
+import { buildDocument, teamRules, type TeamRules } from "../packages/chaff/src/document.ts";
+import { configOf } from "../packages/chaff/src/config/load.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { limitFor, runRulesWith, wantsTags } from "../packages/chaff/src/run.ts";
 import { CROSS_DETECTORS, DETECTORS } from "../packages/chaff/src/detectors/index.ts";
@@ -18,6 +19,7 @@ import { EXAMPLE_GENRE, withPadding } from "../scripts/rule-examples.ts";
 
 const ADAPTERS: Readonly<Record<string, LanguageAdapter>> = { ja, en };
 const RULES: Readonly<Record<string, readonly RuleDefinition[]>> = { ja: loadRules("ja"), en: loadRules("en") };
+const EMPTY_TEAM: TeamRules = { jargon: [], requiredSections: [] };
 const TOKEN_FIELDS: ReadonlySet<string> = new Set(["tokens", "headingTokens"]);
 
 /** Whether a token list was read while a rule's own code ran. */
@@ -53,8 +55,8 @@ const during = <T>(watch: Watch, run: () => T): T => {
   }
 };
 
-const watchedDocument = (path: string, text: string, adapter: LanguageAdapter, watch: Watch): ProseDocument => {
-  const doc = buildDocument(path, text, adapter);
+const watchedDocument = (path: string, text: string, adapter: LanguageAdapter, team: TeamRules, watch: Watch): ProseDocument => {
+  const doc = buildDocument(path, text, adapter, team);
   watchTokens(doc, watch, new Set());
   return doc;
 };
@@ -109,14 +111,19 @@ const runFilter = (rule: RuleDefinition, doc: ProseDocument, watch: Watch): void
   if (filter !== undefined) during(watch, () => filter(doc));
 };
 
+/** A rule that reads only the team's list (team_list) does not run while chaff.yaml lists nothing, so it gets the list its example's chaff.yaml gives. */
+const teamOf = (rule: RuleDefinition, example: RuleExample): TeamRules =>
+  rule.team_list === undefined ? EMPTY_TEAM : teamRules(configOf(example.config ?? {}, "chaff.yaml"));
+
 const tryExample = (rule: RuleDefinition, language: string, example: RuleExample, watch: Watch): void => {
   const adapter = ADAPTERS[language];
   const rules = RULES[language];
   if (adapter === undefined || rules === undefined) return;
-  const doc = watchedDocument("t.md", withPadding(example.before, example, language), adapter, watch);
+  const team = teamOf(rule, example);
+  const doc = watchedDocument("t.md", withPadding(example.before, example, language), adapter, team, watch);
   if (rule.layer === "L4") return runFilter(rule, doc, watch);
   if (!rule.requires.includes("documents")) return runAlone(rule, rules, doc, example, watch);
-  runAcross(rule, doc, watchedDocument("a.md", example.other ?? example.after, adapter, watch), example, watch);
+  runAcross(rule, doc, watchedDocument("a.md", example.other ?? example.after, adapter, team, watch), example, watch);
 };
 
 /** Whether the rule read tokens on any of its examples, or undefined when its code never ran there. */

@@ -55,6 +55,8 @@ rewrite:
     pairs:
       - before: まあ、費用は来月に見直すということで合意しました。
         after: 費用は来月に見直すことで合意しました。
+      - before: 見積もりは、なんか、来週の月曜日に届きます。
+        after: 見積もりは来週の月曜日に届きます。
     keep:
       - 決まったこと、数字、誰が何をするか
     avoid:
@@ -64,6 +66,8 @@ rewrite:
     pairs:
       - before: So, um, we agreed to review the budget next month.
         after: We agreed to review the budget next month.
+      - before: The quote, you know, comes on Monday.
+        after: The quote comes on Monday.
     keep:
       - the decisions, the figures and who does what
     avoid:

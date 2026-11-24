@@ -69,6 +69,8 @@ rewrite:
     pairs:
       - before: 表の最後の行のすぐ下の「金額はすべて税込みです。」
         after: 空行を一つ空けて「金額はすべて税込みです。」
+      - before: 品目と金額の表の最後の行「| 椅子 | 8,000 円 |」のすぐ下の「送料は別にかかります。」
+        after: 空行を一つ空けて「送料は別にかかります。」
     keep:
       - 文と表の中身
     avoid:
@@ -78,6 +80,8 @@ rewrite:
     pairs:
       - before: '"All prices include tax." right under the last row'
         after: 'a blank line, then "All prices include tax."'
+      - before: '"Shipping is charged separately." right under the row "| Chair | $80 |"'
+        after: 'a blank line, then "Shipping is charged separately."'
     keep:
       - the sentence and the table's contents
     avoid:
