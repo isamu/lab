@@ -9,6 +9,13 @@
       "planted": "ja/restore.planted.md",
       "mistakes": [
         {
+          "kind": "heading-marks-unspaced",
+          "rule": "heading-marker-no-space",
+          "line": 9,
+          "clean": "## バックアップを復元する",
+          "planted": "##バックアップを復元する"
+        },
+        {
           "kind": "step-order",
           "rule": "numbering-gap",
           "line": 14,
@@ -59,6 +66,13 @@
       "clean": "en/restore.clean.md",
       "planted": "en/restore.planted.md",
       "mistakes": [
+        {
+          "kind": "heading-marks-unspaced",
+          "rule": "heading-marker-no-space",
+          "line": 9,
+          "clean": "## Restore the backup",
+          "planted": "##Restore the backup"
+        },
         {
           "kind": "step-order",
           "rule": "numbering-gap",

@@ -184,6 +184,7 @@ English samples: [../en/README.md](../en/README.md)
 | [図や表を参照する順番と位置](figure-reference-order.md)（`figure-reference-order`） | 図2を図1より先に参照する、図を載せた節より後で初めて参照する、一度も参照しない図や表 |
 | [注の無い注の印と、印の無い注](footnote-mismatch.md)（`footnote-mismatch`） | 本文の「※3」「[^3]」に対応する注が無い所と、本文のどこも指さない注 |
 | [見出しの深さが飛んでいる](heading-level-skip.md)（`heading-level-skip`） | 「##」の次に「####」が来るように、見出しの深さが一段以上飛んでいる所 |
+| [「#」の後ろに空白が無く、見出しにならない](heading-marker-no-space.md)（`heading-marker-no-space`） | 「#見出し」「##手順」のように「#」の後ろに空白が無く、見出しにならない行 |
 | [見出しの番号の付け方が揃っていない](heading-numbering-mix.md)（`heading-numbering-mix`） | 「1. 概要」「手順」「3. 費用」や「1.」「2.」「3）」のように、兄弟の見出しで番号の付け方が混ざっている所 |
 | [画像に代替テキストが無い](image-alt-text.md)（`image-alt-text`） | 「![](図.png)」のように、代替テキストの無い画像 |
 | [画像の代替テキストがファイル名](image-file-name-alt.md)（`image-file-name-alt`） | 「![IMG_1234.png](…)」のように、代替テキストがファイル名のままの画像 |
