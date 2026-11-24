@@ -16,7 +16,7 @@ You need the administrator role on the backup server.
 
 Warning: the restore replaces the current database.
 
-## Check the result
+**Check the result**
 
 1. Open the **Backups** screen again.
 2. Check that the restored backup is marked as current.

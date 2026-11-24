@@ -23,6 +23,13 @@
           "planted": "注意：復元すると、今のデータベースは置き換わります。"
         },
         {
+          "kind": "heading-set-in-bold",
+          "rule": "pseudo-heading",
+          "line": 19,
+          "clean": "## 結果を確かめる",
+          "planted": "**結果を確かめる**"
+        },
+        {
           "kind": "step-skip",
           "rule": "numbering-gap",
           "line": 23,
@@ -65,6 +72,13 @@
           "line": 17,
           "clean": "Warning: the restore replaces the current database. Export today's orders with `vaultr export --today` before you click **Start Restore**.",
           "planted": "Warning: the restore replaces the current database."
+        },
+        {
+          "kind": "heading-set-in-bold",
+          "rule": "pseudo-heading",
+          "line": 19,
+          "clean": "## Check the result",
+          "planted": "**Check the result**"
         },
         {
           "kind": "step-skip",

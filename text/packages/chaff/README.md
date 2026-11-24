@@ -114,6 +114,9 @@ Rules about a team's own words need their lists in `chaff.yaml`. The checks that
 rather than form run with `npx chaffjs test`; one of them, `generic-opening`, asks whether the opening starts
 from a generic problem ("Many teams struggle with…") instead of who did what.
 
+Markdown slips that drop a section from the table of contents and from a screen reader are checked too, such as a
+bold line standing in for a heading in a document that otherwise uses headings ("**Next steps**", `pseudo-heading`).
+
 Where a rule is measured to be mostly wrong for a kind of document, its genre preset turns it off there, and the
 rule is listed under "did not run" with that reason. The measurement is the judged precision on real documents
 (below), recorded per rule and genre.

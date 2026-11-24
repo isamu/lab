@@ -11,7 +11,7 @@ chaff が見つけるまちがいを、ルールごとに一つずつ見本に�
 
 English samples: [../en/README.md](../en/README.md)
 
-見本のあるルール: 272 / 272
+見本のあるルール: 273 / 273
 
 ## 読みやすさ
 
@@ -192,6 +192,7 @@ English samples: [../en/README.md](../en/README.md)
 | [番号の抜け・重なり](numbering-gap.md)（`numbering-gap`） | 第1条の次が第3条、(a) の次が (c) のように、番号が飛んだり重なったりしている所 |
 | [本題に入るまでが長い](preamble-length.md)（`preamble-length`） | 最初の見出しまでの前置きが長く、本題になかなか入らない所 |
 | [手順の後に書いた前提](prerequisite-after-step.md)（`prerequisite-after-step`） | 節の番号付きの手順より後にある、「作業を始める前に」「始める前に」で始まる文 |
+| [太字の一行を見出しの代わりにしている](pseudo-heading.md)（`pseudo-heading`） | 見出しで節を分けた文書の中で、見出しの代わりに置いた太字の一行 |
 | [必須の条件を歓迎の条件にも挙げている](required-listed-as-preferred.md)（`required-listed-as-preferred`） | 求人で、必須に挙げた資格や経験を歓迎にも挙げている所 |
 | [無い手順を指す参照](step-reference-missing.md)（`step-reference-missing`） | 「手順5を参照」のように、文書の手順の最後の番号を超える手順を指す参照 |
 | [表の行のセルが見出しの行より多い](table-row-overflow.md)（`table-row-overflow`） | 見出しの行より多いセルを持つ表の行（多い分は表示されない） |

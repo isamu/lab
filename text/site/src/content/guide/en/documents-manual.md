@@ -30,6 +30,7 @@ These are the main rules for this genre. All of them run by default.
 | `heading-level-skip` | A heading two or more levels deeper than the one before |
 | `empty-section` | A heading with nothing under it |
 | `duplicate-heading` | Two headings with the same words under the same parent |
+| `pseudo-heading` | A bold line standing in for a heading, so the table of contents misses it |
 | `url-run-on` | A URL followed straight away by a character outside ASCII |
 
 What it does not do is decided too.

@@ -672,6 +672,7 @@ genres:
 | `cross-doc-broken-link` ✅ | 一緒に見たほかのファイルへの相対リンクで、行き先のファイルか見出しが無いもの（ファイルが二つ以上のときだけ） | 両方 | warning |
 | `url-run-on` ✅ | URL の直後に空白なしで続く ASCII でない字 | 両方 | warning |
 | `duplicate-heading` ✅ | 同じ親の下の同じ言葉の見出し（MD024 siblings_only） | 両方 | warning |
+| `pseudo-heading` ✅ | 見出しで節を分けた文書の中で、見出しの代わりに置いた太字の一行（MD036。句読点・コロンで終わるもの、題の下で最初の見出しより前のもの、後ろに本文の無いものは除く） | 両方 | info |
 | `empty-section` ✅ | 中身の無い節（すぐ後ろに同じ深さか浅い見出し） | 両方 | warning |
 | `unbalanced-bracket` ✅ | 節の中で組にならない括弧・引用符、全角と半角の組み違い | 両方 | warning |
 | `doubled-punctuation` ✅ | 二つ並んだ句読点（三つ以上は伸ばした書き方として数えない） | 両方 | warning |

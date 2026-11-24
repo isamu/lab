@@ -30,6 +30,7 @@ chaff は、たどれない見出し、行き先の無いリンク、説明の�
 | `heading-level-skip` | 2 段以上深くなる見出し |
 | `empty-section` | 中身の無い見出し |
 | `duplicate-heading` | 同じ親の下にある、同じ言葉の見出し |
+| `pseudo-heading` | 見出しの代わりに置いた太字の一行（目次に載らない） |
 | `url-run-on` | URL の直後に続く日本語 |
 
 見ないことも決めてあります。
