@@ -198,6 +198,7 @@ English samples: [../en/README.md](../en/README.md)
 | [手順の後に書いた前提](prerequisite-after-step.md)（`prerequisite-after-step`） | 節の番号付きの手順より後にある、「作業を始める前に」「始める前に」で始まる文 |
 | [太字の一行を見出しの代わりにしている](pseudo-heading.md)（`pseudo-heading`） | 見出しで節を分けた文書の中で、見出しの代わりに置いた太字の一行 |
 | [必須の条件を歓迎の条件にも挙げている](required-listed-as-preferred.md)（`required-listed-as-preferred`） | 求人で、必須に挙げた資格や経験を歓迎にも挙げている所 |
+| [前後が逆のリンク](reversed-link.md)（`reversed-link`） | 「(字)[URL]」と、角括弧と丸括弧を逆に書いたリンク |
 | [無い手順を指す参照](step-reference-missing.md)（`step-reference-missing`） | 「手順5を参照」のように、文書の手順の最後の番号を超える手順を指す参照 |
 | [表の行のセルが見出しの行より多い](table-row-overflow.md)（`table-row-overflow`） | 見出しの行より多いセルを持つ表の行（多い分は表示されない） |
 | [見出しの無い目次の項目](toc-heading-mismatch.md)（`toc-heading-mismatch`） | 目次（「目次」「Contents」の見出しの下の箇条書き）の項目のうち、文書のどの見出しとも合わないもの |
