@@ -177,6 +177,8 @@ custom_rules:                 # チーム独自のルール（コードは要ら
 フォルダごとに違う文書を置くときは、`by_path` の項目に `files` と `genre` や `rules` を書くと、そのファイルだけ変えられます（一番上の `rules` より強く効きます）。
 
 `exclude: [vendor/**, CHANGELOG.md]` と書くと、フォルダを渡したときの検査からそのファイルを外します。`.gitignore` が無視するファイルも外します。コマンドラインで名前を挙げたファイルは、それでも検査します。外した数と理由は締めに出ます。
+
+文末の調子をチームで決めているなら、`options:` に `no-mixed-desumasu: { body: desumasu, list: dearu }` のように本文・箇条書き・見出しごとに書くと、混ざっていなくても決めた調子と違う文を指摘します（書かなければ、そろっているかだけを見ます。日本語だけのオプションです）。
 `npx chaffjs init` でひな形を作れます。いま効いている設定は `npx chaffjs rules` で一覧になります。
 AI に設定を書かせるときは、`npx chaffjs rules --json` の出力を渡します。いまの値、使える値、なぜいま `off` なのかが一つに入っています。
 書き方の詳しい説明は手引きの「[設定](https://isamu.github.io/lab/ja/guide/configuration/)」と「[チームの表記ルール](https://isamu.github.io/lab/ja/guide/house-style/)」にあります。

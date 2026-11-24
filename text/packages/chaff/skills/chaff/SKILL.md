@@ -148,6 +148,11 @@ heading above it; if it is not a section of its own, drop the bold and write it 
   files from the repository root (the nearest folder with `.git`) down ignore, plus `.git/info/exclude`. A file named on the command line is still checked; the summary says
   how many files were left out and why.
 
+  Markdown when a folder is checked (`include: ["*.yaml"]`).
+- `options: { no-mixed-desumasu: { body: desumasu, list: dearu, heading: dearu } }` (Japanese only) is for a team
+  that has chosen its register: in a region written there, a sentence in the other register is reported even with no
+  mix. Leave it out to keep the default, which takes no side and only flags the minority of a mix.
+
 ## Turn a team's style note into chaff.yaml
 
 When the person gives house rules ("polite endings, sentences of at most 80 characters"), do not guess rule
