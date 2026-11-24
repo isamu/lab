@@ -10,6 +10,7 @@ import { isLinkLabel } from "./link-label.ts";
 import { itemLayout, splitAtLeadIns } from "./list-layout.ts";
 import { closesAsSentence, isFiniteVerb, isNounPhraseWithVerbs, isPastForm, isVerb, NOMINAL, NOUN_HEAD, opensObject } from "./list-item-phrase.ts";
 import { opensWithClause } from "./list-item-clause.ts";
+import { openingSeries, seriesTakesObject } from "./list-verb-series.ts";
 
 /** What an item is made of: a phrase or a sentence (ending), and the word it opens with (head, English only). */
 export type Axis = "ending" | "head";
@@ -209,18 +210,11 @@ const verbOrAdjective: HeadReader = (tokens, at, context) => {
 const instructionVerb: HeadReader = (tokens, at, context) =>
   context.instructionVerbs.has(tokens[at]?.surface.toLowerCase() ?? "") && tokens[at + 1]?.pos !== "NOUN" ? "verb" : undefined;
 
-const isSeriesJoint = (token: Token): boolean => token.surface === "," || token.pos === "CCONJ";
-
-/** The single words of a series the item opens with: "Scope, estimate and describe tasks" gives Scope, estimate, describe. */
-const openingSeries = (tokens: readonly Token[], at: number): readonly Token[] => {
-  const word = tokens[at];
-  if (word === undefined) return [];
-  const after = tokens.findIndex((token, index) => index > at && !isSeriesJoint(token));
-  return after === -1 || after === at + 1 ? [word] : [word, ...openingSeries(tokens, after)];
-};
-
-/** A series one of whose later words is a verb in its base form (Instrument, monitor and profile): it is a series of verbs. */
-const seriesOfVerbs: HeadReader = (tokens, at) => (openingSeries(tokens, at).slice(1).some(isBaseVerb) ? "verb" : undefined);
+/**
+ * A series one of whose later words is a verb in its base form (Instrument, monitor and profile), or that "the", "a" or
+ * "your" follows (Dry and lube the chain): it is a series of verbs.
+ */
+const seriesOfVerbs: HeadReader = (tokens, at) => (seriesTakesObject(tokens, at) || openingSeries(tokens, at).slice(1).some(isBaseVerb) ? "verb" : undefined);
 
 /**
  * The first two words overrule the first word's tag. "Open the console" and "Press the button" open with a verb. "Clean up
