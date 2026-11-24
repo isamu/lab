@@ -558,6 +558,14 @@ describe("defined-term-form: an ordinary phrase that shares a word with a define
     assert.deepEqual(valuesOf(en, "defined-term-form", source, "term"), []);
   });
 
+  it("does not report the term joined by and / or to an ordinary word in front of a noun they share", () => {
+    const head = ["# Supply Agreement", "", '1. "Supplier" means Southfield Mills. "Buyer" means Northwind Foods.', ""];
+    const shared = [...head, "2. The Supplier keeps forecasts, customer and supplier information and plans secret. The Supplier delivers to the Buyer.", ""];
+    assert.deepEqual(valuesOf(en, "defined-term-form", shared.join("\n"), "term"), []);
+    const alone = [...head, "2. The Supplier keeps forecasts and plans secret. The supplier delivers to the Buyer. The Supplier invoices the Buyer.", ""];
+    assert.deepEqual(valuesOf(en, "defined-term-form", alone.join("\n"), "term"), ["case Supplier"]);
+  });
+
   it("still reports the defined term in lower case after a pointing word, or before of and a particular thing", () => {
     const head = ["# Agreement", "", '1. "Party" means the Buyer or the Seller. "Certificate" means a certificate for a Share.', ""];
     const other = [...head, "2. Each Party pays its costs. A Party gives notice to the other party.", ""];
