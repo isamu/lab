@@ -4136,6 +4136,18 @@
         }
       }
     },
+    "filler-word": {
+      "groups": {
+        "business": {
+          "documents": 80,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 21,
+          "fired": 0
+        }
+      }
+    },
     "footnote-mismatch": {
       "groups": {
         "academic": {

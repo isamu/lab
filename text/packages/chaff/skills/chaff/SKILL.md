@@ -31,7 +31,9 @@ read. A contract checked as a blog post gets wrong findings, so choose the genre
    guessed or default genre shows no guide, and `--no-guide` leaves it out.
 
 A rule the genre turns off is listed under "did not run" with the genre as the reason. That is the preset's
-choice, not a gap; turn it back on (`rules:` in `chaff.yaml`) only when the person asks. Some of these are off
+choice, not a gap; turn it back on (`rules:` in `chaff.yaml`) only when the person asks. For minutes or notes made
+from a transcript, use a business genre (`business/meeting-notes`): `filler-word` then reports fillers left in (ええと,
+um, you know). `speech/transcript` is for a verbatim record and keeps them. Some of these are off
 because chaff measured them to be mostly wrong for that kind of document on real, judged documents
 ([isamu/chaff-corpus](https://github.com/isamu/chaff-corpus)); turning one back on brings those false findings back.
 

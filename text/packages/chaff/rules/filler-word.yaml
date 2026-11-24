@@ -1,0 +1,65 @@
+id: filler-word
+layer: L2
+status: stable
+how_to_find: filler-word
+word_list: filler-word
+severity: warning
+
+name:
+  ja: 残ったつなぎの言葉
+  en: Filler word left in
+
+why:
+  ja: 「ええと」「まあ、」のようなつなぎの言葉は、話すときに考える間を埋める声です。文字起こしから作った議事録やメモに残ると、読む人にとっては中身の無い字が増えるだけで、書き言葉の記録に見えません。
+  en: Fillers such as "um" and "you know" fill the pauses of speech while the speaker thinks. Left in minutes or notes made from a transcript, they are words with nothing in them for the reader, and the record no longer reads as written.
+
+message:
+  ja: 「{matched}」は話すときのつなぎの言葉です（文書に {count} 個）
+  en: '"{matched}" is a spoken filler ({count} in the document)'
+
+how_to_fix:
+  ja: つなぎの言葉を消し、残った文が言っていることだけを書いてください。
+  en: Delete the filler and keep only what the sentence says.
+
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [business, docs]
+
+group: wording
+summary:
+  ja: 文字起こしから作った議事録やメモに残った「ええと」「まあ、」のようなつなぎの言葉
+  en: Fillers such as "um" or "you know" left in minutes made from a transcript
+example:
+  ja:
+    before: ええと、次回の定例は来週の火曜日に決まりました。
+    after: 次回の定例は来週の火曜日に決まりました。
+  en:
+    before: Um, the next review is on Tuesday.
+    after: The next review is on Tuesday.
+
+not_flagged:
+  ja: 一覧にある語だけを見ます。「まあ」「なんか」「あの」「えー」は、文の頭か読点の後ろに立ち、後ろに読点か「…」が続くときだけ数えるので、「まあまあの出来」「あの件」「これなんかどうか」は指しません。鉤括弧や引用符の中の言葉は、人が言ったとおりに引いたものなので指しません。ビジネス文書と手引きのジャンルだけで動き、話し言葉の記録（speech/transcript）のように、言ったとおりに残す文書では動きません。
+  en: Only the words on chaff's list are checked. "er", "you know" and "I mean" count only at the head of a sentence or after a comma and followed by a comma, an ellipsis or a dash, so "as you know" and "I mean it" are not reported. Words inside quotation marks are someone's words quoted as said, and are not reported. The rule runs only in business documents and documentation; a verbatim record such as speech/transcript keeps what was said.
+level_meaning:
+  ja: つなぎの言葉が {limit} 個あれば指摘
+  en: reported once there {limit|is|are} {limit} {limit|filler|fillers}
+rewrite:
+  depth: light
+  ja:
+    direction: つなぎの言葉（ええと、まあ、なんか）を消してください。文の中身は変えません。
+    pairs:
+      - before: まあ、費用は来月に見直すということで合意しました。
+        after: 費用は来月に見直すことで合意しました。
+    keep:
+      - 決まったこと、数字、誰が何をするか
+    avoid:
+      - つなぎの言葉を別の接続詞に置き換えて、元に無いつながりを足す
+  en:
+    direction: Delete the fillers (um, uh, you know). Do not change what the sentence says.
+    pairs:
+      - before: So, um, we agreed to review the budget next month.
+        after: We agreed to review the budget next month.
+    keep:
+      - the decisions, the figures and who does what
+    avoid:
+      - replacing a filler with a connective that adds a link the speaker did not make
