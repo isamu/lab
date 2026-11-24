@@ -172,6 +172,7 @@ Skipped numbers, references to provisions that are not there, terms defined twic
 | [Heading numbering mixed](heading-numbering-mix.md) (`heading-numbering-mix`) | Sibling headings numbered in mixed ways: "1. Overview", "Steps", "3. Costs" |
 | [Image without alt text](image-alt-text.md) (`image-alt-text`) | An image with no alt text, as in "![](chart.png)" |
 | [Image alt text is a file name](image-file-name-alt.md) (`image-file-name-alt`) | An image whose alt text is a file name, as in "![IMG_1234.png](…)" |
+| [Link definition that does nothing](link-definition-unused.md) (`link-definition-unused`) | A "[label]: URL" definition no link uses, or one defined twice with different addresses |
 | [Opposite obligations on the same act](modal-conflict.md) (`modal-conflict`) | The same act required or allowed in one sentence and forbidden in another |
 | [The lead only restates the title](no-lead.md) (`no-lead`) | A first paragraph under the title that only says the title again |
 | [Number without its unit](number-without-unit.md) (`number-without-unit`) | A bare number where the other values in its column all have a unit |
