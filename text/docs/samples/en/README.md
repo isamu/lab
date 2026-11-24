@@ -11,7 +11,7 @@ Or paste a draft into the [playground](https://isamu.github.io/lab/en/playground
 
 日本語の見本: [../ja/README.md](../ja/README.md)
 
-Rules with a sample: 260 / 260
+Rules with a sample: 267 / 267
 
 ## Readability
 
@@ -334,5 +334,6 @@ Rules that check only what your team lists in chaff.yaml: spellings, jargon, req
 | [Not the team's spelling](preferred-term.md) (`preferred-term`) | A spelling the team chose not to use ("e-mail" for "email"), from chaff.yaml |
 | [A required heading is missing](required-sections.md) (`required-sections`) | A heading the team requires (such as "Risks") missing, set in chaff.yaml |
 | [A provision's verb form is not the one the house rule uses](requirement-modal.md) (`requirement-modal`) | A requirement's verb ("must", "shall") that the team's house rule does not use |
+| [A term not written the listed way](term-form.md) (`term-form`) | A term listed under terms, in another case, width, hyphen or spacing (Github) |
 
 The checks that read meaning run under `npx chaffjs test`, which asks an AI, so they have no fixed output to show here: `empty-conclusion`, `generic-opening`, `risk-disclosure`, `unsourced-number`

@@ -551,6 +551,8 @@ export type RuleDefinition = {
   readonly use_for: readonly string[];
   /** Off unless chaff.yaml or its style gives the rule a level: a house style's own rule (a 公用文 spelling), wrong for other documents. */
   readonly opt_in?: true;
+  /** The chaff.yaml key that fills the rule's word_list (terms, consistent). With nothing listed there, the rule does not run and says why. */
+  readonly team_list?: string;
   readonly severity: Severity;
   /** Options beyond the level (the direction and length for katakana-long-vowel). Most rules have none. */
   readonly options?: Readonly<Record<string, RuleOption>>;

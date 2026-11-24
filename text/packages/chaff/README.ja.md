@@ -116,7 +116,7 @@ npx chaffjs genres                              ジャンルの一覧と、そ�
 | 種類 | 動かし方 |
 | --- | --- |
 | 試験中のルール（まだ測っていない新しいルール） | `--experimental` で全部、`npx chaffjs enable <ルール>` で一つずつ |
-| チームの言葉が要るルール（社内用語、必須の見出し、表記） | `chaff.yaml` の `jargon` `required_sections` `prefer` に書く |
+| チームの言葉が要るルール（社内用語、必須の見出し、表記、決まった書き方の名前） | `chaff.yaml` の `jargon` `required_sections` `prefer` `terms` に書く |
 | 意味を読む検査（例: 書き出しが「多くの企業が〜」のような一般論から始まっていないか、`generic-opening`） | `npx chaffjs test`（API key が要る） |
 
 どちらも正しい書き方が二つある所では、一つの文書の中で揃っているかだけを見て、少ないほうを指します。たとえば `enumeration-marker-mix` は、「1.」「2.」「4.」と番号を振った並びの中の「3)」を指します。
@@ -164,6 +164,10 @@ prefer:                       # チームの表記（左を見つけたら右を
   サーバ: サーバー
   ユーザ: ユーザー
   弊社: { use: 当社, scope: [~quote] }   # 引用の中では言わない
+
+terms:                        # 決まった書き方の名前・用語（Github や ＧｉｔＨｕｂ と書いた所を指す）
+  - GitHub
+  - JavaScript
 
 custom_rules:                 # チーム独自のルール（コードは要らない）
   - id: team-no-tbd

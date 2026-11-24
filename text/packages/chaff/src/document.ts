@@ -252,6 +252,8 @@ export type TeamRules = {
   readonly preferScopes?: Readonly<Record<string, ScopeSelector>>;
   /** チームの固有名詞。1 つの名前として読む rule が見る。 */
   readonly names?: readonly string[];
+  /** The team's terms, each to be written exactly as listed. term-form reads them as its word list. */
+  readonly terms?: readonly string[];
   /** The word lists the plugins ship for the document's language, by name. */
   readonly lexicons?: LanguageAdapter["lexicons"];
 };
@@ -266,6 +268,7 @@ export const teamRules = (
     readonly prefer?: Readonly<Record<string, string>>;
     readonly preferScopes?: Readonly<Record<string, ScopeSelector>>;
     readonly names?: readonly string[];
+    readonly terms?: readonly string[];
     readonly extensions?: { readonly lexicons: Readonly<Record<string, LanguageAdapter["lexicons"]>> };
   },
   language?: string,
@@ -275,6 +278,7 @@ export const teamRules = (
   preferScopes: config.preferScopes ?? {},
   requiredSections: config.requiredSections,
   names: config.names ?? [],
+  terms: config.terms ?? [],
   lexicons: language === undefined ? {} : (config.extensions?.lexicons[language] ?? {}),
 });
 
@@ -287,6 +291,7 @@ const teamLexicons = (adapter: LanguageAdapter, team: TeamRules): LanguageAdapte
     const scope = team.preferScopes?.[pattern];
     return { pattern, instead_of: use, ...(scope === undefined ? {} : { scope }) };
   }),
+  "term-form": (team.terms ?? []).map((pattern) => ({ pattern })),
 });
 
 /** ページの案内は段落としても数えない。数えると、目次の行が「本題までの段落」に入る。メールのヘッダーや署名の行は段落から切り取る。 */

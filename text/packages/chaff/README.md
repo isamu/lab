@@ -154,7 +154,7 @@ A `chaff.yaml` at the top of the repository sets:
 
 - `genre:` and `style:`
 - which rules run, and at what level, for every file or per path (`by_path`)
-- your preferred spellings
+- your preferred spellings, and the terms written one fixed way (`terms: [GitHub, JavaScript]`)
 - `options:` where a rule takes a side only when the team chooses one, such as the sentence-ending register a Japanese
   document requires (`no-mixed-desumasu: { body: desumasu, list: dearu }`; Japanese only, English has no counterpart)
 - the genre's guide

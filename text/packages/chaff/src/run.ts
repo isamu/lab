@@ -118,6 +118,17 @@ const documentNeed = (rule: RuleDefinition, doc: ProseDocument): string | undefi
   return absent === undefined ? reasonsFor(doc).oneDocument : reasonsFor(doc).noLexicon(doc.language, absent);
 };
 
+/**
+ * 語彙表を要求する rule で、その言語に語彙表が無ければ動かせない。黙って通さない。
+ * A rule that reads only the team's list (team_list) has nothing to check while chaff.yaml lists nothing: its 0 findings would read as checked and fine.
+ */
+const listNeed = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
+  const absent = missingList(rule, doc.lexicons);
+  if (absent !== undefined) return reasonsFor(doc).noLexicon(doc.language, absent);
+  const listed = rule.word_list === undefined ? undefined : doc.lexicons[rule.word_list];
+  return rule.team_list !== undefined && (listed ?? []).length === 0 ? reasonsFor(doc).noTeamList(rule.team_list) : undefined;
+};
+
 /** 知らない要求は満たされていないものとして扱う。黙って無視すると、要求なしで動いてしまう。 */
 const has = (capabilities: ProseDocument["capabilities"], need: string): boolean => {
   if (need === "pos") return capabilities.pos;
@@ -327,10 +338,8 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
     const detector = detectors[rule.id] ?? DETECTORS[rule.how_to_find];
     if (detector === undefined)
       return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).noDetector(rule.how_to_find) }] };
-    // 語彙表を要求する rule で、その言語に語彙表が無ければ動かせない。黙って通さない。
-    const absent = missingList(rule, doc.lexicons);
-    if (absent !== undefined)
-      return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).noLexicon(doc.language, absent) }] };
+    const noList = listNeed(rule, doc);
+    if (noList !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noList }] };
     const options = {
       limit: limitFor(rule, level, genre, limits),
       lexicon: rule.word_list === undefined ? undefined : doc.lexicons[rule.word_list],
