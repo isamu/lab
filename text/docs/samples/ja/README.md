@@ -79,6 +79,7 @@ English samples: [../en/README.md](../en/README.md)
 | [重言](redundant-expression.md)（`redundant-expression`） | 「頭痛が痛い」「一番最初」「後で後悔」のような、同じ意味の語の重なり |
 | [期限も担当も無い依頼](request-without-deadline.md)（`request-without-deadline`） | 「ご確認ください」「Please send …」のような依頼で、その文にも次の文にも期限と担当が無いもの |
 | [要求の文に、決めきれない言い方がある](requirement-smell.md)（`requirement-smell`） | 仕様書や契約書の要求の文にある「可能な限り」「必要に応じて」「等」「及び／又は」 |
+| [さ入れ言葉](sa-ire.md)（`sa-ire`） | 「読まさせていただく」「行かさせる」のような、さ入れ言葉 |
 | [「させていただく」が多い](sasete-itadaku.md)（`sasete-itadaku`） | 「させていただく」を繰り返して、誰が決めて何が起きるのかがぼやけた所 |
 | [対にならない「〜たり」](tari-unpaired.md)（`tari-unpaired`） | 「本を読んだり、映画を見ます」のように、「〜たり」が一つで止まって対になっていない所 |
 | [「〜的」の多用](teki-overuse.md)（`teki-overuse`） | 一文に「効果的」「具体的」「積極的」のような「〜的」がいくつも重なった所 |

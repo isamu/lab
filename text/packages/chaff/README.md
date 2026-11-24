@@ -113,6 +113,9 @@ npx chaffjs relax <rule>         # or strict / off
 Where two ways of writing are both right, a rule checks only that one document is consistent and points at the
 minority: `enumeration-marker-mix`, for example, at a "3)" in a list numbered "1.", "2.", "4.".
 
+Some rules read one language only: `ra-nuki` (見れる for 見られる) and `sa-ire` (読まさせて for 読ませて) are
+Japanese only, and say so under "did not run" on an English document.
+
 Rules about a team's own words need their lists in `chaff.yaml`. The checks that read meaning
 rather than form run with `npx chaffjs test`; one of them, `generic-opening`, asks whether the opening starts
 from a generic problem ("Many teams struggle with…") instead of who did what.

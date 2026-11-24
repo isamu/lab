@@ -157,8 +157,8 @@ No rule text or word list was copied; chaff's lists are its own.
 
 - <a id="textlint-ja-presets"></a>**textlint-ja** [github.com](https://github.com/textlint-ja/textlint-rule-preset-ja-technical-writing)
   - textlint-rule-preset-ja-technical-writing and textlint-rule-preset-japanese (rule sets for Japanese technical writing)
-  - Found: Checks a machine can run on Japanese text: sentence length, commas, mixed endings, ら dropped, doubled particles, invisible characters.
-  - In chaff: most have a chaff rule (`max-sentence-length`, `max-ten`, `no-mixed-desumasu`, `ra-nuki`, `no-doubled-joshi`, `invisible-character`).
+  - Found: Checks a machine can run on Japanese text: sentence length, commas, mixed endings, ら dropped, an extra さ in the causative, doubled particles, invisible characters.
+  - In chaff: most have a chaff rule (`max-sentence-length`, `max-ten`, `no-mixed-desumasu`, `ra-nuki`, `sa-ire`, `no-doubled-joshi`, `invisible-character`).
 - <a id="proselint"></a>**proselint** [github.com](https://github.com/amperser/proselint)
   - A linter for English prose, with checks drawn from usage guides.
   - Found: Usage mistakes a word list can catch: clichés, redundancy, uncomparable adjectives given a degree, weasel words.
