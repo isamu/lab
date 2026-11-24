@@ -6,6 +6,7 @@ import type { Level, RuleDefinition } from "../plugin.ts";
 import { optionLines } from "./options.ts";
 import type { OptionLayer } from "../rule-options.ts";
 import { depthMeaning } from "../rewrite-depth.ts";
+import { writtenScope } from "../text-scope.ts";
 
 const TEXT: Texts<{
   readonly off: string;
@@ -19,6 +20,7 @@ const TEXT: Texts<{
   readonly depth: (depth: string, meaning: string) => string;
   readonly example: string;
   readonly definedIn: (plugin: string | undefined) => string;
+  readonly scope: (written: string) => string;
   readonly values: string;
   readonly times: string;
   readonly severities: string;
@@ -45,6 +47,7 @@ const TEXT: Texts<{
     example: "例",
     definedIn: (plugin) =>
       plugin === undefined ? "このルールはチームが chaff.yaml の custom_rules で決めたものです。" : `このルールはプラグイン ${plugin} のものです。`,
+    scope: (written) => `読む所: ${written}（chaff.yaml の scope）`,
     values: "設定できる値:",
     times: "{limit} 回",
     severities: "設定できる値（数える上限は無く、指摘の重さが変わります）:",
@@ -71,6 +74,7 @@ const TEXT: Texts<{
     example: "Example",
     definedIn: (plugin) =>
       plugin === undefined ? "The team defined this rule under custom_rules in chaff.yaml." : `This rule comes from the plugin ${plugin}.`,
+    scope: (written) => `Reads: ${written} (scope in chaff.yaml)`,
     values: "Levels:",
     times: "{limit} {limit|time|times}",
     severities: "Levels (there is no limit to count to; a level sets how a finding is marked):",
@@ -118,7 +122,15 @@ const exampleLines = (rule: RuleDefinition, language: string, text: (typeof TEXT
   const examples = rule.guide?.examples ?? {};
   const example = examples[language] ?? examples["en"] ?? Object.values(examples)[0];
   if (rule.custom === undefined || example === undefined) return [];
-  return ["", `  ${text.example}:  ${example.before}`, `      →  ${example.after}`, "", `  ${text.definedIn(rule.plugin)}`];
+  const scope = rule.custom.type === "module" ? undefined : rule.custom.scope;
+  return [
+    "",
+    `  ${text.example}:  ${example.before}`,
+    `      →  ${example.after}`,
+    ...(scope === undefined ? [] : ["", `  ${text.scope(writtenScope(scope))}`]),
+    "",
+    `  ${text.definedIn(rule.plugin)}`,
+  ];
 };
 
 /** How deep the rule's rewrite direction reaches, for a rule that has one: what chaff fix-plan --depth compares. */

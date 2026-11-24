@@ -281,6 +281,51 @@ When `preferred-term` finds the left-hand spelling, it asks for the right-hand o
 When the left-hand spelling is a verb in its dictionary form (`utilize: use`), its other forms ("utilizing") are found too.
 With nothing under `prefer`, it says nothing.
 
+## Choosing what a rule reads (scope)
+
+A team's rule reads body text and list items by default.
+To read only headings or only tables, or to leave quotations out, list the parts under `scope`.
+It can be written on a `words`, `pattern` or `tokens` rule under `custom_rules`, and on an entry under `prefer`.
+
+| Name | What it reads |
+| --- | --- |
+| `heading` | Headings (not the `#` or the underline) |
+| `list` | List items |
+| `table` | Table cells (below the header row) |
+| `quote` | `>` quotations (not the `>` marks). A GitHub `> [!NOTE]` is the writer's own text and is read as body text |
+| `paragraph` | Body text in none of the others |
+
+A `~` in front of a name leaves that part out.
+What a rule reads is decided in two steps: the names without `~` choose (none written: every part), then the names with `~` take parts away.
+A list item inside a quotation is both `list` and `quote`, so `[list, ~quote]` reads the list items outside quotations.
+An unknown name, or a scope that takes away everything it chooses, is a settings error and stops the run.
+
+A rule against a full stop at the end of a heading:
+
+```yaml
+custom_rules:
+  - id: heading-no-period
+    type: pattern
+    pattern: '\.$'
+    scope: [heading]
+    name: A heading ends with a full stop
+    why: A heading is not a sentence, so we write it without one.
+    how_to_fix: Remove the full stop.
+    example:
+      before: '## Overview.'
+      after: '## Overview'
+```
+
+To give a `prefer` entry a scope, write its right-hand side with `use` and `scope`.
+Here "our firm" is not reported inside a quotation of a customer's words.
+An entry whose right-hand side is only a spelling reads body text and list items, as before.
+
+```yaml
+prefer:
+  e-mail: email
+  our firm: { use: our company, scope: [~quote] }
+```
+
 ## Deciding the team's jargon and required headings
 
 `jargon` and `required_sections` are rules whose content your team decides.

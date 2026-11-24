@@ -153,6 +153,7 @@ rules:                        # ルールごとの強さ: strict / normal / rela
 prefer:                       # チームの表記（左を見つけたら右を勧める）
   サーバ: サーバー
   ユーザ: ユーザー
+  弊社: { use: 当社, scope: [~quote] }   # 引用の中では言わない
 
 custom_rules:                 # チーム独自のルール（コードは要らない）
   - id: team-no-tbd
@@ -179,6 +180,7 @@ AI に設定を書かせるときは、`npx chaffjs rules --json` の出力を�
 ## チーム独自のルールとルールの束
 
 一つのチームのルールは、上の例のように `chaff.yaml` の `custom_rules` に書きます。語（`type: words`）、正規表現（`type: pattern`）、品詞の並び（`type: tokens`）、Node の関数（`type: module`）で書けます。
+`scope` を添えると、読む所を見出し・箇条書き・表・引用・本文（`heading` `list` `table` `quote` `paragraph`）に絞れます。`~quote` のように `~` を付けた所は外します。`prefer` の項目にも書けます。
 書き方は「[ルールを足す](https://isamu.github.io/lab/ja/guide/adding-rules/)」にあります。
 
 いくつものチームで使うルールは、プラグインのパッケージ `chaff-plugin-<名前>` にまとめます。ルール・語彙表・スタイルを YAML だけで書く束なら、コードは要りません。
@@ -328,7 +330,8 @@ what level now.
 
 **Your own preset** is a `chaff.yaml` in the repository: a genre, a `style`, rules and their levels, your preferred
 spellings, the genre's guide and your own rules under `custom_rules` (`words`, `pattern`, `tokens` for part-of-speech
-patterns, or `module` for a Node function). `npx chaffjs init --plugin <name>` starts a YAML-only rule pack, `chaff-plugin-<name>/`,
+patterns, or `module` for a Node function). A `scope` on a team rule or a `prefer` entry limits what it reads (`[heading]`,
+`[list, table]`, `[~quote]`). `npx chaffjs init --plugin <name>` starts a YAML-only rule pack, `chaff-plugin-<name>/`,
 and `npx chaffjs plugin-test` checks each of its rules on the rule's own example.
 
 **Fix plans.** `npx chaffjs fix-plan article.md` is a plan for whoever rewrites the file, a person or an AI: findings by

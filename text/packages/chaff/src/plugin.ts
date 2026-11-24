@@ -75,6 +75,8 @@ export type LexiconEntry = {
   readonly first_year?: number | undefined;
   /** The genres or groups the entry holds in (legal, blog/tech). Without them, every genre. A detector reads them with entriesForGenre. */
   readonly genres?: readonly string[] | undefined;
+  /** The parts of the document the entry counts in (prefer's object form). Without it, body text as always. preferred-term honours it. */
+  readonly scope?: ScopeSelector | undefined;
   /** The entry counts only in a heading: a title phrase that body text uses plainly. A detector that reads headings honours it. */
   readonly heading_only?: boolean | undefined;
   /** The entry counts only where it opens the sentence (近年、… but not その後、近年の…). phrase-match honours it. */
@@ -391,7 +393,21 @@ export type ProseDocument = {
   readonly dictionary?: (() => ReadonlySet<string>) | undefined;
   /** 表の本体の升と、升ごとに解析した語（位置は source の上）。本文（prose）は表を覆うので、升の語は sentences に入らない。呼んだときに作る。 */
   readonly tableCells?: (() => readonly TableCell[]) | undefined;
+  /** Every sentence with the parts it is in: body text, and the headings, table cells and quotations sentences leaves out. Made when called. */
+  readonly scopedSentences?: (() => readonly ScopedSentence[]) | undefined;
 };
+
+/**
+ * The parts of a document a team's rule can be limited to (custom_rules' and prefer's scope). paragraph is body text
+ * outside the others. A passage can be in two at once: a list item inside a quotation is list and quote.
+ */
+export type TextScope = "heading" | "list" | "table" | "quote" | "paragraph";
+
+/** A scope as chaff.yaml writes it, read: the parts chosen (none: every part), then the parts taken away (~quote). */
+export type ScopeSelector = { readonly include: readonly TextScope[]; readonly exclude: readonly TextScope[] };
+
+/** A sentence and the parts of the document it is in. */
+export type ScopedSentence = { readonly sentence: Sentence; readonly scopes: readonly TextScope[] };
 
 /** 表の升一つ。text は区切りの | のあいだの字のまま。tokens は升の字を adapter が解析した語で、解析しない adapter では無い。 */
 export type TableCell = Span & { readonly text: string; readonly tokens?: readonly Token[] };
@@ -559,7 +575,7 @@ export type TokenCondition = {
  * module: a detector the team wrote in JavaScript; module as written in chaff.yaml, file where it resolved to.
  */
 export type CustomSpec =
-  | { readonly type: "words"; readonly words: readonly { readonly avoid: string; readonly use: string }[] }
-  | { readonly type: "pattern"; readonly pattern: string; readonly flags: string }
-  | { readonly type: "tokens"; readonly tokens: readonly TokenCondition[] }
+  | { readonly type: "words"; readonly words: readonly { readonly avoid: string; readonly use: string }[]; readonly scope?: ScopeSelector | undefined }
+  | { readonly type: "pattern"; readonly pattern: string; readonly flags: string; readonly scope?: ScopeSelector | undefined }
+  | { readonly type: "tokens"; readonly tokens: readonly TokenCondition[]; readonly scope?: ScopeSelector | undefined }
   | { readonly type: "module"; readonly module: string; readonly file: string };
