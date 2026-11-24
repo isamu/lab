@@ -34,8 +34,6 @@ entries:
     group: last
   - pattern: やってみてください
     group: last
-  - pattern: 始めてみてください
-    group: last
   - pattern: ましょう！
     group: last
   - pattern: ましょう!

@@ -37,17 +37,6 @@ describe("closing-cliche: 最後の段落でだけ定型になる言い回し", 
     assert.ok(flagged("# 通知\n\n通知は三種類あります。\n\n## まとめ\n\n気になった設定から、ひとつずつやってみてください。\n"));
   });
 
-  it("invalid: 「ぜひ始めてみてくださいね」と始めるよう勧めて締める", () => {
-    assert.deepEqual(matchedFor("# 歯みがき\n\n夜に一分足すだけです。\n\nできるところから、ぜひ始めてみてくださいね。\n", ja, "blog/owned-media"), [
-      "始めてみてください",
-    ]);
-  });
-
-  it("valid: 本文の途中の「始めてみてください」は手順の勧めで、結びではない", () => {
-    const body = "# 手順\n\n## 準備\n\n小さな鉢から始めてみてください。\n\n土は乾いてから足します。\n\n水は朝にやります。\n\n冬は窓から離します。\n";
-    assert.deepEqual(matchedFor(body, ja, "blog/owned-media"), []);
-  });
-
   it("invalid: a business's offer to help as the last line", () => {
     const source = "# Receipts\n\nKeep every receipt in one folder.\n\nCall our office with questions. We're here to help you spend less time on paperwork.\n";
     assert.deepEqual(matchedFor(source, en, "blog/owned-media"), ["here to help"]);
