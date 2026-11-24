@@ -17,6 +17,8 @@ entries:
   - pattern: GPU
   - pattern: RAM
   - pattern: USB
+  # The connector printed on every television and its cable, named by these letters alone, as USB is.
+  - pattern: HDMI
   - pattern: AI
   - pattern: ID
   - pattern: FAQ
