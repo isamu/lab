@@ -31,6 +31,7 @@ These are the main rules for this genre. All of them run by default.
 | `empty-section` | A heading with nothing under it |
 | `duplicate-heading` | Two headings with the same words under the same parent |
 | `url-run-on` | A URL followed straight away by a character outside ASCII |
+| `enumeration-marker-mix` | A step numbered in another form than the rest of its list ("1.", "2.", "3)", "4.") |
 
 What it does not do is decided too.
 

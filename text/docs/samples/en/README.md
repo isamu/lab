@@ -11,7 +11,7 @@ Or paste a draft into the [playground](https://isamu.github.io/lab/en/playground
 
 日本語の見本: [../ja/README.md](../ja/README.md)
 
-Rules with a sample: 259 / 259
+Rules with a sample: 260 / 260
 
 ## Readability
 
@@ -120,6 +120,7 @@ Two ways of writing that are both right, mixed in one document. chaff does not p
 | [A long name used again after its short name was defined](defined-name-repeated.md) (`defined-name-repeated`) | A party given a short name ("the Supplier") and later written out in full |
 | [A defined term used in another form](defined-term-form.md) (`defined-term-form`) | A defined term later written in another form: quoted, lower case, or lengthened |
 | [Ellipses written two ways](ellipsis-consistency.md) (`ellipsis-consistency`) | An ellipsis written two ways in one document, such as "..." and "…" |
+| [Item numbers written in mixed forms](enumeration-marker-mix.md) (`enumeration-marker-mix`) | Item numbers mixed in one run: "1.", "2.", "3)", "4." |
 | [Heading end punctuation mixed](heading-end-punctuation-mix.md) (`heading-end-punctuation-mix`) | Headings that end with a colon or full stop mixed with headings that do not |
 | [List items in mixed forms](list-item-form-mix.md) (`list-item-form-mix`) | One list mixing phrases with sentences, or verb-first items with noun-first ones |
 | [List bullets mixed](list-marker-mix.md) (`list-marker-mix`) | Bullets ("-", "*", "+", "・") mixed in one list or one document |

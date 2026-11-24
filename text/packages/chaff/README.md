@@ -110,6 +110,9 @@ npx chaffjs enable <rule>        # one of them, permanently
 npx chaffjs relax <rule>         # or strict / off
 ```
 
+Where two ways of writing are both right, a rule checks only that one document is consistent and points at the
+minority: `enumeration-marker-mix`, for example, at a "3)" in a list numbered "1.", "2.", "4.".
+
 Rules about a team's own words need their lists in `chaff.yaml`. The checks that read meaning
 rather than form run with `npx chaffjs test`; one of them, `generic-opening`, asks whether the opening starts
 from a generic problem ("Many teams struggle with…") instead of who did what.
