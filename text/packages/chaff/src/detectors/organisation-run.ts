@@ -114,6 +114,15 @@ export const isOrganisationRun = (tokens: readonly Token[], covering: readonly n
   return head > 0 || formBefore ? segments >= 1 : segments >= 2;
 };
 
+/** 連なりのすぐ後ろの、中黒で続く語の並び（・適応小委員会、・学位授与機構）。 */
+const DOTTED_TAIL = /^(?:・[一-鿿ァ-ヶー]+)+/u;
+
+/** 連なりの後ろ（next）が中黒で続き、最後の語が組織の語で閉じるか（社会保障審議会企業年金・個人年金部会の「・個人年金部会」）。 */
+export const closesAfterDot = (next: string, units: readonly string[]): boolean => {
+  const last = DOTTED_TAIL.exec(next)?.[0].split("・").at(-1);
+  return last !== undefined && units.some((unit) => last.endsWith(unit));
+};
+
 /**
  * 連なりの語（covering）が、中黒の後ろへ続いて組織の語で閉じる名前（中央環境審議会地球環境部会気候変動影響評価・適応小委員会）の前半か。
  * 前半は、法人格か地名・固有名詞で始まるか、組織の語で閉じる区切りで始まるか、前に法人格か組織の区切りが立つ（formBefore）。
