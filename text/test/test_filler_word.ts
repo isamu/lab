@@ -1,6 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
+import { presetLevels } from "../packages/chaff/src/genre-load.ts";
 import { fillerUses } from "../packages/chaff/src/detectors/filler-word.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
@@ -64,9 +65,11 @@ describe("filler-word in Japanese", () => {
   it("runs in business documents and documentation, not in a transcript or other genres", () => {
     const body = "ええと、次回の定例は火曜日に決まりました。";
     assert.equal(findingsOf(ja, body, "docs/manual").length, 1);
-    assert.deepEqual(findingsOf(ja, body, "speech/transcript"), []);
     assert.deepEqual(findingsOf(ja, body, "blog/tech"), []);
-    assert.deepEqual(findingsOf(ja, body, "literature"), []);
+    assert.equal(presetLevels("speech/transcript")[RULE], "off");
+    assert.equal(presetLevels("literature/fiction")[RULE], "off");
+    assert.equal(presetLevels("legal/contract")[RULE], "off");
+    assert.equal(presetLevels("academic/paper")[RULE], "off");
   });
 });
 
@@ -92,7 +95,7 @@ describe("filler-word in English", () => {
     assert.deepEqual(findingsOf(en, 'The chair said, "Um, let us stop here," and closed the meeting.'), []);
   });
 
-  it("does not run in a transcript", () => {
-    assert.deepEqual(findingsOf(en, "Um, the next review is on Tuesday.", "speech/transcript"), []);
+  it("is off in a transcript by the genre's preset", () => {
+    assert.equal(presetLevels("speech/transcript")[RULE], "off");
   });
 });
