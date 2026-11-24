@@ -73,6 +73,7 @@ calls nothing. Ask the person before a real run; the passages leave the machine.
 | --- | --- | --- |
 | Fix the text | The finding is right | Edit the sentence. Keep the meaning, the facts and the numbers; change only how it is said. |
 | Silence that spot | Right in general, wrong here (a quotation, a term that must repeat) | `<!-- stet: rule-id — reason -->` before it; `stet-section` / `stet-file` for wider scope. Always give the reason. |
+| Allow that text everywhere | The same text is always right for this team (a product name, a quoted form) | An entry under `allow:` in `chaff.yaml`: `text:` (literal) or `pattern:` (regex), `reason:` (required), optional `rules:` and `files:`. `npx chaffjs suppressions` lists what it silenced. |
 | Change the rule | Wrong for this team or genre | `npx chaffjs relax <rule-id> --why "reason"` (or `strict` / `off`). The reason and date are written into `chaff.yaml`. |
 
 `npx chaffjs explain <rule-id>` shows why a rule exists, its levels and the current one. Read it before

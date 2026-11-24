@@ -11,7 +11,7 @@ type FileHeader = { readonly header: string; readonly notes: readonly string[] }
 /** unread: a genre the front matter wrote that chaff does not know (already reported on stderr). */
 type Placed = { readonly genre: string; readonly from: GenreSource; readonly unread?: string | undefined };
 
-type Counts = { readonly shelved: number; readonly hushed: number };
+type Counts = { readonly shelved: number; readonly hushed: number; readonly allowed?: number };
 
 /**
  * The genre the file looks like, only when nothing set or guessed one: suggested on screen, never used for the run.
@@ -23,7 +23,7 @@ const suggestionFor = (path: string, source: string, language: string, placed: P
 /** In the file's language. The note names the genre the file was checked as. */
 export const fileHeader = (path: string, source: string, language: string, placed: Placed, counts: Counts): FileHeader => {
   const text = CLI_TEXT[uiLanguageOf(language)];
-  const first = text.header(path, placed.genre, text.languageName(language), text.genreSource[placed.from], counts.shelved, counts.hushed);
+  const first = text.header(path, placed.genre, text.languageName(language), text.genreSource[placed.from], counts.shelved, counts.hushed, counts.allowed ?? 0);
   const suggestion = suggestionFor(path, source, language, placed);
   if (suggestion === undefined) return { header: first, notes: [] };
   const name = suggestion.name[uiLanguageOf(language)] ?? suggestion.id;

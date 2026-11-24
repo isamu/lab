@@ -340,6 +340,36 @@ Kanji outside the name are still counted: in 「個人情報保護委員会事�
 A run of kanji that fills a 「」 or 『』 quotation exactly is not counted, even without `names`.
 In 「英国大使館別荘記念公園」 the writer has marked it as one name. If the quotation also holds kana, the runs inside it are counted as before.
 
+## Allowing text that is always right
+
+Some text is right every time it appears, though a rule reports it: a product name spelt the vendor's way, a form a law
+requires, a quoted title. Writing a `stet` before each one is tedious. List it under `allow` instead, with the reason.
+
+```yaml
+allow:
+  - text: Kubernetes            # a literal string, matched as written
+    reason: product name, spelt as the vendor spells it
+  - pattern: 'v\d+\.\d+'       # a regular expression
+    reason: version numbers are not words
+    rules: [spelling-consistency] # only these rules (all rules when left out)
+    files: ["docs/**/*.md"]     # only these files (all files when left out)
+```
+
+A finding placed inside an occurrence of the text (or a match of the pattern) is not reported.
+A finding that covers more, such as a long sentence that happens to contain the text, still is.
+
+| Key | What it does |
+| --- | --- |
+| `text` | A literal string, matched as written, capital letters included |
+| `pattern` | A regular expression. The same safety checks as a team rule's `pattern` apply: a shape that can run for minutes on a long line is refused |
+| `reason` | Required. Why this text need not be reported. An entry without one stops the run, as a broken team rule does |
+| `rules` | The rule ids the entry covers. A rule chaff does not have is said before the results |
+| `files` | Globs, from the folder `chaff.yaml` is in, as in `by_path` |
+
+Each entry has exactly one of `text` and `pattern`.
+Nothing disappears silently: the file's header line counts what `allow` silenced, and `npx chaffjs suppressions`
+lists each entry with its count and reason, beside the stets.
+
 ## Changing settings per path
 
 One place can hold different kinds of documents. `by_path` changes the settings per path.

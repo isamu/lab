@@ -139,6 +139,8 @@ A `chaff.yaml` at the top of the repository sets:
 - the genre's guide
 - `custom_rules:` your own rules, written as `words`, a `pattern`, `tokens` for a
   part-of-speech pattern, or a `module` for a Node function
+- `allow:` text never to report (a product name, a quoted form), as `text:` or a regex `pattern:`, each with a
+  required `reason:` and optionally `rules:` and `files:`; `npx chaffjs suppressions` lists what it silenced
 
 ```bash
 npx chaffjs init --plugin <name>   # start a YAML-only rule pack, chaff-plugin-<name>/

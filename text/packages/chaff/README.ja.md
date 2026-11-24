@@ -174,7 +174,8 @@ AI に設定を書かせるときは、`npx chaffjs rules --json` の出力を�
 応じ方は 3 つです。指摘がもっともなら文章を直します。指摘は正しいがそこは意図して書いたのなら、`<!-- stet: rule-id — 理由 -->` でその箇所だけ黙らせます。
 自分たちの方針に合わないなら、`npx chaffjs relax rule-id --why "理由"` でルールのほうを変えます。
 強さは `strict` `normal` `relaxed` `off` の 4 語から選び、足りなければ上限を数で書けます（`max-sentence-length: 260`）。
-黙らせている箇所は `npx chaffjs suppressions docs/` が数えます。
+同じ語がいつも正しい（製品名、引用の決まった形）なら、`chaff.yaml` の `allow:` に `text:`（そのままの文字列）か `pattern:`（正規表現）と `reason:` を書きます。理由の無い項目は設定の誤りとして止まります。
+黙らせている箇所は、stet も allow も `npx chaffjs suppressions docs/` が理由と一緒に数えます。
 
 ## チーム独自のルールとルールの束
 

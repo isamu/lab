@@ -59,6 +59,8 @@ export type Config = {
   readonly fixPlan?: unknown;
   /** guide as written: the team's changes to the genre guides, or off (genre-guide/of-config.ts reads it). */
   readonly guide?: unknown;
+  /** allow as written: text never to report, each entry with its reason (allow.ts reads and checks it). */
+  readonly allow?: unknown;
   /** plugins as written: package names and paths. extension/plugin-load.ts reads and checks them. */
   readonly plugins?: unknown;
   /** The code chaff.yaml names, once loaded (extension/load.ts). Reading chaff.yaml does not load it. */
@@ -220,5 +222,6 @@ export const configOf = (raw: unknown, path: string): Config => {
     fixPlan: raw["fix_plan"],
     guide: raw["guide"],
     plugins: raw["plugins"],
+    allow: raw["allow"],
   };
 };

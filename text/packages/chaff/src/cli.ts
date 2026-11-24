@@ -111,7 +111,17 @@ const present = (check: SourceCheck, argv: readonly string[]): Inspected => {
   const baseline = argv.includes("--show-baseline") ? undefined : readBaseline(join(process.cwd(), BASELINE_FILE));
   const split = splitByBaseline(path, applied.kept, baseline, process.cwd());
   const result = { ...raw, findings: split.fresh };
-  const { header, notes } = fileHeader(path, source, language, { genre, from, unread }, { shelved: split.shelved, hushed: applied.suppressed.length });
+  const { header, notes } = fileHeader(
+    path,
+    source,
+    language,
+    { genre, from, unread },
+    {
+      shelved: split.shelved,
+      hushed: applied.suppressed.length,
+      allowed: applied.allowed.length,
+    },
+  );
   const notRun = notRunAmong(applied.named, raw.skipped);
   const text = argv.includes("--compact")
     ? renderCompact(header, result, rules, language)
@@ -122,7 +132,7 @@ const present = (check: SourceCheck, argv: readonly string[]): Inspected => {
     language,
     genre,
     outcome: { path, findings: split.fresh, notRun: raw.skipped.length },
-    perFile: { path, suppressed: applied.suppressed, reasonless: applied.unusedReasonless, notRun },
+    perFile: { path, suppressed: applied.suppressed, allowed: applied.allowed, reasonless: applied.unusedReasonless, notRun },
     checked: { findings: split.fresh, rules, language, genre, genreFrom: from, skipped: raw.skipped },
     kept: applied.kept,
   };

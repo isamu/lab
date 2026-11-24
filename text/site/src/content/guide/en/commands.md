@@ -23,7 +23,7 @@ The list `npx chaffjs --help` prints, as a table.
 | `npx chaffjs relax\|strict\|off <rule>` | Changes a rule's level, with `--why "reason"` |
 | `npx chaffjs enable <rule>` | Turns on one experimental rule alone (writes `<rule>: normal` in `chaff.yaml`). See [Configuration](./configuration#turning-on-one-experimental-rule) |
 | `npx chaffjs baseline <dir>` | Shelves today's findings |
-| `npx chaffjs suppressions <dir>` | Counts the findings silenced with `stet` |
+| `npx chaffjs suppressions <dir>` | Counts the findings silenced with `stet` or `allow:` |
 | `npx chaffjs tree <file>` | Turns a document into a tree of addresses. `--format sexp` or `--format json` chooses the form |
 | `npx chaffjs cite <source> <quotes.json>` | Checks that quoted passages are in the source |
 | `npx chaffjs cite --scaffold <file>` | Writes the quotations that give no source as a quotes.json to fill in |
@@ -268,7 +268,7 @@ How to use it in CI is in [CI](./ci).
 
 ## Counting what was silenced
 
-`suppressions` counts the findings silenced with `stet`.
+`suppressions` counts the findings silenced with `stet`, and those silenced by an entry under `allow:` in `chaff.yaml`, each entry with its reason.
 If you keep silencing the same rule, it is time to change the rule instead.
 
 <!-- chaff-screen: silenced -->
