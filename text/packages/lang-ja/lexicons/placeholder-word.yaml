@@ -103,6 +103,25 @@ entries:
   - pattern: 課
     group: blank-prefix
     genres: [business]
+  # 住所の区切りに続けた伏せ字（所在地：東京都品川区〇〇）。町名・番地の位置の空欄。
+  - pattern: 都
+    group: blank-prefix
+    genres: [business]
+  - pattern: 県
+    group: blank-prefix
+    genres: [business]
+  - pattern: 市
+    group: blank-prefix
+    genres: [business]
+  - pattern: 区
+    group: blank-prefix
+    genres: [business]
+  - pattern: 町
+    group: blank-prefix
+    genres: [business]
+  - pattern: 村
+    group: blank-prefix
+    genres: [business]
   # 役職に続けた名前（議事録の「取締役〇〇より」「部長〇〇が説明」）。役職と名前の間に空白が無い形。
   - pattern: 取締役
     group: blank-prefix

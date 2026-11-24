@@ -7,6 +7,9 @@ language: ja
 entries:
   - pattern: 内閣総理大臣
   - pattern: 総理大臣
+  # 皇族の敬称（秋篠宮皇嗣同妃両殿下の「両殿下」）。前の宮号と身位は別に数える。
+  - pattern: 両殿下
+  - pattern: 両陛下
   # 会議体の名前の後ろに付く職（異常気象分析検討会委員）。
   - pattern: 委員
   - pattern: 許可事業者

@@ -1,0 +1,79 @@
+id: pseudo-heading
+layer: L1
+status: stable
+how_to_find: pseudo-heading
+requires: [markdown]
+severity: info
+
+name:
+  ja: 太字の一行を見出しの代わりにしている
+  en: A bold line used as a heading
+
+why:
+  ja: 見出しで節を分けている文書の中で、「**次の手順**」のような太字の一行を見出しの代わりに置く形です。画面では見出しのように見えても、Markdown にとってはただの段落なので、目次にも画面読み上げにも載らず、見出しへのリンクも張れません。必要な節や目次との食い違いを確かめる検査も、この節を見ません。生成文やチャットから貼った文書によく見られます（markdownlint の MD036）。
+  en: 'In a document whose sections have headings, a bold line on its own ("**Next steps**") stands where a heading would. It looks like a heading on screen, but Markdown reads it as a plain paragraph: it is missing from the table of contents and from what a screen reader announces, no link can point at it, and the checks for required sections and for the table of contents do not see the section. Generated text and documents pasted from a chat do this often (markdownlint''s MD036).'
+
+message:
+  ja: 太字の行「{heading}」が見出しの代わりに置かれています
+  en: 'The bold line "{heading}" stands in for a heading'
+
+how_to_fix:
+  ja: 見出しにしてください（「**次の手順**」を、前の見出しより一段深い「### 次の手順」に）。見出しにするほどの区切りでなければ、太字を外して本文の一文にします。
+  en: 'Make it a heading ("**Next steps**" becomes "### Next steps", one level below the heading above it). If it is not a section of its own, drop the bold and write it into the text.'
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 見出しで節を分けた文書の中で、見出しの代わりに置いた太字の一行
+  en: A bold line standing in for a heading in a document that uses headings
+
+example:
+  ja:
+    before: |
+      # 引っ越しの手順
+
+      ## 一か月前
+
+      転出届を出します。
+
+      **一週間前**
+
+      荷物を箱に詰めます。
+    after: |
+      # 引っ越しの手順
+
+      ## 一か月前
+
+      転出届を出します。
+
+      ## 一週間前
+
+      荷物を箱に詰めます。
+  en:
+    before: |
+      # Moving house
+
+      ## A month before
+
+      Tell the council you are leaving.
+
+      **A week before**
+
+      Pack your things into boxes.
+    after: |
+      # Moving house
+
+      ## A month before
+
+      Tell the council you are leaving.
+
+      ## A week before
+
+      Pack your things into boxes.
+
+not_flagged:
+  ja: "見出しが一つも無い文書と、題（文書の頭の「#」一つ）の他に見出しが無い文書は見ません。題のすぐ下で最初の見出しより前に置いた太字の行（「**報道関係者各位**」や会社名、日付）も見ません。句読点やコロンで終わる太字（「**参考:**」「**ご注意ください。**」）、中にコロンのある欄と値（「**評価: 5 点中 4 点**」）、太字の後ろに同じ段落で文が続くもの（太字の札は bold-label-list が見ます）、箇条書き・表・引用の中の太字、太字のリンクやコードだけの行、長い太字の文（強調のための一文）、すぐ後ろが見出しか文書の終わりで本文の無い太字の行も指しません。"
+  en: 'A document with no headings, or with only its title (the one "#" it opens with), is not checked, nor is a bold line under the title before the first section heading ("**FOR IMMEDIATE RELEASE**", a company name, a date). A bold line ending in punctuation or a colon ("**Note:**", "**Read this first.**"), a field and its value ("**Rating: 4 out of 5**"), bold followed by more text in the same paragraph (bold labels are bold-label-list''s), bold inside a list, a table or a quotation, a bold link or code alone, a long bold sentence set for emphasis, and a bold line followed by a heading or by the end of the document, with no text under it, are not reported either.'

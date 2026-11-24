@@ -28,6 +28,7 @@ These are the main rules for this genre. All of them run by default.
 | `numbering-gap` | A skipped or repeated item number |
 | `announced-count-mismatch` | A count announced that differs from the list below it |
 | `heading-echo` | A first sentence that only repeats its heading |
+| `filler-word` | A filler ("um", "you know") left in minutes made from a transcript; not inside a quotation |
 
 What it does not do is decided too.
 

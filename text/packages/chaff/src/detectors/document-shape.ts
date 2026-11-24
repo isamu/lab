@@ -123,17 +123,20 @@ export const endsWithQuestionParticle = (tokens: readonly Token[], particles: Re
 
 /** A series label in brackets at a heading's end, a number and a colon opening it ("(490: Employee travel)"): the manual's reference. */
 const SERIES_LABEL_END = /[(（]\p{N}+[:：][^()（）]*[)）]$/u;
+/** A date alone in brackets at a heading's end (（令和7年5月23日）, (2025年5月23日)): the issue a series title carries, not words the writer chose. */
+const DATE_END = /[(（](?:令和|平成|昭和)?(?:\p{N}+|元)年\p{N}+月\p{N}+日[)）]$/u;
 const QUOTED = /「[^「」]*」/gu;
 const QUOTED_NAME = "「」";
 
 /**
- * The words the heading's writer chose: without a series label at its end, and with another document's title, quoted
+ * The words the heading's writer chose: without a series label or a bracketed date at its end, and with another document's title, quoted
  * right before what is done to it (「…の取扱いについて」等の一部改正, the cited-title-action word list), as one name.
  */
 export const ownWordsOf = (heading: string, citedTitleActions: readonly string[]): string =>
   heading
     .trimEnd()
     .replace(SERIES_LABEL_END, "")
+    .replace(DATE_END, "")
     .trimEnd()
     .replaceAll(QUOTED, (quote, offset: number) =>
       citedTitleActions.some((action) => action !== "" && heading.startsWith(action, offset + quote.length)) ? QUOTED_NAME : quote,

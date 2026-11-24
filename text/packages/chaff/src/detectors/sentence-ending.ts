@@ -13,6 +13,7 @@ import { spokenAnswerSentences } from "./register-interview.ts";
 import { contactBlockSentences, fieldValueSentences, labelledQuoteSentences, referenceNoteSentences, tableCellSentences } from "./register-set-apart.ts";
 import { endsInSetGreeting, isAddressed, isDeclaration, isExclamation, isFeelingAside, isTakenUp, pagePointerSentences } from "./register-voice.ts";
 import { entriesForGenre } from "../lexicon-genres.ts";
+import { headingRegisters, offRequired, regionOfGroup, requiredOf, requiresAny, type RequiredRegisters } from "./register-required.ts";
 import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 
 /**
@@ -158,17 +159,53 @@ export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntr
   return found.map((entry): Entry => ({ ...entry, group: groupOf(entry.sentence.span.start, lists, runs) }));
 };
 
+const finding = (sentence: Sentence, values: Finding["values"], variant: string | undefined): Finding => ({
+  rule: "no-mixed-desumasu",
+  severity: "warning",
+  line: 0,
+  column: 0,
+  quote: sentence.text.trim(),
+  ...(variant === undefined ? {} : { variant }),
+  values,
+});
+
+/** The variant naming the register a team requires: the message says which one this spot should be in. */
+const REQUIRED_VARIANT: Readonly<Record<Register, string>> = { polite: "required-desumasu", plain: "required-dearu" };
+
+/**
+ * Only where chaff.yaml names the register a region requires (options body, list, heading): a sentence in the other
+ * register is reported even with no mix, and that region is no longer checked for consistency (its minority may be the
+ * register the team chose). Regions left out keep the consistency check.
+ */
+const requiredFindings = (
+  doc: ProseDocument,
+  judged: readonly Entry[],
+  required: RequiredRegisters,
+  consistent: readonly Finding[],
+  polite: readonly LexiconEntry[],
+): Finding[] => {
+  const told = offRequired(judged, required).map((entry) =>
+    finding(entry.sentence, { offset: entry.sentence.span.start }, REQUIRED_VARIANT[required[regionOfGroup(entry.group)] ?? entry.register]),
+  );
+  const wantedHeading = required.heading;
+  const headings =
+    wantedHeading === undefined
+      ? []
+      : headingRegisters(doc.sections, polite, doc.lexicons["neutral-ending"] ?? [])
+          .filter((read) => read.register !== wantedHeading)
+          .map((read) =>
+            finding({ span: read.section.span, text: read.section.heading }, { offset: read.section.span.start }, REQUIRED_VARIANT[wantedHeading]),
+          );
+  return [...consistent, ...told, ...headings].toSorted((left, right) => Number(left.values["offset"]) - Number(right.values["offset"]));
+};
+
 export const sentenceEnding: Detector = (doc, options): Finding[] => {
   const judged = judgedSentences(doc, options.lexicon ?? [], options.genre);
+  const required = requiredOf(options.settings);
   // 数えたのは文が属するまとまりの中なので、文言もそのまとまりを名指す（本文の中で / この箇条書きの中で）。
-  const slips = slipsOf(judged, options.limit).filter(({ entry }) => !entry.quiet);
-  return slips.map(({ entry: { sentence, group }, count }) => ({
-    rule: "no-mixed-desumasu",
-    severity: "warning",
-    line: 0,
-    column: 0,
-    quote: sentence.text.trim(),
-    ...(group === undefined ? {} : { variant: "list" }),
-    values: { count, limit: options.limit, offset: sentence.span.start },
-  }));
+  const slips = slipsOf(judged, options.limit).filter(({ entry }) => !entry.quiet && required[regionOfGroup(entry.group)] === undefined);
+  const consistent = slips.map(({ entry: { sentence, group }, count }) =>
+    finding(sentence, { count, limit: options.limit, offset: sentence.span.start }, group === undefined ? undefined : "list"),
+  );
+  return requiresAny(required) ? requiredFindings(doc, judged, required, consistent, options.lexicon ?? []) : consistent;
 };

@@ -4,7 +4,7 @@ import type { UiLanguage } from "../ui.ts";
 import { ruleProblems } from "./rule-problems.ts";
 import { nameProblems } from "./name-problems.ts";
 import { termProblems } from "./term-problems.ts";
-import { byPathProblems } from "./by-path-problems.ts";
+import { byPathProblems, byPathRuleProblems } from "./by-path-problems.ts";
 import { configOptionProblems } from "./option-problems.ts";
 import { configGuideProblems } from "../genre-guide/of-config.ts";
 
@@ -14,6 +14,7 @@ export const settingWarnings = (config: Config, rules: readonly RuleDefinition[]
   ...nameProblems(config, ui),
   ...termProblems(config, ui),
   ...byPathProblems(config, ui),
+  ...byPathRuleProblems(config, rules, ui),
   ...configOptionProblems(config, rules, ui),
   ...configGuideProblems(config, ui),
 ];

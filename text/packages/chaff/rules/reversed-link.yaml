@@ -1,0 +1,74 @@
+id: reversed-link
+layer: L1
+status: stable
+how_to_find: reversed-link
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 前後が逆のリンク
+  en: Link written the wrong way round
+
+why:
+  ja: Markdown のリンクは「[字](URL)」と書きます。角括弧と丸括弧を逆にして「(字)[URL]」と書くとリンクにならず、括弧と URL がそのまま字として表示されます。読み手は押せないリンクと、むき出しの URL を見ることになります（markdownlint の MD011）。
+  en: A Markdown link is written "[text](URL)". With the brackets the wrong way round, "(text)[URL]", Markdown makes no link, and the brackets and the address are shown as written. The reader sees a link that cannot be clicked and a bare address (markdownlint's MD011).
+
+message:
+  ja: 「({text})[{url}]」は括弧が逆で、リンクになりません
+  en: '"({text})[{url}]" has its brackets the wrong way round and is not a link'
+
+how_to_fix:
+  ja: 「[{text}]({url})」と、字を角括弧に、URL を丸括弧に入れてください。
+  en: 'Put the text in square brackets and the address in round ones: "[{text}]({url})".'
+
+placeholders:
+  text:
+    ja: 字
+    en: text
+  url:
+    ja: URL
+    en: URL
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 「(字)[URL]」と、角括弧と丸括弧を逆に書いたリンク
+  en: A link written "(text)[URL]", with the brackets the wrong way round
+example:
+  ja:
+    before: |
+      申し込みの方法は(申込みの案内)[https://example.com/guide]を見てください。
+    after: |
+      申し込みの方法は[申込みの案内](https://example.com/guide)を見てください。
+  en:
+    before: |
+      See the (application guide)[https://example.com/guide] for how to apply.
+    after: |
+      See the [application guide](https://example.com/guide) for how to apply.
+
+not_flagged:
+  ja: 角括弧の中が URL・パス・「#」で始まる名前・ページのファイル名でないもの（「(図1)[2]」「(山田 2020)[3]」のような番号や文献）、注の印（「(参照)[^1]」）、「\(」と逃がした括弧、コードと引用の中は指しません。
+  en: Square brackets that do not hold an address, a path, an anchor or a page file ("(Figure 1)[2]", "(Smith 2020)[3]", numbers and citations), note marks ("(see)[^1]"), an escaped "\(", and code and quotations are not reported.
+rewrite:
+  depth: light
+  ja:
+    direction: 角括弧と丸括弧を入れ替えて、「[字](URL)」の形にしてください。字と URL は変えません。
+    pairs:
+      - before: 「(申込みの案内)[https://example.com/guide]」
+        after: 「[申込みの案内](https://example.com/guide)」
+    keep:
+      - リンクの字と URL
+    avoid:
+      - URL を消して字だけにする
+  en:
+    direction: Swap the brackets so the link reads "[text](URL)". Keep the text and the address.
+    pairs:
+      - before: '"(application guide)[https://example.com/guide]"'
+        after: '"[application guide](https://example.com/guide)"'
+    keep:
+      - the link text and the address
+    avoid:
+      - dropping the address and keeping only the text

@@ -41,7 +41,7 @@ sessions.md   business/email · English   genre from --genre
   ✖  Date and weekday disagree
 
      18 March 2026 is a Wednesday, not a Tuesday
-     When a date and its weekday disagree ("Friday, 1 October 2026"), the reader has to find out which one is right. It happens when a schedule is copied, or reused for another year. A date written without its year ("Friday, October 9" in an email) is checked as the date in the year that puts it within five months of the dated date just before it (or, with none before, the first one in the document).
+     When a date and its weekday disagree ("Friday, 1 October 2026"), the reader has to find out which one is right. It happens when a schedule is copied, or reused for another year. A date written without its year ("Friday, October 9" in an email) is checked in the year the document gives that same day and weekday elsewhere, or else in the year that puts it within five months of the dated date just before it (or, with none before, the first one in the document).
 
      → Check which is right, the date or the weekday, and correct the other.
 
@@ -103,7 +103,7 @@ $ npx chaffjs explain date-weekday-mismatch --genre business/email
 
   Date and weekday disagree   (date-weekday-mismatch)
 
-  When a date and its weekday disagree ("Friday, 1 October 2026"), the reader has to find out which one is right. It happens when a schedule is copied, or reused for another year. A date written without its year ("Friday, October 9" in an email) is checked as the date in the year that puts it within five months of the dated date just before it (or, with none before, the first one in the document).
+  When a date and its weekday disagree ("Friday, 1 October 2026"), the reader has to find out which one is right. It happens when a schedule is copied, or reused for another year. A date written without its year ("Friday, October 9" in an email) is checked in the year the document gives that same day and weekday elsewhere, or else in the year that puts it within five months of the dated date just before it (or, with none before, the first one in the document).
 
   How to fix: Check which is right, the date or the weekday, and correct the other.
 

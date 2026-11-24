@@ -9,6 +9,13 @@
       "planted": "ja/restore.planted.md",
       "mistakes": [
         {
+          "kind": "heading-marks-unspaced",
+          "rule": "heading-marker-no-space",
+          "line": 9,
+          "clean": "## バックアップを復元する",
+          "planted": "##バックアップを復元する"
+        },
+        {
           "kind": "step-order",
           "rule": "numbering-gap",
           "line": 14,
@@ -21,6 +28,13 @@
           "line": 17,
           "clean": "注意：復元すると、今のデータベースは置き換わります。［復元を開始］を押す前に、`vaultr export --today` で今日の注文を書き出してください。",
           "planted": "注意：復元すると、今のデータベースは置き換わります。"
+        },
+        {
+          "kind": "heading-set-in-bold",
+          "rule": "pseudo-heading",
+          "line": 19,
+          "clean": "## 結果を確かめる",
+          "planted": "**結果を確かめる**"
         },
         {
           "kind": "step-skip",
@@ -53,6 +67,13 @@
       "planted": "en/restore.planted.md",
       "mistakes": [
         {
+          "kind": "heading-marks-unspaced",
+          "rule": "heading-marker-no-space",
+          "line": 9,
+          "clean": "## Restore the backup",
+          "planted": "##Restore the backup"
+        },
+        {
           "kind": "step-order",
           "rule": "numbering-gap",
           "line": 14,
@@ -65,6 +86,13 @@
           "line": 17,
           "clean": "Warning: the restore replaces the current database. Export today's orders with `vaultr export --today` before you click **Start Restore**.",
           "planted": "Warning: the restore replaces the current database."
+        },
+        {
+          "kind": "heading-set-in-bold",
+          "rule": "pseudo-heading",
+          "line": 19,
+          "clean": "## Check the result",
+          "planted": "**Check the result**"
         },
         {
           "kind": "step-skip",

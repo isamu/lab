@@ -41,6 +41,13 @@ export const openingOf = (scope: ItemScope, item: TokenRange): Token | undefined
 
 export const isParticiple = (token: Token): boolean => token.features?.["VerbForm"] === "Part";
 
+/** 前置詞で始まる項目。解析器は冠詞の前の to（to the extent practicable）も不定詞の to と読むので、冠詞が続けば前置詞と読む。 */
+export const opensAsPreposition = (scope: ItemScope, item: TokenRange): boolean => {
+  const at = firstAt(scope, "open", item);
+  const [opening, next] = [scope.sentence.tokens[at], scope.sentence.tokens[at + 1]];
+  return opening?.pos === "ADP" || (opening?.surface.toLowerCase() === "to" && next?.pos === "DET");
+};
+
 export const openingKind = (scope: ItemScope, item: TokenRange): string | undefined => {
   const opening = openingOf(scope, item);
   return opening !== undefined && isParticiple(opening) ? "PARTICIPLE" : shapeOf(scope, item);

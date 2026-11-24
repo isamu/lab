@@ -50,6 +50,13 @@ describe("broken-link: 行き先の無いリンク", () => {
     assert.deepEqual(findingsOf(source, en), ['The link "[b](#setup-2)" points to "#setup-2", which is not a heading on this page']);
   });
 
+  it("MDN の {{Compat}} と {{Specifications}} の節は、訳した見出しでも決まった名前で指せる", () => {
+    const source =
+      "## 仕様書\n\n{{Specifications}}\n\n## ブラウザーの互換性\n\n{{Compat}}\n\n（[互換性](#browser_compatibility)と[仕様](#specifications)を参照）\n";
+    assert.deepEqual(findingsOf(source), []);
+    assert.deepEqual(findingsOf("## ブラウザーの互換性\n\n（[互換性](#browser_compatibility)を参照）\n").length, 1);
+  });
+
   it("MDN の書き方の _2、_3 は、二つ目、三つ目の同じ見出し。その数だけあるときだけ行き先がある", () => {
     const source = "#### `max-age`\n\n#### `max-age`\n\n| [`max-age`](#max-age) | [`max-age`](#max-age_2) | [a](#max-age_3) | [b](#max-age_1) |\n";
     assert.deepEqual(findingsOf(source), [

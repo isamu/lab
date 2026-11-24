@@ -1,0 +1,13 @@
+# プログラムが行の頭に出す、結果を示す記号（「✖ Missing variables」「⚠ 必要人数を満たせない枠があります」）。
+# この記号で始まる行を持ち、プロンプト（$）で始まる行の無いコードブロックはプログラムの出力で、どの言語でもない。code-fence-language-mix は言語名を求めない。
+id: output-status-mark
+language: ja
+entries:
+  - pattern: ✖
+  - pattern: ✗
+  - pattern: ✘
+  - pattern: ❌
+  - pattern: ✔
+  - pattern: ✓
+  - pattern: ✅
+  - pattern: ⚠

@@ -1,5 +1,5 @@
 // Seeded mistakes of stock phrasing for `yarn bench`, in either language: a preamble before the first heading, a
-// clichéd closing, a padded opening, an empty intensifier, hedges stacked in one sentence, a chat reply's knowledge-cutoff line, a template
+// clichéd closing, a padded opening, an empty intensifier, a transcript's filler left in, hedges stacked in one sentence, a chat reply's knowledge-cutoff line, a template
 // blank left unfilled, one paragraph opener repeated, sentences chained with "And" (そして),
 // a spelling the team does not use, and a pet phrase used in paragraph after paragraph. Pure and deterministic, like scripts/bench-mutations.ts.
 import {
@@ -118,6 +118,20 @@ const addToFirstSection = (source: string, added: string): Plant | undefined => 
 
 /** 最初の節の最初の段落に、中身の無い強調の一文を足す。 */
 export const intensify = (source: string): Plant | undefined => addToFirstSection(source, emphasisFor(source));
+
+// --- filler-word ---
+
+const FILLER = { ja: "ええと、", en: "Um, " };
+
+/** 最初の節の最初の段落の頭に、文字起こしに残ったつなぎの言葉を足す。節見出しの無い文書には植えない。 */
+export const leaveFiller = (source: string): Plant | undefined => {
+  const lines = linesOf(source);
+  const heading = lines.findIndex(isSection);
+  const block = heading < 0 ? undefined : blocksOf(lines).find((candidate) => candidate.start > heading && isParagraph(lines, candidate));
+  if (block === undefined) return undefined;
+  const filler = isJapanese(source) ? FILLER.ja : FILLER.en;
+  return { source: replaceLine(lines, block.start, `${filler}${lines[block.start] ?? ""}`), line: block.start + 1 };
+};
 
 // --- excessive-hedging ---
 
@@ -326,6 +340,7 @@ export const PHRASING_MUTATIONS: readonly Mutation[] = [
   { id: "cliche-closing", rule: "closing-cliche", languages: ["ja", "en"], plant: closeWithCliche },
   { id: "padded-opening", rule: "padded-intro", languages: ["ja", "en"], plant: padOpening },
   { id: "intensified", rule: "empty-intensifier", languages: ["ja", "en"], plant: intensify },
+  { id: "filler-left", rule: "filler-word", languages: ["ja", "en"], plant: leaveFiller },
   { id: "hedges-stacked", rule: "excessive-hedging", languages: ["ja", "en"], plant: stackHedges },
   { id: "residue-left", rule: "assistant-residue", languages: ["ja", "en"], plant: leaveResidue },
   { id: "blank-left", rule: "unfilled-placeholder", languages: ["ja", "en"], plant: leaveBlank },

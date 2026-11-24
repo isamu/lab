@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  link-definition-unused  found
+ja/design  link-definition-unused  found
+ja/email  link-definition-unused  found
+ja/figures  link-definition-unused  found
+ja/itinerary  link-definition-unused  found
+ja/minutes  link-definition-unused  found
+ja/note  link-definition-unused  found
+ja/policy  link-definition-unused  found
+ja/press  link-definition-unused  found
+ja/proposal  link-definition-unused  found
+ja/quote  link-definition-unused  found
+ja/readme  link-definition-unused  found
+ja/requirements  link-definition-unused  found
+en/blog  link-definition-unused  found
+en/design  link-definition-unused  found
+en/email  link-definition-unused  found
+en/figures  link-definition-unused  found
+en/itinerary  link-definition-unused  found
+en/minutes  link-definition-unused  found
+en/note  link-definition-unused  found
+en/policy  link-definition-unused  found
+en/press  link-definition-unused  found
+en/proposal  link-definition-unused  found
+en/quote  link-definition-unused  found
+en/readme  link-definition-unused  found
+en/requirements  link-definition-unused  found

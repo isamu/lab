@@ -8,6 +8,7 @@ export type MarkdownNode = {
   readonly url?: string | undefined;
   readonly value?: string | undefined;
   readonly identifier?: string | undefined;
+  readonly label?: string | null | undefined;
   readonly position?: { readonly start: Place; readonly end: Place } | undefined;
   readonly children?: readonly MarkdownNode[] | undefined;
 };

@@ -90,6 +90,7 @@ entries:
   - { pattern: RCV, group: either }
   - { pattern: SWS, group: either }
   - { pattern: SKU, group: either }
+  - { pattern: SOW, group: either }
   - { pattern: NIC, group: either }
   - { pattern: herb, group: either }
   - { pattern: histor, group: either }

@@ -18,6 +18,7 @@ import { openingDateOf } from "./opening-date.ts";
 import { datelineBefore, datelines, forwardDatelines } from "./dateline.ts";
 import { withNearestYear } from "../structure/weekday.ts";
 import { continuesDatedRun } from "./date-run.ts";
+import { repeatsDatedDay } from "./date-repeated-day.ts";
 import { revisionDatesToSkip, revisionLabelsOf } from "./revision-date.ts";
 
 /**
@@ -201,10 +202,16 @@ export const yearGaps = (
   // A recurring day or an example's date has no year to write, and is not the document's way of writing dates either.
   // A date that carries a dated account forward (On April 21, 1952, … on April 30 … May 3) takes that account's year. A
   // table cell is a record whose fields keep one format: a dated column with one year dropped is still a slip.
+  // A day the text gave with its year earlier (Saturday, January 16, 2027 … on Saturday, January 16) keeps that year.
   const continuesRun = (point: DatePoint): boolean => !isTableRowAt(source, point.offset) && continuesDatedRun(point, (earlier) => previousOf.get(earlier));
   const yearless = points.filter(
     (point) =>
-      MONTH_DAY.test(point.value) && !yearGiven(point, anchors, source, yearWords) && !yearOfAny(point) && !carriesAnyYear(point) && !continuesRun(point),
+      MONTH_DAY.test(point.value) &&
+      !yearGiven(point, anchors, source, yearWords) &&
+      !yearOfAny(point) &&
+      !carriesAnyYear(point) &&
+      !continuesRun(point) &&
+      !repeatsDatedDay(point, dated),
   );
   const span = spanOf(dated);
   const unclear = dated.length >= 2 && yearless.length < dated.length && span !== undefined && span.to > span.from;

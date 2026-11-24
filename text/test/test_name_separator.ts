@@ -39,6 +39,14 @@ describe("isNameSeparator", () => {
     assert.deepEqual(separators("- 経営企画部 IR担当"), [true]);
   });
 
+  it("reads the space between a title in letters and the person's name that ends the line as a separator", () => {
+    assert.deepEqual(separators("代表者：代表取締役CEO 森川 遼"), [true]);
+    assert.deepEqual(separators("CTO 佐藤 健"), [true]);
+    assert.deepEqual(separators("CEO 森川さんに連絡します。"), [false]);
+    assert.deepEqual(separators("CEO 森川は来ます"), [false]);
+    assert.deepEqual(separators("CEO 東京本社"), [false]);
+  });
+
   it("reads a line of names on its own, not with the sentence the lines were joined into", () => {
     assert.deepEqual(separators("株式会社あおば電子\n経営企画部 IR担当\nご不明な点はお問い合わせください。"), [true]);
   });

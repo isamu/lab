@@ -9,7 +9,7 @@ import { quoteAt } from "./structure-tree.ts";
 import { quotesWording, wordingCuesOf } from "./quoted-wording.ts";
 import { isPartOfAddress } from "./address-word.ts";
 import { exactOffsets, extendedAfter, extendedBefore } from "./term-extension.ts";
-import { headsKindPhrase, insideLongerTerm, isNamedAsTerm, isNarrowedUse, isPartitiveUse } from "./ordinary-phrase.ts";
+import { headsKindPhrase, insideLongerTerm, isCoordinatedModifier, isNamedAsTerm, isNarrowedUse, isPartitiveUse } from "./ordinary-phrase.ts";
 import { CLOSES_SENTENCE, isNameField, isSignatureLine, opensClosingBlock, SLACK } from "./name-field.ts";
 import type { Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 
@@ -173,7 +173,8 @@ const quotedFindings = (doc: ProseDocument, term: DefinedTerm, uses: readonly nu
 
 /**
  * A lower-case use that is the ordinary word in a phrase of its own: inside another defined term (certificate of merger),
- * narrowed by the word before it (the common parent), picked out of a kind (some of these terms), or heading a kind of
+ * narrowed by the word before it (the common parent), picked out of a kind (some of these terms), joined to an ordinary word
+ * in front of a noun they share (customer and supplier information), or heading a kind of
  * thing (certificates of deposit).
  */
 const isOrdinaryPhraseAt = (doc: ProseDocument, offset: number, term: string, defined: readonly string[]): boolean => {
@@ -184,6 +185,7 @@ const isOrdinaryPhraseAt = (doc: ProseDocument, offset: number, term: string, de
   return (
     isNarrowedUse(tokens, at, patternsOf(doc, "defined-term-pointer")) ||
     isPartitiveUse(tokens, at, patternsOf(doc, "defined-term-partitive")) ||
+    isCoordinatedModifier(tokens, at, last) ||
     headsKindPhrase(tokens, last)
   );
 };

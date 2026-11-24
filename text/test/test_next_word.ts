@@ -108,6 +108,10 @@ describe("article-sound", () => {
     ]);
   });
 
+  it("a statement of work (SOW) is said as a word or letter by letter, so a SOW and an SOW are both left alone", () => {
+    assert.deepEqual(findingsOf(RULE, "Each service is described in a SOW. An SOW may list the deliverables.\n"), []);
+  });
+
   it("a NAS is said as one syllable (nas), so it takes a; an NAS is the slip", () => {
     assert.deepEqual(findingsOf(RULE, "Put the photos on a NAS at home.\n"), []);
     assert.deepEqual(findingsOf(RULE, "Put the photos on an NAS at home.\n"), ['"an NAS" takes "a" before that sound']);

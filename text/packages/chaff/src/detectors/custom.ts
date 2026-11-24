@@ -5,6 +5,7 @@ import { joinedView, type JoinedView } from "../joined-view.ts";
 import { boundedMatches } from "../custom/bounded-match.ts";
 import { entriesForGenre } from "../lexicon-genres.ts";
 import { NO_REWRITE } from "../custom/no-rewrite.ts";
+import { sentencesInScope } from "../scoped-sentences.ts";
 
 // The detectors behind a team's custom_rules. Each reports every place it finds, at the rule's level; the spec comes from
 // the rule (DetectorOptions.custom). Positions are the document's, like every other finding.
@@ -62,7 +63,7 @@ export const customWords: Detector = (doc, options): Finding[] => {
   const spec = options.custom;
   if (spec?.type !== "words") return [];
   const pairs = pairsOf(spec, options).filter((pair) => pair.avoid !== "" && pair.avoid !== pair.use);
-  return doc.sentences.flatMap((sentence) => {
+  return sentencesInScope(doc, spec.scope).flatMap((sentence) => {
     const view = readAsWritten(sentence);
     return pairs.flatMap((pair) =>
       occurrencesOutside(view.text, pair.avoid, pair.use).map((start) => wordsFindingOf(hitAt(sentence, view, start, start + pair.avoid.length, pair.use))),
@@ -74,13 +75,14 @@ export const customWords: Detector = (doc, options): Finding[] => {
 export const customPattern: Detector = (doc, options): Finding[] => {
   const spec = options.custom;
   if (spec?.type !== "pattern") return [];
-  const views = doc.sentences.map(readAsWritten);
+  const sentences = sentencesInScope(doc, spec.scope);
+  const views = sentences.map(readAsWritten);
   const matches = boundedMatches(
     spec.pattern,
     spec.flags,
     views.map((view) => view.text),
   );
-  return doc.sentences.flatMap((sentence, at) => {
+  return sentences.flatMap((sentence, at) => {
     const view = views[at];
     if (view === undefined) return [];
     return (matches[at] ?? []).map((match) => findingOf(hitAt(sentence, view, match.index, match.index + match.text.length, "")));
@@ -91,7 +93,7 @@ export const customPattern: Detector = (doc, options): Finding[] => {
 export const customTokens: Detector = (doc, options): Finding[] => {
   const spec = options.custom;
   if (spec?.type !== "tokens") return [];
-  return doc.sentences.flatMap((sentence) => {
+  return sentencesInScope(doc, spec.scope).flatMap((sentence) => {
     const tokens = sentence.tokens ?? [];
     return tokenRuns(tokens, spec.tokens).flatMap(([first, last]) => {
       const [start, end] = [tokens[first]?.span.start, tokens[last]?.span.end];

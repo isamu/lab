@@ -1,0 +1,17 @@
+table  16  16  0  0
+ja/blog  heading-marks-unspaced  found
+ja/figures  heading-marks-unspaced  found
+ja/itinerary  heading-marks-unspaced  found
+ja/minutes  heading-marks-unspaced  found
+ja/press  heading-marks-unspaced  found
+ja/proposal  heading-marks-unspaced  found
+ja/quote  heading-marks-unspaced  found
+ja/readme  heading-marks-unspaced  found
+en/blog  heading-marks-unspaced  found
+en/figures  heading-marks-unspaced  found
+en/itinerary  heading-marks-unspaced  found
+en/minutes  heading-marks-unspaced  found
+en/press  heading-marks-unspaced  found
+en/proposal  heading-marks-unspaced  found
+en/quote  heading-marks-unspaced  found
+en/readme  heading-marks-unspaced  found

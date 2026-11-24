@@ -14,6 +14,9 @@ entries:
     group: last
   - pattern: give it a try
     group: last
+  # A business's stock last line offering itself ("We're here to help you spend less time on paperwork").
+  - pattern: here to help
+    group: last
   # A short line such as "Happy brewing!" or "Happy baking!" as the last paragraph.
   - pattern: Happy
     group: signoff

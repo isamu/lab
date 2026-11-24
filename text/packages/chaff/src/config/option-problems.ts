@@ -2,6 +2,7 @@ import { CONFIG_FILE, type Config } from "./load.ts";
 import type { RuleDefinition, RuleOption } from "../plugin.ts";
 import { optionProblems, type OptionLayer, type OptionProblem } from "../rule-options.ts";
 import { limitsFor, styleLevelSource, styleSource } from "./style.ts";
+import { pathLevelsOf, type PathRuleLevel } from "./by-path-rules.ts";
 import type { Texts, UiLanguage } from "../ui.ts";
 
 /** Where chaff.yaml's options come from, for settleOptions: the file itself. */
@@ -10,19 +11,21 @@ export const configOptionLayer = (config: Pick<Config, "options">): OptionLayer 
   values: config.options ?? {},
 });
 
-/** Where a rule's settings come from, for explain: the option layers, the style when it set the level, and a number set for it. */
+/** Where a rule's settings come from, for explain: the option layers, the style when it set the level, a number set for it, and the by_path entries that change it for some files. */
 export const settingSourcesOf = (
-  config: Pick<Config, "options" | "applied" | "limits">,
+  config: Pick<Config, "options" | "applied" | "limits" | "byPath">,
   ruleId: string,
   language: string,
-): { optionLayers: OptionLayer[]; levelFrom: string | undefined; limit: number | undefined } => ({
+): { optionLayers: OptionLayer[]; levelFrom: string | undefined; limit: number | undefined; byPath: PathRuleLevel[] } => ({
   optionLayers: optionLayersOf(config),
   levelFrom: styleLevelSource(config, ruleId),
   limit: limitsFor(config, language)[ruleId],
+  byPath: pathLevelsOf(config.byPath, ruleId),
 });
 
-/** Every place options come from, strongest first: chaff.yaml, then its style. */
-export const optionLayersOf = (config: Pick<Config, "options" | "applied">): OptionLayer[] => [
+/** Every place options come from, strongest first: the file's by_path entries, chaff.yaml, then its style. */
+export const optionLayersOf = (config: Pick<Config, "options" | "applied" | "pathOptionLayers">): OptionLayer[] => [
+  ...(config.pathOptionLayers ?? []),
   configOptionLayer(config),
   ...(config.applied === undefined ? [] : [{ from: styleSource(config.applied.style), values: config.applied.options }]),
 ];
