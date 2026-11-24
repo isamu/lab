@@ -72,7 +72,7 @@ calls nothing. Ask the person before a real run; the passages leave the machine.
 | | When | How |
 | --- | --- | --- |
 | Fix the text | The finding is right | Edit the sentence. Keep the meaning, the facts and the numbers; change only how it is said. |
-| Silence that spot | Right in general, wrong here (a quotation, a term that must repeat) | `<!-- stet: rule-id — reason -->` before it; `stet-section` / `stet-file` for wider scope. Always give the reason. |
+| Silence that spot | Right in general, wrong here (a quotation, a term that must repeat) | `<!-- stet: rule-id — reason -->` before it; `stet-section` / `stet-file` for wider scope, `<!-- stet-begin: rule-id — reason -->` … `<!-- stet-end -->` for a range, `rule-id["word"]` to silence one matched word only. Always name the rules (there is no all-rules form) and give the reason. |
 | Change the rule | Wrong for this team or genre | `npx chaffjs relax <rule-id> --why "reason"` (or `strict` / `off`). The reason and date are written into `chaff.yaml`. |
 
 `npx chaffjs explain <rule-id>` shows why a rule exists, its levels and the current one. Read it before

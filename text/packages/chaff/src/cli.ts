@@ -122,7 +122,7 @@ const present = (check: SourceCheck, argv: readonly string[]): Inspected => {
     language,
     genre,
     outcome: { path, findings: split.fresh, notRun: raw.skipped.length },
-    perFile: { path, suppressed: applied.suppressed, reasonless: applied.unusedReasonless, notRun },
+    perFile: { path, suppressed: applied.suppressed, reasonless: applied.unusedReasonless, notRun, ranges: applied.ranges, problems: applied.problems },
     checked: { findings: split.fresh, rules, language, genre, genreFrom: from, skipped: raw.skipped },
     kept: applied.kept,
   };
