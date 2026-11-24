@@ -11,7 +11,7 @@ chaff が見つけるまちがいを、ルールごとに一つずつ見本に�
 
 English samples: [../en/README.md](../en/README.md)
 
-見本のあるルール: 272 / 272
+見本のあるルール: 273 / 273
 
 ## 読みやすさ
 
@@ -193,6 +193,7 @@ English samples: [../en/README.md](../en/README.md)
 | [本題に入るまでが長い](preamble-length.md)（`preamble-length`） | 最初の見出しまでの前置きが長く、本題になかなか入らない所 |
 | [手順の後に書いた前提](prerequisite-after-step.md)（`prerequisite-after-step`） | 節の番号付きの手順より後にある、「作業を始める前に」「始める前に」で始まる文 |
 | [必須の条件を歓迎の条件にも挙げている](required-listed-as-preferred.md)（`required-listed-as-preferred`） | 求人で、必須に挙げた資格や経験を歓迎にも挙げている所 |
+| [前後が逆のリンク](reversed-link.md)（`reversed-link`） | 「(字)[URL]」と、角括弧と丸括弧を逆に書いたリンク |
 | [無い手順を指す参照](step-reference-missing.md)（`step-reference-missing`） | 「手順5を参照」のように、文書の手順の最後の番号を超える手順を指す参照 |
 | [表の行のセルが見出しの行より多い](table-row-overflow.md)（`table-row-overflow`） | 見出しの行より多いセルを持つ表の行（多い分は表示されない） |
 | [見出しの無い目次の項目](toc-heading-mismatch.md)（`toc-heading-mismatch`） | 目次（「目次」「Contents」の見出しの下の箇条書き）の項目のうち、文書のどの見出しとも合わないもの |
