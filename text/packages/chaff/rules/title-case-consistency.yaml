@@ -61,8 +61,8 @@ example:
       Press share.
 
 not_flagged:
-  ja: 文書の題（最初の見出しで、それより浅い・同じ深さの見出しがほかに無いもの）は名前なので比べません。どちらの流儀が正しいかは決めません。
-  en: The document's title (the first heading, when no other heading is as shallow) is a name and is not compared. Neither style is called right.
+  ja: 文書の題（最初の見出しで、それより浅い・同じ深さの見出しがほかに無いもの）は名前なので比べません。名前と括弧の中の略語だけの見出し（Contractor Performance Assessment Report (CPARS)）も名前なので比べません。どちらの流儀が正しいかは決めません。
+  en: The document's title (the first heading, when no other heading is as shallow) is a name and is not compared. Nor is a heading that is a name with its acronym in brackets (Contractor Performance Assessment Report (CPARS)), either way round. Neither style is called right.
 level_meaning:
   ja: 少ないほうの流儀の見出しが {limit} 個以下のとき指摘
   en: reported when the minority style has {limit} {limit|heading|headings} or fewer
