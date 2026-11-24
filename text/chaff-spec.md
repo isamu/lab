@@ -666,6 +666,7 @@ genres:
 | `emoji-density` ✅ | 絵文字・装飾記号の密度 | blog | info |
 | `heading-level-skip` ✅ | 見出しの深さの飛び（`##` の次の `####`） | 両方 | warning |
 | `heading-numbering-mix` | 兄弟の見出しで番号の有無・書き方（1. / 1） / 第1章）が混ざる。少ないほうを指す。語彙表 heading-number-label と unnumbered-heading | 両方 | warning |
+| `enumeration-marker-mix` ✅ | 一つのリストの同じ深さか、続けて番号を振った段落の並びで、項目の番号の書き方（1. / 1) / (1) / ① / 一、 / a.）が混ざる。少ないほうの書き方で、ほかの番号の続きを数えている項目だけを指す。1 から数え直す書き方は一段下の並び | 両方 | info |
 | `image-alt-text` ✅ | 代替テキストの無い画像 | 両方 | warning |
 | `vague-link-text` | 言葉全体が「こちら」「click here」のリンク（WCAG 2.4.4）。語彙表 vague-link-text、インラインのリンクだけ | 両方 | warning |
 | `broken-link` ✅ | 行き先の無いリンク（空・無い見出し・定義の無い参照） | 両方 | warning |
