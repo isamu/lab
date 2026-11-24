@@ -123,6 +123,9 @@ A finding that is right in general but intended in one spot is silenced there wi
 A range takes `<!-- stet-begin: rule-id — reason -->` … `<!-- stet-end -->`, and `rule-id["word"]` silences one matched
 word only. A stet always names its rules. `npx chaffjs suppressions docs/` lists what is silenced and any stet that does not work.
 
+Minutes or notes made from a transcript are checked as `business/meeting-notes`, where `filler-word` reports
+fillers left in ("um", "you know"); `speech/transcript`, a verbatim record, keeps them.
+
 Rules about a team's own words need their lists in `chaff.yaml`. The checks that read meaning
 rather than form run with `npx chaffjs test`; one of them, `generic-opening`, asks whether the opening starts
 from a generic problem ("Many teams struggle with…") instead of who did what.

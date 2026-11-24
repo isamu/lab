@@ -1,0 +1,17 @@
+# Hesitation words left in minutes or notes made from a transcript. filler-word reads them.
+# An entry without a group counts as a whole word followed by a comma, an ellipsis, a dash or a space.
+# An entry of group set-off has another use ("I mean it", "as you know"), so it counts only at the head of a
+# sentence or after a comma, followed by a comma, an ellipsis or a dash.
+# Matched as written or with a capital first letter, so UM (a university) is not "um".
+id: filler-word
+language: en
+entries:
+  - pattern: um
+  - pattern: uh
+  - pattern: erm
+  - pattern: er
+    group: set-off
+  - pattern: you know
+    group: set-off
+  - pattern: I mean
+    group: set-off
