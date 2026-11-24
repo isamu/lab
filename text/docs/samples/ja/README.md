@@ -11,7 +11,7 @@ chaff が見つけるまちがいを、ルールごとに一つずつ見本に�
 
 English samples: [../en/README.md](../en/README.md)
 
-見本のあるルール: 272 / 272
+見本のあるルール: 273 / 273
 
 ## 読みやすさ
 
@@ -340,5 +340,6 @@ chaff.yaml にチームが書いた表記・社内用語・必須の見出しだ
 | [チームの表記と違う](preferred-term.md)（`preferred-term`） | チームで決めた表記と違う書き方（「サーバー」と決めたのに「サーバ」）。chaff.yaml の prefer で決めます |
 | [必要な見出しが無い](required-sections.md)（`required-sections`） | チームが必須と決めた見出し（「リスク」「費用」など）が無い文書。chaff.yaml で決めます |
 | [規定の文末が、決めた書き方と違う](requirement-modal.md)（`requirement-modal`） | 規格・規程の文末が、チームの選んだ決まり（JIS Z 8301 など）と違う所（選んだときだけ） |
+| [チームが一つにそろえる語のまざり](term-consistency.md)（`term-consistency`） | consistent に並べた組（顧客／お客様）を一つの文書でまぜた所。少ないほうを指します |
 
 意味を読む検査は `npx chaffjs test` で AI に尋ねて動くので、決まった出力を見せるこの見本には入れていません: `empty-conclusion`, `generic-opening`, `risk-disclosure`, `unsourced-number`

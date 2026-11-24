@@ -281,6 +281,32 @@ When `preferred-term` finds the left-hand spelling, it asks for the right-hand o
 When the left-hand spelling is a verb in its dictionary form (`utilize: use`), its other forms ("utilizing") are found too.
 With nothing under `prefer`, it says nothing.
 
+## Keeping words that are each right from mixing
+
+Some words are each right but should not be mixed in one document: "log in" and "sign in", "customer" and "client".
+To decide only that they are not mixed, not which one wins, list each group under `consistent`.
+
+```yaml
+consistent:
+  - [log in, sign in]
+  - [customer, client]
+```
+
+In a document that uses two or more words of a group, `term-consistency` points at the one the document uses less.
+
+```
+  5:1     warning "sign in" here, but the document uses "log in" in 2 other places
+                  term-consistency
+```
+
+When they are used equally, it takes no side and says once that they are mixed.
+Case does not count ("Log in" is "log in"), and a longer word that holds a member (login) is not counted.
+When two or more files or a folder are checked together, `cross-doc-term-variant` also compares the files and points at a file that uses another word than the rest.
+With nothing under `consistent`, the rule does not run, and the list of rules that did not run says "nothing is listed under consistent in chaff.yaml".
+A value that cannot be read as a group (not a list, a group without two different words) and a word listed in two groups are reported before the results.
+
+If the team has decided which word wins, write it under `prefer` instead (`client: customer`).
+
 ## Deciding the team's jargon and required headings
 
 `jargon` and `required_sections` are rules whose content your team decides.

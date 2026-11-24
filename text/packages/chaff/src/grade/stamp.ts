@@ -48,6 +48,8 @@ export const settingsOf = (settings: GradeSettings): Record<string, unknown> => 
     prefer: config.prefer,
     requiredSections: config.requiredSections,
     names: config.names,
+    // Only when listed, so a chaff.yaml without consistent keeps the stamp it had.
+    ...((config.consistent ?? []).length === 0 ? {} : { consistent: config.consistent }),
     byPath: config.byPath,
     grade: gradeOf(settings),
   };

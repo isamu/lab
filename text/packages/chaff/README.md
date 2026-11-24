@@ -135,7 +135,7 @@ A `chaff.yaml` at the top of the repository sets:
 
 - `genre:` and `style:`
 - which rules run, and at what level
-- your preferred spellings
+- your preferred spellings, and groups of words that are each right but not to be mixed (`consistent: [[log in, sign in]]`)
 - the genre's guide
 - `custom_rules:` your own rules, written as `words`, a `pattern`, `tokens` for a
   part-of-speech pattern, or a `module` for a Node function

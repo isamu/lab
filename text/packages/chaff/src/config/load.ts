@@ -36,6 +36,10 @@ export type Config = {
   readonly names: readonly string[];
   /** names に書かれていたが名前として読めなかった値。黙って捨てると、並べたつもりの名前が効いていないことに気づけない。 */
   readonly unreadableNames: readonly string[];
+  /** The team's groups of words that are each right but must not be mixed in one document ([顧客, お客様]). term-consistency reads them. */
+  readonly consistent?: readonly (readonly string[])[];
+  /** consistent as written that cannot be read as a group: not a list, or an entry that is not two or more different words. */
+  readonly unreadableConsistent?: readonly string[];
   /** File-name globs (*.yaml) a directory walk checks besides Markdown. --include adds to them. */
   readonly include?: readonly string[];
   /** パスごとの上書き。設定ファイルのある場所からの相対で照合する。 */
@@ -171,6 +175,26 @@ const namesOf = (raw: unknown): { readonly names: string[]; readonly unreadable:
   };
 };
 
+/** A group: a list of two or more different words (a number reads as text, as under names). */
+const groupOf = (entry: unknown): string[] | undefined => {
+  if (!Array.isArray(entry)) return undefined;
+  const members: unknown[] = entry;
+  const words = wordsOf(members);
+  return members.every(isNameEntry) && words.length === members.length && new Set(words).size === words.length && words.length >= 2 ? words : undefined;
+};
+
+/** consistent is a list of groups. A value that is not a list, and an entry that is not a group, are kept printed to be reported. */
+const consistentOf = (raw: unknown): { readonly groups: string[][]; readonly unreadable: string[] } => {
+  if (raw === undefined || raw === null) return { groups: [], unreadable: [] };
+  if (!Array.isArray(raw)) return { groups: [], unreadable: [printed(raw)] };
+  const entries: unknown[] = raw;
+  const read = entries.map((entry) => ({ entry, group: groupOf(entry) }));
+  return {
+    groups: read.flatMap(({ group }) => (group === undefined ? [] : [group])),
+    unreadable: read.filter(({ group }) => group === undefined).map(({ entry }) => printed(entry)),
+  };
+};
+
 /** by_path は files を持つ項目の並び。並びでない値と、読めない項目は読めないものとして返す。黙って捨てると、書いた人は効いたつもりでいる。 */
 export const byPathOf = (raw: unknown): { readonly rules: PathRule[]; readonly unreadable: string[] } => {
   if (raw === undefined || raw === null) return { rules: [], unreadable: [] };
@@ -189,6 +213,7 @@ export const configOf = (raw: unknown, path: string): Config => {
   const declared: unknown = raw["ai_backend"];
   const backend: BackendName = isBackend(declared) ? declared : DEFAULT_BACKEND;
   const names = namesOf(raw["names"]);
+  const consistent = consistentOf(raw["consistent"]);
   const byPath = byPathOf(raw["by_path"]);
   const options: unknown = raw["options"];
   return {
@@ -208,6 +233,8 @@ export const configOf = (raw: unknown, path: string): Config => {
     requiredSections: wordsOf(raw["required_sections"]),
     names: names.names,
     unreadableNames: names.unreadable,
+    consistent: consistent.groups,
+    unreadableConsistent: consistent.unreadable,
     include: globsOf(raw["include"]),
     byPath: byPath.rules,
     unreadableByPath: byPath.unreadable,

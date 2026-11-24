@@ -303,6 +303,29 @@ const avoidedIn = (line: string): string | undefined => {
 /** チームが決めた書き方の一つを、使わないと決めた書き方にする。 */
 export const avoidedSpelling = (source: string): Plant | undefined => rewriteFirst(source, (line) => isProse(line) && avoidedIn(line) !== undefined, avoidedIn);
 
+// --- term-consistency ---
+
+/** bench のチームが chaff.yaml の consistent に並べた組。先の語を文書がよく使い、植えるときに後の語へ一つだけ替える。 */
+export const TEAM_CONSISTENT: readonly (readonly [string, string])[] = [
+  ["会議", "ミーティング"],
+  ["meeting", "session"],
+];
+
+/** The group whose first word the text uses twice or more: one place switched to the other word is then the minority. */
+const usedGroup = (source: string): readonly [string, string] | undefined => TEAM_CONSISTENT.find(([usual]) => source.split(usual).length > 2);
+
+/** チームがまぜないと決めた組の、文書がよく使う語を、一つだけ組のもう一つの語にする。 */
+export const mixedGroupWord = (source: string): Plant | undefined => {
+  const group = usedGroup(source);
+  if (group === undefined) return undefined;
+  const [usual, other] = group;
+  return rewriteFirst(
+    source,
+    (line) => isProse(line) && line.includes(usual),
+    (line) => line.replace(usual, other),
+  );
+};
+
 /** The mistakes of stock phrasing, in the order `yarn bench` plants them after the others. */
 export const PHRASING_MUTATIONS: readonly Mutation[] = [
   { id: "heading-dropped", rule: "preamble-length", languages: ["ja", "en"], reportsOn: "document", plant: dropFirstHeading },
@@ -317,5 +340,6 @@ export const PHRASING_MUTATIONS: readonly Mutation[] = [
   { id: "and-chained", rule: "sentence-initial-conjunction-run", languages: ["en"], plant: chainWithConjunction },
   { id: "soshite-chained", rule: "sentence-initial-conjunction-run", languages: ["ja"], plant: chainWithConjunction },
   { id: "spelling-avoided", rule: "preferred-term", languages: ["ja", "en"], plant: avoidedSpelling },
+  { id: "group-word-mixed", rule: "term-consistency", languages: ["ja", "en"], plant: mixedGroupWord },
   { id: "pet-phrase", rule: "ngram-repetition", languages: ["ja", "en"], plant: repeatPetPhrase },
 ];
