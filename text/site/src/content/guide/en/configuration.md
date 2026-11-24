@@ -393,8 +393,10 @@ exclude:
   - CHANGELOG.md
 ```
 
-A walk also leaves out what the repository's `.gitignore` files ignore: the one in the folder you check and those below it, read as git reads them (`!` re-includes a file, a trailing `/` matches folders only, a leading `/` anchors a pattern to its folder).
-A `.gitignore` above the folder you check is not read.
+A walk also leaves out what the repository's `.gitignore` files ignore, read as git reads them (`!` re-includes a file, a trailing `/` matches folders only, a leading `/` anchors a pattern to its folder).
+They are read from the project root down to each file: the nearest folder above the checked one that holds `.git` (a folder, or a worktree's `.git` file), so `chaff docs/` honours the repository's own `.gitignore`.
+Outside a repository, the root is the folder that holds chaff.yaml, and without one, the folder you check.
+When `.git` is a folder, `.git/info/exclude` is read too.
 A file named on the command line is still checked, even when `exclude` or `.gitignore` names it, as other linters do.
 
 The summary says how many files were left out, and why:

@@ -2,8 +2,8 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { basename, dirname, join, relative, sep } from "node:path";
-import { ignoreOf, isGitIgnored, type IgnoreAt } from "../packages/chaff/src/gitignore.ts";
+import { basename, dirname, join, relative, resolve, sep } from "node:path";
+import { ignoreLayers, ignoreOf, isGitIgnored, projectRootOf, type IgnoreAt, type KindAt } from "../packages/chaff/src/gitignore.ts";
 import { collectFiles } from "../packages/chaff/src/files.ts";
 import { configOf } from "../packages/chaff/src/config/load.ts";
 import { renderExcluded } from "../packages/chaff/src/render/summary.ts";
@@ -73,6 +73,63 @@ describe("isGitIgnored: git's semantics", () => {
   });
 });
 
+/** An absolute path on this system, so the tests read the same on Windows. */
+const abs = (...parts: string[]): string => join(resolve("/"), ...parts);
+
+/** A file system of folders and files, by absolute path. */
+const kinds =
+  (entries: Readonly<Record<string, "folder" | "file">>): KindAt =>
+  (path) =>
+    entries[path];
+
+describe("projectRootOf", () => {
+  it("is the nearest folder above holding a .git folder", () => {
+    assert.deepEqual(projectRootOf(abs("repo", "docs", "a"), kinds({ [abs("repo", ".git")]: "folder" }), undefined), { root: abs("repo"), gitFolder: true });
+  });
+
+  it("takes a worktree's .git file, and says it is not a folder", () => {
+    assert.deepEqual(projectRootOf(abs("wt", "docs"), kinds({ [abs("wt", ".git")]: "file", [abs("repo", ".git")]: "folder" }), abs("wt")), {
+      root: abs("wt"),
+      gitFolder: false,
+    });
+  });
+
+  it("without a repository, chaff.yaml's folder when it holds the checked folder, else the checked folder", () => {
+    assert.deepEqual(projectRootOf(abs("proj", "docs"), kinds({}), abs("proj")), { root: abs("proj"), gitFolder: false });
+    assert.deepEqual(projectRootOf(abs("proj", "docs"), kinds({}), abs("elsewhere")), { root: abs("proj", "docs"), gitFolder: false });
+    assert.deepEqual(projectRootOf(abs("proj", "docs"), kinds({}), undefined), { root: abs("proj", "docs"), gitFolder: false });
+  });
+});
+
+describe("ignoreLayers", () => {
+  const texts =
+    (entries: Readonly<Record<string, string>>) =>
+    (path: string): string | undefined =>
+      entries[path];
+
+  it("applies the root .gitignore to a file in a subfolder, and a nested one below its folder", () => {
+    const at = ignoreLayers(
+      { root: abs("repo"), gitFolder: true },
+      texts({ [abs("repo", ".gitignore")]: "drafts/\n", [abs("repo", "docs", ".gitignore")]: "old.md\n" }),
+    );
+    assert.equal(isGitIgnored("docs/drafts/a.md", at), true);
+    assert.equal(isGitIgnored("docs/old.md", at), true);
+    assert.equal(isGitIgnored("old.md", at), false);
+  });
+
+  it("reads .git/info/exclude when .git is a folder, below the root .gitignore", () => {
+    const files = { [abs("repo", ".git", "info", "exclude")]: "local.md\nkeep.md\n", [abs("repo", ".gitignore")]: "!keep.md\n" };
+    const at = ignoreLayers({ root: abs("repo"), gitFolder: true }, texts(files));
+    assert.equal(isGitIgnored("local.md", at), true);
+    assert.equal(isGitIgnored("keep.md", at), false);
+  });
+
+  it("does not look for .git/info/exclude when .git is a worktree's file, or with no repository", () => {
+    const files = { [abs("wt", ".git", "info", "exclude")]: "local.md\n" };
+    assert.equal(isGitIgnored("local.md", ignoreLayers({ root: abs("wt"), gitFolder: false }, texts(files))), false);
+  });
+});
+
 const tree = (files: Readonly<Record<string, string>>): string => {
   const root = mkdtempSync(join(tmpdir(), "chaff-exclude-"));
   Object.entries(files).forEach(([name, body]) => {
@@ -113,10 +170,22 @@ describe("collectFiles: exclude and .gitignore", () => {
     assert.deepEqual(found.excluded, { config: 1, gitignore: 0 });
   });
 
-  it("reads the .gitignore files from the checked folder down, not above it", () => {
+  it("in a repository, a subfolder run reads the .gitignore files from the repository's root down", () => {
+    const root = tree({ ...files, ".git/HEAD": "ref: refs/heads/main\n", "docs/.gitignore": "guide.md\n" });
+    const found = collectFiles([join(root, "drafts"), join(root, "docs")]);
+    assert.deepEqual(names(root, found.paths), ["docs/CHANGELOG.md"]);
+    assert.deepEqual(found.excluded, { config: 0, gitignore: 2 });
+  });
+
+  it("outside a repository, chaff.yaml's folder is the root when it holds the checked folder", () => {
     const root = tree(files);
-    const found = collectFiles([join(root, "drafts")]);
-    assert.deepEqual(names(root, found.paths), ["drafts/a.md"]);
+    const config = configOf({}, join(root, "chaff.yaml"));
+    assert.deepEqual(names(root, collectFiles([join(root, "drafts")], [], config).paths), []);
+  });
+
+  it("with neither a repository nor chaff.yaml, the checked folder is the root", () => {
+    const root = tree(files);
+    assert.deepEqual(names(root, collectFiles([join(root, "drafts")]).paths), ["drafts/a.md"]);
   });
 
   it("applies to a glob too, from the glob's fixed folder", () => {

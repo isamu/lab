@@ -2,7 +2,7 @@ import { globSync, readFileSync, statSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join, matchesGlob, relative, sep } from "node:path";
 import { matches } from "./config/by-path.ts";
-import { ignoreOf, isGitIgnored, type IgnoreAt } from "./gitignore.ts";
+import { ignoreLayers, isGitIgnored, projectRootOf, type IgnoreAt, type KindAt, type ProjectRoot, type ReadText } from "./gitignore.ts";
 import { plainSource } from "./plain-source.ts";
 
 /** 検査する文書を読む。言語・ジャンル・stet も文書モデルと同じ本文（BOM と CRLF / CR をそろえたもの）で読むため、ここでそろえる。 */
@@ -52,34 +52,39 @@ const expand =
   };
 
 /** What chaff.yaml leaves out of a walk: `exclude:` globs, matched from the folder chaff.yaml is in, as by_path is. */
-export type Exclusion = { readonly exclude?: readonly string[] | undefined; readonly baseDir: string };
+export type Exclusion = { readonly exclude?: readonly string[] | undefined; readonly baseDir: string; readonly path?: string | undefined };
 
 /** Why files a walk found were not checked: how many `exclude:` in chaff.yaml left out, and how many a .gitignore did. */
 export type Excluded = { readonly config: number; readonly gitignore: number };
 
-/** Each folder's .gitignore, read once per run. A folder without one, or with one that cannot be read, has no rules. */
-const ignoreReader = (root: string): IgnoreAt => {
-  const cache = new Map<string, ReturnType<IgnoreAt>>();
-  const read = (folder: string): ReturnType<IgnoreAt> => {
-    try {
-      return ignoreOf(readFileSync(join(root, ...folder.split("/").filter((part) => part !== ""), ".gitignore"), "utf8"));
-    } catch {
-      return undefined;
-    }
-  };
-  return (folder) => {
-    if (!cache.has(folder)) cache.set(folder, read(folder));
-    return cache.get(folder);
-  };
+const kindAt: KindAt = (path) => {
+  const stat = statSync(path, { throwIfNoEntry: false });
+  if (stat === undefined) return undefined;
+  return stat.isDirectory() ? "folder" : "file";
 };
+
+/** A folder without an ignore file, or with one that cannot be read, has no rules. */
+const readText: ReadText = (path) => {
+  try {
+    return readFileSync(path, "utf8");
+  } catch {
+    return undefined;
+  }
+};
+
+/** Where a target's ignore files are read from: its repository's root, else chaff.yaml's folder, else the target itself. */
+const projectOf = (found: Found, exclusion: Exclusion | undefined): ProjectRoot =>
+  projectRootOf(found.root, kindAt, exclusion?.path === undefined ? undefined : exclusion.baseDir);
+
+type Project = { readonly root: string; readonly ignoreAt: IgnoreAt };
 
 type Reason = keyof Excluded | undefined;
 
-const reasonOf = (path: string, found: Found, exclusion: Exclusion | undefined, ignoreAt: IgnoreAt): Reason => {
+const reasonOf = (path: string, found: Found, exclusion: Exclusion | undefined, project: Project): Reason => {
   if (found.named) return undefined;
   if (exclusion?.exclude?.some((glob) => matches(glob, exclusion.baseDir, path)) === true) return "config";
-  const below = relative(found.root, path).split(sep).join("/");
-  return below.startsWith("..") || !isGitIgnored(below, ignoreAt) ? undefined : "gitignore";
+  const below = relative(project.root, path).split(sep).join("/");
+  return below.startsWith("..") || !isGitIgnored(below, project.ignoreAt) ? undefined : "gitignore";
 };
 
 /**
@@ -98,10 +103,10 @@ export type Collected = { readonly paths: readonly string[]; readonly excluded: 
 
 export const collectFiles = (targets: readonly string[], include: readonly string[] = [], exclusion?: Exclusion): Collected => {
   const found = targets.map(expand(include));
-  const readers = new Map(found.map((entry) => [entry.root, ignoreReader(entry.root)]));
   const judged = found.flatMap((entry) => {
-    const ignoreAt = readers.get(entry.root) ?? ((): undefined => undefined);
-    return entry.paths.filter((path) => !isSkipped(path)).map((path) => ({ path, reason: reasonOf(path, entry, exclusion, ignoreAt) }));
+    const root = projectOf(entry, exclusion);
+    const project: Project = { root: root.root, ignoreAt: ignoreLayers(root, readText) };
+    return entry.paths.filter((path) => !isSkipped(path)).map((path) => ({ path, reason: reasonOf(path, entry, exclusion, project) }));
   });
   const kept = new Set(judged.filter((entry) => entry.reason === undefined).map((entry) => entry.path));
   const left = new Map(
