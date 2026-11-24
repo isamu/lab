@@ -1,0 +1,13 @@
+# Set wording a contract puts after "which" or "that" to add a condition to the word before it ("the other party's
+# consent which will not be unreasonably withheld"). The clause says more about the consent; it does not pick one consent
+# out of several, so it is not a restrictive clause even when its comma is missing. Read by which-that-consistency, which
+# counts neither word before one of these. Matched at the start of the words after "which" or "that".
+id: aside-relative-formula
+language: en
+entries:
+  - pattern: will not be unreasonably
+  - pattern: shall not be unreasonably
+  - pattern: may not be unreasonably
+  - pattern: is not to be unreasonably
+  - pattern: are not to be unreasonably
+  - pattern: not to be unreasonably

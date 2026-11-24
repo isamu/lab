@@ -81,8 +81,8 @@ example:
       The number of stores has doubled in ten years, but suburban stores have struggled to grow.
 
 not_flagged:
-  ja: 表題より下の見出しが一つもない文書は測りません。法務やブログのジャンルと、手紙・メールでは見ません。本文の語に付けた注（※1 …）の段落は、前置きではなく注なので数えません。見出しが末尾の問い合わせ先や参考文献のような前後の見出しだけの文書（手紙の形の諮問）も、本題の見出しが無いので測りません。
-  en: A document with no heading below its title is not measured. Legal and blog genres, and letters and emails, do not run this rule. A note attached to a word of the text (a paragraph opened by a note mark of the note-mark lexicon, as in Japanese ※1) is a note, not preamble, and is not counted. Nor is a document whose only headings are front or back matter, such as a contact box at its end (a request written as a letter), since it has no body heading.
+  ja: 表題より下の見出しが一つもない文書は測りません。法務やブログのジャンルと、手紙・メールでは見ません。本文の語に付けた注（※1 …）の段落は、前置きではなく注なので数えません。見出しが末尾の問い合わせ先や参考文献のような前後の見出しだけの文書（手紙の形の諮問）や、要項を「記」の下に並べる案内の手紙も、本題の見出しが無いので測りません。最初の段落が報道の日付行（AUSTIN, Texas — November 24, 2026 —）で始まる報道発表は、リードで全体を語る形なので測りません。
+  en: A document with no heading below its title is not measured. Legal and blog genres, and letters and emails, do not run this rule. A note attached to a word of the text (a paragraph opened by a note mark of the note-mark lexicon, as in Japanese ※1) is a note, not preamble, and is not counted. Nor is a document whose only headings are front or back matter, such as a contact box at its end (a request written as a letter) or the 記 that a Japanese notice letter sets its particulars under, since it has no body heading. Nor is a press release whose first paragraph opens with a dateline (AUSTIN, Texas — November 24, 2026 —), since its lead tells the whole story before any heading, by design.
 level_meaning:
   ja: 最初の見出しまで {limit} 段落まで
   en: up to {limit} {limit|paragraph|paragraphs} before the first heading

@@ -24,6 +24,7 @@ import {
   lastNoun,
   openingKind,
   openingOf,
+  opensAsPreposition,
   participleOpening,
   shapeOf,
   shapeOfHead,
@@ -58,6 +59,7 @@ import { listContinues, walker, type Walk } from "./list-run.ts";
 import { joinsUnfinished, repeatsConjunction } from "./list-joint.ts";
 import { insideSentenceCaseTitle } from "./title-list.ts";
 import { insideByline } from "./byline-list.ts";
+import { withoutOpeningConjunction } from "./list-opening-conjunction.ts";
 
 const EMPTY: TokenRange = { start: 0, end: 0 };
 
@@ -99,6 +101,8 @@ const withoutSequenceWord = (view: View): View | undefined => {
 const withoutLead = (view: View): View => {
   const afterSequence = withoutSequenceWord(view);
   if (afterSequence !== undefined) return withoutLead(afterSequence);
+  const afterConjunction = withoutOpeningConjunction(view);
+  if (afterConjunction !== undefined) return withoutLead(afterConjunction);
   const { scope } = view.list;
   const [first, second] = [firstOf(view), secondOf(view)];
   const opening = first === undefined ? undefined : openingOf(scope, first.item);
@@ -131,7 +135,7 @@ const afterClosedList = (view: View): View => {
 const afterVerbAside = (view: View): View => {
   const { scope } = view.list;
   const [verb, aside] = [firstOf(view), secondOf(view)];
-  if (verb === undefined || aside === undefined || lastContent(scope, verb.item)?.pos !== "VERB" || openingOf(scope, aside.item)?.pos !== "ADP") return view;
+  if (verb === undefined || aside === undefined || lastContent(scope, verb.item)?.pos !== "VERB" || !opensAsPreposition(scope, aside.item)) return view;
   const object = firstOf(after(view, aside));
   return object !== undefined && opensAsNoun(scope, object.item) ? after(view, aside) : view;
 };

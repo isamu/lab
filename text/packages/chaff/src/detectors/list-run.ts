@@ -1,7 +1,7 @@
 // Whether a list goes on past an and / or. Then that and / or is inside an item, not the list's last joint, and it casts no
 // vote on the serial comma. Pure.
-import { hasAdposition, hasVerb, isClause, itemAfter, leadShape, openingOf } from "./list-item.ts";
-import { isListConjunction, type ItemScope } from "./list-sentence.ts";
+import { hasAdposition, hasVerb, itemAfter, leadShape, openingOf } from "./list-item.ts";
+import { isListConjunction, NOMINAL, VERBAL, type ItemScope } from "./list-sentence.ts";
 import type { TokenRange } from "./token-column.ts";
 
 /**
@@ -85,6 +85,19 @@ export const walker = (): Walk => {
   };
 };
 
+/** 述語でない動詞の前の語。不定詞の to（to reflect）と、前置詞のあとの分詞や動名詞（as needed / by notifying）。 */
+const NON_PREDICATE_LEAD: ReadonlySet<string> = new Set(["ADP", "SCONJ", "PART"]);
+
+/** 主語と述語のある項目（and figs fell）。Duration of Processing as needed は名詞の句で、as needed は述語ではない。 */
+const isPredicateClause = (scope: ItemScope, item: TokenRange): boolean => {
+  const { tokens } = scope.sentence;
+  const opening = openingOf(scope, item);
+  if (opening === undefined || !(opening.pos === "DET" || NOMINAL.has(opening.pos))) return false;
+  return tokens
+    .slice(item.start, item.end)
+    .some((token, offset) => VERBAL.has(token.pos) && !NON_PREDICATE_LEAD.has(tokens[item.start + offset - 1]?.pos ?? ""));
+};
+
 /**
  * 項目を挟んで読み進めるのは、and の後ろが前置詞も動詞も連れない短い項目のときだけ。長い項目の尻からは次の並びが始まりうる
  * （the duties of loyalty, care, good faith, and candour into criteria governing engagement optimisation, aggregate harm
@@ -95,6 +108,6 @@ export const listContinues = (scope: ItemScope, afterItem: TokenRange, walk: Wal
   if (shape === undefined || !levelComma(scope, afterItem.end)) return false;
   const following = conjunctionAfter(scope, afterItem.end, shape);
   const next = itemAfter(scope, afterItem.end + 1);
-  if (following !== undefined) return following && (endsOpenList(scope, next) || isClause(scope, next) === isClause(scope, afterItem));
+  if (following !== undefined) return following && (endsOpenList(scope, next) || isPredicateClause(scope, next) === isPredicateClause(scope, afterItem));
   return !hasAdposition(scope, afterItem) && !hasVerb(scope, afterItem) && walk(scope, afterItem.end, shape);
 };

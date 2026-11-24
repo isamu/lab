@@ -208,8 +208,17 @@ export const conjunctionRun: Detector = (doc, options): Finding[] => {
 /** Weekday and month names, capitalised in either style (the list leaves out May, March and August, also ordinary words). */
 const FIXED_CASE_LISTS = ["calendar-name"] as const;
 
+/**
+ * A heading that is a name with its acronym in brackets, either way round (Contractor Performance Assessment Report
+ * (CPARS), CORs (Contracting Officer Representatives)): the name keeps its capitals in either style.
+ */
+const NAME_THEN_ACRONYM = /^[^()]+\(\s*\p{Lu}{2,10}s?\s*\)\s*$/u;
+const ACRONYM_THEN_NAME = /^\s*\p{Lu}{2,10}s?\s*\([^()]+\)\s*$/u;
+const namesAcronym = (heading: string): boolean => NAME_THEN_ACRONYM.test(heading) || ACRONYM_THEN_NAME.test(heading);
+
 const headingsOf = (sections: readonly Section[], fixedCase: ReadonlySet<string>): { readonly section: Section; readonly title: boolean }[] =>
   sections.flatMap((section) => {
+    if (namesAcronym(section.heading)) return [];
     const title = isTitleCase(section.heading, fixedCase);
     return title === undefined ? [] : [{ section, title }];
   });

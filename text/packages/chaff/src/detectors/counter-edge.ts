@@ -100,3 +100,23 @@ export const trailingOrdinals = (
   const surface = chain.map((token) => token.surface).join("");
   return joined && run.endsWith(surface) ? { surface, start: first.span.start } : undefined;
 };
+
+/**
+ * 漢字の連なり run（文書全体の座標で span）の尻の、漢数字の数と助数詞（国交正常化六十周年の「六十周年」）。算用数字で書けば
+ * 連なりはそこで切れる。数は前の語の量や回数を言うもので、前の複合語の一部ではない。数の前に語が残るときだけ。そうでなければ undefined。
+ */
+export const trailingQuantity = (
+  tokens: readonly Token[],
+  span: { readonly start: number; readonly end: number },
+  run: string,
+): { readonly surface: string; readonly start: number } | undefined => {
+  const words = tokens.filter((token) => token.span.start < span.end && span.start < token.span.end);
+  if (!isCounter(words.at(-1))) return undefined;
+  const start = words.slice(0, -1).findLastIndex((token) => !isNumber(token)) + 1;
+  const first = words[start];
+  if (start === 0 || start >= words.length - 1 || first === undefined) return undefined;
+  const chain = words.slice(start);
+  const joined = chain.every((token, at) => at === 0 || chain[at - 1]?.span.end === token.span.start);
+  const surface = chain.map((token) => token.surface).join("");
+  return joined && run.endsWith(surface) ? { surface, start: first.span.start } : undefined;
+};

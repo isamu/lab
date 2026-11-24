@@ -126,6 +126,20 @@ describe("code-fence-language-mix: a block without a language among blocks with 
     assert.equal(findingsOf(en, "code-fence-language-mix", doc(...tagged, fix)).length, 1);
   });
 
+  it("does not report a block of output whose lines open with a status mark", () => {
+    const tagged = [fence("bash", "npx tidy init"), fence("json", '{ "strict": true }')];
+    const report = fence("", "✖ Missing keys in config:", "  - port", "", "Found 1 problem.");
+    assert.deepEqual(findingsOf(en, "code-fence-language-mix", doc(report, ...tagged)), []);
+    const typed = fence("", "$ npx tidy", "✖ Missing keys in config:", "  - port");
+    assert.equal(findingsOf(en, "code-fence-language-mix", doc(typed, ...tagged)).length, 1);
+    const warning = ["足りない枠を一覧で表示します。", "", fence("", "⚠ 必要人数を満たせない枠があります", "  1月9日 夜: 必要 4人 / 割り当て 3人")].join("\n");
+    assert.deepEqual(findingsOf(ja, "code-fence-language-mix", doc(...tagged, warning)), []);
+    const session = fence("", "$ npx tidy", "Found 1 problem.");
+    assert.equal(findingsOf(en, "code-fence-language-mix", doc(session, ...tagged)).length, 1);
+    const marked = fence("", 'echo "✖ failed"');
+    assert.equal(findingsOf(en, "code-fence-language-mix", doc(marked, ...tagged)).length, 1);
+  });
+
   it("still reports an untagged block of code beside a template", () => {
     const tagged = [fence("json", '{ "version": "1.2.0" }'), fence("json", '{ "version": "2.0.0" }')];
     assert.equal(findingsOf(en, "code-fence-language-mix", doc(...tagged, fence("", "release <MAJOR>.<MINOR>"))).length, 1);

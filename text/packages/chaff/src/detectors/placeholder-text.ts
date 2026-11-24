@@ -59,10 +59,23 @@ const opensWith = (inner: string, words: Lexicon): boolean => words.some((word) 
 
 const spanOf = (match: RegExpExecArray): Span => ({ start: match.index, end: match.index + match[0].length });
 
-const bracketedSpans = (text: string, pattern: RegExp, holds: (inner: string, raw: string) => boolean): Span[] =>
-  [...text.matchAll(pattern)]
-    .filter((match) => !FILLED_AFTER.test(text.slice(match.index + match[0].length)) && holds(innerOf(match), rawInnerOf(match)))
-    .map(spanOf);
+/** A bracket glued into a web or mail address (hello@[yourcompany].com, example.com/[yourname]): the address goes on after it. */
+const ADDRESS_BEFORE = /[@/.]$/u;
+const ADDRESS_AFTER = /^(?:\.\p{L}|\/)/u;
+const ONE_TOKEN = /^[\p{Ll}\d_-]+$/u;
+
+/** A bracket inside an address holds one run-together lowercase token that opens with a bracket word ([yourcoworkingspace]). */
+const isAddressBlank = (text: string, match: RegExpExecArray, inner: string, words: Lexicon): boolean =>
+  ADDRESS_BEFORE.test(text.slice(0, match.index)) &&
+  ADDRESS_AFTER.test(text.slice(match.index + match[0].length)) &&
+  ONE_TOKEN.test(inner) &&
+  words.some((word) => inner.startsWith(word.pattern.toLowerCase()));
+
+const holdsBlank = (text: string, match: RegExpExecArray, holds: (inner: string, raw: string, match: RegExpExecArray) => boolean): boolean =>
+  !FILLED_AFTER.test(text.slice(match.index + match[0].length)) && holds(innerOf(match), rawInnerOf(match), match);
+
+const bracketedSpans = (text: string, pattern: RegExp, holds: (inner: string, raw: string, match: RegExpExecArray) => boolean): Span[] =>
+  [...text.matchAll(pattern)].filter((match) => holdsBlank(text, match, holds)).map(spanOf);
 
 /**
  * A value left as a marker: the whole text is the marker ("TBD", 「未定」), or the marker opens it before a colon
@@ -185,7 +198,11 @@ export const placeholderSpans = (text: string, words: Lexicon): Span[] => {
     units: words.filter((word) => word.group === BLANK_UNIT),
   };
   return [
-    ...bracketedSpans(text, BRACKETED, (inner, raw) => holdsWord(inner, bracketWords) || endsWithWord(raw, closings)),
+    ...bracketedSpans(
+      text,
+      BRACKETED,
+      (inner, raw, match) => holdsWord(inner, bracketWords) || endsWithWord(raw, closings) || isAddressBlank(text, match, inner, bracketWords),
+    ),
     ...(instructions.length === 0 ? [] : bracketedSpans(text, PARENTHESIZED, (inner) => opensWith(inner, instructions))),
     ...lineMarkerSpans(text, markers, labels),
     ...blankMarkSpans(text, blankWords),

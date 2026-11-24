@@ -63,6 +63,13 @@ describe("which-that-consistency: 限定の関係節の which と that", () => {
     ]);
   });
 
+  it("契約の決まった言い方（consent which will not be unreasonably withheld）は条件を添える節で、数えない", () => {
+    assert.deepEqual(findingsOf(`${THAT_THREE} Either party may assign it with the other party's consent which will not be unreasonably withheld.`), []);
+    assert.deepEqual(findingsOf(`${THAT_THREE} The file which stores the keys will not be moved.`), [
+      'This restrictive clause opens with "which"; the document mostly uses "that"',
+    ]);
+  });
+
   it("日本語の文書は読まない", () => {
     assert.deepEqual(findingsOf("この文書は日本語です。", ja), []);
   });

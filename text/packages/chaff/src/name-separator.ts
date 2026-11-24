@@ -1,5 +1,6 @@
 import type { Boundary } from "./orthography.ts";
 import type { Span, Token } from "./plugin.ts";
+import { isPersonRun } from "./name-person.ts";
 
 /** 名前を空白で並べた行（署名・連絡先・所属の行）に出る品詞。助詞・動詞・助動詞・連体詞が一つでもあれば、その行は文。 */
 const NAME_LINE_POS = new Set(["NOUN", "PROPN", "NUM", "PUNCT", "SYM"]);
@@ -161,12 +162,25 @@ export const isFieldSeparator = (text: string, boundary: Boundary, tokens: reado
 };
 
 /**
+ * 英字の肩書きと、行の終わりまでの人の名前のあいだの空白（代表取締役CEO 森川 遼、CTO 佐藤 健）。肩書きと名前の区切りで、
+ * 英字の後ろの空け方ではない。名前の後ろに語が続く行（CEO 森川さんに連絡します）は文の中の空白。
+ */
+const isTitleBeforeName = (text: string, boundary: Boundary, tokens: readonly Token[], base: number): boolean => {
+  if (!/[A-Za-z]/u.test(text.charAt(boundary.offset - 1))) return false;
+  const rest = tokensIn(tokens, { start: boundary.offset + 1, end: lineAround(text, boundary.offset).end }, base).filter(
+    (token) => token.surface.trim() !== "",
+  );
+  return rest.length > 0 && rest.every((token) => token.pos === "PROPN") && isPersonRun(rest, tokens, []);
+};
+
+/**
  * 「株式会社あおば電子 経営企画部 IR担当」「東京本社 PR室」のように、名前だけを空白で並べた行で、空白の両側がどちらも組織の名前のときの空白。
  * 名前と名前の区切りで、英字の前後の空け方ではない。文の中の空白（この IT システムは）や、組織の名前でない語のあいだ（生成AI 活用事例、Patch リリース）は区切りと読まない。
  * boundary は空けた英字の境目（text[offset] が空白）。tokens は文書全体の座標で、base は text の先頭の位置。
  */
 export const isNameSeparator = (text: string, boundary: Boundary, tokens: readonly Token[] | undefined, base: number, words: OrganizationWords): boolean => {
   if (tokens === undefined || boundary.kind !== "letter" || !boundary.spaced) return false;
+  if (isTitleBeforeName(text, boundary, tokens, base)) return true;
   const before = { start: wordStart(text, boundary.offset), end: boundary.offset };
   const after = { start: boundary.offset + 1, end: wordEnd(text, boundary.offset + 1) };
   const line = lineAround(text, boundary.offset);

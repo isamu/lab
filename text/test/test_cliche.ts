@@ -19,6 +19,7 @@ describe("cliche: a worn phrase", () => {
     assert.deepEqual(findingsOf("At the end of the day, the new cache is faster."), ['"at the end of the day" is a cliché']);
     assert.deepEqual(findingsOf("Fixing the login page is low-hanging fruit."), ['"low-hanging fruit" is a cliché']);
     assert.deepEqual(findingsOf("We will touch base next week."), ['"touch base" is a cliché']);
+    assert.deepEqual(findingsOf("The museum punches way above its weight."), ['"above its weight" is a cliché']);
   });
 
   it("reports an idiom whose verb is inflected", () => {

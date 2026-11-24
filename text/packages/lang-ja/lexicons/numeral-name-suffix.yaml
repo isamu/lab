@@ -1,0 +1,9 @@
+# 数と助数詞の後ろに付いて、全体を物の名前にする語（十円玉、100円玉、五円硬貨、千円札）。お金の量ではなく硬貨やお札の名前なので、
+# 漢数字でも算用数字でも、number-style-consistency の数の書き方の票にしない。
+id: numeral-name-suffix
+language: ja
+entries:
+  - pattern: 玉
+  - pattern: 硬貨
+  - pattern: 札
+  - pattern: 紙幣

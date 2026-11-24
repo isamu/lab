@@ -135,3 +135,14 @@ const GLOSSED_WORD_END = /[\p{Script=Han}\p{Script=Katakana}\p{Script=Latin}\p{N
  */
 export const fillsGloss = (text: string, start: number, end: number): boolean =>
   quotedSpans(text, GLOSS_MARKS).some((span) => GLOSSED_WORD_END.test(text.slice(0, span.start - 1)) && holdsName(text, span, start, end));
+
+const holds = (span: Span, start: number, end: number): boolean => span.start <= start && end <= span.end;
+
+/**
+ * 漢字の連なり [start, end) が二重鉤括弧『』の中にあり、その『』が鉤括弧「」の中にないか。『』は作品や碑の題を引く印
+ * （『原爆犠牲国民学校教師と子どもの碑』）で、中の連なりは書き手が割れない。「」の中の『』は引用の中の引用で、引いた人の言葉。
+ */
+export const inWorkTitle = (text: string, start: number, end: number): boolean => {
+  const quotes = quotedSpans(text, { "「": "」" });
+  return quotedSpans(text, { "『": "』" }).some((title) => holds(title, start, end) && !quotes.some((quote) => holds(quote, title.start, title.end)));
+};
