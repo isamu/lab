@@ -125,7 +125,9 @@ const groupByEntry = (files: readonly PerFile[]): AllowGroup[] => {
     .toSorted((left, right) => right.count - left.count);
 };
 
-const allowLabel = (entry: Allowed["entry"]): string => `${entry.at} ${entry.text === undefined ? `/${entry.pattern ?? ""}/` : JSON.stringify(entry.text)}`;
+const allowTarget = (entry: Allowed["entry"]): string => (entry.text === undefined ? ["/", entry.pattern ?? "", "/"].join("") : JSON.stringify(entry.text));
+
+const allowLabel = (entry: Allowed["entry"]): string => `${entry.at} ${allowTarget(entry)}`;
 
 const allowGroupLines = (group: AllowGroup, ui: UiLanguage): string[] => {
   const text = TEXT[ui];

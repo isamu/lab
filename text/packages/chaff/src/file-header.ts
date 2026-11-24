@@ -1,4 +1,4 @@
-import { CLI_TEXT, type GenreSource } from "./cli-text.ts";
+import { CLI_TEXT, type GenreSource, type HeaderCounts } from "./cli-text.ts";
 import { loadGenres } from "./genre-load.ts";
 import type { GenreDefinition } from "./genre-parse.ts";
 import { suggestGenre } from "./genre-suggest.ts";
@@ -11,8 +11,6 @@ type FileHeader = { readonly header: string; readonly notes: readonly string[] }
 /** unread: a genre the front matter wrote that chaff does not know (already reported on stderr). */
 type Placed = { readonly genre: string; readonly from: GenreSource; readonly unread?: string | undefined };
 
-type Counts = { readonly shelved: number; readonly hushed: number; readonly allowed?: number };
-
 /**
  * The genre the file looks like, only when nothing set or guessed one: suggested on screen, never used for the run.
  * A front matter genre chaff could not read is a genre the writer did set, so the note's "no genre was set" would be untrue.
@@ -21,9 +19,9 @@ const suggestionFor = (path: string, source: string, language: string, placed: P
   placed.from === "default" && placed.unread === undefined ? suggestGenre({ path, source, language }, loadGenres(), loadProfiles()) : undefined;
 
 /** In the file's language. The note names the genre the file was checked as. */
-export const fileHeader = (path: string, source: string, language: string, placed: Placed, counts: Counts): FileHeader => {
+export const fileHeader = (path: string, source: string, language: string, placed: Placed, counts: HeaderCounts): FileHeader => {
   const text = CLI_TEXT[uiLanguageOf(language)];
-  const first = text.header(path, placed.genre, text.languageName(language), text.genreSource[placed.from], counts.shelved, counts.hushed, counts.allowed ?? 0);
+  const first = text.header(path, placed.genre, text.languageName(language), text.genreSource[placed.from], counts);
   const suggestion = suggestionFor(path, source, language, placed);
   if (suggestion === undefined) return { header: first, notes: [] };
   const name = suggestion.name[uiLanguageOf(language)] ?? suggestion.id;

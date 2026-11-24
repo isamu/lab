@@ -69,7 +69,7 @@ describe("画面の言語", () => {
 
   it("日本語の枠では、ジャンルの出どころの英字の前後に半角の空白を入れる", () => {
     const from = (source: GenreSource): string =>
-      CLI_TEXT.ja.header("a.md", "blog/tech", "日本語", CLI_TEXT.ja.genreSource[source], 0, 0).split("   ").at(-1) ?? "";
+      CLI_TEXT.ja.header("a.md", "blog/tech", "日本語", CLI_TEXT.ja.genreSource[source], { shelved: 0, hushed: 0 }).split("   ").at(-1) ?? "";
     const sources: readonly GenreSource[] = ["--genre", "config", "by_path", "front-matter", "default", "path"];
     assert.deepEqual(sources.map(from), [
       "ジャンルは --genre から",

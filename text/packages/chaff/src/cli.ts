@@ -111,17 +111,8 @@ const present = (check: SourceCheck, argv: readonly string[]): Inspected => {
   const baseline = argv.includes("--show-baseline") ? undefined : readBaseline(join(process.cwd(), BASELINE_FILE));
   const split = splitByBaseline(path, applied.kept, baseline, process.cwd());
   const result = { ...raw, findings: split.fresh };
-  const { header, notes } = fileHeader(
-    path,
-    source,
-    language,
-    { genre, from, unread },
-    {
-      shelved: split.shelved,
-      hushed: applied.suppressed.length,
-      allowed: applied.allowed.length,
-    },
-  );
+  const counts = { shelved: split.shelved, hushed: applied.suppressed.length, allowed: applied.allowed.length };
+  const { header, notes } = fileHeader(path, source, language, { genre, from, unread }, counts);
   const notRun = notRunAmong(applied.named, raw.skipped);
   const text = argv.includes("--compact")
     ? renderCompact(header, result, rules, language)

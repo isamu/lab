@@ -160,7 +160,10 @@ describe("allow: on the command line", () => {
     assert.match(run.out, /allow 1 件/u);
     const compact = await runCli({ "chaff.yaml": CONFIG, "a.md": DOC }, ["a.md", "--compact"]);
     assert.deepEqual(
-      [...compact.out.matchAll(/(\d+:\d+)\s+warning 「サーバー」/gu)].map((found) => found[1]),
+      compact.out
+        .split("\n")
+        .filter((line) => line.includes("warning 「サーバー」"))
+        .map((line) => line.trim().split(" ")[0]),
       ["3:12"],
     );
     const suppressions = await runCli({ "chaff.yaml": CONFIG, "a.md": DOC }, ["suppressions", "a.md"]);
