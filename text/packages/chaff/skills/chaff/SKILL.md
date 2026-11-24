@@ -375,7 +375,8 @@ output before and after.
 
 - `npx chaffjs tree <file>` shows a contract or specification as a tree of addresses (`3.2` for 第3条第2項 or
   Section 3.2). A check reads the same tree to find references to missing provisions, numbering gaps and
-  terms defined twice.
+  terms defined twice. `enumeration-marker-mix` points at an item numbered in another form than the rest of its run
+  ("1.", "2.", "3)", "4."; 「(1)」「(2)」「3.」); sub-items that count from 1 again are a level below and are left.
 - `npx chaffjs cite <source> <quotes.json>` checks that quotations (`[{ "address", "quote" }]`) are really in
   the source; exit 1 if any is not. Use it to back every quotation you put in an answer or a summary.
   `cite --url <URL> <quotes.json>` checks against a web page; `cite --scaffold <file>` prints the quotations in a

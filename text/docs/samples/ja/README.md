@@ -11,7 +11,7 @@ chaff が見つけるまちがいを、ルールごとに一つずつ見本に�
 
 English samples: [../en/README.md](../en/README.md)
 
-見本のあるルール: 272 / 272
+見本のあるルール: 273 / 273
 
 ## 読みやすさ
 
@@ -134,6 +134,7 @@ English samples: [../en/README.md](../en/README.md)
 | [短い呼び名を定めた名前を、あとで正式の名前のまま書いている](defined-name-repeated.md)（`defined-name-repeated`） | 「株式会社みなと製作所（以下「甲」という。）」のあとで、甲を正式の名前のまま書いている所 |
 | [定義した語を、定義と違う形で使っている](defined-term-form.md)（`defined-term-form`） | 契約や規程で、定義した語を、定義のあとで違う形（括弧付き、言い換え、長くした形）で書いた所 |
 | [省略記号の書き方が混ざっている](ellipsis-consistency.md)（`ellipsis-consistency`） | 「……」と「・・・」、「…」と「...」のように、一つの文書で省略の記号を二通りに書いている所 |
+| [項目の番号の書き方が揃っていない](enumeration-marker-mix.md)（`enumeration-marker-mix`） | 「1.」「2.」「3)」「4.」のように、一つの並びの項目の番号の書き方が混ざっている所 |
 | [！？ の全角と半角の混在](exclamation-width-consistency.md)（`exclamation-width-consistency`） | 日本語の文の中で、！？ の全角と半角（!?）が混ざっている所 |
 | [英数字の全角と半角が混ざっている](fullwidth-alnum-consistency.md)（`fullwidth-alnum-consistency`） | 英字や数字を、全角（ＡＢＣ１２３）と半角（ABC123）で混ぜて書いている所 |
 | [見出しの終わりの記号が揃っていない](heading-end-punctuation-mix.md)（`heading-end-punctuation-mix`） | 記号なしの見出しの中に「準備：」「確認。」のように記号で終わる見出しが混ざっている所（またはその逆） |
