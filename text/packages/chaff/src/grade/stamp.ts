@@ -48,6 +48,8 @@ export const settingsOf = (settings: GradeSettings): Record<string, unknown> => 
     prefer: config.prefer,
     requiredSections: config.requiredSections,
     names: config.names,
+    // Only when listed, so a chaff.yaml without terms keeps the stamp it had.
+    ...((config.terms ?? []).length === 0 ? {} : { terms: config.terms }),
     byPath: config.byPath,
     grade: gradeOf(settings),
   };

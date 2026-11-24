@@ -8,6 +8,7 @@ import type { PathRule } from "./by-path.ts";
 import type { Extensions } from "../extension/load.ts";
 import type { StyleLimits } from "../style-parse.ts";
 import type { GuideLayer } from "../genre-guide/layer.ts";
+import { foldTerm } from "../term-form.ts";
 
 export const CONFIG_FILE = "chaff.yaml";
 
@@ -36,6 +37,10 @@ export type Config = {
   readonly names: readonly string[];
   /** names に書かれていたが名前として読めなかった値。黙って捨てると、並べたつもりの名前が効いていないことに気づけない。 */
   readonly unreadableNames: readonly string[];
+  /** The team's terms, each to be written exactly so (GitHub, not Github or ＧｉｔＨｕｂ). term-form reads them. */
+  readonly terms?: readonly string[];
+  /** terms as written that cannot be read as a term: not a list, an entry that is not text, or one that is only spaces and hyphens. */
+  readonly unreadableTerms?: readonly string[];
   /** File-name globs (*.yaml) a directory walk checks besides Markdown. --include adds to them. */
   readonly include?: readonly string[];
   /** パスごとの上書き。設定ファイルのある場所からの相対で照合する。 */
@@ -171,6 +176,15 @@ const namesOf = (raw: unknown): { readonly names: string[]; readonly unreadable:
   };
 };
 
+/** A term is text with something besides spaces and hyphens in it; a number (2025) reads as text, as under names. */
+const termsOf = (raw: unknown): { readonly terms: string[]; readonly unreadable: string[] } => {
+  if (raw === undefined || raw === null) return { terms: [], unreadable: [] };
+  if (!Array.isArray(raw)) return { terms: [], unreadable: [printed(raw)] };
+  const entries: unknown[] = raw;
+  const isTerm = (entry: unknown): entry is string | number => isNameEntry(entry) && foldTerm(String(entry)) !== "";
+  return { terms: wordsOf(entries.filter(isTerm)), unreadable: entries.filter((entry) => !isTerm(entry)).map(printed) };
+};
+
 /** by_path は files を持つ項目の並び。並びでない値と、読めない項目は読めないものとして返す。黙って捨てると、書いた人は効いたつもりでいる。 */
 export const byPathOf = (raw: unknown): { readonly rules: PathRule[]; readonly unreadable: string[] } => {
   if (raw === undefined || raw === null) return { rules: [], unreadable: [] };
@@ -189,6 +203,7 @@ export const configOf = (raw: unknown, path: string): Config => {
   const declared: unknown = raw["ai_backend"];
   const backend: BackendName = isBackend(declared) ? declared : DEFAULT_BACKEND;
   const names = namesOf(raw["names"]);
+  const terms = termsOf(raw["terms"]);
   const byPath = byPathOf(raw["by_path"]);
   const options: unknown = raw["options"];
   return {
@@ -208,6 +223,8 @@ export const configOf = (raw: unknown, path: string): Config => {
     requiredSections: wordsOf(raw["required_sections"]),
     names: names.names,
     unreadableNames: names.unreadable,
+    terms: terms.terms,
+    unreadableTerms: terms.unreadable,
     include: globsOf(raw["include"]),
     byPath: byPath.rules,
     unreadableByPath: byPath.unreadable,

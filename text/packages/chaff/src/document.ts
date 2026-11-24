@@ -274,6 +274,8 @@ export type TeamRules = {
   readonly prefer?: Readonly<Record<string, string>>;
   /** チームの固有名詞。1 つの名前として読む rule が見る。 */
   readonly names?: readonly string[];
+  /** The team's terms, each to be written exactly as listed. term-form reads them as its word list. */
+  readonly terms?: readonly string[];
   /** The word lists the plugins ship for the document's language, by name. */
   readonly lexicons?: LanguageAdapter["lexicons"];
 };
@@ -287,6 +289,7 @@ export const teamRules = (
     readonly requiredSections: readonly string[];
     readonly prefer?: Readonly<Record<string, string>>;
     readonly names?: readonly string[];
+    readonly terms?: readonly string[];
     readonly extensions?: { readonly lexicons: Readonly<Record<string, LanguageAdapter["lexicons"]>> };
   },
   language?: string,
@@ -295,6 +298,7 @@ export const teamRules = (
   prefer: config.prefer ?? {},
   requiredSections: config.requiredSections,
   names: config.names ?? [],
+  terms: config.terms ?? [],
   lexicons: language === undefined ? {} : (config.extensions?.lexicons[language] ?? {}),
 });
 
@@ -313,6 +317,7 @@ const teamLexicons = (adapter: LanguageAdapter, team: TeamRules): LanguageAdapte
   "internal-jargon": team.jargon.map((pattern) => ({ pattern })),
   // 使わない書き方を pattern に、使う書き方を instead_of に置く。語彙表の「同じことの別の書き方」と同じ向き。
   "preferred-term": Object.entries(team.prefer ?? {}).map(([pattern, use]) => ({ pattern, instead_of: use })),
+  "term-form": (team.terms ?? []).map((pattern) => ({ pattern })),
 });
 
 const documentOf = (path: string, source: string, adapter: LanguageAdapter, team: TeamRules, profile: DocumentProfile | undefined): ProseDocument => {

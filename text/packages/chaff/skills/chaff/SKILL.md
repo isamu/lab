@@ -107,6 +107,9 @@ tell which is right, leave both and ask.
   limit itself (`max-sentence-length: 260`). A rule with nothing to count takes fewer levels, and no number;
   `levels_you_can_set` in `rules --json` lists them.
 - `prefer:` maps spellings to the team's (`e-mail: email`); `preferred-term: normal` turns the rule on.
+- `terms:` lists names and terms with one fixed form (`[GitHub, JavaScript]`); `term-form` reports a form that
+  differs only in case, width, hyphens or spaces (`Github`, `ＧｉｔＨｕｂ`, `Java Script`), outside code, URLs and paths.
+  Without `terms:` the rule does not run, and the list of rules not run says so.
 - Unknown rule names and unreadable values are reported on stderr — read stderr after editing `chaff.yaml`.
 - `genre:` sets the kind of document. `by_path` sets it per path, as a list of `files` globs, each with `genre`,
   `language` or `profile`, and an entry in any other shape is reported on stderr and not used:
@@ -135,7 +138,7 @@ names or numbers:
    number means), `levels`, `example`, `not_flagged`, and `genres` (whether it runs in each genre).
 2. Split the note into single requirements; map each to the rule whose `summary` and `level_meaning` fit. A
    number between levels is written as the number itself (`max-sentence-length: 80`). Spellings go under
-   `prefer`, in-house words under `jargon`, required headings under `required_sections`.
+   `prefer`, names with one fixed form under `terms`, in-house words under `jargon`, required headings under `required_sections`.
 3. Say plainly what no rule covers. For example, `no-mixed-desumasu` flags a register mixed into a document, but
    does not require a particular one; a document wholly in the other register is not reported.
 4. Write only what differs from the default, then check before committing: `npx chaffjs explain <rule-id>`, a
@@ -148,7 +151,7 @@ Pick the easiest way that can say the requirement:
 
 | Requirement | Use |
 | --- | --- |
-| An existing rule covers it | A level, a number, `prefer`, `jargon` or `required_sections` in `chaff.yaml` |
+| An existing rule covers it | A level, a number, `prefer`, `terms`, `jargon` or `required_sections` in `chaff.yaml` |
 | A fixed phrase or pattern, with the team's own message | `custom_rules` of type `words` or `pattern` |
 | Decided by part of speech or inflection | `custom_rules` of type `tokens` |
 | Counting or comparing that the above cannot express | a Node function, `type: module` |

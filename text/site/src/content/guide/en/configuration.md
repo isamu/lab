@@ -281,6 +281,32 @@ When `preferred-term` finds the left-hand spelling, it asks for the right-hand o
 When the left-hand spelling is a verb in its dictionary form (`utilize: use`), its other forms ("utilizing") are found too.
 With nothing under `prefer`, it says nothing.
 
+## Keeping names and terms in their one form
+
+Product, company and technology names have one right form.
+A slip such as "Github", "ＧｉｔＨｕｂ" or "Java Script" is invisible to the rules that compare spellings when the right form never appears in the document.
+List the right forms, exactly as they must be written, under `terms`.
+
+```yaml
+terms:
+  - GitHub
+  - JavaScript
+  - Claude Code
+```
+
+`term-form` finds a form that differs only in capital letters, full or half width, hyphens or spaces, and asks for the listed one.
+
+```
+  3:16    warning Write "GitHub", not "Github"
+                  term-form
+```
+
+Code, URLs, e-mail addresses and file paths (`github.com`, `docs/github.md`) are left alone, and so is a longer word that holds the term (GitHubber).
+With nothing under `terms`, the rule does not run, and the list of rules that did not run says "nothing is listed under terms in chaff.yaml".
+A value that cannot be read as a term (not a list, an entry that is not text) and two terms that differ only in case and the like (`GitHub` and `Github`) are reported before the results.
+
+`terms` works the other way round from `names`: a name under `names` is read as one name so that it is not counted as a run of kanji or a repeated phrase, and its spelling is not checked.
+
 ## Deciding the team's jargon and required headings
 
 `jargon` and `required_sections` are rules whose content your team decides.
