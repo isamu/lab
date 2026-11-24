@@ -3,6 +3,7 @@ layer: L2
 status: stable
 how_to_find: preferred-term
 word_list: preferred-term
+uses: [pos]
 severity: warning
 
 name:
