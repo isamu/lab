@@ -13,7 +13,7 @@ import { resolveGenre, type ResolvedGenre } from "./resolve-genre.ts";
 import { neededBy, runRulesWith, type RunContext, type RunResult } from "./run.ts";
 import { runCrossRules } from "./cross-run.ts";
 import { CROSS_DETECTORS } from "./detectors/index.ts";
-import { applySuppressions, type Applied } from "./stet.ts";
+import { applySuppressions, knownRulesOf, type Applied } from "./stet.ts";
 
 /** A document's language when nothing names one for this run: its by_path entry, chaff.yaml's language, then a guess from the text. */
 export const documentLanguage = (path: string, source: string, config: Config): string =>
@@ -62,15 +62,16 @@ export const checkSource = async (path: string, source: string, written: Config,
     levelsFrom: config.pathLevelsFrom ?? {},
   };
   const raw = runRulesWith(doc, rules, context);
-  return { language, genre, rules, doc, context, raw, applied: suppressedIn(source, doc, raw) };
+  return { language, genre, rules, doc, context, raw, applied: suppressedIn(source, doc, raw, rules) };
 };
 
 /** stet で黙らせたものは、ここで落とす。stet は text（読んだままの本文）から読む。 */
-const suppressedIn = (text: string, doc: ProseDocument, raw: RunResult): Applied =>
+const suppressedIn = (text: string, doc: ProseDocument, raw: RunResult, rules: readonly RuleDefinition[]): Applied =>
   applySuppressions(
     text,
     raw.findings,
     doc.sections.map((section) => section.span),
+    knownRulesOf(rules),
   );
 
 /**
@@ -82,6 +83,6 @@ export const crossChecked = (checks: readonly SourceCheck[], detectors: Readonly
   const results = runCrossRules(checks, detectors);
   return checks.map((check, index) => {
     const raw = results[index] ?? check.raw;
-    return raw === check.raw ? check : { ...check, raw, applied: suppressedIn(check.doc.source, check.doc, raw) };
+    return raw === check.raw ? check : { ...check, raw, applied: suppressedIn(check.doc.source, check.doc, raw, check.rules) };
   });
 };

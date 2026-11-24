@@ -119,6 +119,10 @@ Japanese only, and say so under "did not run" on an English document.
 Some rules catch Markdown that does not render as meant: `heading-marker-no-space` reports a line such as
 `##Steps` or `#見出し`, which shows as text with the marks in it because the space after the marks is missing.
 
+A finding that is right in general but intended in one spot is silenced there with `<!-- stet: rule-id — reason -->`.
+A range takes `<!-- stet-begin: rule-id — reason -->` … `<!-- stet-end -->`, and `rule-id["word"]` silences one matched
+word only. A stet always names its rules. `npx chaffjs suppressions docs/` lists what is silenced and any stet that does not work.
+
 Rules about a team's own words need their lists in `chaff.yaml`. The checks that read meaning
 rather than form run with `npx chaffjs test`; one of them, `generic-opening`, asks whether the opening starts
 from a generic problem ("Many teams struggle with…") instead of who did what.
