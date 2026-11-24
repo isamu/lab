@@ -86,6 +86,10 @@ rewrite:
       - before: |-
           「[form]: https://example.com/form」（本文に「[…][form]」が無い）
         after: 本文の「申込書」を「[申込書][form]」にする
+      - before: |-
+          「[terms]: https://example.com/terms」と「[terms]: https://example.com/terms-old」の二つ
+        after: |-
+          正しい行き先の「[terms]: https://example.com/terms」だけを残す
     keep:
       - リンクの行き先
     avoid:
@@ -95,6 +99,8 @@ rewrite:
     pairs:
       - before: '"[form]: https://example.com/form" (no "[form]" in the text)'
         after: '"send the form" written as "send the [form][form]"'
+      - before: '"[terms]: https://example.com/terms" and "[terms]: https://example.com/terms-old"'
+        after: 'only "[terms]: https://example.com/terms", the right address'
     keep:
       - the link addresses
     avoid:
