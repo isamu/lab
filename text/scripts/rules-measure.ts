@@ -35,6 +35,7 @@ import { allRules, applyMeasurement, genreDataOf, MEASURE_FILE, readGenresText, 
 import { japaneseRatio } from "../packages/chaff/src/detect-language.ts";
 import { presetLevels } from "../packages/chaff/src/genre-load.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
+import { REASONS } from "../packages/chaff/src/reasons.ts";
 import { measuredLevelsOf } from "../packages/chaff/src/ai-score/signals.ts";
 import { writeAiScoreShares } from "./ai-score-shares.ts";
 import type { Level, RuleDefinition } from "../packages/chaff/src/plugin.ts";
@@ -67,8 +68,21 @@ type Input = { readonly file: string; readonly readAs: string; readonly language
 
 const ruleIds = new Map(["ja", "en"].map((language) => [language, loadRules(language).map((rule) => rule.id)]));
 
+/**
+ * Why a rule that reads only the team's list (team_list) did not run: the corpus lists nothing. It counts as run, finding
+ * nothing, which is what it does for a team that lists nothing; otherwise it would never be measured and stay experimental.
+ */
+const NO_TEAM_LIST: ReadonlySet<string> = new Set(
+  ["ja", "en"].flatMap((language) =>
+    loadRules(language).flatMap((rule) => {
+      const key = rule.team_list;
+      return key === undefined ? [] : Object.values(REASONS).map((reasons) => reasons.noTeamList(key));
+    }),
+  ),
+);
+
 const documentRunOf = (input: Input, result: RunResult): DocumentRun => {
-  const skipped = new Set(result.skipped.map((skip) => skip.rule));
+  const skipped = new Set(result.skipped.filter((skip) => !NO_TEAM_LIST.has(skip.why)).map((skip) => skip.rule));
   const ran = new Set((ruleIds.get(input.language) ?? []).filter((rule) => !skipped.has(rule)));
   return { group: input.genre.split("/")[0] ?? input.genre, ran, fired: new Set(result.findings.map((finding) => finding.rule)) };
 };
