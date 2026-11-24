@@ -60,6 +60,20 @@ describe("日本語: 日付のすぐ後ろの曜日", () => {
     assert.deepEqual(found("# 旅程\n\n令和元年10月1日（火）に出発する。", ja, "ja"), []);
   });
 
+  it("日付の前の曜日は、その日付だけを括弧に入れたときに読む（月曜日（2026年11月25日））", () => {
+    assert.deepEqual(weekdays(ja, "会議は月曜日（2026年11月25日）に開催します。"), [1]);
+    assert.deepEqual(weekdays(ja, "会議は月曜(2026年11月25日)に開催します。"), [1]);
+    assert.deepEqual(found("# 案内\n\n会議は月曜日（2026年11月25日）に開催します。", ja, "ja"), ["2026年11月25日:月曜日:水曜日"]);
+    assert.deepEqual(found("# 案内\n\n会議は水曜日（2026年11月25日）に開催します。", ja, "ja"), []);
+  });
+
+  it("日付の前の曜日でも、括弧が日付だけを包まないもの、近くにあるだけのものは読まない", () => {
+    assert.deepEqual(weekdays(ja, "毎週月曜日（2026年11月25日から）に開催します。"), [undefined]);
+    assert.deepEqual(weekdays(ja, "隔週月曜日（2026年11月25日、2026年12月9日）に開催します。"), [undefined, undefined]);
+    assert.deepEqual(weekdays(ja, "月曜日の会議は2026年11月25日に開催します。"), [undefined]);
+    assert.deepEqual(weekdays(ja, "月曜日、2026年11月25日に開催します。"), [undefined]);
+  });
+
   it("曜日でないもの（木村さん、木の机）は読まない", () => {
     assert.deepEqual(weekdays(ja, "2026年10月1日、木村さんが来る"), [undefined]);
     assert.deepEqual(weekdays(ja, "2026年10月1日（木の机を運ぶ）"), [undefined]);
@@ -152,6 +166,20 @@ describe("English: the weekday beside a date", () => {
     assert.deepEqual(weekdays(en, "May 2026 was busy."), [undefined]);
   });
 
+  it("a weekday before a date in parentheses that hold only that date", () => {
+    assert.deepEqual(weekdays(en, "The meeting is on Monday (November 25, 2026)."), [1]);
+    assert.deepEqual(weekdays(en, "The meeting is on Monday (25 November 2026)."), [1]);
+    assert.deepEqual(found("# Notice\n\nThe meeting is on Monday (November 25, 2026).", en, "en"), ["November 25, 2026:Monday:Wednesday"]);
+    assert.deepEqual(found("# Notice\n\nThe meeting is on Wednesday (November 25, 2026).", en, "en"), []);
+  });
+
+  it("not bound: parentheses that hold more than the date, or a weekday merely nearby", () => {
+    assert.deepEqual(weekdays(en, "Every Monday (from November 25, 2026) we meet."), [undefined]);
+    assert.deepEqual(weekdays(en, "Every Monday (November 25, 2026 onwards) we meet."), [undefined]);
+    assert.deepEqual(weekdays(en, "Mondays (November 25, 2026 and December 9, 2026) are free."), [undefined, undefined]);
+    assert.deepEqual(weekdays(en, "On Monday we decided. The launch (November 25, 2026) is set."), [undefined]);
+  });
+
   it("two full dates joined by a word each keep their own weekday", () => {
     assert.deepEqual(weekdays(en, "We meet 1 October 2026 and 3 October 2026 (Saturday)."), [undefined, 6]);
     assert.deepEqual(weekdays(en, "From 1 October 2026 to 3 October 2026 (Saturday)."), [undefined, 6]);
@@ -173,6 +201,15 @@ describe("English: the weekday beside a date", () => {
       [],
     );
     assert.deepEqual(found("# 2024 events\n\nThe fair was on Wednesday, October 9.\n", en, "en"), []);
+  });
+
+  it("a date without its year that the document also writes with its year and the same weekday is read in that year", () => {
+    const record = (closing: string): string => `# Hearings\n\nWednesday, June 11, 2025\n\n## Testimony\n\nSee the report (June 30, 2021).\n\n${closing}\n`;
+    assert.deepEqual(found(record("[Whereupon, at 4:40 p.m., Wednesday, June 11, the hearing was recessed.]"), en, "en"), []);
+    assert.deepEqual(found(record("[Whereupon, at 4:40 p.m., Thursday, June 11, the hearing was recessed.]"), en, "en"), ["June 11, 2021:Thursday:Friday"]);
+    // A dated example with another weekday does not give its year to a day written in a different example.
+    assert.deepEqual(found("# Dates\n\nToday (Thursday 14 June 2012) is fine. On Tuesday 14 June we met.\n", en, "en"), ["14 June 2012:Tuesday:Thursday"]);
+    assert.deepEqual(found("# 日程\n\n2025年6月11日（水）に開く。\n\n## 資料\n\n2021年6月30日の報告を見る。6月11日（水）に終える。\n", ja, "ja"), []);
   });
 
   it("a date quoted alone with its weekday is an example of the mistake, not a date of the document (#621)", () => {
