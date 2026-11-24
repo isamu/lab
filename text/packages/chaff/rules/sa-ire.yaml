@@ -1,0 +1,43 @@
+id: sa-ire
+layer: L2
+status: stable
+how_to_find: sa-ire
+# 五段動詞かどうかは品詞解析で読む。品詞が無ければ動かない。
+requires: [pos]
+languages: [ja]
+severity: warning
+
+name:
+  ja: さ入れ言葉
+  en: Causative with an extra sa
+
+why:
+  ja: 五段動詞の使役の形は、未然形に「せる」を付けて作ります（読ませる・行かせる・休ませる）。「読まさせる」「行かさせる」「休まさせていただく」は「さ」が余分に入った形で、話し言葉では広く使われますが、書き言葉では誤りと読まれます。一段動詞（見させる・食べさせる）、来させる、サ変動詞（説明させる）は「させる」が正しいので指しません。どの動詞が五段動詞かは品詞解析で読みます。鉤括弧や引用符で引いた言葉（話した言葉をそのまま引いたもの）は数えません。
+  en: The causative of a godan verb adds せる to its stem (読ませる, 行かせる, 休ませる). 読まさせる, 行かさせる and 休まさせていただく carry an extra さ; common in speech, they read as mistakes in writing. Ichidan verbs (見させる, 食べさせる), 来させる and suru verbs (説明させる) take させる correctly and are not reported. Which verbs are godan is read by the morphological analyser. Words quoted in brackets or quotation marks (speech quoted as spoken) are not counted. Japanese only; English has no such form.
+
+message:
+  ja: 「{matched}」は「さ」の入った形です
+  en: '"{matched}" has an extra さ in the causative'
+
+how_to_fix:
+  ja: 「さ」を抜いてください（読まさせて → 読ませて、行かさせる → 行かせる、休まさせて → 休ませて）。
+  en: Drop the さ (読まさせて → 読ませて, 行かさせる → 行かせる, 休まさせて → 休ませて).
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「読まさせていただく」「行かさせる」のような、さ入れ言葉
+  en: A Japanese causative with an extra さ, such as 読まさせる for 読ませる
+example:
+  ja:
+    before: |
+      資料を拝見し、意見を述べさせていただきます。明日は休まさせていただきます。
+    after: |
+      資料を拝見し、意見を述べさせていただきます。明日は休ませていただきます。
+
+not_flagged:
+  ja: 一段動詞（見させる・述べさせる）、来させる、サ変動詞（説明させる）の使役、鉤括弧や引用符で引いた言葉は指しません。
+  en: The causative of ichidan verbs (見させる, 述べさせる), 来させる and suru verbs (説明させる), and quoted words are not reported. English documents are not read.

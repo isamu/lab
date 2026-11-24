@@ -51,6 +51,9 @@ After the findings comes the list of rules that did not run, and why. Only the d
 the genre: a rule that compares documents runs only when chaff is given two or more files or a folder, and a rule
 that reads meaning runs only under `npx chaffjs test` (below).
 
+Some rules read only one language and say so when they do not run: `ra-nuki` (見れる for 見られる) and `sa-ire`
+(読まさせて for 読ませて) are Japanese only.
+
 A run over several files prints only the files that have findings. To call one file clean, run chaff on that
 file alone and read its list.
 

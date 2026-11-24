@@ -119,6 +119,8 @@ npx chaffjs genres                              ジャンルの一覧と、そ�
 | チームの言葉が要るルール（社内用語、必須の見出し、表記） | `chaff.yaml` の `jargon` `required_sections` `prefer` に書く |
 | 意味を読む検査（例: 書き出しが「多くの企業が〜」のような一般論から始まっていないか、`generic-opening`） | `npx chaffjs test`（API key が要る） |
 
+日本語だけのルールもあります。`ra-nuki`（見れる → 見られる）と `sa-ire`（読まさせて → 読ませて）は品詞解析で動詞の形を読み、英語の文書では理由つきで動きません。
+
 どのルールがいまどの強さで動くかは、`npx chaffjs rules` が表にします。「default」の列が設定なしで動くルールです。
 一つのルールの意図と根拠は `npx chaffjs explain <ルール>` で読めます。ルールの一覧は [ルールのページ](https://isamu.github.io/lab/ja/rules/) にもあります。
 

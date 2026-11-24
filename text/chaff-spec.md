@@ -968,6 +968,7 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `list-item-form-mix` ✅ | 一つの箇条書きの項目の形（名詞止めと文、en は動詞始まりと名詞始まり）。品詞で判定し、少ないほうを指摘 | - |
 | `fullwidth-alnum-consistency` ✅ | 英数字の全角と半角の混在。英字一字・語・数字一字・並びごとに少ないほうを指摘 | - |
 | `ra-nuki` ✅ | ら抜き言葉。lang-ja が一段・カ変動詞の未然形＋「れる」に `PotentialRa=Dropped` を付ける | pos |
+| `sa-ire` ✅ | さ入れ言葉。lang-ja が五段動詞の未然形＋「させる」に `CausativeSa=Inserted` を付ける | pos |
 | `katakana-long-vowel` ✅ | カタカナ語の語末の「ー」。既定は同じ語の混在だけ。options で省く・付けるを決める | pos |
 | `hankaku-kana` ✅ | 半角の片仮名と半角の句読点。コード・リンク・引いた名前の中は除く | - |
 | `translationese-density` | 翻訳調（を可能にする、重要な役割を果たす、されることができる、あなたは）の密度。語彙表 translationese を共通の phrase-density で数える。上限は人の書いた Qiita の記事で決めた | pos |
