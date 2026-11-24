@@ -27,7 +27,20 @@ import { markdownFigures } from "./text-figures.ts";
 import { documentMarkup } from "./markup.ts";
 import { bareUrls } from "./bare-url.ts";
 import { lazyCells, tableCellsOf } from "./table-cells.ts";
-import type { BulletList, LanguageAdapter, Markup, ProseDocument, Sentence, Span, StructureNode, DocumentProfile } from "./plugin.ts";
+import { scopedSentences } from "./scoped-sentences.ts";
+import { headingMarkers, quoteMarkers } from "./scope-markers.ts";
+import type {
+  BulletList,
+  LanguageAdapter,
+  Markup,
+  ProseDocument,
+  ScopedSentence,
+  ScopeSelector,
+  Sentence,
+  Span,
+  StructureNode,
+  DocumentProfile,
+} from "./plugin.ts";
 
 /**
  * 本文として数えないもの。
@@ -83,7 +96,10 @@ const matchSpans = (source: string, pattern: RegExp): Span[] =>
 
 const directiveSpans = (source: string): Span[] => [...matchSpans(source, DIRECTIVE), ...bareUrls(source)];
 
-const collectMasks = (root: Node, source: string, anchors: InPageAnchors, syntax: readonly Span[]): Span[] => {
+const NOTHING_KEPT: ReadonlySet<string> = new Set();
+
+/** keep: the node types read this time although they are not body text (headings and quotations, for a rule with a scope). */
+const collectMasks = (root: Node, source: string, anchors: InPageAnchors, syntax: readonly Span[], keep = NOTHING_KEPT): Span[] => {
   const spans: Span[] = [...directiveSpans(source), ...syntax];
   const alertOf = alertReader(source);
   eachPreOrder(root, (node) => {
@@ -96,7 +112,7 @@ const collectMasks = (root: Node, source: string, anchors: InPageAnchors, syntax
       spans.push(...alert);
       return;
     }
-    if (!NOT_PROSE.has(node.type) && node.type !== "heading" && !isInPageNavigation(node, anchors)) return;
+    if (keep.has(node.type) || (!NOT_PROSE.has(node.type) && node.type !== "heading" && !isInPageNavigation(node, anchors))) return;
     const span = spanOf(node);
     if (span !== undefined) spans.push(span);
   });
@@ -272,6 +288,8 @@ export type TeamRules = {
   readonly requiredSections: readonly string[];
   /** { 使わない書き方: 使う書き方 }。preferred-term が語彙表として読む。 */
   readonly prefer?: Readonly<Record<string, string>>;
+  /** prefer の項目のうち scope を持つもの。{ 使わない書き方: 数える所 }。 */
+  readonly preferScopes?: Readonly<Record<string, ScopeSelector>>;
   /** チームの固有名詞。1 つの名前として読む rule が見る。 */
   readonly names?: readonly string[];
   /** The word lists the plugins ship for the document's language, by name. */
@@ -286,6 +304,7 @@ export const teamRules = (
     readonly jargon: readonly string[];
     readonly requiredSections: readonly string[];
     readonly prefer?: Readonly<Record<string, string>>;
+    readonly preferScopes?: Readonly<Record<string, ScopeSelector>>;
     readonly names?: readonly string[];
     readonly extensions?: { readonly lexicons: Readonly<Record<string, LanguageAdapter["lexicons"]>> };
   },
@@ -293,6 +312,7 @@ export const teamRules = (
 ): TeamRules => ({
   jargon: config.jargon,
   prefer: config.prefer ?? {},
+  preferScopes: config.preferScopes ?? {},
   requiredSections: config.requiredSections,
   names: config.names ?? [],
   lexicons: language === undefined ? {} : (config.extensions?.lexicons[language] ?? {}),
@@ -312,8 +332,65 @@ const teamLexicons = (adapter: LanguageAdapter, team: TeamRules): LanguageAdapte
   ...team.lexicons,
   "internal-jargon": team.jargon.map((pattern) => ({ pattern })),
   // 使わない書き方を pattern に、使う書き方を instead_of に置く。語彙表の「同じことの別の書き方」と同じ向き。
-  "preferred-term": Object.entries(team.prefer ?? {}).map(([pattern, use]) => ({ pattern, instead_of: use })),
+  "preferred-term": Object.entries(team.prefer ?? {}).map(([pattern, use]) => {
+    const scope = team.preferScopes?.[pattern];
+    return { pattern, instead_of: use, ...(scope === undefined ? {} : { scope }) };
+  }),
 });
+
+/**
+ * The quotations a rule with a scope reads as quote: each outermost `>` block, not a GitHub alert (the writer's own text
+ * in a box, read as body text). A quotation inside an alert is quoted.
+ */
+const quotationsOf = (root: Node, source: string): Span[] => {
+  const alertOf = alertReader(source);
+  const found: Span[] = [];
+  eachPreOrder(root, (node) => {
+    if (node.type !== "blockquote" || alertOf(node) !== undefined) return;
+    const span = spanOf(node);
+    if (span !== undefined && !startsInside(span, found)) found.push(span);
+  });
+  return found;
+};
+
+const shiftedBy =
+  (by: number) =>
+  (span: Span): Span =>
+    shift(span, by);
+
+/** What the scoped reading needs from the document being built. masks: what is not text, headings and quotations left readable. */
+type ScopeInput = {
+  readonly root: Node;
+  readonly source: string;
+  readonly markdown: boolean;
+  readonly masks: readonly Span[];
+  readonly adapter: LanguageAdapter;
+  readonly doc: () => ProseDocument;
+};
+
+/** The headings and the quotations, read into sentences with their marks blanked, besides the body and the table cells. */
+const scopedReadingOf = (input: ScopeInput): ScopedSentence[] => {
+  const { root, source, doc } = input;
+  const quotes = quotationsOf(root, source);
+  const quoteMarks = quotes.flatMap((quote) => quoteMarkers(source.slice(quote.start, quote.end)).map(shiftedBy(quote.start)));
+  const unquoted = maskSpans(source, quoteMarks);
+  const headings = spansOfType(root, "heading");
+  const headingMarks = headings.flatMap((heading) => headingMarkers(unquoted.slice(heading.start, heading.end)).map(shiftedBy(heading.start)));
+  const prose = proseOf(source, [...input.masks, ...quoteMarks, ...headingMarks]);
+  const softBreaks = input.markdown ? unmaskedSoftBreaks(source, prose) : [];
+  const read = (spans: readonly Span[]): Sentence[] => sentencesOf(prose, spans, input.adapter, softBreaks);
+  const quoted = spansOfType(root, "paragraph").filter((paragraph) => startsInside(paragraph, quotes));
+  const { sentences, listSpans, replyQuotes, tableCells } = doc();
+  return scopedSentences({
+    body: sentences,
+    headings: read(headings),
+    quoted: read(quoted),
+    cells: tableCells?.() ?? [],
+    regions: { list: listSpans, quote: [...quotes, ...(replyQuotes ?? [])] },
+  });
+};
+
+const KEPT_FOR_SCOPE: ReadonlySet<string> = new Set(["heading", "blockquote"]);
 
 const documentOf = (path: string, source: string, adapter: LanguageAdapter, team: TeamRules, profile: DocumentProfile | undefined): ProseDocument => {
   const markdown = isMarkdownPath(path);
@@ -375,6 +452,22 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
       return documentMarkup(root, source, markdown, [...emailLayout.replyQuotes, ...syntax]);
     },
     tableCells: lazyCells(() => tableCellsOf(doc, (text) => adapter.segment(text))),
+    scopedSentences: lazyCells(() =>
+      scopedReadingOf({
+        root,
+        source,
+        markdown,
+        masks: [
+          ...collectMasks(root, source, anchors, syntax, KEPT_FOR_SCOPE),
+          ...layoutMasks(root, text, markdown),
+          ...emailLayout.furniture,
+          ...extra,
+          ...emphasisSpans(root, source),
+        ],
+        adapter,
+        doc: () => doc,
+      }),
+    ),
   };
   return doc;
 };

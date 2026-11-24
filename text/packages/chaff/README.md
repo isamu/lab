@@ -151,6 +151,8 @@ A `chaff.yaml` at the top of the repository sets:
 - the genre's guide
 - `custom_rules:` your own rules, written as `words`, a `pattern`, `tokens` for a
   part-of-speech pattern, or a `module` for a Node function
+- `scope:` on a team rule or a `prefer` entry: what it reads, from `heading`, `list`, `table`, `quote` and
+  `paragraph`, with `~` to leave one out (`[heading]`, `[~quote]`)
 
 ```bash
 npx chaffjs init --plugin <name>   # start a YAML-only rule pack, chaff-plugin-<name>/

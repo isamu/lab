@@ -11,6 +11,8 @@ import { addressSpans, clockTimeSpans, identifierSpans, isInsideSpan } from "../
 import { followsHandle, isBoundSuffix, isJoinerSpace, isLoneLetter } from "../latin-word-boundary.ts";
 import { licenceNoticeSentences } from "./licence-notice.ts";
 import { followsCaptionLabel, isCitedEntryLine, isNumberTableBoundary, lineAt } from "../latin-spacing-source.ts";
+import { scopedSentencesOf } from "../scoped-sentences.ts";
+import { inScope } from "../text-scope.ts";
 
 /** 書いた形の出現に、動詞の活用した形（行う → 行います）を足したもの。同じ位置は一度だけ。 */
 const avoidedSpans = (sentence: Sentence, entry: LexiconEntry, use: string): Span[] => {
@@ -31,10 +33,23 @@ const sentenceHits = (sentence: Sentence, pairs: readonly PreferPair[]): PreferH
   return hits.filter((hit) => !hits.some((other) => isInsideLonger(hit, other))).toSorted((left, right) => left.span.start - right.span.start);
 };
 
+/** An entry with a scope reads the parts it names; one without reads the body, as every entry always has. */
+const scopedPreferHits = (doc: ProseDocument, pairs: readonly PreferPair[]): PreferHit[] => {
+  const body = new Set(doc.sentences);
+  return scopedSentencesOf(doc).flatMap(({ sentence, scopes }) =>
+    sentenceHits(
+      sentence,
+      pairs.filter((pair) => (pair.entry.scope === undefined ? body.has(sentence) : inScope(pair.entry.scope, scopes))),
+    ),
+  );
+};
+
 /** チームが chaff.yaml の prefer に書いた「使わない書き方」。書いていなければ何も言わない。 */
 export const preferredTerm: Detector = (doc, options): Finding[] => {
   const pairs = (options.lexicon ?? []).flatMap((entry) => (entry.instead_of === undefined ? [] : [{ entry, avoid: entry.pattern, use: entry.instead_of }]));
-  const hits = doc.sentences.flatMap((sentence) => sentenceHits(sentence, pairs));
+  const hits = pairs.every((pair) => pair.entry.scope === undefined)
+    ? doc.sentences.flatMap((sentence) => sentenceHits(sentence, pairs))
+    : scopedPreferHits(doc, pairs);
   if (hits.length === 0 || hits.length < options.limit) return [];
   return hits.map((hit) => ({
     rule: "",

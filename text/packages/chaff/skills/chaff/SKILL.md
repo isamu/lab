@@ -118,7 +118,8 @@ heading above it; if it is not a section of its own, drop the bold and write it 
 - A level is `strict` / `normal` / `relaxed` / `off`; when even `relaxed` is too tight, a positive number is the
   limit itself (`max-sentence-length: 260`). A rule with nothing to count takes fewer levels, and no number;
   `levels_you_can_set` in `rules --json` lists them.
-- `prefer:` maps spellings to the team's (`e-mail: email`); `preferred-term: normal` turns the rule on.
+- `prefer:` maps spellings to the team's (`e-mail: email`); `preferred-term: normal` turns the rule on. An entry
+  limited to some parts of the document takes the object form: `our firm: { use: our company, scope: [~quote] }`.
 - Unknown rule names and unreadable values are reported on stderr — read stderr after editing `chaff.yaml`.
 - `genre:` sets the kind of document. `by_path` sets it per path, as a list of `files` globs, each with `genre`,
   `language`, `profile`, `rules` or `options`, and an entry in any other shape is reported on stderr and not used:
@@ -187,6 +188,12 @@ custom_rules:
     example:
       ja: { before: 禁止ワードを使った文, after: 別の言い方の文 }
 ```
+
+`scope:` on a `words`, `pattern` or `tokens` rule (and on a `prefer` entry) limits what it reads: `heading`, `list`,
+`table`, `quote`, `paragraph` (body text outside the others). Without it, a rule reads body text and list items. Names
+without `~` choose (none: every part), then names with `~` take parts away, so `[~quote]` is everything but
+quotations and `[list, ~quote]` is list items outside quotations. A rule against 。 at the end of a heading is
+`type: pattern`, `pattern: '。'`, `scope: [heading]`. An unknown name stops the run.
 
 Test a new team rule the same way: `explain`, then a sample it must report and a sample it must not, before
 committing `chaff.yaml`. The guide page "Adding a rule" covers each way and how to add a rule to chaff itself.

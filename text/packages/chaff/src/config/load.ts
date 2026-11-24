@@ -3,7 +3,8 @@ import { workingDir } from "./working-dir.ts";
 import { isLevel } from "../levels.ts";
 import { defaultModel } from "../backends/default-model.ts";
 import { isBackend, type BackendName } from "../backends/types.ts";
-import type { Level } from "../plugin.ts";
+import type { Level, ScopeSelector } from "../plugin.ts";
+import { preferOf, type PreferProblem } from "./prefer.ts";
 import type { PathRule } from "./by-path.ts";
 import type { Extensions } from "../extension/load.ts";
 import type { StyleLimits } from "../style-parse.ts";
@@ -31,6 +32,10 @@ export type Config = {
   readonly jargon: readonly string[];
   /** チームの表記。{ 使わない書き方: 使う書き方 }。「サーバー」ではなく「サーバ」、のように。 */
   readonly prefer: Readonly<Record<string, string>>;
+  /** prefer's entries written in the object form with a scope: { avoid: the parts of the document the entry counts in }. */
+  readonly preferScopes?: Readonly<Record<string, ScopeSelector>>;
+  /** prefer's entries that could not be read (an object without use, a scope that cannot be read). Each stops the run. */
+  readonly unreadablePrefer?: readonly PreferProblem[];
   /** この種類の文書に無いと困る見出し。チームが自分で決める。 */
   readonly requiredSections: readonly string[];
   /** チームの固有名詞（組織名・製品名）。1 つの名前として読み、漢字の連なりや繰り返しに数えない。 */
@@ -170,18 +175,6 @@ const toPathRule = (raw: unknown): PathRule | undefined => {
 /** 利用者が書く語の並び。空白だけのものは落とす。 */
 const wordsOf = (raw: unknown): string[] => (Array.isArray(raw) ? raw.map((entry) => String(entry).trim()).filter((entry) => entry.length > 0) : []);
 
-/** 両側とも空でない文字列の対だけを読む。同じ語どうし（「サーバ: サーバ」）は何も言えないので捨てる。 */
-const preferOf = (raw: unknown): Record<string, string> =>
-  isRecord(raw)
-    ? Object.fromEntries(
-        Object.entries(raw).flatMap(([avoid, use]): [string, string][] => {
-          const from = avoid.trim();
-          const to = typeof use === "string" ? use.trim() : "";
-          return from !== "" && to !== "" && from !== to ? [[from, to]] : [];
-        }),
-      )
-    : {};
-
 const isNameEntry = (value: unknown): value is string | number => typeof value === "string" || typeof value === "number";
 
 const printed = (value: unknown): string => JSON.stringify(value) ?? String(value);
@@ -217,6 +210,7 @@ export const configOf = (raw: unknown, path: string): Config => {
   const names = namesOf(raw["names"]);
   const byPath = byPathOf(raw["by_path"]);
   const options: unknown = raw["options"];
+  const prefer = preferOf(raw["prefer"]);
   return {
     genre: str(raw["genre"]),
     profile: str(raw["profile"]),
@@ -230,7 +224,9 @@ export const configOf = (raw: unknown, path: string): Config => {
     aiModel: str(raw["ai_model"]) ?? defaultModel(backend),
     confidenceThreshold: typeof raw["confidence_threshold"] === "number" ? raw["confidence_threshold"] : 0.7,
     jargon: wordsOf(raw["jargon"]),
-    prefer: preferOf(raw["prefer"]),
+    prefer: prefer.prefer,
+    preferScopes: prefer.scopes,
+    unreadablePrefer: prefer.problems,
     requiredSections: wordsOf(raw["required_sections"]),
     names: names.names,
     unreadableNames: names.unreadable,
