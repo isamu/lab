@@ -472,6 +472,7 @@ by_path:
 
 `explain` は、そのルールを変えている項目をすべて挙げます。
 
+<!-- chaff-screen: by-path-rules -->
 ```
 $ npx chaffjs explain max-sentence-length
 …

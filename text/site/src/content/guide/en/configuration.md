@@ -477,6 +477,7 @@ A rule a `by_path` entry turns off is listed under "did not run" with that entry
 
 `explain` names every entry that changes the rule:
 
+<!-- chaff-screen: by-path-rules -->
 ```
 $ npx chaffjs explain max-sentence-length
 …
