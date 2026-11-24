@@ -327,9 +327,13 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
     const absent = missingList(rule, doc.lexicons);
     if (absent !== undefined)
       return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).noLexicon(doc.language, absent) }] };
+    const lexicon = rule.word_list === undefined ? undefined : doc.lexicons[rule.word_list];
+    // A rule that reads only the team's list has nothing to check without it. Its 0 findings would read as checked and fine.
+    if (rule.team_list !== undefined && (lexicon ?? []).length === 0)
+      return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).noTeamList(rule.team_list) }] };
     const options = {
       limit: limitFor(rule, level, genre, limits),
-      lexicon: rule.word_list === undefined ? undefined : doc.lexicons[rule.word_list],
+      lexicon,
       where: rule.where,
       fullSentence: rule.full_sentence,
       embeddedLimits: embeddedLimitsFor(rule, level, genre, embedded),
