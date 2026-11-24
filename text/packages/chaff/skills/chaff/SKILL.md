@@ -125,6 +125,9 @@ tell which is right, leave both and ask.
   from the spoken line). Leave it out: the genre or the content chooses it, and the first line of `npx chaffjs tree` shows the choice. `none` stops the choice.
 - `names:` lists the team's names (organisations, products), each read as one name. `include:` adds files besides
   Markdown when a folder is checked (`include: ["*.yaml"]`).
+- `options: { no-mixed-desumasu: { body: desumasu, list: dearu, heading: dearu } }` (Japanese only) is for a team
+  that has chosen its register: in a region written there, a sentence in the other register is reported even with no
+  mix. Leave it out to keep the default, which takes no side and only flags the minority of a mix.
 
 ## Turn a team's style note into chaff.yaml
 

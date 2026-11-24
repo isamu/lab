@@ -136,6 +136,8 @@ A `chaff.yaml` at the top of the repository sets:
 - `genre:` and `style:`
 - which rules run, and at what level
 - your preferred spellings
+- `options:` where a rule takes a side only when the team chooses one, such as the sentence-ending register a Japanese
+  document requires (`no-mixed-desumasu: { body: desumasu, list: dearu }`; Japanese only, English has no counterpart)
 - the genre's guide
 - `custom_rules:` your own rules, written as `words`, a `pattern`, `tokens` for a
   part-of-speech pattern, or a `module` for a Node function
