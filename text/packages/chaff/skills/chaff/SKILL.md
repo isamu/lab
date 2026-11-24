@@ -109,13 +109,19 @@ tell which is right, leave both and ask.
 - `prefer:` maps spellings to the team's (`e-mail: email`); `preferred-term: normal` turns the rule on.
 - Unknown rule names and unreadable values are reported on stderr — read stderr after editing `chaff.yaml`.
 - `genre:` sets the kind of document. `by_path` sets it per path, as a list of `files` globs, each with `genre`,
-  `language` or `profile`, and an entry in any other shape is reported on stderr and not used:
+  `language`, `profile`, `rules` or `options`, and an entry in any other shape is reported on stderr and not used:
 
   ```yaml
   by_path:
     - files: ["guides/**/*.md"]
       genre: docs/manual
+      rules:
+        max-sentence-length: relaxed
   ```
+
+  An entry's `rules` and `options` are written as the top-level ones are. A file's level, weakest first: the default,
+  the genre, `style:`, top-level `rules:`, then the matching `by_path` entries' `rules` (the later entry wins). A rule
+  an entry turns off is listed as not run with the entry named; `explain` lists every entry that changes the rule.
 
   A file's front matter `genre:` (or `type:`) sets that one file, when neither `genre:` nor a matching `by_path`
   entry does. Strongest first: `--genre` for one run, then `by_path`, `genre:`, front matter, the path, the content,

@@ -356,6 +356,66 @@ by_path:
 どこで実行しても、結果が変わりません。
 `by_path` は `files` を持つ項目の並びです。フォルダとジャンルの対（`guides: docs/manual`）のような別の形や、`files` の無い項目は使わず、検査の前にそう言います。
 
+### パスごとにルールを変える
+
+項目には `rules` と `options` も書けます。書き方はファイルの一番上と同じです。`rules` には段階か `off` か数を、`options` にはルールのオプションを書きます。
+契約書と手引きを、一つの `chaff.yaml` で見分けられます。
+
+```yaml
+genre: blog/tech
+
+rules:
+  max-sentence-length: strict
+
+by_path:
+  - files: ["legal/**/*.md"]
+    genre: legal/contract
+    rules:
+      max-sentence-length: 60
+  - files: ["legal/archive/**/*.md"]
+    rules:
+      max-sentence-length: off
+```
+
+ファイルごとの段階は、それを決める場所のうち一番強いところで決まります。弱い順に並べます。
+
+| 場所 | 強さ |
+| --- | --- |
+| ルールの既定 | 一番弱い |
+| ジャンル（と文書の種類） | |
+| `style:` | |
+| `chaff.yaml` の一番上の `rules` | |
+| ファイルに当たる `by_path` の項目の `rules` | 一番強い。複数当たれば後に書いたものが勝つ |
+
+`by_path` に段階を書くと、上で書いた数も置き換えます。上に `260`、`by_path` に `relaxed` とあれば、そのファイルは `relaxed` です。
+オプションも同じで、当たる項目の `options` が、一番上の `options` と style の `options` に勝ちます。
+
+`by_path` で止めたルールは、動かなかったルールの一覧に、止めた項目と一緒に出ます。
+
+```
+  max-sentence-length（設定の by_path: legal/archive/**/*.md で止めているため）
+```
+
+`explain` は、そのルールを変えている項目をすべて挙げます。
+
+```
+$ npx chaffjs explain max-sentence-length
+…
+  いまは strict です。
+
+  chaff.yaml の by_path で、次のファイルだけ変えています（そのファイルでは上の段階より強く効きます）:
+    legal/**/*.md: 60
+    legal/archive/**/*.md: off
+…
+```
+
+`rules --json` でも、ルールごとの `by_path` に同じ項目が並びます。
+`by_path` の中の知らないルール名、段階として読めない値、地図になっていない `rules` や `options` は、一番上と同じように、どの項目かを添えて検査の前に言います。
+
+```
+chaff: …/chaff.yaml (by_path: legal/**/*.md): max-sentense-length というルールはありません（npx chaffjs rules --json で一覧が出ます）
+```
+
 ## Markdown 以外のファイルも見る
 
 フォルダを渡すと、chaff はその中の Markdown（`.md` `.markdown` `.mdx`）を検査します。

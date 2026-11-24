@@ -15,6 +15,7 @@ import type { OptionLayer } from "../rule-options.ts";
 import { CUSTOM_TYPES } from "../custom/parse.ts";
 import { DEFAULT_DEPTH, REWRITE_DEPTHS, depthMeaning } from "../rewrite-depth.ts";
 import type { ReportedGuide } from "../genre-guide/report.ts";
+import { byPathSource, pathLevelsOf } from "../config/by-path-rules.ts";
 
 const TEXT: Texts<{
   readonly offBySetting: string;
@@ -26,6 +27,7 @@ const TEXT: Texts<{
   readonly reason: string;
   readonly byFile: string;
   readonly optionsByFile: string;
+  readonly byPathFile: string;
   readonly fromStyleNote: readonly string[];
 }> = {
   ja: {
@@ -38,6 +40,8 @@ const TEXT: Texts<{
     reason: "<理由>",
     byFile: "chaff.yaml の rules に <rule-id>: <level> を足す。既定のままのものは書かない。",
     optionsByFile: "options を持つ rule は、chaff.yaml の options に <rule-id>: { <option>: <value> } を足す。",
+    byPathFile:
+      "一部のファイルだけ変えるときは、by_path の項目に files と rules（または options）を書く。強さは 既定 < ジャンル < style < rules < by_path の rules で、当たる項目が複数あれば後に書いたものが勝つ。",
     fromStyleNote: [
       "チームの書き方の決まり（例: です・ます、1 文 80 字まで）を一つずつ読む。",
       "決まりごとに、summary と level_meaning が合う rule を選ぶ。数の決まりは levels の数と比べ、合う段階を選ぶか数を直接書く。",
@@ -56,6 +60,8 @@ const TEXT: Texts<{
     reason: "<reason>",
     byFile: "Add <rule-id>: <level> under rules in chaff.yaml. Leave out anything at its default.",
     optionsByFile: "For a rule with options, add <rule-id>: { <option>: <value> } under options in chaff.yaml.",
+    byPathFile:
+      "To change a rule for some files only, add files with rules (or options) to a by_path entry. Weakest to strongest: the default, the genre, style, rules, by_path's rules; of several matching entries the later one wins.",
     fromStyleNote: [
       "Read the team's style note one requirement at a time (for example: polite endings, sentences of at most 80 characters).",
       "For each requirement, pick the rule whose summary and level_meaning match. For a number, compare it with the rule's levels and pick a level, or write the number itself.",
@@ -101,6 +107,12 @@ const yourSetting = (rule: RuleDefinition, config: Config, limits: Limits): Reco
   const from = styleLevelSource(config, rule.id) ?? config.path;
   const limit = rule.level_sets === "severity" ? undefined : limits[rule.id];
   return limit === undefined ? { level, from } : { level, limit, from };
+};
+
+/** The by_path entries that set this rule for the files they match, in the order written: absent when none does. */
+const byPathOf = (rule: RuleDefinition, config: Config): Record<string, unknown> => {
+  const entries = pathLevelsOf(config.byPath, rule.id);
+  return entries.length === 0 ? {} : { by_path: entries.map((entry) => ({ ...entry, from: byPathSource(entry) })) };
 };
 
 /** The house style chaff.yaml names: what it decides and the guideline it follows, so an AI can say where a setting came from. */
@@ -222,6 +234,7 @@ export const rulesJson = (
         ...levelsOf(rule, genre),
         levels_you_can_set: definedLevels(rule),
         your_setting: yourSetting(rule, config, limits),
+        ...byPathOf(rule, config),
         now: now(rule, config, limits, genre, preset, language),
         ...(rule.options === undefined ? {} : { options: optionsJson(rule, optionLayers) }),
         ...(rule.custom === undefined
@@ -234,6 +247,7 @@ export const rulesJson = (
         by_command: ["relax", "strict", "off"].map((command) => `npx chaffjs ${command} <rule-id> --why "${text.reason}"`),
         by_file: text.byFile,
         options_by_file: text.optionsByFile,
+        by_path_file: text.byPathFile,
       },
     },
     null,
