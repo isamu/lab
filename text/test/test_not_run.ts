@@ -48,7 +48,7 @@ describe("runConditions", () => {
 });
 
 describe("renderSuppressions: stets on rules that did not run", () => {
-  const file = (path: string, notRun: PerFile["notRun"]): PerFile => ({ path, suppressed: [], reasonless: [], notRun });
+  const file = (path: string, notRun: PerFile["notRun"]): PerFile => ({ path, suppressed: [], reasonless: [], notRun, ranges: [], problems: [] });
 
   it("lists them after 'none', with why and where, and the --experimental hint when it would help", () => {
     const text = renderSuppressions([file("a.md", [{ rule: EXPERIMENTAL, why: "still experimental", needsExperimental: true }])], "en");
@@ -70,7 +70,10 @@ describe("renderSuppressions: stets on rules that did not run", () => {
   it("follows the counts when other stets did silence something", () => {
     const silenced: Finding = { rule: STABLE, severity: "warning", line: 2, column: 1, quote: "", values: {} };
     const { suppressed } = applySuppressions(`<!-- stet: ${STABLE} — r -->\n本文。`, [silenced], []);
-    const text = renderSuppressions([{ path: "a.md", suppressed, reasonless: [], notRun: [{ rule: EXPERIMENTAL, why: "x", needsExperimental: true }] }], "en");
+    const text = renderSuppressions(
+      [{ path: "a.md", suppressed, reasonless: [], notRun: [{ rule: EXPERIMENTAL, why: "x", needsExperimental: true }], ranges: [], problems: [] }],
+      "en",
+    );
     assert.match(text, /Silenced findings: 1/u);
     assert.match(text, /Rules with a stet that did not run in this check/u);
   });

@@ -53,9 +53,11 @@ export const levelFor = (rule: RuleDefinition, settings: Settings, experimental:
   return "normal";
 };
 
-/** Why a rule at off did not run: chaff.yaml turned it off, the genre's preset did, it waits for a style, or it is experimental. */
-const offSkip = (rule: RuleDefinition, settings: Settings, preset: Settings, genre: string, reasons: Reasons): Skipped => {
-  if (settings[rule.id] !== undefined) return { rule: rule.id, why: reasons.turnedOff };
+/** Why a rule at off did not run: a by_path entry or chaff.yaml turned it off, the genre's preset did, it waits for a style, or it is experimental. */
+const offSkip = (rule: RuleDefinition, context: RunContext, preset: Settings, reasons: Reasons): Skipped => {
+  const { settings, genre } = context;
+  const byPath = context.levelsFrom?.[rule.id];
+  if (settings[rule.id] !== undefined) return { rule: rule.id, why: byPath === undefined ? reasons.turnedOff : reasons.turnedOffBy(byPath) };
   if (preset[rule.id] !== undefined) return { rule: rule.id, why: reasons.presetOff(genre) };
   if (rule.opt_in === true) return { rule: rule.id, why: reasons.optIn };
   return { rule: rule.id, why: reasons.experimental, offUntilExperimental: true };
@@ -114,6 +116,17 @@ const documentNeed = (rule: RuleDefinition, doc: ProseDocument): string | undefi
   // Set aside only what the cross pass can run: a missing word list is said here, as for any rule.
   const absent = missingList(rule, doc.lexicons);
   return absent === undefined ? reasonsFor(doc).oneDocument : reasonsFor(doc).noLexicon(doc.language, absent);
+};
+
+/**
+ * 語彙表を要求する rule で、その言語に語彙表が無ければ動かせない。黙って通さない。
+ * A rule that reads only the team's list (team_list) has nothing to check while chaff.yaml lists nothing: its 0 findings would read as checked and fine.
+ */
+const listNeed = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
+  const absent = missingList(rule, doc.lexicons);
+  if (absent !== undefined) return reasonsFor(doc).noLexicon(doc.language, absent);
+  const listed = rule.word_list === undefined ? undefined : doc.lexicons[rule.word_list];
+  return rule.team_list !== undefined && (listed ?? []).length === 0 ? reasonsFor(doc).noTeamList(rule.team_list) : undefined;
 };
 
 /** 知らない要求は満たされていないものとして扱う。黙って無視すると、要求なしで動いてしまう。 */
@@ -281,6 +294,8 @@ export type RunContext = {
   readonly optionLayers?: readonly OptionLayer[];
   /** The detectors loaded from the code chaff.yaml names, by rule id. They come before chaff's own table. */
   readonly detectors?: Readonly<Record<string, Detector>>;
+  /** For each rule a by_path entry set, which entry: a rule it turns off says so where the rules that did not run are listed. */
+  readonly levelsFrom?: Readonly<Record<string, string>>;
 };
 
 export const runRules = (
@@ -309,7 +324,7 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
     const blocked = unmet(rule, doc);
     if (blocked !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: blocked }] };
     const level = levelFor(rule, settings, experimental, preset);
-    if (level === "off") return { findings: acc.findings, skipped: [...acc.skipped, offSkip(rule, settings, preset, genre, reasonsFor(doc))] };
+    if (level === "off") return { findings: acc.findings, skipped: [...acc.skipped, offSkip(rule, context, preset, reasonsFor(doc))] };
     const noTags = untagged(rule, doc);
     if (noTags !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noTags }] };
     // 木は capability ではなく、adapter が structure を持つかで決まる。持たない言語で動かすと「参照先が無い」が 0 件に見える。
@@ -323,10 +338,8 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
     const detector = detectors[rule.id] ?? DETECTORS[rule.how_to_find];
     if (detector === undefined)
       return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).noDetector(rule.how_to_find) }] };
-    // 語彙表を要求する rule で、その言語に語彙表が無ければ動かせない。黙って通さない。
-    const absent = missingList(rule, doc.lexicons);
-    if (absent !== undefined)
-      return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).noLexicon(doc.language, absent) }] };
+    const noList = listNeed(rule, doc);
+    if (noList !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noList }] };
     const options = {
       limit: limitFor(rule, level, genre, limits),
       lexicon: rule.word_list === undefined ? undefined : doc.lexicons[rule.word_list],

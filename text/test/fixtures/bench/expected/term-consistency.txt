@@ -1,0 +1,14 @@
+table  13  13  0  0
+ja/blog  group-word-mixed  found
+ja/email  group-word-mixed  found
+ja/figures  group-word-mixed  found
+ja/minutes  group-word-mixed  found
+ja/press  group-word-mixed  found
+ja/readme  group-word-mixed  found
+ja/requirements  group-word-mixed  found
+en/blog  group-word-mixed  found
+en/email  group-word-mixed  found
+en/figures  group-word-mixed  found
+en/itinerary  group-word-mixed  found
+en/minutes  group-word-mixed  found
+en/press  group-word-mixed  found

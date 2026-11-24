@@ -1,0 +1,102 @@
+id: enumeration-marker-mix
+layer: L1
+status: stable
+how_to_find: enumeration-marker
+severity: info
+
+name:
+  ja: 項目の番号の書き方が揃っていない
+  en: Item numbers written in mixed forms
+
+why:
+  ja: 「1.」「2.」と数えてきた並びの中に「3)」や「(3)」が一つ混ざると、読み手はそれが同じ並びの続きなのか、一段下の項目なのか迷います。Markdown は「1.」と「1)」が変わる所でリストを二つに分け、「(1)」「①」「一、」「a.」はリストとして読みません。貼り付けや書き換えの途中でよく起きる形です。どの書き方が正しいかは決めず、一つのリストの同じ深さか、続けて番号を振った段落の並びのうち、少ないほうの書き方で、ほかの番号の続きを数えている項目だけを指します。
+  en: A "3)" or "(3)" in a run counted "1.", "2." leaves the reader unsure whether it continues the run or starts a level below. Markdown starts a new list where "1." changes to "1)", and does not read "(1)", "①", "一、" or "a." as a list at all. It is the shape a paste or a half-done rewrite leaves. chaff does not pick a form; in one level of one list, or one run of numbered paragraphs, it points at an item written in the minority form that still counts on with the others.
+
+message:
+  ja: 番号「{mark}」の書き方が、同じ並びのほかの番号（「{usual}」など {count} 個）と違います
+  en: 'The item number "{mark}" is written differently from the rest of its run ("{usual}" and {count} in all)'
+
+how_to_fix:
+  ja: 並びの多くの番号と同じ書き方に揃えてください。一段下の項目のつもりなら、字下げして 1 から数え直してください。
+  en: Write it the way most numbers of the run are written. If it is meant to be a level below, indent it and count it from 1.
+
+placeholders:
+  mark:
+    ja: 番号
+    en: the number
+  usual:
+    ja: ほかの番号
+    en: the other number
+  count:
+    ja: 〇
+    en: N
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 「1.」「2.」「3)」「4.」のように、一つの並びの項目の番号の書き方が混ざっている所
+  en: 'Item numbers mixed in one run: "1.", "2.", "3)", "4."'
+example:
+  ja:
+    before: |
+      申し込みの手順です。
+
+      1. 申込書を書く
+      2. 写真を貼る
+      3) 窓口に出す
+      4. 受付票を受け取る
+    after: |
+      申し込みの手順です。
+
+      1. 申込書を書く
+      2. 写真を貼る
+      3. 窓口に出す
+      4. 受付票を受け取る
+  en:
+    before: |
+      To apply:
+
+      1. Fill in the form.
+      2. Attach a photo.
+      3) Hand it in at the desk.
+      4. Keep the receipt.
+    after: |
+      To apply:
+
+      1. Fill in the form.
+      2. Attach a photo.
+      3. Hand it in at the desk.
+      4. Keep the receipt.
+
+not_flagged:
+  ja: 1 から数え直す別の書き方の項目（「1.」の下の「(1)」「(2)」、字下げした入れ子）は一段下の並びと読み、比べません。並びの番号が続いていない所（「2.」の次の「(5)」）、項目が三つ未満の並び、二つの書き方が同じ数の並び、見出し・表・引用・コードの中の番号、区切りの記号の無い数（「2　乙は」）は指しません。別の並び（見出しや番号の無い段落で分かれたもの）どうしは比べません。
+  en: An item in another form that counts from 1 again ("(1)", "(2)" under "1.", or an indented nested list) is read as a level below and not compared. A number that does not count on ("(5)" after "2."), runs of fewer than three items, a tie between two forms, numbers in headings, tables, quotations and code, and a number with no delimiter ("2 The Tenant") are not reported. Separate runs (split by a heading or an unnumbered paragraph) are not compared with each other.
+rewrite:
+  depth: light
+  ja:
+    direction: 並びの多くの番号と同じ書き方にしてください。番号の書き方だけを替え、項目の言葉と順番は変えません。
+    pairs:
+      - before: 「1. 申込書を書く」「2. 写真を貼る」「3) 窓口に出す」
+        after: 「1. 申込書を書く」「2. 写真を貼る」「3. 窓口に出す」
+      - before: 「(1) 甲は」「(2) 乙は」「3. 甲及び乙は」
+        after: 「(1) 甲は」「(2) 乙は」「(3) 甲及び乙は」
+    keep:
+      - 項目の言葉と順番
+      - 番号の数
+    avoid:
+      - 少ないほうの書き方に合わせて、ほかの番号をすべて書き換える
+  en:
+    direction: Write the number the way most numbers of the run are written. Change only the number's form; keep each item's words and order.
+    pairs:
+      - before: '"1. Fill in the form.", "2. Attach a photo.", "3) Hand it in."'
+        after: '"1. Fill in the form.", "2. Attach a photo.", "3. Hand it in."'
+      - before: '"(a) the Tenant", "(b) the Landlord", "c. the Agent"'
+        after: '"(a) the Tenant", "(b) the Landlord", "(c) the Agent"'
+    keep:
+      - each item's words and order
+      - the numbers themselves
+    avoid:
+      - rewriting every other number to match the odd one

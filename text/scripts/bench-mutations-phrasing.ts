@@ -1,5 +1,5 @@
 // Seeded mistakes of stock phrasing for `yarn bench`, in either language: a preamble before the first heading, a
-// clichéd closing, a padded opening, an empty intensifier, hedges stacked in one sentence, a chat reply's knowledge-cutoff line, a template
+// clichéd closing, a padded opening, an empty intensifier, a transcript's filler left in, hedges stacked in one sentence, a chat reply's knowledge-cutoff line, a template
 // blank left unfilled, one paragraph opener repeated, sentences chained with "And" (そして),
 // a spelling the team does not use, and a pet phrase used in paragraph after paragraph. Pure and deterministic, like scripts/bench-mutations.ts.
 import {
@@ -118,6 +118,20 @@ const addToFirstSection = (source: string, added: string): Plant | undefined => 
 
 /** 最初の節の最初の段落に、中身の無い強調の一文を足す。 */
 export const intensify = (source: string): Plant | undefined => addToFirstSection(source, emphasisFor(source));
+
+// --- filler-word ---
+
+const FILLER = { ja: "ええと、", en: "Um, " };
+
+/** 最初の節の最初の段落の頭に、文字起こしに残ったつなぎの言葉を足す。節見出しの無い文書には植えない。 */
+export const leaveFiller = (source: string): Plant | undefined => {
+  const lines = linesOf(source);
+  const heading = lines.findIndex(isSection);
+  const block = heading < 0 ? undefined : blocksOf(lines).find((candidate) => candidate.start > heading && isParagraph(lines, candidate));
+  if (block === undefined) return undefined;
+  const filler = isJapanese(source) ? FILLER.ja : FILLER.en;
+  return { source: replaceLine(lines, block.start, `${filler}${lines[block.start] ?? ""}`), line: block.start + 1 };
+};
 
 // --- excessive-hedging ---
 
@@ -303,12 +317,53 @@ const avoidedIn = (line: string): string | undefined => {
 /** チームが決めた書き方の一つを、使わないと決めた書き方にする。 */
 export const avoidedSpelling = (source: string): Plant | undefined => rewriteFirst(source, (line) => isProse(line) && avoidedIn(line) !== undefined, avoidedIn);
 
+// --- term-form ---
+
+/** bench のチームが chaff.yaml の terms に並べた、決まった書き方の名前。植える名前と同じ。 */
+export const TEAM_TERMS: readonly string[] = ["JSON", "OCR", "SAML", "SSO", "SLA"];
+
+const TERM_WORD = new RegExp(`(?<![A-Za-z])(${TEAM_TERMS.join("|")})(?![A-Za-z])`, "u");
+
+/** The line with its first listed name in small letters (JSON → json). */
+const lowerTermIn = (line: string): string | undefined => {
+  const found = TERM_WORD.exec(line);
+  return found === null ? undefined : `${line.slice(0, found.index)}${found[0].toLowerCase()}${line.slice(found.index + found[0].length)}`;
+};
+
+/** チームが書き方を決めた名前の一つを、小文字で書く。 */
+export const lowerCasedTerm = (source: string): Plant | undefined =>
+  rewriteFirst(source, (line) => isProse(line) && !line.includes("`") && lowerTermIn(line) !== undefined, lowerTermIn);
+
+// --- term-consistency ---
+
+/** bench のチームが chaff.yaml の consistent に並べた組。先の語を文書がよく使い、植えるときに後の語へ一つだけ替える。 */
+export const TEAM_CONSISTENT: readonly (readonly [string, string])[] = [
+  ["会議", "ミーティング"],
+  ["meeting", "session"],
+];
+
+/** The group whose first word the text uses twice or more: one place switched to the other word is then the minority. */
+const usedGroup = (source: string): readonly [string, string] | undefined => TEAM_CONSISTENT.find(([usual]) => source.split(usual).length > 2);
+
+/** チームがまぜないと決めた組の、文書がよく使う語を、一つだけ組のもう一つの語にする。 */
+export const mixedGroupWord = (source: string): Plant | undefined => {
+  const group = usedGroup(source);
+  if (group === undefined) return undefined;
+  const [usual, other] = group;
+  return rewriteFirst(
+    source,
+    (line) => isProse(line) && line.includes(usual),
+    (line) => line.replace(usual, other),
+  );
+};
+
 /** The mistakes of stock phrasing, in the order `yarn bench` plants them after the others. */
 export const PHRASING_MUTATIONS: readonly Mutation[] = [
   { id: "heading-dropped", rule: "preamble-length", languages: ["ja", "en"], reportsOn: "document", plant: dropFirstHeading },
   { id: "cliche-closing", rule: "closing-cliche", languages: ["ja", "en"], plant: closeWithCliche },
   { id: "padded-opening", rule: "padded-intro", languages: ["ja", "en"], plant: padOpening },
   { id: "intensified", rule: "empty-intensifier", languages: ["ja", "en"], plant: intensify },
+  { id: "filler-left", rule: "filler-word", languages: ["ja", "en"], plant: leaveFiller },
   { id: "hedges-stacked", rule: "excessive-hedging", languages: ["ja", "en"], plant: stackHedges },
   { id: "residue-left", rule: "assistant-residue", languages: ["ja", "en"], plant: leaveResidue },
   { id: "blank-left", rule: "unfilled-placeholder", languages: ["ja", "en"], plant: leaveBlank },
@@ -317,5 +372,7 @@ export const PHRASING_MUTATIONS: readonly Mutation[] = [
   { id: "and-chained", rule: "sentence-initial-conjunction-run", languages: ["en"], plant: chainWithConjunction },
   { id: "soshite-chained", rule: "sentence-initial-conjunction-run", languages: ["ja"], plant: chainWithConjunction },
   { id: "spelling-avoided", rule: "preferred-term", languages: ["ja", "en"], plant: avoidedSpelling },
+  { id: "term-lower-cased", rule: "term-form", languages: ["ja", "en"], plant: lowerCasedTerm },
+  { id: "group-word-mixed", rule: "term-consistency", languages: ["ja", "en"], plant: mixedGroupWord },
   { id: "pet-phrase", rule: "ngram-repetition", languages: ["ja", "en"], plant: repeatPetPhrase },
 ];

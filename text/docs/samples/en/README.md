@@ -11,7 +11,7 @@ Or paste a draft into the [playground](https://isamu.github.io/lab/en/playground
 
 日本語の見本: [../ja/README.md](../ja/README.md)
 
-Rules with a sample: 259 / 259
+Rules with a sample: 268 / 268
 
 ## Readability
 
@@ -54,6 +54,7 @@ Emphasis that says nothing, stock phrases, and passives that never say who acted
 | [Dangling participle](dangling-participle.md) (`dangling-participle`) | An opening participle followed by an empty "it" or "there" as the subject |
 | [Empty intensifier](empty-intensifier.md) (`empty-intensifier`) | Words like "extremely important" that add weight without saying what matters |
 | [Too much hedging](excessive-hedging.md) (`excessive-hedging`) | Hedges piled up ("it may perhaps be possible") until nobody is saying anything |
+| [Filler word left in](filler-word.md) (`filler-word`) | Fillers such as "um" or "you know" left in minutes made from a transcript |
 | [Open list that a limit closes](nado-closed-list.md) (`nado-closed-list`) | An open list (etc., and so on) that "only" or "limited to" closes |
 | [Verbs hidden in nouns](nominalization.md) (`nominalization`) | Verbs hidden in nouns ("make a decision", "conduct an analysis"), used too often |
 | [Nonstandard word](nonstandard-word.md) (`nonstandard-word`) | A word formal writing treats as nonstandard, such as "irregardless" |
@@ -120,6 +121,7 @@ Two ways of writing that are both right, mixed in one document. chaff does not p
 | [A long name used again after its short name was defined](defined-name-repeated.md) (`defined-name-repeated`) | A party given a short name ("the Supplier") and later written out in full |
 | [A defined term used in another form](defined-term-form.md) (`defined-term-form`) | A defined term later written in another form: quoted, lower case, or lengthened |
 | [Ellipses written two ways](ellipsis-consistency.md) (`ellipsis-consistency`) | An ellipsis written two ways in one document, such as "..." and "…" |
+| [Item numbers written in mixed forms](enumeration-marker-mix.md) (`enumeration-marker-mix`) | Item numbers mixed in one run: "1.", "2.", "3)", "4." |
 | [Heading end punctuation mixed](heading-end-punctuation-mix.md) (`heading-end-punctuation-mix`) | Headings that end with a colon or full stop mixed with headings that do not |
 | [List items in mixed forms](list-item-form-mix.md) (`list-item-form-mix`) | One list mixing phrases with sentences, or verb-first items with noun-first ones |
 | [List bullets mixed](list-marker-mix.md) (`list-marker-mix`) | Bullets ("-", "*", "+", "・") mixed in one list or one document |
@@ -167,9 +169,11 @@ Skipped numbers, references to provisions that are not there, terms defined twic
 | [Figures and tables referred to out of order or out of place](figure-reference-order.md) (`figure-reference-order`) | A figure or table referred to out of order, too late, or never |
 | [A note mark with no note, or a note nothing points to](footnote-mismatch.md) (`footnote-mismatch`) | A note mark ("[^3]") with no note, or a note nothing points to |
 | [Heading level skipped](heading-level-skip.md) (`heading-level-skip`) | A heading that skips a level, such as "####" right after "##" |
+| [No space after the heading marks](heading-marker-no-space.md) (`heading-marker-no-space`) | A line like "##Steps", with no space after the marks, that is not a heading |
 | [Heading numbering mixed](heading-numbering-mix.md) (`heading-numbering-mix`) | Sibling headings numbered in mixed ways: "1. Overview", "Steps", "3. Costs" |
 | [Image without alt text](image-alt-text.md) (`image-alt-text`) | An image with no alt text, as in "![](chart.png)" |
 | [Image alt text is a file name](image-file-name-alt.md) (`image-file-name-alt`) | An image whose alt text is a file name, as in "![IMG_1234.png](…)" |
+| [Link definition that does nothing](link-definition-unused.md) (`link-definition-unused`) | A "[label]: URL" definition no link uses, or one defined twice to two places |
 | [Opposite obligations on the same act](modal-conflict.md) (`modal-conflict`) | The same act required or allowed in one sentence and forbidden in another |
 | [The lead only restates the title](no-lead.md) (`no-lead`) | A first paragraph under the title that only says the title again |
 | [Number without its unit](number-without-unit.md) (`number-without-unit`) | A bare number where the other values in its column all have a unit |
@@ -177,8 +181,11 @@ Skipped numbers, references to provisions that are not there, terms defined twic
 | [Skipped or repeated number](numbering-gap.md) (`numbering-gap`) | A numbered item that skips or repeats a number, such as Article 1 then 3 |
 | [Too long before the point](preamble-length.md) (`preamble-length`) | Too many paragraphs before the first heading, which delays the point |
 | [Prerequisite written after the steps](prerequisite-after-step.md) (`prerequisite-after-step`) | "Before you begin" written after the numbered steps it should come before |
+| [A bold line used as a heading](pseudo-heading.md) (`pseudo-heading`) | A bold line standing in for a heading in a document that uses headings |
 | [A required skill listed again as preferred](required-listed-as-preferred.md) (`required-listed-as-preferred`) | A job posting that lists one skill both as required and as preferred |
+| [Link written the wrong way round](reversed-link.md) (`reversed-link`) | A link written "(text)[URL]", with the brackets the wrong way round |
 | [A reference to a step that does not exist](step-reference-missing.md) (`step-reference-missing`) | A reference such as "see step 5" past the last step the document has |
+| [Line swallowed by a table](table-absorbed-line.md) (`table-absorbed-line`) | A sentence right under a table with no blank line, read as a row of the table |
 | [Table row with more cells than the header](table-row-overflow.md) (`table-row-overflow`) | A table row with more cells than the header row (the extra ones are not shown) |
 | [A table-of-contents entry with no heading](toc-heading-mismatch.md) (`toc-heading-mismatch`) | A table of contents entry that matches no heading of the document |
 | [Unclosed code fence](unclosed-code-fence.md) (`unclosed-code-fence`) | A code block opened with "```" and never closed |
@@ -327,5 +334,7 @@ Rules that check only what your team lists in chaff.yaml: spellings, jargon, req
 | [Not the team's spelling](preferred-term.md) (`preferred-term`) | A spelling the team chose not to use ("e-mail" for "email"), from chaff.yaml |
 | [A required heading is missing](required-sections.md) (`required-sections`) | A heading the team requires (such as "Risks") missing, set in chaff.yaml |
 | [A provision's verb form is not the one the house rule uses](requirement-modal.md) (`requirement-modal`) | A requirement's verb ("must", "shall") that the team's house rule does not use |
+| [Words the team keeps to one, mixed](term-consistency.md) (`term-consistency`) | Words grouped under consistent (log in / sign in) mixed in one document |
+| [A term not written the listed way](term-form.md) (`term-form`) | A term listed under terms, in another case, width, hyphen or spacing (Github) |
 
 The checks that read meaning run under `npx chaffjs test`, which asks an AI, so they have no fixed output to show here: `empty-conclusion`, `generic-opening`, `risk-disclosure`, `unsourced-number`

@@ -1,0 +1,56 @@
+id: term-form
+layer: L2
+status: stable
+how_to_find: term-form
+word_list: term-form
+# The list is the team's own: with nothing under terms in chaff.yaml, the rule does not run and the run says so.
+team_list: terms
+severity: warning
+
+name:
+  ja: 決まった書き方と違う名前・用語
+  en: A term not written the listed way
+
+why:
+  ja: 製品名や会社名、技術の名前には決まった書き方があります（GitHub、JavaScript）。「Github」「ＧｉｔＨｕｂ」「Java Script」と書くと、読み手には別のものか、書き手が名前をよく知らないように見え、検索でも取りこぼします。AI が書いた文章でも、名前の大文字と小文字はよく崩れます。文書の中に正しい形が一度も無いと、表記の揺れを比べる rule では見つかりません。chaff.yaml の terms に決まった書き方を並べておくと、字の大小・全角と半角・ハイフン・空白だけが違う書き方を指します。並べていなければ動きません。
+  en: Product, company and technology names have one right form (GitHub, JavaScript). "Github", "ＧｉｔＨｕｂ" or "Java Script" reads as another thing, or as a writer who does not know the name, and a search misses it. AI drafts get the capitals of a name wrong often, and when the right form never appears in the document, the rules that compare spellings within it cannot see the slip. List the right forms under terms in chaff.yaml, and a form that differs only in case, width (full or half), hyphens or spaces is pointed out. With nothing listed, this rule does not run.
+
+message:
+  ja: 「{matched}」は「{preferred}」と書きます
+  en: 'Write "{preferred}", not "{matched}"'
+
+how_to_fix:
+  ja: 「{preferred}」に直してください。コマンドやファイル名のように、そのままにすべき箇所なら stet で理由を添えて黙らせます。
+  en: Change it to "{preferred}". Where it must stay (a command, a file name, a quotation), silence it with stet and the reason.
+
+placeholders:
+  preferred:
+    ja: terms に並べた書き方
+    en: the form listed under terms
+
+# The team listed the form, so one variant is already a slip.
+levels: { strict: 1, normal: 1, relaxed: 3 }
+
+use_for: [business, blog, technical, legal, docs, academic, literature, speech]
+sources: [plain-2011, kyodo-2022]
+
+group: team
+summary:
+  ja: terms に並べた名前を、字の大小・幅・ハイフン・空白の違う形で書いた所（GitHub を Github）
+  en: A term listed under terms, in another case, width, hyphen or spacing (Github)
+example:
+  ja:
+    config: { terms: [GitHub, JavaScript] }
+    before: ソースは Github で公開し、画面は Java Script で作ります。
+    after: ソースは GitHub で公開し、画面は JavaScript で作ります。
+  en:
+    config: { terms: [GitHub, JavaScript] }
+    before: The code is on Github, and the pages are written in Java Script.
+    after: The code is on GitHub, and the pages are written in JavaScript.
+
+not_flagged:
+  ja: chaff.yaml の terms に並べた語だけを見ます。並べた形どおりの所、コードの中、URL・メールアドレス・ファイルのパスの中（github.com、docs/github.md）、長い英単語の一部（GitHubber）は指しません。字の大小・幅・ハイフン・空白のほかの違い（GitLab）も見ません。
+  en: Only the terms under terms in chaff.yaml are checked. The listed form itself, code, URLs, e-mail addresses and file paths (github.com, docs/github.md), and a longer word that contains the term (GitHubber) are left alone. Differences other than case, width, hyphens and spaces (GitLab) are not looked at.
+level_meaning:
+  ja: 当てはまる語が {limit} 箇所あれば指摘
+  en: reported once there {limit|is|are} {limit}

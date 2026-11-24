@@ -4,10 +4,12 @@ import { stemMorae, stemOf } from "../long-vowel.ts";
 import { DEFAULT_MIN_MORAE, distinctWordsOf, exemptStems, kanaWordsOf } from "./long-vowel.ts";
 import { spelledWordsIn, spellingsOf } from "./spelling-variety.ts";
 import { isWithinAny, quotedIn } from "../quoted-span.ts";
+import { groupHits, groupsOfLexicon } from "../term-groups.ts";
 
 // The words read for cross-doc-term-variant, each with the key both its spellings share. Three ways of spelling one word
 // that chaff already reads in one document: the final ー of a katakana word (katakana-long-vowel), British and American
-// spellings (spelling-consistency's word lists), and a Latin word written with and without a hyphen (e-mail, email).
+// spellings (spelling-consistency's word lists), and a Latin word written with and without a hyphen (e-mail, email);
+// and the groups a team lists under consistent in chaff.yaml (term-consistency).
 
 /**
  * Katakana nouns as the language package split them, keyed by the word without its final ー. Short words keep their ー.
@@ -32,6 +34,15 @@ const listedWords = (doc: ProseDocument): KeyedWord[] => {
       const pair = [word.written.toLowerCase(), word.spelling.other.toLowerCase()].toSorted((left, right) => left.localeCompare(right, "en")).join("/");
       return { key: `listed:${pair}`, form: word.written.toLowerCase(), offset: word.offset };
     }),
+  );
+};
+
+/** The members of the team's groups (chaff.yaml consistent), keyed by their group: 顧客 and お客様 are one choice written two ways. */
+const teamWords = (doc: ProseDocument): KeyedWord[] => {
+  const groups = groupsOfLexicon(doc.lexicons["term-consistency"] ?? []);
+  if (groups.length === 0) return [];
+  return doc.sentences.flatMap((sentence) =>
+    groupHits(sentence.text, groups).map((hit) => ({ key: `team:${String(hit.group)}`, form: hit.member, offset: sentence.span.start + hit.span.start })),
   );
 };
 
@@ -71,7 +82,10 @@ const findingOf = (byPath: ReadonlyMap<string, ProseDocument>, odd: OddSpelling)
 /** A word spelled one way in some files of the run and another way in the rest: reported in the files of the fewer way. */
 export const crossDocTermVariant: CrossDetector = (docs) => {
   const latin = hyphenWords(docs);
-  const words: DocumentWords[] = docs.map((doc, index) => ({ path: doc.path, words: [...kanaWords(doc), ...listedWords(doc), ...(latin[index] ?? [])] }));
+  const words: DocumentWords[] = docs.map((doc, index) => ({
+    path: doc.path,
+    words: [...kanaWords(doc), ...listedWords(doc), ...(latin[index] ?? []), ...teamWords(doc)],
+  }));
   const byPath = new Map(docs.map((doc) => [doc.path, doc]));
   return oddSpellings(words).flatMap((odd) => findingOf(byPath, odd));
 };

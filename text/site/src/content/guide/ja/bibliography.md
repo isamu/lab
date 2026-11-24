@@ -157,8 +157,8 @@ chaff がまだ見ていない種類の誤りを探すため、次のチェッ�
 
 - <a id="textlint-ja-presets"></a>**textlint-ja** [github.com](https://github.com/textlint-ja/textlint-rule-preset-ja-technical-writing)
   - textlint-rule-preset-ja-technical-writing と textlint-rule-preset-japanese（日本語の技術文書向けの規則集）
-  - 分かったこと：日本語の文に機械で掛けられる確認です。文の長さ、読点の数、文末の混在、ら抜き、助詞の重なり、見えない文字など。
-  - chaff では：ほとんどに対応する規則があります（`max-sentence-length`、`max-ten`、`no-mixed-desumasu`、`ra-nuki`、`no-doubled-joshi`、`invisible-character`）。
+  - 分かったこと：日本語の文に機械で掛けられる確認です。文の長さ、読点の数、文末の混在、ら抜き、さ入れ、助詞の重なり、見えない文字など。
+  - chaff では：ほとんどに対応する規則があります（`max-sentence-length`、`max-ten`、`no-mixed-desumasu`、`ra-nuki`、`sa-ire`、`no-doubled-joshi`、`invisible-character`）。
 - <a id="proselint"></a>**proselint** [github.com](https://github.com/amperser/proselint)
   - 英語の文章のチェッカー。用法の手引きから確認項目を集めています。
   - 分かったこと：語の一覧で見つけられる用法の誤りです。決まり文句、重言、程度の無い形容詞に付けた程度、出所を言わない言い回しなど。

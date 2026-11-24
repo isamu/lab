@@ -121,6 +121,25 @@ $ npx chaffjs explain no-mixed-desumasu --genre business/report
     relaxed  少ないほうの調子の文が 1 文以下のとき、それを指摘
     off      見ない
 
+  オプション（chaff.yaml の options で決めます）:
+    body: consistent   （既定）
+      本文の文末の調子をチームで決めるか
+      → consistent  決めない。文書の中でそろっているかだけを見る
+        desumasu    本文をですます調で書く。である調の文を、混ざっていなくても指摘する
+        dearu       本文をである調で書く。ですます調の文を、混ざっていなくても指摘する
+    list: consistent   （既定）
+      箇条書き（番号で始まる段落の並びも）の文末の調子をチームで決めるか
+      → consistent  決めない。文書の中でそろっているかだけを見る
+        desumasu    箇条書きをですます調で書く。である調の文を、混ざっていなくても指摘する
+        dearu       箇条書きをである調で書く。ですます調の文を、混ざっていなくても指摘する
+    heading: consistent   （既定）
+      見出しの文末の調子をチームで決めるか（述語で終わる見出しだけを見る）
+      → consistent  決めない。文書の中でそろっているかだけを見る
+        desumasu    見出しをですます調で書く。である調の文を、混ざっていなくても指摘する
+        dearu       見出しをである調で書く。ですます調の文を、混ざっていなくても指摘する
+
+  決める:  chaff.yaml に options: { no-mixed-desumasu: { <名前>: <値> } } を書く
+
   いまは normal です。
 
   変える:  npx chaffjs relax no-mixed-desumasu --why "理由"

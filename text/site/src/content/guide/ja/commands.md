@@ -23,7 +23,7 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 | `npx chaffjs relax\|strict\|off <rule>` | ルールの強さを変えます。`--why "理由"` を添えます |
 | `npx chaffjs enable <rule>` | 試験中のルールを 1 つだけ動かします（`chaff.yaml` に `<rule>: normal` と書きます）。[設定](./configuration#試験中のルールを-1-つだけ動かす) を見てください |
 | `npx chaffjs baseline <dir>` | いまある指摘を棚上げします |
-| `npx chaffjs suppressions <dir>` | `stet` で黙らせている指摘を数えます |
+| `npx chaffjs suppressions <dir>` | `stet` や `allow:` で黙らせている指摘を数えます |
 | `npx chaffjs tree <file>` | 文書を番地の付いた木にします。`--format sexp` か `--format json` で形を選びます |
 | `npx chaffjs cite <原文> <引用.json>` | 回答の引用が原文にあるかを確かめます |
 | `npx chaffjs cite --scaffold <file>` | 出典の無い引用を、出典を書き込む引用.json のひな形にします |
@@ -268,7 +268,8 @@ CI に入れるときの使いかたは、[CI](./ci) で説明します。
 
 ## 黙らせた箇所を数える
 
-`stet` で黙らせた指摘は、`suppressions` で数えられます。
+`stet` で黙らせた指摘と、`chaff.yaml` の `allow:` で黙らせた指摘は、`suppressions` で数えられます。allow は項目ごとに理由も並びます。
+範囲の stet（`stet-begin` … `stet-end`）は、行の範囲・ルール・理由とともに 1 つずつ並びます。閉じていない `stet-begin` や無いルールの名前など、効いていない stet も行番号つきで並びます。
 同じルールを何度も黙らせているなら、ルールを変える道を選ぶ時期です。
 
 <!-- chaff-screen: silenced -->

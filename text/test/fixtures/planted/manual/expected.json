@@ -1,15 +1,19 @@
 {
   "recall": {
     "ja": {
+      "heading-marks-unspaced": "1/1",
       "step-order": "1/1",
       "warning-without-action": "1/1",
+      "heading-set-in-bold": "1/1",
       "step-skip": "1/1",
       "ui-label-variant": "1/1",
       "prerequisite-after-step": "1/1"
     },
     "en": {
+      "heading-marks-unspaced": "1/1",
       "step-order": "1/1",
       "warning-without-action": "1/1",
+      "heading-set-in-bold": "1/1",
       "step-skip": "1/1",
       "ui-label-variant": "1/1",
       "prerequisite-after-step": "1/1"

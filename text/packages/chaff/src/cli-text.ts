@@ -148,13 +148,16 @@ Silence one spot:  <!-- stet: rule-id — reason -->
 A rule's level is one of strict / normal / relaxed / off.
 `;
 
+/** What the file's header line counts: findings shelved by the baseline, silenced by stet, silenced by chaff.yaml's allow. */
+export type HeaderCounts = { readonly shelved: number; readonly hushed: number; readonly allowed?: number | undefined };
+
 export type CliText = {
   readonly usage: string;
   /** Under one command's lines of the usage, for `chaff <command> --help`. */
   readonly moreHelp: string;
   readonly languageName: (language: string) => string;
   readonly genreSource: Readonly<Record<GenreSource, string>>;
-  readonly header: (path: string, genre: string, language: string, from: string, shelved: number, hushed: number) => string;
+  readonly header: (path: string, genre: string, language: string, from: string, counts: HeaderCounts) => string;
   readonly suggested: (name: string, genre: string) => string;
   readonly suggestedNote: (name: string, genre: string, used: string) => string;
   /** Nothing to check among targets; include: the globs looked for besides Markdown. Says how to look for more. */
@@ -191,11 +194,12 @@ export const CLI_TEXT: Texts<CliText> = {
       path: "パス",
       content: "内容",
     },
-    header: (path, genre, language, from, shelved, hushed) =>
+    header: (path, genre, language, from, { shelved, hushed, allowed = 0 }) =>
       [
         `${path}   ${genre} · ${language}   ジャンルは${spacedInJapanese(from)}から`,
         shelved > 0 ? `   棚上げ ${shelved} 件` : "",
         hushed > 0 ? `   stet ${hushed} 件` : "",
+        allowed > 0 ? `   allow ${allowed} 件` : "",
       ].join(""),
     suggested: (name, genre) => `   ${name}のようです。--genre ${genre} を試せます`,
     suggestedNote: (name, genre, used) =>
@@ -246,8 +250,13 @@ export const CLI_TEXT: Texts<CliText> = {
       path: "the path",
       content: "the content",
     },
-    header: (path, genre, language, from, shelved, hushed) =>
-      [`${path}   ${genre} · ${language}   genre from ${from}`, shelved > 0 ? `   ${shelved} shelved` : "", hushed > 0 ? `   ${hushed} stet` : ""].join(""),
+    header: (path, genre, language, from, { shelved, hushed, allowed = 0 }) =>
+      [
+        `${path}   ${genre} · ${language}   genre from ${from}`,
+        shelved > 0 ? `   ${shelved} shelved` : "",
+        hushed > 0 ? `   ${hushed} stet` : "",
+        allowed > 0 ? `   ${allowed} allowed` : "",
+      ].join(""),
     suggested: (name, genre) => `   Looks like: ${name}. Try --genre ${genre}`,
     suggestedNote: (name, genre, used) =>
       `  No genre was set, so this was checked as ${used}. If it is ${name}, --genre ${genre} checks it the way that kind is written (npx chaffjs genres lists them).`,

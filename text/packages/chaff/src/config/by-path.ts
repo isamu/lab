@@ -1,10 +1,19 @@
 import { relative, sep } from "node:path";
+import type { Level } from "../plugin.ts";
 
 export type PathRule = {
   readonly files: readonly string[];
   readonly genre: string | undefined;
   readonly language: string | undefined;
   readonly profile?: string | undefined;
+  /** The entry's rules:, read as the top-level rules: is (levels; a number counts as normal and sits in limits). */
+  readonly rules?: Readonly<Record<string, Level>>;
+  readonly limits?: Readonly<Record<string, number>>;
+  readonly unreadableRules?: readonly { readonly id: string; readonly value: string }[];
+  /** The entry's options:, shaped as the top-level options: is ({ rule id: { option: value } }). */
+  readonly options?: Readonly<Record<string, unknown>>;
+  /** rules: or options: written as something other than a map, as written. */
+  readonly unreadableBlocks?: readonly { readonly key: "rules" | "options"; readonly value: string }[];
 };
 
 /**

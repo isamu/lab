@@ -110,9 +110,28 @@ npx chaffjs enable <rule>        # one of them, permanently
 npx chaffjs relax <rule>         # or strict / off
 ```
 
+Where two ways of writing are both right, a rule checks only that one document is consistent and points at the
+minority: `enumeration-marker-mix`, for example, at a "3)" in a list numbered "1.", "2.", "4.".
+
+Some rules read one language only: `ra-nuki` (見れる for 見られる) and `sa-ire` (読まさせて for 読ませて) are
+Japanese only, and say so under "did not run" on an English document.
+
+Some rules catch Markdown that does not render as meant: `heading-marker-no-space` reports a line such as
+`##Steps` or `#見出し`, which shows as text with the marks in it because the space after the marks is missing.
+
+A finding that is right in general but intended in one spot is silenced there with `<!-- stet: rule-id — reason -->`.
+A range takes `<!-- stet-begin: rule-id — reason -->` … `<!-- stet-end -->`, and `rule-id["word"]` silences one matched
+word only. A stet always names its rules. `npx chaffjs suppressions docs/` lists what is silenced and any stet that does not work.
+
+Minutes or notes made from a transcript are checked as `business/meeting-notes`, where `filler-word` reports
+fillers left in ("um", "you know"); `speech/transcript`, a verbatim record, keeps them.
+
 Rules about a team's own words need their lists in `chaff.yaml`. The checks that read meaning
 rather than form run with `npx chaffjs test`; one of them, `generic-opening`, asks whether the opening starts
 from a generic problem ("Many teams struggle with…") instead of who did what.
+
+Markdown slips that drop a section from the table of contents and from a screen reader are checked too, such as a
+bold line standing in for a heading in a document that otherwise uses headings ("**Next steps**", `pseudo-heading`).
 
 Where a rule is measured to be mostly wrong for a kind of document, its genre preset turns it off there, and the
 rule is listed under "did not run" with that reason. The measurement is the judged precision on real documents
@@ -134,11 +153,20 @@ may not share can be recorded by URL and hash only. Its README explains both.
 A `chaff.yaml` at the top of the repository sets:
 
 - `genre:` and `style:`
-- which rules run, and at what level
-- your preferred spellings
+- which rules run, and at what level, for every file or per path (`by_path`)
+- your preferred spellings, the terms written one fixed way (`terms: [GitHub, JavaScript]`), and groups of words that
+  are each right but not to be mixed (`consistent: [[log in, sign in]]`)
+- `options:` where a rule takes a side only when the team chooses one, such as the sentence-ending register a Japanese
+  document requires (`no-mixed-desumasu: { body: desumasu, list: dearu }`; Japanese only, English has no counterpart)
 - the genre's guide
+- `exclude:` globs a folder walk leaves out (`vendor/**`); files the `.gitignore` ignores are left out too, and a
+  file named on the command line is still checked
 - `custom_rules:` your own rules, written as `words`, a `pattern`, `tokens` for a
   part-of-speech pattern, or a `module` for a Node function
+- `allow:` text never to report (a product name, a quoted form), as `text:` or a regex `pattern:`, each with a
+  required `reason:` and optionally `rules:` and `files:`; `npx chaffjs suppressions` lists what it silenced
+- `scope:` on a team rule or a `prefer` entry: what it reads, from `heading`, `list`, `table`, `quote` and
+  `paragraph`, with `~` to leave one out (`[heading]`, `[~quote]`)
 
 ```bash
 npx chaffjs init --plugin <name>   # start a YAML-only rule pack, chaff-plugin-<name>/
