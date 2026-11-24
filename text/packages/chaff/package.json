@@ -92,6 +92,7 @@
     "@chaffjs/lang-en": "0.47.0",
     "@chaffjs/lang-ja": "0.49.0",
     "character-entities": "^2.0.2",
+    "ignore": "^7.0.5",
     "mdast-util-from-markdown": "^2.0.3",
     "mdast-util-frontmatter": "^2.0.1",
     "mdast-util-gfm-table": "^2.0.0",

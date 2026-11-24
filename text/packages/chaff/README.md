@@ -153,6 +153,8 @@ A `chaff.yaml` at the top of the repository sets:
 - which rules run, and at what level, for every file or per path (`by_path`)
 - your preferred spellings
 - the genre's guide
+- `exclude:` globs a folder walk leaves out (`vendor/**`); files the `.gitignore` ignores are left out too, and a
+  file named on the command line is still checked
 - `custom_rules:` your own rules, written as `words`, a `pattern`, `tokens` for a
   part-of-speech pattern, or a `module` for a Node function
 - `scope:` on a team rule or a `prefer` entry: what it reads, from `heading`, `list`, `table`, `quote` and

@@ -487,6 +487,29 @@ A YAML file that cannot be parsed is read as plain text.
 Any other file, such as `.txt`, is read as plain text.
 A file named on the command line is checked whatever its extension.
 
+## Leaving files out
+
+`exclude` lists globs a folder walk leaves out.
+They are matched from the folder that holds the settings file, with the same globs as `by_path`.
+
+```yaml
+exclude:
+  - vendor/**
+  - CHANGELOG.md
+```
+
+A walk also leaves out what the repository's `.gitignore` files ignore, read as git reads them (`!` re-includes a file, a trailing `/` matches folders only, a leading `/` anchors a pattern to its folder).
+They are read from the project root down to each file: the nearest folder above the checked one that holds `.git` (a folder, or a worktree's `.git` file), so `chaff docs/` honours the repository's own `.gitignore`.
+Outside a repository, the root is the folder that holds chaff.yaml, and without one, the folder you check.
+When `.git` is a folder, `.git/info/exclude` is read too.
+A file named on the command line is still checked, even when `exclude` or `.gitignore` names it, as other linters do.
+
+The summary says how many files were left out, and why:
+
+```
+  3 files not checked (2 by exclude in chaff.yaml, 1 by .gitignore)
+```
+
 ## Setting the depth of a fix plan
 
 A team can decide how deep the rewrites that `chaff fix-plan` plans may go.

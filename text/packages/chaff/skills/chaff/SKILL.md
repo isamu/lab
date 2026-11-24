@@ -143,7 +143,10 @@ heading above it; if it is not a section of its own, drop the bold and write it 
   `verse` (a Japanese poem: each line ends a sentence) or `play` (a Japanese play: stage directions in （） are split
   from the spoken line). Leave it out: the genre or the content chooses it, and the first line of `npx chaffjs tree` shows the choice. `none` stops the choice.
 - `names:` lists the team's names (organisations, products), each read as one name. `include:` adds files besides
-  Markdown when a folder is checked (`include: ["*.yaml"]`).
+  Markdown when a folder is checked (`include: ["*.yaml"]`). `exclude:` leaves globs out of a folder walk
+  (`exclude: [vendor/**, CHANGELOG.md]`, matched like `by_path`), and a walk also leaves out what the `.gitignore`
+  files from the repository root (the nearest folder with `.git`) down ignore, plus `.git/info/exclude`. A file named on the command line is still checked; the summary says
+  how many files were left out and why.
 
 ## Turn a team's style note into chaff.yaml
 
