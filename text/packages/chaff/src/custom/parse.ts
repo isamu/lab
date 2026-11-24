@@ -1,5 +1,6 @@
 import type { CustomSpec, Localized, RuleDefinition, ScopeSelector, TokenCondition } from "../plugin.ts";
-import { scopeSelectorOf, type ScopeProblem } from "../text-scope.ts";
+import type { ScopeProblem } from "../text-scope.ts";
+import { scopedSpec, scopeOf } from "./scope-field.ts";
 import { regexRefusal, type RegexRefusal } from "./regex-safety.ts";
 import { posTags } from "./token-pattern.ts";
 import { modulePathOf, type ModulePathRefusal } from "./module-path.ts";
@@ -195,18 +196,6 @@ const needsOf = (raw: Record<string, unknown>, type: string, at: string): Checke
   if (requires.value === undefined || wordList.problems.length > 0) return failed(...requires.problems, ...wordList.problems);
   return ok({ requires: requires.value, wordList: wordList.value });
 };
-
-/** scope: the parts of the document the rule reads. A module reads the document itself, so a scope would silently do nothing. */
-const scopeOf = (raw: unknown, type: string, at: string): Checked<ScopeSelector | undefined> => {
-  if (raw === undefined) return ok(undefined);
-  if (type === "module") return failed({ kind: "module-scope", at });
-  const read = scopeSelectorOf(raw);
-  return "selector" in read ? ok(read.selector) : failed({ kind: "bad-scope", at, written: read.problem.written, problem: read.problem.kind });
-};
-
-/** The spec with the rule's scope. A module never has one: scopeOf refuses it. */
-const scopedSpec = (spec: CustomSpec, scope: ScopeSelector | undefined): CustomSpec =>
-  scope === undefined || spec.type === "module" ? spec : { ...spec, scope };
 
 const languagesOf = (raw: unknown, at: string): Checked<readonly string[] | undefined> => {
   if (raw === undefined) return ok(undefined);

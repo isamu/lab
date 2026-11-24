@@ -2,13 +2,11 @@ import { headingReadersOf, sectionsOf } from "./document-sections.ts";
 import { atxHeadingText, headingText } from "./heading-text.ts";
 import { hasTitle } from "./heading-title.ts";
 import { maskSpans } from "./mask.ts";
-import { spansWithin, unmaskedSoftBreaks } from "./soft-break.ts";
-import { segmentJoined } from "./joined-view.ts";
+import { unmaskedSoftBreaks } from "./soft-break.ts";
 import { paragraphsOf } from "./document-paragraphs.ts";
 import { closingRun, standaloneLines, subheadingPieces, type StandsAlone } from "./subheading-line.ts";
 import { stageDirectionPieces, type BracketPair } from "./stage-directions.ts";
 import { isLinkLine } from "./link-line.ts";
-import { speakerLabels } from "./speaker-labels.ts";
 import type { Outline } from "./structure/build.ts";
 import { lazyTree } from "./structure/lazy-tree.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
@@ -27,20 +25,9 @@ import { markdownFigures } from "./text-figures.ts";
 import { documentMarkup } from "./markup.ts";
 import { bareUrls } from "./bare-url.ts";
 import { lazyCells, tableCellsOf } from "./table-cells.ts";
-import { scopedSentences } from "./scoped-sentences.ts";
-import { headingMarkers, quoteMarkers } from "./scope-markers.ts";
-import type {
-  BulletList,
-  LanguageAdapter,
-  Markup,
-  ProseDocument,
-  ScopedSentence,
-  ScopeSelector,
-  Sentence,
-  Span,
-  StructureNode,
-  DocumentProfile,
-} from "./plugin.ts";
+import { KEPT_FOR_SCOPE, scopedReadingOf } from "./document-scope.ts";
+import { proseOf, sentencesOf, shift, startsInside } from "./document-prose.ts";
+import type { BulletList, LanguageAdapter, Markup, ProseDocument, ScopeSelector, Span, StructureNode, DocumentProfile } from "./plugin.ts";
 
 /**
  * 本文として数えないもの。
@@ -162,8 +149,6 @@ const headingsOf = (root: Node, source: string, neutral: string, outside: readon
   return found;
 };
 
-const startsInside = (span: Span, regions: readonly Span[]): boolean => regions.some((region) => span.start >= region.start && span.start < region.end);
-
 /**
  * 本文の強調だけを数える。
  *
@@ -180,17 +165,6 @@ const strongSpans = (root: Node, masked: readonly Span[]): Span[] => {
   });
   return found;
 };
-
-/**
- * 文の分割は**段落ごと**に行う。
- *
- * 文書全体を一度に渡すと、句点で終わらない行（「条件:」のような見出し的な行）が、
- * 覆った表やコードブロックを越えて次の句点まで飲み込む。段落は文が跨がない境界なので、
- * ここで切れば構造的に起きない。
- */
-const shift = (span: Span, by: number): Span => ({ start: by + span.start, end: by + span.end });
-
-const breaksWithin = (breaks: readonly Span[], paragraph: Span): Span[] => spansWithin(breaks, paragraph).map((span) => shift(span, -paragraph.start));
 
 /** 段落の中の行（段落の中の位置）が、一つのリンクだけの行か。 */
 const linkLineIn =
@@ -251,20 +225,6 @@ const lineLayoutOf = (root: Node, source: string, prose: string, paragraphs: rea
   };
 };
 
-const sentencesOf = (prose: string, paragraphs: readonly Span[], adapter: LanguageAdapter, softBreaks: readonly Span[]): Sentence[] =>
-  paragraphs.flatMap((paragraph) =>
-    segmentJoined(prose.slice(paragraph.start, paragraph.end), breaksWithin(softBreaks, paragraph), (text) => adapter.segment(text))
-      .filter((sentence) => sentence.text.trim().length > 0)
-      .map((sentence) => ({
-        span: shift(sentence.span, paragraph.start),
-        text: sentence.text,
-        ...(sentence.tokens === undefined ? {} : { tokens: sentence.tokens.map((token) => ({ ...token, span: shift(token.span, paragraph.start) })) }),
-        ...(sentence.wrapBreaks === undefined ? {} : { wrapBreaks: sentence.wrapBreaks.map((span) => shift(span, paragraph.start)) }),
-        ...(sentence.embeddedLanguage === undefined ? {} : { embeddedLanguage: sentence.embeddedLanguage }),
-        ...(sentence.listItem === undefined ? {} : { listItem: sentence.listItem }),
-      })),
-  );
-
 /** 箇条書きは list ノードの直下の項目を数える。入れ子の項目は内側の list のものとして数える。目次のような案内だけの箇条書きは数えない。 */
 const listsOf = (root: Node, source: string, anchors: InPageAnchors): BulletList[] => {
   const found: BulletList[] = [];
@@ -318,15 +278,6 @@ export const teamRules = (
   lexicons: language === undefined ? {} : (config.extensions?.lexicons[language] ?? {}),
 });
 
-/**
- * masked を覆った本文から、話し手の名前（戯曲・議事録）も覆う。名前は誰が話すかの印で、文でも本文でもない。
- * 名前は覆った後の本文で探す。コードや表の中の行頭を話し手と数えない。
- */
-const proseOf = (source: string, masked: readonly Span[]): string => {
-  const unlabelled = maskSpans(source, masked);
-  return maskSpans(unlabelled, speakerLabels(unlabelled));
-};
-
 const teamLexicons = (adapter: LanguageAdapter, team: TeamRules): LanguageAdapter["lexicons"] => ({
   ...adapter.lexicons,
   ...team.lexicons,
@@ -338,59 +289,13 @@ const teamLexicons = (adapter: LanguageAdapter, team: TeamRules): LanguageAdapte
   }),
 });
 
-/**
- * The quotations a rule with a scope reads as quote: each outermost `>` block, not a GitHub alert (the writer's own text
- * in a box, read as body text). A quotation inside an alert is quoted.
- */
-const quotationsOf = (root: Node, source: string): Span[] => {
-  const alertOf = alertReader(source);
-  const found: Span[] = [];
-  eachPreOrder(root, (node) => {
-    if (node.type !== "blockquote" || alertOf(node) !== undefined) return;
-    const span = spanOf(node);
-    if (span !== undefined && !startsInside(span, found)) found.push(span);
-  });
-  return found;
-};
-
-const shiftedBy =
-  (by: number) =>
-  (span: Span): Span =>
-    shift(span, by);
-
-/** What the scoped reading needs from the document being built. masks: what is not text, headings and quotations left readable. */
-type ScopeInput = {
-  readonly root: Node;
-  readonly source: string;
-  readonly markdown: boolean;
-  readonly masks: readonly Span[];
-  readonly adapter: LanguageAdapter;
-  readonly doc: () => ProseDocument;
-};
-
-/** The headings and the quotations, read into sentences with their marks blanked, besides the body and the table cells. */
-const scopedReadingOf = (input: ScopeInput): ScopedSentence[] => {
-  const { root, source, doc } = input;
-  const quotes = quotationsOf(root, source);
-  const quoteMarks = quotes.flatMap((quote) => quoteMarkers(source.slice(quote.start, quote.end)).map(shiftedBy(quote.start)));
-  const unquoted = maskSpans(source, quoteMarks);
-  const headings = spansOfType(root, "heading");
-  const headingMarks = headings.flatMap((heading) => headingMarkers(unquoted.slice(heading.start, heading.end)).map(shiftedBy(heading.start)));
-  const prose = proseOf(source, [...input.masks, ...quoteMarks, ...headingMarks]);
-  const softBreaks = input.markdown ? unmaskedSoftBreaks(source, prose) : [];
-  const read = (spans: readonly Span[]): Sentence[] => sentencesOf(prose, spans, input.adapter, softBreaks);
-  const quoted = spansOfType(root, "paragraph").filter((paragraph) => startsInside(paragraph, quotes));
-  const { sentences, listSpans, replyQuotes, tableCells } = doc();
-  return scopedSentences({
-    body: sentences,
-    headings: read(headings),
-    quoted: read(quoted),
-    cells: tableCells?.() ?? [],
-    regions: { list: listSpans, quote: [...quotes, ...(replyQuotes ?? [])] },
-  });
-};
-
-const KEPT_FOR_SCOPE: ReadonlySet<string> = new Set(["heading", "blockquote"]);
+/** ページの案内は段落としても数えない。数えると、目次の行が「本題までの段落」に入る。メールのヘッダーや署名の行は段落から切り取る。 */
+const bodyParagraphs = (root: Node, anchors: InPageAnchors, furniture: readonly Span[], source: string): Span[] =>
+  cutTextSpans(
+    spansOfType(root, "paragraph", (node) => !isInPageNavigation(node, anchors)),
+    furniture,
+    source,
+  );
 
 const documentOf = (path: string, source: string, adapter: LanguageAdapter, team: TeamRules, profile: DocumentProfile | undefined): ProseDocument => {
   const markdown = isMarkdownPath(path);
@@ -400,14 +305,10 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
   // 強調の記号は「本文でないもの」だが、太字の数を数えるときの「覆われた場所」ではない。
   // 同じ集合にすると、太字が自分の記号のせいで覆われた場所にあることになり、1 つも数えられなくなる。
   // ページのヘッダーとフッター（テキストの文書）と、線で描いた図も本文ではない。
-  const blocks = [...collectMasks(root, source, anchors, syntax), ...layoutMasks(root, text, markdown), ...emailLayout.furniture, ...extra];
+  const furniture = [...layoutMasks(root, text, markdown), ...emailLayout.furniture, ...extra];
+  const blocks = [...collectMasks(root, source, anchors, syntax), ...furniture];
   const prose = proseOf(source, [...blocks, ...emphasisSpans(root, source)]);
-  // ページの案内は段落としても数えない。数えると、目次の行が「本題までの段落」に入る。メールのヘッダーや署名の行は段落から切り取る。
-  const paragraphSpans = cutTextSpans(
-    spansOfType(root, "paragraph", (node) => !isInPageNavigation(node, anchors)),
-    emailLayout.furniture,
-    source,
-  );
+  const paragraphSpans = bodyParagraphs(root, anchors, emailLayout.furniture, source);
   const headings = headingsOf(root, source, maskSpans(source, syntax), emailLayout.replyQuotes);
   // Markdown は段落を流し込んで表示するので、段落の中の改行は読み手に見えない。テキストの文書は行をそのまま見せる（法令は 1 行 1 号）。
   const softBreaks = markdown ? unmaskedSoftBreaks(source, prose) : [];
@@ -452,22 +353,10 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
       return documentMarkup(root, source, markdown, [...emailLayout.replyQuotes, ...syntax]);
     },
     tableCells: lazyCells(() => tableCellsOf(doc, (text) => adapter.segment(text))),
-    scopedSentences: lazyCells(() =>
-      scopedReadingOf({
-        root,
-        source,
-        markdown,
-        masks: [
-          ...collectMasks(root, source, anchors, syntax, KEPT_FOR_SCOPE),
-          ...layoutMasks(root, text, markdown),
-          ...emailLayout.furniture,
-          ...extra,
-          ...emphasisSpans(root, source),
-        ],
-        adapter,
-        doc: () => doc,
-      }),
-    ),
+    scopedSentences: lazyCells(() => {
+      const masks = [...collectMasks(root, source, anchors, syntax, KEPT_FOR_SCOPE), ...furniture, ...emphasisSpans(root, source)];
+      return scopedReadingOf({ root, source, markdown, masks, adapter, doc: () => doc });
+    }),
   };
   return doc;
 };
