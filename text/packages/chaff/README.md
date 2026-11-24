@@ -110,6 +110,9 @@ npx chaffjs enable <rule>        # one of them, permanently
 npx chaffjs relax <rule>         # or strict / off
 ```
 
+Some rules catch Markdown that does not render as meant: `heading-marker-no-space` reports a line such as
+`##Steps` or `#見出し`, which shows as text with the marks in it because the space after the marks is missing.
+
 Rules about a team's own words need their lists in `chaff.yaml`. The checks that read meaning
 rather than form run with `npx chaffjs test`; one of them, `generic-opening`, asks whether the opening starts
 from a generic problem ("Many teams struggle with…") instead of who did what.

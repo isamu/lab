@@ -84,6 +84,9 @@ When a finding is wrong for a reason that is not about this team (chaff misread 
 `npx chaffjs feedback <file> --rule <rule-id> --line <n>`: it drafts a report and sends nothing. A document the
 person may share can go to isamu/chaff-corpus, where wrong findings become test cases and rule fixes.
 
+`heading-marker-no-space` (`##Steps`, `#見出し`: no space after the marks, so the line is not a heading) is fixed by
+adding the one space; keep the level and the words. If the line was a tag or a number, not a heading, leave it and say so.
+
 ## When numbers or dates disagree
 
 The group "Facts that disagree" in `npx chaffjs rules` checks what a sum or a calendar can settle. Among them:
