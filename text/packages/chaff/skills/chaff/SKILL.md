@@ -99,6 +99,12 @@ Such a finding says two places in the document disagree. It does not say which o
 Never "fix" it by changing the figure that was right, and never adjust both so they merely agree. If you cannot
 tell which is right, leave both and ask.
 
+## When Markdown hides a section
+
+Some findings are Markdown slips that drop a section from the outline: `pseudo-heading` is a bold line standing in for
+a heading ("**Next steps**") in a document that otherwise uses headings. Make it a real heading one level below the
+heading above it; if it is not a section of its own, drop the bold and write it into the text. Do not change its words.
+
 ## Tune chaff.yaml
 
 - `npx chaffjs init --genre <genre>` writes a commented `chaff.yaml` for that genre when there is none (an
