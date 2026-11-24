@@ -59,6 +59,7 @@ import { listContinues, walker, type Walk } from "./list-run.ts";
 import { joinsUnfinished, repeatsConjunction } from "./list-joint.ts";
 import { insideSentenceCaseTitle } from "./title-list.ts";
 import { insideByline } from "./byline-list.ts";
+import { withoutOpeningConjunction } from "./list-opening-conjunction.ts";
 
 const EMPTY: TokenRange = { start: 0, end: 0 };
 
@@ -100,6 +101,8 @@ const withoutSequenceWord = (view: View): View | undefined => {
 const withoutLead = (view: View): View => {
   const afterSequence = withoutSequenceWord(view);
   if (afterSequence !== undefined) return withoutLead(afterSequence);
+  const afterConjunction = withoutOpeningConjunction(view);
+  if (afterConjunction !== undefined) return withoutLead(afterConjunction);
   const { scope } = view.list;
   const [first, second] = [firstOf(view), secondOf(view)];
   const opening = first === undefined ? undefined : openingOf(scope, first.item);
