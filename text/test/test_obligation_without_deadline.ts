@@ -69,6 +69,13 @@ describe("obligation-without-deadline", () => {
     assert.deepEqual(wordsIn(en, en_("3. The Customer shall pay the Fees in accordance with the Order Form.")), []);
   });
 
+  it("a duty whose time a payment schedule, a final award or the act it precedes sets is timed", () => {
+    assert.deepEqual(wordsIn(en, en_("3. The buyer will pay the seller its Fees in dollars according to the Payment Schedule.")), []);
+    assert.deepEqual(wordsIn(en, en_("3. The seller will pay the damages and costs finally awarded against the buyer.")), []);
+    assert.deepEqual(wordsIn(en, en_("3. On request, the club will submit its designs to the owner for prior written approval.")), []);
+    assert.deepEqual(wordsIn(en, en_("3. The club will submit its designs to the owner.")), ["submit"]);
+  });
+
   it("a notice period in the same sentence times the duty to notify; a notice with no period does not", () => {
     assert.deepEqual(wordsIn(en, en_("3. If we change prices, we will give at least 30 days notice and will notify you by email.")), []);
     assert.deepEqual(wordsIn(en, en_("3. The terminating party must notify the other party by giving 30 days advance notice.")), []);

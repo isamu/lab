@@ -269,6 +269,7 @@ How to use it in CI is in [CI](./ci).
 ## Counting what was silenced
 
 `suppressions` counts the findings silenced with `stet`, and those silenced by an entry under `allow:` in `chaff.yaml`, each entry with its reason.
+Each range stet (`stet-begin` … `stet-end`) is listed with its lines, rules and reason. A stet that does not work, such as an unclosed `stet-begin` or an unknown rule name, is listed with its line.
 If you keep silencing the same rule, it is time to change the rule instead.
 
 <!-- chaff-screen: silenced -->

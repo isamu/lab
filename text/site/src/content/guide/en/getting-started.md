@@ -179,13 +179,23 @@ Without a way to change the rule, "too noisy, stop using it" is where it ends.
 ## Choosing what to silence
 
 `stet` marks a finding as intended. It is written as a Markdown comment, so readers never see it.
-There are three reaches to choose from.
+There are four reaches to choose from.
 
 | Written as | Silences |
 | --- | --- |
 | `<!-- stet: bold-density — a glossary, on purpose -->` | The paragraph just below it (or the one heading, list or table) |
+| `<!-- stet-begin: ai-tell, rule-of-three — a quotation -->` … `<!-- stet-end -->` | Everything between the two comments |
 | `<!-- stet-section: bold-density — a list -->` | Up to the next heading |
 | `<!-- stet-file: ai-tell, rule-of-three — mostly quotations -->` | The whole file |
+
+Every form names the rules it silences. There is no form that silences all rules at once.
+A `stet-begin` reaches to the next `stet-end`. Ranges nest: a `stet-end` closes the nearest `stet-begin`.
+
+To silence one word only, put `["word"]` after the rule name.
+`<!-- stet: preferred-term["e-mail"] — the product is spelled this way -->` silences the `preferred-term` findings whose matched text is "e-mail", and leaves the other findings in that paragraph.
+It works for rules whose message shows the matched text. The text cannot hold `"` or `>`.
+
+An unclosed `stet-begin`, a `stet-end` with no `stet-begin`, a stet naming no rule, and a rule name chaff does not know are listed by `npx chaffjs suppressions`, like a stet with no reason. An unclosed `stet-begin` silences nothing.
 
 Write the reason after `—`, so whoever reads it later can see why it was silenced.
 If you keep silencing the same rule, it is time to change the rule instead.

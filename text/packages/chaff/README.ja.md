@@ -119,8 +119,18 @@ npx chaffjs genres                              ジャンルの一覧と、そ�
 | チームの言葉が要るルール（社内用語、必須の見出し、表記） | `chaff.yaml` の `jargon` `required_sections` `prefer` に書く |
 | 意味を読む検査（例: 書き出しが「多くの企業が〜」のような一般論から始まっていないか、`generic-opening`） | `npx chaffjs test`（API key が要る） |
 
+どちらも正しい書き方が二つある所では、一つの文書の中で揃っているかだけを見て、少ないほうを指します。たとえば `enumeration-marker-mix` は、「1.」「2.」「4.」と番号を振った並びの中の「3)」を指します。
+
+日本語だけのルールもあります。`ra-nuki`（見れる → 見られる）と `sa-ire`（読まさせて → 読ませて）は品詞解析で動詞の形を読み、英語の文書では理由つきで動きません。
+
+書いたとおりに表示されない Markdown を見るルールもあります。`heading-marker-no-space` は「##手順」「#見出し」のように「#」の後ろに空白の無い行を指します。見出しにならず、「#」の付いた本文として表示されるからです。
+
 どのルールがいまどの強さで動くかは、`npx chaffjs rules` が表にします。「default」の列が設定なしで動くルールです。
 一つのルールの意図と根拠は `npx chaffjs explain <ルール>` で読めます。ルールの一覧は [ルールのページ](https://isamu.github.io/lab/ja/rules/) にもあります。
+
+Markdown の書き損じで、目次や画面読み上げから節が消える形も見ます。見出しで節を分けた文書の中で、見出しの代わりに置いた太字の一行（「**次の手順**」、`pseudo-heading`）などです。
+
+文字起こしから作った議事録やメモは `business/meeting-notes` でかけます。残った「ええと」「まあ、」のようなつなぎの言葉を `filler-word` が指します。言ったとおりに残す記録の `speech/transcript` では指しません。
 
 ある種類の文書で外れることの多いルールは、そのジャンルの既定で止めてあります。止めたルールは「動かなかったルール」に理由つきで出ます。
 外れの多さは、実在の文書で判定した精度（下）で、ルールとジャンルごとに測っています。
@@ -153,6 +163,7 @@ rules:                        # ルールごとの強さ: strict / normal / rela
 prefer:                       # チームの表記（左を見つけたら右を勧める）
   サーバ: サーバー
   ユーザ: ユーザー
+  弊社: { use: 当社, scope: [~quote] }   # 引用の中では言わない
 
 custom_rules:                 # チーム独自のルール（コードは要らない）
   - id: team-no-tbd
@@ -165,6 +176,11 @@ custom_rules:                 # チーム独自のルール（コードは要ら
     example: { before: 締切は TBD です。, after: 締切は 10 月 5 日です。 }
 ```
 
+フォルダごとに違う文書を置くときは、`by_path` の項目に `files` と `genre` や `rules` を書くと、そのファイルだけ変えられます（一番上の `rules` より強く効きます）。
+
+`exclude: [vendor/**, CHANGELOG.md]` と書くと、フォルダを渡したときの検査からそのファイルを外します。`.gitignore` が無視するファイルも外します。コマンドラインで名前を挙げたファイルは、それでも検査します。外した数と理由は締めに出ます。
+
+文末の調子をチームで決めているなら、`options:` に `no-mixed-desumasu: { body: desumasu, list: dearu }` のように本文・箇条書き・見出しごとに書くと、混ざっていなくても決めた調子と違う文を指摘します（書かなければ、そろっているかだけを見ます。日本語だけのオプションです）。
 `npx chaffjs init` でひな形を作れます。いま効いている設定は `npx chaffjs rules` で一覧になります。
 AI に設定を書かせるときは、`npx chaffjs rules --json` の出力を渡します。いまの値、使える値、なぜいま `off` なのかが一つに入っています。
 書き方の詳しい説明は手引きの「[設定](https://isamu.github.io/lab/ja/guide/configuration/)」と「[チームの表記ルール](https://isamu.github.io/lab/ja/guide/house-style/)」にあります。
@@ -172,6 +188,7 @@ AI に設定を書かせるときは、`npx chaffjs rules --json` の出力を�
 ## 指摘されたら
 
 応じ方は 3 つです。指摘がもっともなら文章を直します。指摘は正しいがそこは意図して書いたのなら、`<!-- stet: rule-id — 理由 -->` でその箇所だけ黙らせます。
+範囲なら `<!-- stet-begin: rule-id — 理由 -->` … `<!-- stet-end -->`、1 つの語句だけなら `<!-- stet: preferred-term["サーバ"] — 理由 -->` と書きます（ルール名は必ず書きます）。
 自分たちの方針に合わないなら、`npx chaffjs relax rule-id --why "理由"` でルールのほうを変えます。
 強さは `strict` `normal` `relaxed` `off` の 4 語から選び、足りなければ上限を数で書けます（`max-sentence-length: 260`）。
 同じ語がいつも正しい（製品名、引用の決まった形）なら、`chaff.yaml` の `allow:` に `text:`（そのままの文字列）か `pattern:`（正規表現）と `reason:` を書きます。理由の無い項目は設定の誤りとして止まります。
@@ -180,6 +197,7 @@ AI に設定を書かせるときは、`npx chaffjs rules --json` の出力を�
 ## チーム独自のルールとルールの束
 
 一つのチームのルールは、上の例のように `chaff.yaml` の `custom_rules` に書きます。語（`type: words`）、正規表現（`type: pattern`）、品詞の並び（`type: tokens`）、Node の関数（`type: module`）で書けます。
+`scope` を添えると、読む所を見出し・箇条書き・表・引用・本文（`heading` `list` `table` `quote` `paragraph`）に絞れます。`~quote` のように `~` を付けた所は外します。`prefer` の項目にも書けます。
 書き方は「[ルールを足す](https://isamu.github.io/lab/ja/guide/adding-rules/)」にあります。
 
 いくつものチームで使うルールは、プラグインのパッケージ `chaff-plugin-<名前>` にまとめます。ルール・語彙表・スタイルを YAML だけで書く束なら、コードは要りません。
@@ -329,7 +347,8 @@ what level now.
 
 **Your own preset** is a `chaff.yaml` in the repository: a genre, a `style`, rules and their levels, your preferred
 spellings, the genre's guide and your own rules under `custom_rules` (`words`, `pattern`, `tokens` for part-of-speech
-patterns, or `module` for a Node function). `npx chaffjs init --plugin <name>` starts a YAML-only rule pack, `chaff-plugin-<name>/`,
+patterns, or `module` for a Node function). A `scope` on a team rule or a `prefer` entry limits what it reads (`[heading]`,
+`[list, table]`, `[~quote]`). `npx chaffjs init --plugin <name>` starts a YAML-only rule pack, `chaff-plugin-<name>/`,
 and `npx chaffjs plugin-test` checks each of its rules on the rule's own example.
 
 **Fix plans.** `npx chaffjs fix-plan article.md` is a plan for whoever rewrites the file, a person or an AI: findings by

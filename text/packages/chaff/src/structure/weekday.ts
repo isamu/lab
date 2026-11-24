@@ -76,10 +76,23 @@ const anchorOf = (dated: readonly StructureNode[], node: StructureNode, context:
   return fromTree(nearest) ?? stamp ?? fromTree(opening);
 };
 
-/** 日付の年月日。年の無い日付は、近くの年を書いた日付から年を決めて付ける。決まらなければ undefined。 */
+/**
+ * 文書が同じ月日を、同じ曜日を添えて年まで書いた日付（議事録の頭の「Wednesday, June 11, 2025」と、閉会の「Wednesday, June 11」）。
+ * 年の無い方はその日を指している。書いた年が二つ以上あれば決めない。
+ */
+const sameDayDated = (dated: readonly StructureNode[], node: StructureNode): string | undefined => {
+  const monthDay = String(node.attrs["value"]);
+  const twins = dated.filter((other) => other.attrs["weekday"] === node.attrs["weekday"] && String(other.attrs["value"]).endsWith(`-${monthDay}`));
+  const years = [...new Set(twins.map((other) => String(other.attrs["value"])))];
+  return years.length === 1 ? years[0] : undefined;
+};
+
+/** 日付の年月日。年の無い日付は、同じ月日と曜日を年まで書いた日付か、近くの年を書いた日付から年を決めて付ける。決まらなければ undefined。 */
 const fullValueOf = (dated: readonly StructureNode[], node: StructureNode, context: YearContext): string | undefined => {
   const value = String(node.attrs["value"]);
   if (!MONTH_DAY.test(value)) return value;
+  const sameDay = sameDayDated(dated, node);
+  if (sameDay !== undefined) return sameDay;
   const anchor = anchorOf(dated, node, context);
   return anchor === undefined ? undefined : withNearestYear(value, anchor);
 };

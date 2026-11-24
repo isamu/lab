@@ -37,7 +37,7 @@ interview-invite.md   business/email · English   genre from --genre
   ⚠  Unfilled placeholder
 
      "[Name]" was never filled in
-     "[Your Name]", "[Insert Date]" and "[Candidate Name]" are the blanks a template or a generated draft leaves. A value that only says "TODO: …" or "TBD" is a blank too, left to fill in later, and so is an instruction line from the template left in a filled report ("OPTIONAL: General conclusions …"). This is not a matter of style: the blank was never filled. In a Japanese business document, the blank marks (〇〇) left where a name, a sum, a date, an address or a phone number belongs (〇〇様, 株式会社〇〇, 〇万円, 氏名：〇〇, 03-〇〇〇〇) are blanks too. A blank left in a table cell counts as well.
+     "[Your Name]", "[Insert Date]" and "[Candidate Name]" are the blanks a template or a generated draft leaves. A value that only says "TODO: …" or "TBD" is a blank too, left to fill in later, and so is an instruction line from the template left in a filled report ("OPTIONAL: General conclusions …"). This is not a matter of style: the blank was never filled. In a Japanese business document, the blank marks (〇〇) left where a name, a sum, a date, an address or a phone number belongs (〇〇様, 株式会社〇〇, 〇万円, 氏名：〇〇, 03-〇〇〇〇, 東京都品川区〇〇) are blanks too, and so is a blank inside a mail or web address (hello@[yourcompany].com). A blank left in a table cell counts as well.
 
      → Fill it in. If it is meant as an example, say so ("for example, Jane Smith").
 
@@ -51,7 +51,7 @@ interview-invite.md   business/email · English   genre from --genre
   ⚠  Unfilled placeholder
 
      "[Insert Date]" was never filled in
-     "[Your Name]", "[Insert Date]" and "[Candidate Name]" are the blanks a template or a generated draft leaves. A value that only says "TODO: …" or "TBD" is a blank too, left to fill in later, and so is an instruction line from the template left in a filled report ("OPTIONAL: General conclusions …"). This is not a matter of style: the blank was never filled. In a Japanese business document, the blank marks (〇〇) left where a name, a sum, a date, an address or a phone number belongs (〇〇様, 株式会社〇〇, 〇万円, 氏名：〇〇, 03-〇〇〇〇) are blanks too. A blank left in a table cell counts as well.
+     "[Your Name]", "[Insert Date]" and "[Candidate Name]" are the blanks a template or a generated draft leaves. A value that only says "TODO: …" or "TBD" is a blank too, left to fill in later, and so is an instruction line from the template left in a filled report ("OPTIONAL: General conclusions …"). This is not a matter of style: the blank was never filled. In a Japanese business document, the blank marks (〇〇) left where a name, a sum, a date, an address or a phone number belongs (〇〇様, 株式会社〇〇, 〇万円, 氏名：〇〇, 03-〇〇〇〇, 東京都品川区〇〇) are blanks too, and so is a blank inside a mail or web address (hello@[yourcompany].com). A blank left in a table cell counts as well.
 
      → Fill it in. If it is meant as an example, say so ("for example, Jane Smith").
 
@@ -109,7 +109,7 @@ $ npx chaffjs explain unfilled-placeholder --genre business/email
 
   Unfilled placeholder   (unfilled-placeholder)
 
-  "[Your Name]", "[Insert Date]" and "[Candidate Name]" are the blanks a template or a generated draft leaves. A value that only says "TODO: …" or "TBD" is a blank too, left to fill in later, and so is an instruction line from the template left in a filled report ("OPTIONAL: General conclusions …"). This is not a matter of style: the blank was never filled. In a Japanese business document, the blank marks (〇〇) left where a name, a sum, a date, an address or a phone number belongs (〇〇様, 株式会社〇〇, 〇万円, 氏名：〇〇, 03-〇〇〇〇) are blanks too. A blank left in a table cell counts as well.
+  "[Your Name]", "[Insert Date]" and "[Candidate Name]" are the blanks a template or a generated draft leaves. A value that only says "TODO: …" or "TBD" is a blank too, left to fill in later, and so is an instruction line from the template left in a filled report ("OPTIONAL: General conclusions …"). This is not a matter of style: the blank was never filled. In a Japanese business document, the blank marks (〇〇) left where a name, a sum, a date, an address or a phone number belongs (〇〇様, 株式会社〇〇, 〇万円, 氏名：〇〇, 03-〇〇〇〇, 東京都品川区〇〇) are blanks too, and so is a blank inside a mail or web address (hello@[yourcompany].com). A blank left in a table cell counts as well.
 
   How to fix: Fill it in. If it is meant as an example, say so ("for example, Jane Smith").
 

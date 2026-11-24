@@ -37,12 +37,32 @@ export const untaggedFewer = (fences: readonly CodeFence[], limit: number): read
   return untagged.length > 0 && untagged.length < tagged.length && untagged.length <= limit ? untagged : [];
 };
 
+const opensWithAny = (line: string, marks: readonly string[]): boolean => marks.some((mark) => mark !== "" && line.trimStart().startsWith(mark));
+
+/**
+ * A block of what a program printed alone: a line opens with a status mark (✖ Missing keys, ⚠ 2 slots short) and none with
+ * a shell prompt. A session that types a command and shows its output ($ npx tidy … ✖ 1 problem) holds a command, which
+ * a language can name.
+ */
+export const isPrintedOutput = (fence: CodeFence, marks: readonly string[], prompts: readonly string[]): boolean =>
+  fence.lines.some((line) => opensWithAny(line, marks)) &&
+  !fence.lines.some((line) =>
+    opensWithAny(
+      line,
+      prompts.map((prompt) => `${prompt} `),
+    ),
+  );
+
 export const codeFenceLanguage: Detector = (doc, options): Finding[] => {
   const outputWords = patternsOf(doc, "output-lead-in");
+  const statusMarks = patternsOf(doc, "output-status-mark");
+  const prompts = patternsOf(doc, "shell-prompt");
   const fences = codeFences(doc.source).filter(wantsLanguage);
   const tagged = fences.filter((fence) => fence.language !== "").length;
   // A block of plain output (after "we'd expect to see:") is in no language: it still counts, but is not pointed at.
-  const reported = untaggedFewer(fences, options.limit).filter((fence) => !afterOutputLeadIn(doc.source, fence.start, outputWords));
+  const reported = untaggedFewer(fences, options.limit).filter(
+    (fence) => !afterOutputLeadIn(doc.source, fence.start, outputWords) && !isPrintedOutput(fence, statusMarks, prompts),
+  );
   return reported.map((fence) => finding(doc, "code-fence-language-mix", fence.start, { tagged, untagged: fences.length - tagged }));
 };
 

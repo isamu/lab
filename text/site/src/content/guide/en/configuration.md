@@ -281,6 +281,51 @@ When `preferred-term` finds the left-hand spelling, it asks for the right-hand o
 When the left-hand spelling is a verb in its dictionary form (`utilize: use`), its other forms ("utilizing") are found too.
 With nothing under `prefer`, it says nothing.
 
+## Choosing what a rule reads (scope)
+
+A team's rule reads body text and list items by default.
+To read only headings or only tables, or to leave quotations out, list the parts under `scope`.
+It can be written on a `words`, `pattern` or `tokens` rule under `custom_rules`, and on an entry under `prefer`.
+
+| Name | What it reads |
+| --- | --- |
+| `heading` | Headings (not the `#` or the underline) |
+| `list` | List items |
+| `table` | Table cells (below the header row) |
+| `quote` | `>` quotations (not the `>` marks). A GitHub `> [!NOTE]` is the writer's own text and is read as body text |
+| `paragraph` | Body text in none of the others |
+
+A `~` in front of a name leaves that part out.
+What a rule reads is decided in two steps: the names without `~` choose (none written: every part), then the names with `~` take parts away.
+A list item inside a quotation is both `list` and `quote`, so `[list, ~quote]` reads the list items outside quotations.
+An unknown name, or a scope that takes away everything it chooses, is a settings error and stops the run.
+
+A rule against a full stop at the end of a heading:
+
+```yaml
+custom_rules:
+  - id: heading-no-period
+    type: pattern
+    pattern: '\.$'
+    scope: [heading]
+    name: A heading ends with a full stop
+    why: A heading is not a sentence, so we write it without one.
+    how_to_fix: Remove the full stop.
+    example:
+      before: '## Overview.'
+      after: '## Overview'
+```
+
+To give a `prefer` entry a scope, write its right-hand side with `use` and `scope`.
+Here "our firm" is not reported inside a quotation of a customer's words.
+An entry whose right-hand side is only a spelling reads body text and list items, as before.
+
+```yaml
+prefer:
+  e-mail: email
+  our firm: { use: our company, scope: [~quote] }
+```
+
 ## Deciding the team's jargon and required headings
 
 `jargon` and `required_sections` are rules whose content your team decides.
@@ -390,6 +435,66 @@ The last match wins. Paths are matched from the folder that holds the settings f
 so the result is the same wherever you run it.
 `by_path` is a list of entries with `files`. Any other shape, such as a folder mapped to a genre (`guides: docs/manual`), and an entry without `files` are not used, and chaff says so before it checks anything.
 
+### Changing rules per path
+
+An entry also takes `rules` and `options`, written as at the top of the file: a level, `off` or a number under `rules`, a rule's options under `options`.
+One `chaff.yaml` can then hold contracts and manuals side by side.
+
+```yaml
+genre: blog/tech
+
+rules:
+  max-sentence-length: strict
+
+by_path:
+  - files: ["legal/**/*.md"]
+    genre: legal/contract
+    rules:
+      max-sentence-length: 60
+  - files: ["legal/archive/**/*.md"]
+    rules:
+      max-sentence-length: off
+```
+
+A file's level comes from the strongest place that sets it. Weakest first:
+
+| Place | Strength |
+| --- | --- |
+| The rule's default | Weakest |
+| The genre (and the kind of document) | |
+| `style:` | |
+| `rules` at the top of `chaff.yaml` | |
+| `rules` of the `by_path` entries that match the file | Strongest; of several, the one written later wins |
+
+A level written in `by_path` also replaces a number set above it: `relaxed` there is the setting, not `260` at the top.
+Options go the same way: a matching entry's `options` win over the top-level `options`, and the style's.
+
+A rule a `by_path` entry turns off is listed under "did not run" with that entry as the reason:
+
+```
+  max-sentence-length (turned off in the settings by by_path: legal/archive/**/*.md)
+```
+
+`explain` names every entry that changes the rule:
+
+```
+$ npx chaffjs explain max-sentence-length
+…
+  Now: strict.
+
+  by_path in chaff.yaml changes it for these files (there it wins over the level above):
+    legal/**/*.md: 60
+    legal/archive/**/*.md: off
+…
+```
+
+`rules --json` lists the same entries under each rule's `by_path`.
+A rule name `by_path` does not know, a value that is not a level, and `rules` or `options` that are not a map are reported before the check, as they are at the top, with the entry named:
+
+```
+chaff: …/chaff.yaml (by_path: legal/**/*.md): there is no rule named max-sentense-length (npx chaffjs rules --json lists them)
+```
+
 ## Checking files other than Markdown
 
 Given a folder, chaff checks the Markdown in it (`.md`, `.markdown`, `.mdx`).
@@ -411,6 +516,29 @@ A finding points at the line and column in the file, so a `custom_rules` pattern
 A YAML file that cannot be parsed is read as plain text.
 Any other file, such as `.txt`, is read as plain text.
 A file named on the command line is checked whatever its extension.
+
+## Leaving files out
+
+`exclude` lists globs a folder walk leaves out.
+They are matched from the folder that holds the settings file, with the same globs as `by_path`.
+
+```yaml
+exclude:
+  - vendor/**
+  - CHANGELOG.md
+```
+
+A walk also leaves out what the repository's `.gitignore` files ignore, read as git reads them (`!` re-includes a file, a trailing `/` matches folders only, a leading `/` anchors a pattern to its folder).
+They are read from the project root down to each file: the nearest folder above the checked one that holds `.git` (a folder, or a worktree's `.git` file), so `chaff docs/` honours the repository's own `.gitignore`.
+Outside a repository, the root is the folder that holds chaff.yaml, and without one, the folder you check.
+When `.git` is a folder, `.git/info/exclude` is read too.
+A file named on the command line is still checked, even when `exclude` or `.gitignore` names it, as other linters do.
+
+The summary says how many files were left out, and why:
+
+```
+  3 files not checked (2 by exclude in chaff.yaml, 1 by .gitignore)
+```
 
 ## Setting the depth of a fix plan
 

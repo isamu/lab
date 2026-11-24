@@ -131,8 +131,8 @@ describe("date-without-year: the year after the time (ctime)", () => {
   it("reads the year written after the time, and still reports a day and month with no year", () => {
     assert.deepEqual(namedRuleRun("date-without-year", timeline("~Wed Mar 27 23:59 2024 traffic is moved"), en).findings, []);
     assert.deepEqual(namedRuleRun("date-without-year", timeline("Thu Mar 28 14:02:11 UTC 2024 the cluster is back"), en).findings, []);
-    assert.deepEqual(namedRuleRun("date-without-year", timeline("Mar 27 23:59 traffic is moved"), en).findings, [
-      '"Mar 27" has no year, and the document\'s dates run from 2023 to 2024, so the year is unclear',
+    assert.deepEqual(namedRuleRun("date-without-year", timeline("Mar 29 23:59 traffic is moved"), en).findings, [
+      '"Mar 29" has no year, and the document\'s dates run from 2023 to 2024, so the year is unclear',
     ]);
   });
 });

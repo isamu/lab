@@ -31,7 +31,9 @@ read. A contract checked as a blog post gets wrong findings, so choose the genre
    guessed or default genre shows no guide, and `--no-guide` leaves it out.
 
 A rule the genre turns off is listed under "did not run" with the genre as the reason. That is the preset's
-choice, not a gap; turn it back on (`rules:` in `chaff.yaml`) only when the person asks. Some of these are off
+choice, not a gap; turn it back on (`rules:` in `chaff.yaml`) only when the person asks. For minutes or notes made
+from a transcript, use a business genre (`business/meeting-notes`): `filler-word` then reports fillers left in (ええと,
+um, you know). `speech/transcript` is for a verbatim record and keeps them. Some of these are off
 because chaff measured them to be mostly wrong for that kind of document on real, judged documents
 ([isamu/chaff-corpus](https://github.com/isamu/chaff-corpus)); turning one back on brings those false findings back.
 
@@ -50,6 +52,9 @@ After the findings comes the list of rules that did not run, and why. Only the d
 `--compact` gives just their number. Read it before saying a document is clean. Two reasons there are not about
 the genre: a rule that compares documents runs only when chaff is given two or more files or a folder, and a rule
 that reads meaning runs only under `npx chaffjs test` (below).
+
+Some rules read only one language and say so when they do not run: `ra-nuki` (見れる for 見られる) and `sa-ire`
+(読まさせて for 読ませて) are Japanese only.
 
 A run over several files prints only the files that have findings. To call one file clean, run chaff on that
 file alone and read its list.
@@ -72,7 +77,7 @@ calls nothing. Ask the person before a real run; the passages leave the machine.
 | | When | How |
 | --- | --- | --- |
 | Fix the text | The finding is right | Edit the sentence. Keep the meaning, the facts and the numbers; change only how it is said. |
-| Silence that spot | Right in general, wrong here (a quotation, a term that must repeat) | `<!-- stet: rule-id — reason -->` before it; `stet-section` / `stet-file` for wider scope. Always give the reason. |
+| Silence that spot | Right in general, wrong here (a quotation, a term that must repeat) | `<!-- stet: rule-id — reason -->` before it; `stet-section` / `stet-file` for wider scope, `<!-- stet-begin: rule-id — reason -->` … `<!-- stet-end -->` for a range, `rule-id["word"]` to silence one matched word only. Always name the rules (there is no all-rules form) and give the reason. |
 | Allow that text everywhere | The same text is always right for this team (a product name, a quoted form) | An entry under `allow:` in `chaff.yaml`: `text:` (literal) or `pattern:` (regex), `reason:` (required), optional `rules:` and `files:`. `npx chaffjs suppressions` lists what it silenced. |
 | Change the rule | Wrong for this team or genre | `npx chaffjs relax <rule-id> --why "reason"` (or `strict` / `off`). The reason and date are written into `chaff.yaml`. |
 
@@ -84,6 +89,9 @@ relaxing a rule. A worked before and after for a rule, with chaff's real output 
 When a finding is wrong for a reason that is not about this team (chaff misread the text), tell the person and offer
 `npx chaffjs feedback <file> --rule <rule-id> --line <n>`: it drafts a report and sends nothing. A document the
 person may share can go to isamu/chaff-corpus, where wrong findings become test cases and rule fixes.
+
+`heading-marker-no-space` (`##Steps`, `#見出し`: no space after the marks, so the line is not a heading) is fixed by
+adding the one space; keep the level and the words. If the line was a tag or a number, not a heading, leave it and say so.
 
 ## When numbers or dates disagree
 
@@ -97,6 +105,12 @@ Such a finding says two places in the document disagree. It does not say which o
 Never "fix" it by changing the figure that was right, and never adjust both so they merely agree. If you cannot
 tell which is right, leave both and ask.
 
+## When Markdown hides a section
+
+Some findings are Markdown slips that drop a section from the outline: `pseudo-heading` is a bold line standing in for
+a heading ("**Next steps**") in a document that otherwise uses headings. Make it a real heading one level below the
+heading above it; if it is not a section of its own, drop the bold and write it into the text. Do not change its words.
+
 ## Tune chaff.yaml
 
 - `npx chaffjs init --genre <genre>` writes a commented `chaff.yaml` for that genre when there is none (an
@@ -107,16 +121,23 @@ tell which is right, leave both and ask.
 - A level is `strict` / `normal` / `relaxed` / `off`; when even `relaxed` is too tight, a positive number is the
   limit itself (`max-sentence-length: 260`). A rule with nothing to count takes fewer levels, and no number;
   `levels_you_can_set` in `rules --json` lists them.
-- `prefer:` maps spellings to the team's (`e-mail: email`); `preferred-term: normal` turns the rule on.
+- `prefer:` maps spellings to the team's (`e-mail: email`); `preferred-term: normal` turns the rule on. An entry
+  limited to some parts of the document takes the object form: `our firm: { use: our company, scope: [~quote] }`.
 - Unknown rule names and unreadable values are reported on stderr — read stderr after editing `chaff.yaml`.
 - `genre:` sets the kind of document. `by_path` sets it per path, as a list of `files` globs, each with `genre`,
-  `language` or `profile`, and an entry in any other shape is reported on stderr and not used:
+  `language`, `profile`, `rules` or `options`, and an entry in any other shape is reported on stderr and not used:
 
   ```yaml
   by_path:
     - files: ["guides/**/*.md"]
       genre: docs/manual
+      rules:
+        max-sentence-length: relaxed
   ```
+
+  An entry's `rules` and `options` are written as the top-level ones are. A file's level, weakest first: the default,
+  the genre, `style:`, top-level `rules:`, then the matching `by_path` entries' `rules` (the later entry wins). A rule
+  an entry turns off is listed as not run with the entry named; `explain` lists every entry that changes the rule.
 
   A file's front matter `genre:` (or `type:`) sets that one file, when neither `genre:` nor a matching `by_path`
   entry does. Strongest first: `--genre` for one run, then `by_path`, `genre:`, front matter, the path, the content,
@@ -125,7 +146,15 @@ tell which is right, leave both and ask.
   `verse` (a Japanese poem: each line ends a sentence) or `play` (a Japanese play: stage directions in （） are split
   from the spoken line). Leave it out: the genre or the content chooses it, and the first line of `npx chaffjs tree` shows the choice. `none` stops the choice.
 - `names:` lists the team's names (organisations, products), each read as one name. `include:` adds files besides
+  Markdown when a folder is checked (`include: ["*.yaml"]`). `exclude:` leaves globs out of a folder walk
+  (`exclude: [vendor/**, CHANGELOG.md]`, matched like `by_path`), and a walk also leaves out what the `.gitignore`
+  files from the repository root (the nearest folder with `.git`) down ignore, plus `.git/info/exclude`. A file named on the command line is still checked; the summary says
+  how many files were left out and why.
+
   Markdown when a folder is checked (`include: ["*.yaml"]`).
+- `options: { no-mixed-desumasu: { body: desumasu, list: dearu, heading: dearu } }` (Japanese only) is for a team
+  that has chosen its register: in a region written there, a sentence in the other register is reported even with no
+  mix. Leave it out to keep the default, which takes no side and only flags the minority of a mix.
 
 ## Turn a team's style note into chaff.yaml
 
@@ -170,6 +199,12 @@ custom_rules:
     example:
       ja: { before: 禁止ワードを使った文, after: 別の言い方の文 }
 ```
+
+`scope:` on a `words`, `pattern` or `tokens` rule (and on a `prefer` entry) limits what it reads: `heading`, `list`,
+`table`, `quote`, `paragraph` (body text outside the others). Without it, a rule reads body text and list items. Names
+without `~` choose (none: every part), then names with `~` take parts away, so `[~quote]` is everything but
+quotations and `[list, ~quote]` is list items outside quotations. A rule against 。 at the end of a heading is
+`type: pattern`, `pattern: '。'`, `scope: [heading]`. An unknown name stops the run.
 
 Test a new team rule the same way: `explain`, then a sample it must report and a sample it must not, before
 committing `chaff.yaml`. The guide page "Adding a rule" covers each way and how to add a rule to chaff itself.
@@ -370,7 +405,8 @@ output before and after.
 
 - `npx chaffjs tree <file>` shows a contract or specification as a tree of addresses (`3.2` for 第3条第2項 or
   Section 3.2). A check reads the same tree to find references to missing provisions, numbering gaps and
-  terms defined twice.
+  terms defined twice. `enumeration-marker-mix` points at an item numbered in another form than the rest of its run
+  ("1.", "2.", "3)", "4."; 「(1)」「(2)」「3.」); sub-items that count from 1 again are a level below and are left.
 - `npx chaffjs cite <source> <quotes.json>` checks that quotations (`[{ "address", "quote" }]`) are really in
   the source; exit 1 if any is not. Use it to back every quotation you put in an answer or a summary.
   `cite --url <URL> <quotes.json>` checks against a web page; `cite --scaffold <file>` prints the quotations in a

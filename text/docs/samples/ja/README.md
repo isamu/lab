@@ -11,7 +11,7 @@ chaff が見つけるまちがいを、ルールごとに一つずつ見本に�
 
 English samples: [../en/README.md](../en/README.md)
 
-見本のあるルール: 272 / 272
+見本のあるルール: 273 / 273
 
 ## 読みやすさ
 
@@ -65,6 +65,7 @@ English samples: [../en/README.md](../en/README.md)
 | [二重敬語](double-keigo.md)（`double-keigo`） | 「おっしゃられる」のように、同じ種類の敬語を二重にかけた所 |
 | [空虚な強調](empty-intensifier.md)（`empty-intensifier`） | 「非常に重要」「言うまでもなく」のように、何が大事かを言わずに強めるだけの言い方 |
 | [逃げの表現が多い](excessive-hedging.md)（`excessive-hedging`） | 「〜の可能性があるかもしれません」のように、逃げの表現を重ねて、何が言いたいのか分からない所 |
+| [残ったつなぎの言葉](filler-word.md)（`filler-word`） | 文字起こしから作った議事録やメモに残った「ええと」「まあ、」のようなつなぎの言葉 |
 | [謙譲語を相手の動作に使っている](humble-for-others.md)（`humble-for-others`） | 「伺ってください」「拝見してください」「申される」のように、謙譲語を読み手や第三者の動作に使った所 |
 | [慣用句の誤用](idiom-misuse.md)（`idiom-misuse`） | 「的を得る」「汚名挽回」のように、取り違えたと決まっている慣用句 |
 | [公用文でかなで書く補助動詞・形式名詞](kana-function-word.md)（`kana-function-word`） | 公用文でかなで書く語（〜て下さい、〜する事）を漢字で書いた所（style が koyobun のとき） |
@@ -79,6 +80,7 @@ English samples: [../en/README.md](../en/README.md)
 | [重言](redundant-expression.md)（`redundant-expression`） | 「頭痛が痛い」「一番最初」「後で後悔」のような、同じ意味の語の重なり |
 | [期限も担当も無い依頼](request-without-deadline.md)（`request-without-deadline`） | 「ご確認ください」「Please send …」のような依頼で、その文にも次の文にも期限と担当が無いもの |
 | [要求の文に、決めきれない言い方がある](requirement-smell.md)（`requirement-smell`） | 仕様書や契約書の要求の文にある「可能な限り」「必要に応じて」「等」「及び／又は」 |
+| [さ入れ言葉](sa-ire.md)（`sa-ire`） | 「読まさせていただく」「行かさせる」のような、さ入れ言葉 |
 | [「させていただく」が多い](sasete-itadaku.md)（`sasete-itadaku`） | 「させていただく」を繰り返して、誰が決めて何が起きるのかがぼやけた所 |
 | [対にならない「〜たり」](tari-unpaired.md)（`tari-unpaired`） | 「本を読んだり、映画を見ます」のように、「〜たり」が一つで止まって対になっていない所 |
 | [「〜的」の多用](teki-overuse.md)（`teki-overuse`） | 一文に「効果的」「具体的」「積極的」のような「〜的」がいくつも重なった所 |
@@ -134,6 +136,7 @@ English samples: [../en/README.md](../en/README.md)
 | [短い呼び名を定めた名前を、あとで正式の名前のまま書いている](defined-name-repeated.md)（`defined-name-repeated`） | 「株式会社みなと製作所（以下「甲」という。）」のあとで、甲を正式の名前のまま書いている所 |
 | [定義した語を、定義と違う形で使っている](defined-term-form.md)（`defined-term-form`） | 契約や規程で、定義した語を、定義のあとで違う形（括弧付き、言い換え、長くした形）で書いた所 |
 | [省略記号の書き方が混ざっている](ellipsis-consistency.md)（`ellipsis-consistency`） | 「……」と「・・・」、「…」と「...」のように、一つの文書で省略の記号を二通りに書いている所 |
+| [項目の番号の書き方が揃っていない](enumeration-marker-mix.md)（`enumeration-marker-mix`） | 「1.」「2.」「3)」「4.」のように、一つの並びの項目の番号の書き方が混ざっている所 |
 | [！？ の全角と半角の混在](exclamation-width-consistency.md)（`exclamation-width-consistency`） | 日本語の文の中で、！？ の全角と半角（!?）が混ざっている所 |
 | [英数字の全角と半角が混ざっている](fullwidth-alnum-consistency.md)（`fullwidth-alnum-consistency`） | 英字や数字を、全角（ＡＢＣ１２３）と半角（ABC123）で混ぜて書いている所 |
 | [見出しの終わりの記号が揃っていない](heading-end-punctuation-mix.md)（`heading-end-punctuation-mix`） | 記号なしの見出しの中に「準備：」「確認。」のように記号で終わる見出しが混ざっている所（またはその逆） |
@@ -182,9 +185,11 @@ English samples: [../en/README.md](../en/README.md)
 | [図や表を参照する順番と位置](figure-reference-order.md)（`figure-reference-order`） | 図2を図1より先に参照する、図を載せた節より後で初めて参照する、一度も参照しない図や表 |
 | [注の無い注の印と、印の無い注](footnote-mismatch.md)（`footnote-mismatch`） | 本文の「※3」「[^3]」に対応する注が無い所と、本文のどこも指さない注 |
 | [見出しの深さが飛んでいる](heading-level-skip.md)（`heading-level-skip`） | 「##」の次に「####」が来るように、見出しの深さが一段以上飛んでいる所 |
+| [「#」の後ろに空白が無く、見出しにならない](heading-marker-no-space.md)（`heading-marker-no-space`） | 「#見出し」「##手順」のように「#」の後ろに空白が無く、見出しにならない行 |
 | [見出しの番号の付け方が揃っていない](heading-numbering-mix.md)（`heading-numbering-mix`） | 「1. 概要」「手順」「3. 費用」や「1.」「2.」「3）」のように、兄弟の見出しで番号の付け方が混ざっている所 |
 | [画像に代替テキストが無い](image-alt-text.md)（`image-alt-text`） | 「![](図.png)」のように、代替テキストの無い画像 |
 | [画像の代替テキストがファイル名](image-file-name-alt.md)（`image-file-name-alt`） | 「![IMG_1234.png](…)」のように、代替テキストがファイル名のままの画像 |
+| [使われないリンクの定義](link-definition-unused.md)（`link-definition-unused`） | どのリンクも使わない「[名前]: URL」の定義と、別の行き先で二度書いた定義 |
 | [同じ行為への逆の決まり](modal-conflict.md)（`modal-conflict`） | 同じ主語の同じ行為を、ある文では義務や許可に、別の文では禁止にしている所 |
 | [題の後の段落が題を言い直しているだけ](no-lead.md)（`no-lead`） | 題のすぐ後の段落が、題を言い直すだけで何も足していない所 |
 | [単位の無い数](number-without-unit.md)（`number-without-unit`） | 同じ列や同じ見出しの語のほかの値には単位があるのに、数だけを書いた値 |
@@ -192,8 +197,11 @@ English samples: [../en/README.md](../en/README.md)
 | [番号の抜け・重なり](numbering-gap.md)（`numbering-gap`） | 第1条の次が第3条、(a) の次が (c) のように、番号が飛んだり重なったりしている所 |
 | [本題に入るまでが長い](preamble-length.md)（`preamble-length`） | 最初の見出しまでの前置きが長く、本題になかなか入らない所 |
 | [手順の後に書いた前提](prerequisite-after-step.md)（`prerequisite-after-step`） | 節の番号付きの手順より後にある、「作業を始める前に」「始める前に」で始まる文 |
+| [太字の一行を見出しの代わりにしている](pseudo-heading.md)（`pseudo-heading`） | 見出しで節を分けた文書の中で、見出しの代わりに置いた太字の一行 |
 | [必須の条件を歓迎の条件にも挙げている](required-listed-as-preferred.md)（`required-listed-as-preferred`） | 求人で、必須に挙げた資格や経験を歓迎にも挙げている所 |
+| [前後が逆のリンク](reversed-link.md)（`reversed-link`） | 「(字)[URL]」と、角括弧と丸括弧を逆に書いたリンク |
 | [無い手順を指す参照](step-reference-missing.md)（`step-reference-missing`） | 「手順5を参照」のように、文書の手順の最後の番号を超える手順を指す参照 |
+| [表に取り込まれた行](table-absorbed-line.md)（`table-absorbed-line`） | 空行を空けずに表のすぐ下に書いたため、表の行になってしまった文 |
 | [表の行のセルが見出しの行より多い](table-row-overflow.md)（`table-row-overflow`） | 見出しの行より多いセルを持つ表の行（多い分は表示されない） |
 | [見出しの無い目次の項目](toc-heading-mismatch.md)（`toc-heading-mismatch`） | 目次（「目次」「Contents」の見出しの下の箇条書き）の項目のうち、文書のどの見出しとも合わないもの |
 | [閉じていないコードブロック](unclosed-code-fence.md)（`unclosed-code-fence`） | 「```」で始めたまま閉じていないコードブロック（後ろがすべてコードになる） |

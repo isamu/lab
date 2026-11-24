@@ -3,7 +3,7 @@ import type { RuleDefinition } from "../plugin.ts";
 import type { UiLanguage } from "../ui.ts";
 import { ruleProblems } from "./rule-problems.ts";
 import { nameProblems } from "./name-problems.ts";
-import { byPathProblems } from "./by-path-problems.ts";
+import { byPathProblems, byPathRuleProblems } from "./by-path-problems.ts";
 import { allowRuleWarnings } from "./allow-problems.ts";
 import { configOptionProblems } from "./option-problems.ts";
 import { configGuideProblems } from "../genre-guide/of-config.ts";
@@ -13,6 +13,7 @@ export const settingWarnings = (config: Config, rules: readonly RuleDefinition[]
   ...ruleProblems(config, rules, ui),
   ...nameProblems(config, ui),
   ...byPathProblems(config, ui),
+  ...byPathRuleProblems(config, rules, ui),
   ...allowRuleWarnings(config, rules, ui),
   ...configOptionProblems(config, rules, ui),
   ...configGuideProblems(config, ui),

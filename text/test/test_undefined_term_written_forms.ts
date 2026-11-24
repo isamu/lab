@@ -77,6 +77,17 @@ describe("undefined-term: capitalised words not written as a term", () => {
     assert.deepEqual(termsIn(en, "a.txt", agreement("The purpose is internet Maintenance And Deployment of medical service.")), []);
   });
 
+  it("does not read a sentence that capitalises its small words in mid-sentence as naming terms", () => {
+    assert.deepEqual(termsIn(en, "a.txt", agreement("Plus Ten Percent Of Any Gross Revenue, In Addition to The Total Contributions.")), []);
+  });
+
+  it("does not report one word that shortens a longer run before it in the sentence", () => {
+    assert.deepEqual(
+      termsIn(en, "a.txt", agreement("Orders under the Supply Commitments and any orders issued against such Commitments are bound by this Agreement.")),
+      ["Supply Commitments"],
+    );
+  });
+
   it("still reports a capitalised term the document never defines, joined by spaces or written plainly", () => {
     assert.deepEqual(termsIn(en, "a.txt", agreement("Downtime during the Maintenance       Window shall not be credited.")), ["Maintenance       Window"]);
     assert.deepEqual(termsIn(en, "a.txt", agreement("The purpose is internet Maintenance and Deployment of medical service.")), ["Maintenance and Deployment"]);

@@ -338,8 +338,18 @@ const inWesternYear = (text: string, date: Mention): Mention => {
   return { ...date, start: date.start - era.length, attrs: { ...date.attrs, value } };
 };
 
+/** 日付の前の曜日は、括弧が日付だけを包むときに読む（「月曜日（2026年11月25日）」）。括弧の外の近くの曜日は別の日のことがある。 */
+const WEEKDAY_BEFORE = /(?<day>[日月火水木金土])曜日?[ \t\u3000]*[（(]$/u;
+const CLOSES_PAREN = /^[ \t\u3000]*[）)]/u;
+const WEEKDAY_BEFORE_REACH = 6;
+
+const weekdayBefore = (text: string, date: Mention): number | undefined => {
+  const written = WEEKDAY_BEFORE.exec(text.slice(Math.max(0, date.start - WEEKDAY_BEFORE_REACH), date.start))?.groups?.["day"];
+  return written === undefined || !CLOSES_PAREN.test(text.slice(date.end)) ? undefined : WEEKDAY_CHARS.indexOf(written);
+};
+
 const withWeekday = (text: string, date: Mention): Mention => {
-  const weekday = weekdayAfter(text, date.end);
+  const weekday = weekdayAfter(text, date.end) ?? weekdayBefore(text, date);
   return weekday === undefined ? date : { ...date, attrs: { ...date.attrs, weekday } };
 };
 

@@ -4,6 +4,7 @@ import { allowFor, allowOf, applyAllow, type AllowEntry } from "../packages/chaf
 import { allowProblems, allowRuleWarnings } from "../packages/chaff/src/config/allow-problems.ts";
 import { renderSuppressions } from "../packages/chaff/src/render/suppressions.ts";
 import type { Finding } from "../packages/chaff/src/plugin.ts";
+import type { StetProblem } from "../packages/chaff/src/stet.ts";
 import { runCli } from "./cli-run.ts";
 
 const at = (rule: string, offset: number): Finding => ({ rule, severity: "warning", line: 1, column: offset + 1, quote: "", values: { offset } });
@@ -137,7 +138,7 @@ describe("allow: which findings it drops", () => {
 describe("allow: chaff suppressions lists what it silenced", () => {
   it("shows each entry with its count and reason, in both languages", () => {
     const allowed = [{ finding: at("spelling", 0), entry: entry({ text: "Kubernetes", reason: "product name", rules: ["spelling"] }) }];
-    const file = { path: "a.md", suppressed: [], allowed, reasonless: [], notRun: [] };
+    const file = { path: "a.md", suppressed: [], allowed, reasonless: [], notRun: [], ranges: [], problems: [] };
     const en = renderSuppressions([file], "en");
     assert.match(en, /Silenced by allow in chaff\.yaml: 1/u);
     assert.match(en, /allow\[0\] "Kubernetes"/u);
@@ -146,8 +147,18 @@ describe("allow: chaff suppressions lists what it silenced", () => {
     assert.match(renderSuppressions([file], "ja"), /chaff\.yaml の allow で抑制されている指摘: 1 件[\s\S]*理由: product name/u);
   });
 
+  it("lists the allow groups beside stet problems, both shown", () => {
+    const allowed = [{ finding: at("spelling", 0), entry: entry({ text: "Kubernetes", reason: "product name" }) }];
+    const problems: StetProblem[] = [{ kind: "unclosed", line: 3 }];
+    const text = renderSuppressions([{ path: "a.md", suppressed: [], allowed, reasonless: [], notRun: [], ranges: [], problems }], "en");
+    assert.match(text, /Silenced by allow in chaff\.yaml: 1[\s\S]*Stets that do not work or are written wrong: 1/u);
+  });
+
   it("says nothing about allow when it silenced nothing", () => {
-    assert.doesNotMatch(renderSuppressions([{ path: "a.md", suppressed: [], allowed: [], reasonless: [], notRun: [] }], "en"), /allow/u);
+    assert.doesNotMatch(
+      renderSuppressions([{ path: "a.md", suppressed: [], allowed: [], reasonless: [], notRun: [], ranges: [], problems: [] }], "en"),
+      /allow/u,
+    );
   });
 });
 

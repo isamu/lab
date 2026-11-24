@@ -1,6 +1,6 @@
 import type { Detector, DetectorOptions, DocumentProfile, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { compacted } from "./gram-place.ts";
-import { leadingCounter, trailingOrdinals, trailingPrefix } from "./counter-edge.ts";
+import { leadingCounter, trailingOrdinals, trailingPrefix, trailingQuantity } from "./counter-edge.ts";
 import { trailingAddressee, type AddresseeSuffix } from "./addressee-edge.ts";
 import { leadingPrefix, trailingTitle, type AddresseeWords } from "./addressee-title-edge.ts";
 import {
@@ -8,6 +8,7 @@ import {
   followsUnit,
   fillsGloss,
   holdsName,
+  inWorkTitle,
   isListItem,
   labelsLines,
   leadingDate,
@@ -20,7 +21,7 @@ import { isNameList } from "./name-list-sentence.ts";
 import { maskAddresses } from "../address-chain.ts";
 import { isAddressRun } from "./place-run.ts";
 import { isOneName } from "./name-run.ts";
-import { isOrganisationHead, isOrganisationRun, type OrganisationWords } from "./organisation-run.ts";
+import { closesAfterDot, isOrganisationHead, isOrganisationRun, type OrganisationWords } from "./organisation-run.ts";
 import { endsInTitle, inStatuteTitle, isTitlePosition, isTitledName, repeatedRuns, titleBody, type TitleWords } from "./titled-run.ts";
 import { proseText } from "../measure.ts";
 import { maskSpans } from "../mask.ts";
@@ -60,6 +61,8 @@ type KanjiRun = {
   readonly listItem: boolean;
   /** 連なりを中に含む括弧（ENCLOSING_MARKS）の中身の、文書全体の座標での範囲。 */
   readonly brackets: readonly Span[];
+  /** 連なりが、引用の中の引用でない二重鉤括弧『』の中にある（『原爆犠牲国民学校教師と子どもの碑』）。 */
+  readonly inWorkTitle: boolean;
 };
 
 const SPACE = /\s/gu;
@@ -104,6 +107,7 @@ const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined, names:
         alone: false,
         listItem: false,
         brackets: [],
+        inWorkTitle: false,
       };
     const span = { start: sentence.span.start + start, end: sentence.span.start + last + 1 };
     const after = sentence.text.slice(0, start).trim() === "" ? sentence.text.slice(last + 1) : undefined;
@@ -125,6 +129,7 @@ const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined, names:
       alone,
       listItem,
       brackets,
+      inWorkTitle: inWorkTitle(sentence.text, start, last + 1),
     };
   });
 };
@@ -186,15 +191,6 @@ const isPlaceName = (tokens: readonly Token[], span: Span, words: NameWords, for
   return isAddressRun(tokens, covering, words.topUnits) || isOneName(tokens, covering) || isOrganisationRun(tokens, covering, words.organisation, formBefore);
 };
 
-/** 連なりのすぐ後ろの、中黒で続く語の並び（・適応小委員会、・学位授与機構）。 */
-const DOTTED_TAIL = /^(?:・[一-鿿ァ-ヶー]+)+/u;
-
-/** 連なりの後ろ（next）が中黒で続き、最後の語が組織の語で閉じるか（社会保障審議会企業年金・個人年金部会の「・個人年金部会」）。 */
-const closesAfterDot = (next: string, units: readonly string[]): boolean => {
-  const last = DOTTED_TAIL.exec(next)?.[0].split("・").at(-1);
-  return last !== undefined && units.some((unit) => last.endsWith(unit));
-};
-
 /** 中黒の後ろで閉じる組織の名前の前半（独立行政法人大学改革支援・学位授与機構の「独立行政法人大学改革支援」）。 */
 const isDottedName = (tokens: readonly Token[], span: Span, run: KanjiRun, organisation: OrganisationWords, formBefore: boolean): boolean =>
   closesAfterDot(run.next, organisation.units) && isOrganisationHead(tokens, coveringOf(tokens, span), organisation, formBefore);
@@ -224,6 +220,7 @@ const tailOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: Name
   const suffix =
     prefix === undefined
       ? (trailingOrdinals(tokens, span, run.text) ??
+        trailingQuantity(tokens, span, run.text) ??
         trailingConjunction(tokens, span.start, span.end, run.text) ??
         trailingAddressee(tokens, span.end, run.text, words.addressee) ??
         trailingAddressee(tokens, span.end, run.text, words.listSuffixes))
@@ -259,7 +256,7 @@ const measuredOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: 
 
 /** 書き手が名前として示した連なり（括弧でくくった、一行に置いた、用語集の見出し語、文脈で名前と分かる）。 */
 const isPresentedName = (run: KanjiRun, context: RunContext): boolean =>
-  run.quoted || run.label || (context.headwords && run.alone) || isNamedByContext(run, context.words);
+  run.quoted || run.inWorkTitle || run.label || (context.headwords && run.alone) || isNamedByContext(run, context.words);
 
 /**
  * 数えない連なりは空。頭の、数に付いた助数詞（2日日本弁護士連合会の「日」）と、尻の、数に付く接頭の語（施行令第172条の「第」）と

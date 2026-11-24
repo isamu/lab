@@ -119,6 +119,17 @@ const notWrittenAsTerm = (tokens: readonly Token[], start: number, end: number, 
   return tokens.slice(start + 1, end - 1).some((token) => isCapitalised(token) && small.has(token.surface.toLowerCase()));
 };
 
+/** Small words capitalised in mid-sentence that make the sentence title-case writing (Plus Of Any Revenue From Awarded Contract). */
+const TITLE_CASE_SMALL_WORDS = 2;
+
+/** A sentence that capitalises its small words in mid-sentence: every word is capitalised, so none names a term. */
+const capitalisesSmallWords = (tokens: readonly Token[], small: ReadonlySet<string>): boolean =>
+  tokens.slice(1).filter((token) => isCapitalised(token) && small.has(token.surface.toLowerCase())).length >= TITLE_CASE_SMALL_WORDS;
+
+/** One word that is the last word of a longer run earlier in the sentence: a shortened back-reference (Master Purchase Commitments … such Commitments). */
+const shortensEarlierRun = (tokens: readonly Token[], runs: readonly Run[], at: number): boolean =>
+  runs.some((run) => run.end - run.start > 1 && run.end <= at && tokens[run.end - 1]?.surface === tokens[at]?.surface);
+
 const inside = (offset: number, spans: readonly Span[]): boolean => spans.some((span) => span.start <= offset && offset < span.end);
 
 /** Used like a defined term: after a lower-case word, and not a modifier of a lower-case noun after it (the Premium plan). */
@@ -304,17 +315,20 @@ export const capitalisedTerms = (input: CapitalisedInput): CapitalisedTerm[] => 
   const divisions = new Set(input.words.divisions.flatMap(formsOf));
   const known = new Set([...input.defined.map((definition) => definition.term), ...input.named, ...input.words.names].flatMap(formsOf));
   const isKnown = (term: string): boolean => partsOf(term).some((part) => formsOf(part).some((form) => known.has(form)));
-  const uses = input.sentences.flatMap((tokens) =>
-    runsOf(tokens, joiners, near).flatMap(({ start, end }): CapitalisedTerm[] => {
+  const uses = input.sentences.flatMap((tokens) => {
+    if (capitalisesSmallWords(tokens, small)) return [];
+    const runs = runsOf(tokens, joiners, near);
+    return runs.flatMap(({ start, end }): CapitalisedTerm[] => {
       const first = tokens[start];
       const last = tokens[end - 1];
       if (first === undefined || last === undefined || !placedLikeATerm(tokens[start - 1], tokens[end])) return [];
+      if (end - start === 1 && shortensEarlierRun(tokens, runs, start)) return [];
       if (inside(first.span.start, input.marked) || formsOf(first.surface).some((form) => divisions.has(form))) return [];
       const term = input.source.slice(first.span.start, last.span.end);
       if (isKnown(term) || isName(tokens, start, end, term) || notWrittenAsTerm(tokens, start, end, small)) return [];
       return writtenInLowerCase(input.readable, term) ? [] : [{ offset: first.span.start, term }];
-    }),
-  );
+    });
+  });
   return uses.filter((use, index) => uses.findIndex((other) => formsOf(other.term).some((form) => formsOf(use.term).includes(form))) === index);
 };
 

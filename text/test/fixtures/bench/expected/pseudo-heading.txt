@@ -1,0 +1,21 @@
+table  20  20  0  0
+ja/blog  heading-set-in-bold  found
+ja/design  heading-set-in-bold  found
+ja/figures  heading-set-in-bold  found
+ja/itinerary  heading-set-in-bold  found
+ja/minutes  heading-set-in-bold  found
+ja/press  heading-set-in-bold  found
+ja/proposal  heading-set-in-bold  found
+ja/quote  heading-set-in-bold  found
+ja/readme  heading-set-in-bold  found
+ja/requirements  heading-set-in-bold  found
+en/blog  heading-set-in-bold  found
+en/design  heading-set-in-bold  found
+en/figures  heading-set-in-bold  found
+en/itinerary  heading-set-in-bold  found
+en/minutes  heading-set-in-bold  found
+en/press  heading-set-in-bold  found
+en/proposal  heading-set-in-bold  found
+en/quote  heading-set-in-bold  found
+en/readme  heading-set-in-bold  found
+en/requirements  heading-set-in-bold  found

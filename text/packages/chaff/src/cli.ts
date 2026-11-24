@@ -1,10 +1,10 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { packageFor } from "./adapter-load.ts";
-import { checkSource, crossChecked, type SourceCheck } from "./check-source.ts";
+import { checkSource, crossChecked, silencedOf, type SourceCheck } from "./check-source.ts";
 import { CONFIG_FILE, type Config } from "./config/load.ts";
 import { applyLevel } from "./config/write.ts";
-import { collectTargets, readDocumentFile } from "./files.ts";
+import { collectFiles, collectTargets, readDocumentFile } from "./files.ts";
 import { BASELINE_FILE, fingerprints, readBaseline, splitByBaseline, writeBaseline } from "./baseline.ts";
 import type { PerFile } from "./render/suppressions.ts";
 import { runSuppressions } from "./commands/suppressions.ts";
@@ -40,7 +40,7 @@ import { homedir } from "node:os";
 import { settingWarnings } from "./config/warnings.ts";
 import { readConfigIn } from "./config/read.ts";
 import { settingSourcesOf } from "./config/option-problems.ts";
-import { renderSummary, type FileOutcome } from "./render/summary.ts";
+import { renderExcluded, renderSummary, type FileOutcome } from "./render/summary.ts";
 import { aiScoreLineOf } from "./ai-score/lint-line.ts";
 
 import type { Finding, Level, RuleDefinition } from "./plugin.ts";
@@ -123,7 +123,7 @@ const present = (check: SourceCheck, argv: readonly string[]): Inspected => {
     language,
     genre,
     outcome: { path, findings: split.fresh, notRun: raw.skipped.length },
-    perFile: { path, suppressed: applied.suppressed, allowed: applied.allowed, reasonless: applied.unusedReasonless, notRun },
+    perFile: { path, notRun, ...silencedOf(applied) },
     checked: { findings: split.fresh, rules, language, genre, genreFrom: from, skipped: raw.skipped },
     kept: applied.kept,
   };
@@ -163,10 +163,14 @@ const summaryLanguage = (results: readonly Inspected[], config: Config): UiLangu
 };
 
 const lint = async (targets: readonly string[], argv: readonly string[], config: Config): Promise<number> => {
-  const paths = collectTargets(targets, config.include);
+  const { paths, excluded } = collectFiles(targets, config.include, config);
   if (paths.length === 0) {
     // 0 件を成功にすると「CI は通っているが何も検証していない」状態が続く。§14。
-    console.error(hostText(config).noMarkdown(targets.join(", "), config.include ?? []));
+    console.error(
+      [hostText(config).noMarkdown(targets.join(", "), config.include ?? []), ...renderExcluded(excluded, hostLanguage(config.language, process.env))].join(
+        "\n",
+      ),
+    );
     return 1;
   }
   const language = config.language ?? "ja";
@@ -187,6 +191,7 @@ const lint = async (targets: readonly string[], argv: readonly string[], config:
   renderSummary(
     results.map((result) => result.outcome),
     summaryLanguage(results, config),
+    excluded,
   ).forEach((line) => console.log(line));
   return results.some((result) => result.outcome.findings.some((finding) => finding.severity === "error")) ? 1 : 0;
 };
@@ -196,7 +201,7 @@ const lint = async (targets: readonly string[], argv: readonly string[], config:
  * 差分だけを出す。workflow spec §11。
  */
 const runWatch = async (targets: readonly string[], argv: readonly string[], config: Config): Promise<number> => {
-  const paths = collectTargets(targets, config.include);
+  const paths = collectTargets(targets, config.include, config);
   const text = hostText(config);
   if (paths.length === 0) {
     console.error(text.noMarkdown(targets.join(", "), config.include ?? []));
@@ -247,7 +252,7 @@ const explain = (config: Config, ruleId: string | undefined, genreFlag: string |
 };
 
 const runBaseline = async (targets: readonly string[], argv: readonly string[], config: Config): Promise<number> => {
-  const paths = collectTargets(targets.length > 0 ? targets : ["."], config.include);
+  const paths = collectTargets(targets.length > 0 ? targets : ["."], config.include, config);
   if (paths.length === 0) {
     console.error(hostText(config).noMarkdownHere(config.include ?? []));
     return 1;
@@ -298,12 +303,7 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
     runFixPlan(fixPlanTargets(argv), argv, { ...treeContext(config), check: async (path) => (await inspectAll(config, argv)(path)).checked }),
   baseline: (argv, config) => runBaseline(positional(argv), argv, config),
   suppressions: (argv, config) =>
-    runSuppressions(
-      positional(argv),
-      (paths) => inspectRun(paths, config, [...argv, "--show-baseline"]),
-      hostLanguage(config.language, process.env),
-      config.include,
-    ),
+    runSuppressions(positional(argv), (paths) => inspectRun(paths, config, [...argv, "--show-baseline"]), hostLanguage(config.language, process.env), config),
   relax: (argv, config) => changeSetting(config, "relaxed", argv[1], flag(argv, "--why")),
   strict: (argv, config) => changeSetting(config, "strict", argv[1], flag(argv, "--why")),
   off: (argv, config) => changeSetting(config, "off", argv[1], flag(argv, "--why")),
