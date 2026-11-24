@@ -8,10 +8,11 @@ const NOT_WORD = /[^\p{L}'’]/u;
 const WORD_REACH = 40;
 
 /**
- * The hyphen, then one word in title case that ends the phrase: a comma, a stop, a bracket or the end of the line follows.
+ * The hyphen, then one word in title case that ends the phrase: a comma, a stop, a bracket, the end of the line or the close
+ * of the emphasis the name is set in follows (your **OneDrive - Alder** folder).
  * A word all in capitals after it (I - JURISDICTION) is a heading's title set off by a dash.
  */
-const SUFFIX_AFTER = /^ -{1,2} \p{Lu}\p{Ll}[\p{L}'’]*(?=[,.;:)\]]|$)/u;
+const SUFFIX_AFTER = /^ -{1,2} \p{Lu}\p{Ll}[\p{L}'’]*(?=[,.;:)\]]|[*_]{1,2}(?!\p{L})|$)/u;
 
 const lineEnd = (text: string, offset: number): number => {
   const end = text.indexOf("\n", offset);
