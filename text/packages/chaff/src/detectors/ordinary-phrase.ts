@@ -20,6 +20,19 @@ export const isNarrowedUse = (tokens: readonly Token[], at: number, pointers: re
   return !pointers.some((pointer) => pointer.toLowerCase() === before.surface.toLowerCase());
 };
 
+const COORDINATORS = new Set(["and", "or"]);
+
+/**
+ * The use is one of two words joined by and / or in front of a noun they share (customer and supplier information): it
+ * modifies that noun beside an ordinary word of its kind, so it is the ordinary word too. last is the use's last token.
+ */
+export const isCoordinatedModifier = (tokens: readonly Token[], at: number, last: number): boolean => {
+  const [partner, joiner, head] = [tokens[at - 2], tokens[at - 1], tokens[last + 1]];
+  if (partner === undefined || joiner === undefined || head === undefined) return false;
+  const lowerWord = NARROWING.has(partner.pos) && LOWER_START.test(partner.surface) && LATIN.test(partner.surface);
+  return COORDINATORS.has(joiner.surface.toLowerCase()) && lowerWord && head.pos === "NOUN" && LOWER_START.test(head.surface);
+};
+
 /**
  * A partitive picks some out of the kind: "some of these terms", "many of the services". The defined term names one
  * thing or one set, so items picked from it are the ordinary word.

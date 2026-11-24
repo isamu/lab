@@ -53,9 +53,11 @@ export const levelFor = (rule: RuleDefinition, settings: Settings, experimental:
   return "normal";
 };
 
-/** Why a rule at off did not run: chaff.yaml turned it off, the genre's preset did, it waits for a style, or it is experimental. */
-const offSkip = (rule: RuleDefinition, settings: Settings, preset: Settings, genre: string, reasons: Reasons): Skipped => {
-  if (settings[rule.id] !== undefined) return { rule: rule.id, why: reasons.turnedOff };
+/** Why a rule at off did not run: a by_path entry or chaff.yaml turned it off, the genre's preset did, it waits for a style, or it is experimental. */
+const offSkip = (rule: RuleDefinition, context: RunContext, preset: Settings, reasons: Reasons): Skipped => {
+  const { settings, genre } = context;
+  const byPath = context.levelsFrom?.[rule.id];
+  if (settings[rule.id] !== undefined) return { rule: rule.id, why: byPath === undefined ? reasons.turnedOff : reasons.turnedOffBy(byPath) };
   if (preset[rule.id] !== undefined) return { rule: rule.id, why: reasons.presetOff(genre) };
   if (rule.opt_in === true) return { rule: rule.id, why: reasons.optIn };
   return { rule: rule.id, why: reasons.experimental, offUntilExperimental: true };
@@ -292,6 +294,8 @@ export type RunContext = {
   readonly optionLayers?: readonly OptionLayer[];
   /** The detectors loaded from the code chaff.yaml names, by rule id. They come before chaff's own table. */
   readonly detectors?: Readonly<Record<string, Detector>>;
+  /** For each rule a by_path entry set, which entry: a rule it turns off says so where the rules that did not run are listed. */
+  readonly levelsFrom?: Readonly<Record<string, string>>;
 };
 
 export const runRules = (
@@ -320,7 +324,7 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
     const blocked = unmet(rule, doc);
     if (blocked !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: blocked }] };
     const level = levelFor(rule, settings, experimental, preset);
-    if (level === "off") return { findings: acc.findings, skipped: [...acc.skipped, offSkip(rule, settings, preset, genre, reasonsFor(doc))] };
+    if (level === "off") return { findings: acc.findings, skipped: [...acc.skipped, offSkip(rule, context, preset, reasonsFor(doc))] };
     const noTags = untagged(rule, doc);
     if (noTags !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noTags }] };
     // 木は capability ではなく、adapter が structure を持つかで決まる。持たない言語で動かすと「参照先が無い」が 0 件に見える。

@@ -1,5 +1,5 @@
 // Markdown that does not render the way it was written: a table row with more cells than its header (GFM drops the
-// extra ones), a code fence that is never closed (the rest of the document becomes code), and strong-emphasis marks
+// extra ones), a line run into a table as one more row, a code fence that is never closed (the rest of the document becomes code), and strong-emphasis marks
 // (`**`) that Markdown cannot pair and shows as they are. Pure; reads the source's Markdown tree.
 import type { Detector, Finding, ProseDocument, Span } from "../plugin.ts";
 import { readMarkdown } from "../markdown-read.ts";
@@ -47,6 +47,30 @@ export const tableRowOverflow: Detector = (doc): Finding[] => {
       const span = spanOf(row);
       const lost = cells.slice(columns).some((cell) => cellShows(doc.source, cell));
       return lost && span !== undefined ? [findingAt(doc, span, { cells: cells.length, columns })] : [];
+    });
+  });
+};
+
+/** A bar written as a cell border, not as `\|` inside a value. */
+const CELL_BORDER = /(?<!\\)\|/u;
+
+/** With one column, a row needs no bar; from two on, a row with none can only be a line that ran into the table. */
+const MIN_COLUMNS = 2;
+
+/**
+ * A line written right under a table with no blank line between: GFM reads it as one more row, so the sentence shows in the
+ * table's first cell. Its source has no cell border at all.
+ */
+export const tableAbsorbedLine: Detector = (doc): Finding[] => {
+  const root = markdownRoot(doc);
+  if (root === undefined) return [];
+  return nodesOf(root, "table").flatMap((table) => {
+    const [header, ...body] = table.children ?? [];
+    if ((header?.children?.length ?? 0) < MIN_COLUMNS) return [];
+    return body.flatMap((row) => {
+      const span = spanOf(row);
+      const written = span === undefined ? "" : doc.source.slice(span.start, span.end);
+      return span === undefined || CELL_BORDER.test(written) || written.trim() === "" ? [] : [findingAt(doc, span, { line: written.trim() })];
     });
   });
 };

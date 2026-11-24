@@ -5,7 +5,9 @@ import { uiLanguageOf, type Texts } from "../ui.ts";
 import type { Level, RuleDefinition } from "../plugin.ts";
 import { optionLines } from "./options.ts";
 import type { OptionLayer } from "../rule-options.ts";
+import type { PathRuleLevel } from "../config/by-path-rules.ts";
 import { depthMeaning } from "../rewrite-depth.ts";
+import { writtenScope } from "../text-scope.ts";
 
 const TEXT: Texts<{
   readonly off: string;
@@ -19,6 +21,7 @@ const TEXT: Texts<{
   readonly depth: (depth: string, meaning: string) => string;
   readonly example: string;
   readonly definedIn: (plugin: string | undefined) => string;
+  readonly scope: (written: string) => string;
   readonly values: string;
   readonly times: string;
   readonly severities: string;
@@ -27,6 +30,7 @@ const TEXT: Texts<{
   readonly notRun: (why: string) => string;
   readonly from: (source: string) => string;
   readonly change: (id: string) => string;
+  readonly byPath: string;
 }> = {
   ja: {
     off: "見ない",
@@ -45,6 +49,7 @@ const TEXT: Texts<{
     example: "例",
     definedIn: (plugin) =>
       plugin === undefined ? "このルールはチームが chaff.yaml の custom_rules で決めたものです。" : `このルールはプラグイン ${plugin} のものです。`,
+    scope: (written) => `読む所: ${written}（chaff.yaml の scope）`,
     values: "設定できる値:",
     times: "{limit} 回",
     severities: "設定できる値（数える上限は無く、指摘の重さが変わります）:",
@@ -53,6 +58,7 @@ const TEXT: Texts<{
     notRun: (why) => `いまは動きません（${why}）。`,
     from: (source) => `（${source} で決めています）`,
     change: (id) => `変える:  npx chaffjs relax ${id} --why "理由"`,
+    byPath: "chaff.yaml の by_path で、次のファイルだけ変えています（そのファイルでは上の段階より強く効きます）:",
   },
   en: {
     off: "not checked",
@@ -71,6 +77,7 @@ const TEXT: Texts<{
     example: "Example",
     definedIn: (plugin) =>
       plugin === undefined ? "The team defined this rule under custom_rules in chaff.yaml." : `This rule comes from the plugin ${plugin}.`,
+    scope: (written) => `Reads: ${written} (scope in chaff.yaml)`,
     values: "Levels:",
     times: "{limit} {limit|time|times}",
     severities: "Levels (there is no limit to count to; a level sets how a finding is marked):",
@@ -79,6 +86,7 @@ const TEXT: Texts<{
     notRun: (why) => `Now: not run (${why}).`,
     from: (source) => ` (set by ${source})`,
     change: (id) => `Change it:  npx chaffjs relax ${id} --why "reason"`,
+    byPath: "by_path in chaff.yaml changes it for these files (there it wins over the level above):",
   },
 };
 
@@ -118,7 +126,15 @@ const exampleLines = (rule: RuleDefinition, language: string, text: (typeof TEXT
   const examples = rule.guide?.examples ?? {};
   const example = examples[language] ?? examples["en"] ?? Object.values(examples)[0];
   if (rule.custom === undefined || example === undefined) return [];
-  return ["", `  ${text.example}:  ${example.before}`, `      →  ${example.after}`, "", `  ${text.definedIn(rule.plugin)}`];
+  const scope = rule.custom.type === "module" ? undefined : rule.custom.scope;
+  return [
+    "",
+    `  ${text.example}:  ${example.before}`,
+    `      →  ${example.after}`,
+    ...(scope === undefined ? [] : ["", `  ${text.scope(writtenScope(scope))}`]),
+    "",
+    `  ${text.definedIn(rule.plugin)}`,
+  ];
 };
 
 /** How deep the rule's rewrite direction reaches, for a rule that has one: what chaff fix-plan --depth compares. */
@@ -137,7 +153,15 @@ export type ExplainSettings = {
   readonly offOnlyAsExperimental?: boolean;
   /** Why the genre keeps the rule from running, as a run lists it: then no level is current. */
   readonly genreStop?: string | undefined;
+  /** The by_path entries that set this rule for the files they match, in the order written. */
+  readonly byPath?: readonly PathRuleLevel[];
 };
+
+/** Each by_path entry that sets the rule, with the level or number it sets, so a rule off for one folder is not a surprise. */
+const byPathLines = (byPath: readonly PathRuleLevel[], text: (typeof TEXT)["ja"]): string[] =>
+  byPath.length === 0
+    ? []
+    : ["", `  ${text.byPath}`, ...byPath.map((entry) => `    ${entry.files.join(", ")}: ${entry.limit === undefined ? entry.level : String(entry.limit)}`)];
 
 const nowLine = (rule: RuleDefinition, current: Level, limit: number | undefined, language: string): string => {
   const text = TEXT[uiLanguageOf(language)];
@@ -174,6 +198,7 @@ export const renderExplain = (rule: RuleDefinition, current: Level, language: st
     ...optionLines(rule, optionLayers, language),
     "",
     `  ${now}`,
+    ...byPathLines(settings.byPath ?? [], text),
     ...experimental,
     "",
     `  ${text.change(rule.id)}`,

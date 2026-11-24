@@ -1,0 +1,79 @@
+id: heading-marker-no-space
+layer: L1
+status: stable
+how_to_find: heading-marker-no-space
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 「#」の後ろに空白が無く、見出しにならない
+  en: No space after the heading marks
+
+why:
+  ja: Markdown の見出しは、「#」と言葉のあいだに空白が要ります。「#見出し」「##手順」のように空白を抜くと、見出しにならず、「#」の付いた本文の一行として表示されます。目次にも画面読み上げにも載らず、見出しへのリンクも張れません。空白を入れない書き方に慣れた日本語の文書で特に起きます（markdownlint の MD018 と MD020）。
+  en: 'A Markdown heading needs a space between its "#" marks and its words. Without it ("#Overview", "##Steps"), the line is not a heading: it shows as a line of text with the marks in it, missing from the table of contents and from what a screen reader announces, and no link can point at it (markdownlint''s MD018 and MD020).'
+
+message:
+  ja: 「{marker}{heading}」は「{marker}」の後ろに空白が無く、見出しになりません
+  en: '"{marker}{heading}" has no space after "{marker}" and is not a heading'
+
+how_to_fix:
+  ja: 「#」の後ろに空白を一つ入れてください（「##手順」を「## 手順」に）。見出しでなく、タグや番号として書いたものなら、行の頭から外してください。
+  en: 'Put one space after the marks ("##Steps" becomes "## Steps"). If the line is a tag or a number rather than a heading, move it off the start of the line.'
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 「#見出し」「##手順」のように「#」の後ろに空白が無く、見出しにならない行
+  en: 'A line like "##Steps", with no space after the marks, that is not a heading'
+
+example:
+  ja:
+    before: |
+      # 引っ越しの手順
+
+      ##一か月前
+
+      転出届を出します。
+
+      ## 一週間前
+
+      荷物を箱に詰めます。
+    after: |
+      # 引っ越しの手順
+
+      ## 一か月前
+
+      転出届を出します。
+
+      ## 一週間前
+
+      荷物を箱に詰めます。
+  en:
+    before: |
+      # Moving house
+
+      ##A month before
+
+      Tell the council you are leaving.
+
+      ## A week before
+
+      Pack your things into boxes.
+    after: |
+      # Moving house
+
+      ## A month before
+
+      Tell the council you are leaving.
+
+      ## A week before
+
+      Pack your things into boxes.
+
+not_flagged:
+  ja: "「#」の後ろが字でない行（電話の短縮番号「#9110」、「#1」のような番号、「#!」）、コード・箇条書き・表・引用の中の行は指しません。「#」が一つだけの行はタグ（「#chaff」）と同じ書き方なので、それだけで一つの段落になっていて、文書がほかに見出しを書いているときだけ指します。小文字の英語一語で始まるもの（「#chaff」「#include」「#fff」）と、タグを並べた行（「#chaff #lint」）は指しません。"
+  en: 'A line where no letter follows the marks (a number such as "#123", "#!"), and a line in code, a list, a table or a quotation, are not reported. One mark is also how a tag is written ("#chaff"), so a one-mark line is reported only when it is a paragraph on its own and the document writes headings elsewhere; one that opens with a lower-case English word ("#chaff", "#include", "#fff"), or a row of tags ("#chaff #lint"), is not reported.'

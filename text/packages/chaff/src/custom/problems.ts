@@ -6,6 +6,7 @@ import { MAX_PATTERN_LENGTH, MAX_REPEATS, type RegexRefusal } from "./regex-safe
 import { POS_WRITTEN_NAMES } from "./token-pattern.ts";
 import type { ModulePathRefusal } from "./module-path.ts";
 import { FIELD_KINDS, fieldProblemSentence, type FieldKind, type FieldProblem } from "../rule-fields.ts";
+import { scopeProblemSentence } from "../scope-problem-text.ts";
 
 /** Each problem's sentence, with {at}, {written}, {field}, {index}, {refusal} and {names} filled in from the problem. */
 type Text = {
@@ -51,6 +52,8 @@ const TEXT: Texts<Text> = {
       "level-and-levels": "{scope} の {at}: level と levels の両方があります。どちらか一つにしてください",
       "bad-levels":
         "{scope} の {at}: levels: {written} は読めません。strict・normal・relaxed に重さ（error / warning / info）を書き、normal は必ず書きます。チームのルールは箇所を出すので、数は書けません",
+      "bad-scope": "{scope} の {at}: {detail}",
+      "module-scope": "{scope} の {at}: type: module のルールには scope を書けません。読む所はモジュールが自分で選びます",
     },
     fieldAt: "{scope} の {at}: ",
   },
@@ -88,12 +91,14 @@ const TEXT: Texts<Text> = {
       "level-and-levels": "{scope} {at}: has both level and levels; keep one",
       "bad-levels":
         "{scope} {at}: cannot read levels: {written}. Give strict, normal and relaxed a severity (error / warning / info), normal always. A team's rule reports places, so a number has nothing to count",
+      "bad-scope": "{scope} {at}: {detail}",
+      "module-scope": "{scope} {at}: a type: module rule cannot have a scope; the module chooses what it reads",
     },
     fieldAt: "{scope} {at}: ",
   },
 };
 
-const PLACEHOLDER = /\{(scope|at|written|field|index|refusal|names)\}/gu;
+const PLACEHOLDER = /\{(scope|at|written|field|index|refusal|names|detail)\}/gu;
 
 const refusalOf = (problem: CustomProblem, text: Text): string => {
   if (problem.kind === "bad-pattern") return text.refusal[problem.refusal];
@@ -101,7 +106,7 @@ const refusalOf = (problem: CustomProblem, text: Text): string => {
 };
 
 /** The values a problem's sentence names. Each kind carries only some of them. */
-const valuesOf = (problem: CustomProblem, text: Text, scope: string): Readonly<Record<string, string>> => ({
+const valuesOf = (problem: CustomProblem, text: Text, scope: string, ui: UiLanguage): Readonly<Record<string, string>> => ({
   scope,
   at: "at" in problem ? problem.at : "",
   written: "written" in problem ? problem.written : "",
@@ -109,13 +114,14 @@ const valuesOf = (problem: CustomProblem, text: Text, scope: string): Readonly<R
   index: "index" in problem ? String(problem.index) : "",
   refusal: refusalOf(problem, text),
   names: POS_WRITTEN_NAMES.join(" / "),
+  detail: problem.kind === "bad-scope" ? scopeProblemSentence(problem.problem, problem.written, ui) : "",
 });
 
 const isFieldProblem = (problem: CustomProblem): problem is FieldProblem & { readonly at: string } => FIELD_KINDS.has(problem.kind);
 
 /** One problem as a sentence. scope names the list the rule is in: custom_rules, or a plugin's rules. */
 export const customProblemSentence = (problem: CustomProblem, ui: UiLanguage, scope = "custom_rules"): string => {
-  const values = valuesOf(problem, TEXT[ui], scope);
+  const values = valuesOf(problem, TEXT[ui], scope, ui);
   const fill = (template: string): string => template.replace(PLACEHOLDER, (_whole, key: string) => values[key] ?? "");
   return isFieldProblem(problem) ? `${fill(TEXT[ui].fieldAt)}${fieldProblemSentence(problem, ui)}` : fill(TEXT[ui].problems[problem.kind]);
 };

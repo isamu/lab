@@ -1,0 +1,12 @@
+table  11  11  0  0
+ja/figures  table-absorbed-line  found
+ja/itinerary  table-absorbed-line  found
+ja/minutes  table-absorbed-line  found
+ja/proposal  table-absorbed-line  found
+ja/quote  table-absorbed-line  found
+ja/readme  table-absorbed-line  found
+en/figures  table-absorbed-line  found
+en/itinerary  table-absorbed-line  found
+en/proposal  table-absorbed-line  found
+en/quote  table-absorbed-line  found
+en/readme  table-absorbed-line  found

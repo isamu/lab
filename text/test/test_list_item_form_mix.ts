@@ -317,6 +317,17 @@ describe("list-item-form-mix: words whose part of speech the tagger gets wrong a
       [],
     ));
 
+  it("reads a series that an object follows as verbs (Dry and lube the chain), and one a noun follows as a noun phrase", () => {
+    const steps = ["Rinse your bike with plain water.", "Check your brake pads regularly.", "Wipe the frame after each ride."];
+    assert.deepEqual(flagged(en, list(...steps, "Dry and lube the chain at least once a week.")), []);
+    assert.deepEqual(flagged(en, list(...steps, "Dry and dusty roads wear the chain.")), ["head-noun:Dry and dusty roads wear the chain."]);
+  });
+
+  it("does not read a series that ends in a preposition as verbs (text, email, or from an app)", () => {
+    const items = ["something you know, like a passcode", "something you have, like a code you get by text, email, or from an app", "something you are"];
+    assert.deepEqual(flagged(en, list(...items)), []);
+  });
+
   it("still reads a series of nouns as a noun phrase among imperatives", () =>
     assert.deepEqual(
       flagged(en, list("Write clear design notes", "Review the changes other people send", "Keep the build fast", "Apples, oranges and pears")),

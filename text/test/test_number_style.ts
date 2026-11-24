@@ -28,6 +28,7 @@ const wordsOf = (adapter: LanguageAdapter): NumberWords => {
     figureNouns: patterns("figure-noun"),
     nameWords: patterns("number-name-word"),
     nativeCounts: patterns("numeral-native-count"),
+    nameSuffixes: patterns("numeral-name-suffix"),
   };
 };
 
@@ -89,6 +90,10 @@ describe("numberMarksIn: Japanese", () => {
     ["番号は 1500、3000 です。", []],
     ["費用は約3000円です。", ["grouping:plain:3000"]],
     ["番号はA3000円です。", []],
+    ["十円玉を残します。", []],
+    ["10円玉を残します。", []],
+    ["五円硬貨と千円札です。", []],
+    ["十円を払います。", ["count:kanji:十円"]],
   ];
   cases.forEach(([sentence, marks]) => {
     it(`${sentence} → ${marks.join(", ") || "none"}`, () =>

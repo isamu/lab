@@ -18,6 +18,8 @@ entries:
   - pattern: by the … year
   - pattern: on or before
   - pattern: prior to
+  # "submit samples for prior approval": before the use it must precede.
+  - pattern: for prior
   - pattern: before
   - pattern: immediately
   - pattern: at the end of

@@ -180,6 +180,9 @@ const WEEKDAYS: readonly RegExp[] = [
 ];
 const DAY_WORD = "[A-Z][a-z]{2,8}";
 const WEEKDAY_BEFORE = new RegExp(`(?<day>${DAY_WORD})\\.?,?\\s+$`, "u");
+/** A weekday before parentheses that hold only the date: "Monday (November 25, 2026)". */
+const WEEKDAY_BEFORE_PAREN = new RegExp(`(?<day>${DAY_WORD})\\.?,?\\s*\\($`, "u");
+const CLOSES_PAREN = /^\s*\)/u;
 /** After the date, only a weekday in parentheses: "(Thursday)". A bare word there may start the next sentence ("Sat down"). */
 const WEEKDAY_AFTER = new RegExp(`^,?\\s*\\((?<day>${DAY_WORD})\\)`, "u");
 /**
@@ -198,7 +201,10 @@ const weekdayOf = (word: string | undefined): number | undefined => {
 const withWeekday = (text: string, date: Mention): Mention => {
   if (RANGE_BEFORE.test(text.slice(Math.max(0, date.start - 14), date.start))) return date;
   const before = weekdayOf(WEEKDAY_BEFORE.exec(text.slice(Math.max(0, date.start - 16), date.start))?.groups?.["day"]);
-  const weekday = before ?? weekdayOf(WEEKDAY_AFTER.exec(text.slice(date.end, date.end + 16))?.groups?.["day"]);
+  const beforeParen = CLOSES_PAREN.test(text.slice(date.end, date.end + 16))
+    ? weekdayOf(WEEKDAY_BEFORE_PAREN.exec(text.slice(Math.max(0, date.start - 16), date.start))?.groups?.["day"])
+    : undefined;
+  const weekday = before ?? beforeParen ?? weekdayOf(WEEKDAY_AFTER.exec(text.slice(date.end, date.end + 16))?.groups?.["day"]);
   return weekday === undefined ? date : { ...date, attrs: { ...date.attrs, weekday } };
 };
 

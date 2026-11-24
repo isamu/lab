@@ -28,9 +28,12 @@ These are the main rules for this genre. All of them run by default.
 | `broken-link` | A link to a heading the page does not have |
 | `image-alt-text` | An image with no description (alt text) |
 | `heading-level-skip` | A heading two or more levels deeper than the one before |
+| `heading-marker-no-space` | `##Steps` with no space after the marks, so it is not a heading |
 | `empty-section` | A heading with nothing under it |
 | `duplicate-heading` | Two headings with the same words under the same parent |
+| `pseudo-heading` | A bold line standing in for a heading, so the table of contents misses it |
 | `url-run-on` | A URL followed straight away by a character outside ASCII |
+| `enumeration-marker-mix` | A step numbered in another form than the rest of its list ("1.", "2.", "3)", "4.") |
 
 What it does not do is decided too.
 

@@ -51,4 +51,24 @@ describe("oxford-comma-consistency: a comma that names or qualifies the item bef
     assert.equal(firedWith("The house is big, old and cold."), true);
     assert.equal(firedWith("We sell apples, fresh pears and plums."), true);
   });
+
+  it("does not read a phrase set off between a verb and its object, a noun with an adjective after it, as an item (to mitigate, to the extent practicable, any harm)", () => {
+    assert.equal(firedWith("The tenant agrees to repair, to the extent practicable, any damage caused by the tenant and to promptly tell the owner."), false);
+  });
+
+  it("still counts a list of infinitives and a list of phrases after a verb", () => {
+    assert.equal(firedWith("The tenant agrees to repair, to clean and to paint the rooms."), true);
+    assert.equal(firedWith("We stored the files, in the cellar, in the attic and in the barn."), true);
+  });
+
+  it("reads a list on past an and / or inside an item when its last item is a noun phrase with as needed in it", () => {
+    assert.equal(
+      firedWith("We may change the Scope of Work, Nature and Purpose of the Work, and Duration of the Work as needed to reflect the updates."),
+      false,
+    );
+  });
+
+  it("still stops at an and / or that joins a clause after the list", () => {
+    assert.equal(firedWith("We bought apples, pears and plums, and figs fell from the tree."), true);
+  });
 });

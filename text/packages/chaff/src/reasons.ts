@@ -12,6 +12,8 @@ export type Reasons = {
   /** A rule of one house style: it runs when chaff.yaml names that style, or gives the rule a level. */
   readonly optIn: string;
   readonly turnedOff: string;
+  /** Turned off by one by_path entry, named as by-path-rules.ts names it. */
+  readonly turnedOffBy: (source: string) => string;
   readonly presetOff: (genre: string) => string;
   readonly noStructure: (language: string) => string;
   readonly unreadStructure: (clauses: number, units: number) => string;
@@ -49,6 +51,7 @@ export const REASONS: Texts<Reasons> = {
     experimental: "まだ試験中のため",
     optIn: "決まった書き方（chaff.yaml の style）のための rule で、style か rules で動かすため",
     turnedOff: "設定で止めているため",
+    turnedOffBy: (source) => `設定の ${source} で止めているため`,
     presetOff: (genre) => `ジャンル ${genre} では見ないため`,
     noStructure: (language) => `${language} のパッケージは文書の構造を読めないため`,
     unreadStructure: (clauses, units) =>
@@ -74,6 +77,7 @@ export const REASONS: Texts<Reasons> = {
     experimental: "still experimental",
     optIn: "it belongs to a house style, and runs when chaff.yaml names the style or gives it a level",
     turnedOff: "turned off in the settings",
+    turnedOffBy: (source) => `turned off in the settings by ${source}`,
     presetOff: (genre) => `the ${genre} genre does not check it`,
     noStructure: (language) => `the ${language} package cannot read a document's structure`,
     unreadStructure: (clauses, units) =>

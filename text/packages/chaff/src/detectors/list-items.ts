@@ -7,6 +7,7 @@ import {
   isClause,
   lastContent,
   openingOf,
+  opensAsPreposition,
   participleOpening,
   shapeOf,
 } from "./list-item.ts";
@@ -105,9 +106,19 @@ const freeze = (frozen: Frozen, scope: ItemScope, item: TokenRange): void => {
   recordFlags(frozen, scope, item, content);
 };
 
-/** 形容詞のあとの読点は、名詞の前で形容詞を重ねているだけのことが多い（the long, winding bridge）。次の項目が名詞で終わるならつなげ直す。 */
+/**
+ * 形容詞のあとの読点は、名詞の前で形容詞を重ねているだけのことが多い（the long, winding bridge）。次の項目が名詞で終わるならつなげ直す。
+ * 名詞の後ろに置いた形容詞（to the extent practicable）は名詞の句を閉じているので、つなげない。
+ */
 const stacks = (scope: ItemScope, previous: TokenRange, item: TokenRange): boolean =>
-  lastContent(scope, previous)?.pos === "ADJ" && lastContent(scope, item)?.pos !== "ADJ";
+  lastContent(scope, previous)?.pos === "ADJ" && !closesNounPhrase(scope, previous) && lastContent(scope, item)?.pos !== "ADJ";
+
+/** 前置詞で始まり、名詞とその後ろの形容詞で終わる項目（to the extent practicable / in the manner necessary）。 */
+const closesNounPhrase = (scope: ItemScope, item: TokenRange): boolean => {
+  const { tokens } = scope.sentence;
+  const end = tokens.slice(item.start, item.end).findLastIndex((token) => token.pos === "ADJ") + item.start;
+  return opensAsPreposition(scope, item) && tokens[end - 1]?.pos === "NOUN";
+};
 
 /** 1 つの深さの並び。start は節の頭、rawStart は読点でまだ閉じていない項目の頭、pending は次の項目とつながりうる最後の項目。 */
 type LevelItems = {

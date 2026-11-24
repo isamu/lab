@@ -6,6 +6,7 @@ import { inDocumentOrder } from "../structure/issues.ts";
 import { preambleParagraphs } from "../preamble-paragraphs.ts";
 import { isTooLongParagraph, labelledBlocks, lostLineBreaks, opensWithFusedHeading } from "../paragraph-length.ts";
 import { bodySectionOf, hasOnlyMatterHeadings } from "../body-section.ts";
+import { opensWithDateline } from "../news-dateline.ts";
 import { threeShare } from "../rule-of-three.ts";
 import { isInterview, sectionLevels } from "../section-levels.ts";
 
@@ -172,6 +173,7 @@ const withoutDateStamps = (doc: ProseDocument, paragraphs: readonly Paragraph[])
  * 本題に入るまでが長い。業務文書では、読み手は結論を探しに来ている。
  * 「本題」は最初の中見出し。中見出しが無い文書では、rule が requires の headings で動かず、動かなかった理由が出る。
  * 見出しが末尾の問い合わせ先や参考文献だけの文書（手紙の形の諮問）も、本題の見出しが無いので測らない。
+ * 最初の段落が報道の日付行（AUSTIN, Texas — November 24, 2026 —）で始まる文書は、リードで全体を語る報道発表なので測らない。
  */
 export const preambleLength: Detector = (doc, options): Finding[] => {
   const body = bodySectionOf(doc.sections);
@@ -183,6 +185,8 @@ export const preambleLength: Detector = (doc, options): Finding[] => {
   if (all.length <= options.limit) return [];
   const before = withoutDateStamps(doc, all);
   if (before.length <= options.limit) return [];
+  const lead = all[0];
+  if (lead !== undefined && opensWithDateline(doc.source, lead.span, dateSpans(doc))) return [];
   const first = before[0];
   return first === undefined
     ? []

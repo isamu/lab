@@ -6,7 +6,7 @@ This manual explains how to restore the nightly backup of the customer database 
 
 You need the administrator role on the backup server.
 
-## Restore the backup
+##Restore the backup
 
 1. Open the vaultr console and sign in.
 2. Select the backup to restore on the **Backups** screen.
@@ -16,7 +16,7 @@ You need the administrator role on the backup server.
 
 Warning: the restore replaces the current database.
 
-## Check the result
+**Check the result**
 
 1. Open the **Backups** screen again.
 2. Check that the restored backup is marked as current.

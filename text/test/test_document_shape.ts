@@ -315,6 +315,13 @@ describe("title-length: a title or heading too long to scan", () => {
     assert.equal(fired(en, ratio, "title-length", "docs/glossary"), 1);
   });
 
+  it("does not count a date alone in brackets at the end, the issue a series title carries", () => {
+    const issue = "# 在庫管理ニュース（店舗運営部メールマガジン）第506号（令和7年5月23日）\n\n本文です。\n";
+    assert.equal(fired(ja, issue, "title-length", "business/email"), 0);
+    const aside = "# 在庫管理ニュース（店舗運営部メールマガジン）第506号（新しい倉庫と各店舗の移行作業の案内）\n\n本文です。\n";
+    assert.equal(fired(ja, aside, "title-length", "business/email"), 1);
+  });
+
   it("counts another document's title quoted in 「」 as one name, but not a quoted event name nor a heading that is only a quote", () => {
     const event = "# 題\n\n本文です。\n\n## 在庫管理の業務委託見積案件について（「在庫管理システムの移行に伴う各店舗での説明会」事業の委託）\n\n本文です。\n";
     assert.equal(fired(ja, event, "title-length", "blog/tech"), 1);

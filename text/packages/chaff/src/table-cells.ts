@@ -35,7 +35,7 @@ export const proseWithCells = (prose: string, cells: readonly (Span & { readonly
 };
 
 /** 表の升の語は、読む rule があるときに一度だけ作る。升ごとの解析を、表を読まない rule に払わせない。 */
-export const lazyCells = (make: () => readonly TableCell[]): (() => readonly TableCell[]) => {
-  const cells: { value?: readonly TableCell[] } = {};
+export const lazyCells = <T>(make: () => readonly T[]): (() => readonly T[]) => {
+  const cells: { value?: readonly T[] } = {};
   return () => (cells.value ??= make());
 };

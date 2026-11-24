@@ -31,6 +31,8 @@ describe("honesty-marker (en)", () => {
     assert.deepEqual(matched("# Cafés\n\nAnd honestly? The barista knows my order.\n", en), ["honestly"]);
     assert.deepEqual(matched("# Editors\n\nNotes, even grocery lists, if I'm being honest.\n", en, "blog/tech"), ["if I'm being honest"]);
     assert.deepEqual(matched("# Headphones\n\nHere's my honest take on what they get right.\n", en), ["my honest take"]);
+    assert.deepEqual(matched("# Rain\n\nLet's be honest: it rains here. A lot.\n", en, "blog/owned-media"), ["let's be honest"]);
+    assert.deepEqual(matched("# Rain\n\nLet’s be honest: it rains here.\n", en, "blog/owned-media"), ["let's be honest"]);
   });
 
   it("reports it in a business document", () => {

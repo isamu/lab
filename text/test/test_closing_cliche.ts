@@ -37,6 +37,17 @@ describe("closing-cliche: 最後の段落でだけ定型になる言い回し", 
     assert.ok(flagged("# 通知\n\n通知は三種類あります。\n\n## まとめ\n\n気になった設定から、ひとつずつやってみてください。\n"));
   });
 
+  it("invalid: a business's offer to help as the last line", () => {
+    const source = "# Receipts\n\nKeep every receipt in one folder.\n\nCall our office with questions. We're here to help you spend less time on paperwork.\n";
+    assert.deepEqual(matchedFor(source, en, "blog/owned-media"), ["here to help"]);
+  });
+
+  it("valid: the same offer earlier in the text", () => {
+    const source =
+      "# Receipts\n\n## Our office\n\nWe're here to help with receipts.\n\nKeep every receipt in one folder.\n\nScan them each week.\n\nFile them by month.\n";
+    assert.deepEqual(matchedFor(source, en, "blog/owned-media"), []);
+  });
+
   it("valid: 本文の途中の「試してみてください」は手順の勧めで、結びではない", () => {
     const body = "# 通知\n\n## 設定\n\n先に通知の設定を試してみてください。\n\n通知は三種類あります。\n\n件数は右上に出ます。\n\n既読にすると消えます。\n";
     assert.ok(!flagged(body));
