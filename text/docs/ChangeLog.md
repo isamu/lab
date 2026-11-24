@@ -2,6 +2,138 @@
 
 Newest first.
 
+## 0.51.0 — 2026-11-25
+
+This release takes in what markdownlint, textlint, Vale and remark-lint offer and chaff lacked: a team can now list its
+terms and the words it keeps to one form, allow text with a reason, limit its own rules to parts of a document, leave
+files out, and choose its register. New rules check Markdown shapes, transcripts and Japanese wording. The fixes that
+follow come from judging findings in isamu/chaff-corpus and from writing the rule samples.
+
+### chaff.yaml and stets
+
+- `terms:` lists a team's terms; term-form reports one written in another case, width, hyphen or spacing (#2778).
+  `consistent:` lists words a team keeps to one; term-consistency reports a mix in a document or across files (#2780).
+  Both say why they did not run when their key lists nothing.
+- `allow:` names text never to report, literal or regex, for every rule or one, and requires a reason (#2772).
+- `scope:` on `custom_rules` and `prefer` entries limits where they read: headings, lists, tables, quotes and so on
+  (#2774).
+- `exclude:` globs leave files out, and files the repository ignores are skipped (#2775). `by_path` entries take
+  `rules` and `options`, so one chaff.yaml can hold contracts and manuals (#2757).
+- no-mixed-desumasu's `body` option lets a team require です・ます or である instead of the document's majority
+  (#2776).
+- stet ranges cover the blocks between a begin and an end comment, and a stet can name one matched word (#2773).
+  stets and `allow:` share one suppression path.
+
+### New rules
+
+- filler-word reports fillers left in minutes made from a transcript; it is off in legal, academic, literature and
+  speech documents (#2777). sa-ire reports a godan causative with an extra さ (読まさせて) (#2767).
+- pseudo-heading reports a bold line standing in for a heading in a document that uses headings (#2765);
+  heading-marker-no-space reports #見出し and ##Heading, which render as text (#2768).
+- link-definition-unused reports a reference-link definition no link uses or one defined twice (#2766);
+  reversed-link reports a link written (text)[URL] (#2769).
+- table-absorbed-line reports a sentence run into a table as one more row (#2770); enumeration-marker-mix reports an
+  item number written in another form than the rest of its run (#2763).
+
+### AI-likeness
+
+- honesty-marker reads "Let's be honest" (#2754); ai-tell weighs the one-tip pitch (If you only do one thing …) and
+  意外と見落としがち (#2755); cliche reads "punches above its weight" (#2756); closing-cliche reads a business's "here
+  to help" as the last line (#2753).
+- weasel-word skips a clause naming an origin (造語, 語源) and the bare "Scientists believe", and keeps the quantified
+  forms (#2701). comparative-without-baseline leaves 新た, an intent split across tokens, an alternative after the noun
+  phrase and a baseline named in a code example before it (#2703).
+- vague-word-density counts fixed wordings but does not report them (#2685). nominalization matches a compound event
+  noun as written (計画運休) (#2720). adverb-overuse leaves an -ly word before a number or one opening a naming aside
+  (#2692).
+- teki-overuse leaves the 的 inside a term the document defines, and 基盤的経費 and 競争的研究費 join the fixed terms
+  (#2719, #2735). repeated-sentence-ending does not count a flattened table row in a run (#2730).
+
+### Rules
+
+- topic-predicate-distance closes the topic's clause before a later subject, at 〜であり、 before a clause subject and
+  before 〜ことが必要である, but not at another topic's 〜であり、 (#2684, #2728, #2731).
+- max-kanji-continuous splits at 委員 after a body's name, at a 当 inside a run and before 両殿下, leaves a title in
+  『』 and drops a trailing kanji-numeral quantity (#2686, #2748).
+- undefined-acronym reads template blanks, names earlier in the paragraph, form labels, event titles and talk items in
+  a list of past events, and reads HDMI as an everyday word (#2680, #2729, #2749). undefined-term leaves title-case
+  prose and a one-word back-reference to a longer run (#2743).
+- unfilled-placeholder reads a 〇〇 glued to a title (取締役〇〇), a blank inside a mail address and a ward left
+  without its town (#2727, #2752).
+- preamble-length does not measure a notice whose only heading is its contact box, a press release's dateline lead or
+  a letter set out under 記 (#2681, #2760). empty-table-cell skips the conditions a catch-all row leaves blank (#2683).
+- one-sentence-paragraph-run reads a footnotes section's notes as entries (#2687). missing-final-period does not count
+  a one-line link label (〜で見る) (#2723). max-sentence-length skips an email's subject field (#2726). title-length
+  does not count a newsletter's issue date in brackets (#2745).
+- list-item-form-mix treats a minority ※ or 注： item as a note, leaves dated press-release titles, and reads verbs an
+  object follows (Dry and lube the chain) as an instruction (#2712, #2762).
+- use-before-definition reads a document's own name and a GitHub alert as not a use (#2691). defined-term-form skips a
+  term written twice in a row and a lower-case term joined to an ordinary word before a shared noun (#2719, #2750).
+- request-without-deadline leaves a heading that names a case, a dated timeline item and a proposal's start date
+  (#2705). obligation-without-deadline leaves a duty a payment schedule, a final award or a prior approval times
+  (#2738).
+- no-doubled-joshi skips the entries of a reference list (#2666). no-nakaguro-parallel reads a katakana chain written
+  the same way again and again as a name (#2718). quote-without-source reads 「…」と言われるほど as a received saying
+  (#2721). unbalanced-bracket skips a short title line that opens [ for a date (#2711).
+- article-sound reads SAR as a word and takes SOW either way (#2694, #2733). unknown-word joins a word split by an
+  inline tag, accepts a lower-case name the document also writes with an inner capital, and knows comms (#2709,
+  #2741). known-misspelling leaves a period spelling a document uses repeatedly (#2717). hyphen-as-dash leaves the
+  hyphen of a name set in emphasis (#2761).
+
+### Consistency
+
+- orthographic-variant leaves a kana verb stem before a suffix (つきたて) beside a kanji noun of its sound (月), a set
+  compound in kanji alone (申込締切) beside okurigana in another compound (申し込み画面), and a run-in article title
+  copied without its link, and reads 方 before が and a verb of being as the person (#2662, #2678, #2696).
+- oxford-comma-consistency sets aside a which/who clause after an opening phrase, coordinate modifiers, a set-off
+  phrase, an and inside an item, and the introduction after a sentence-opening And or But (#2697, #2737, #2764).
+- title-case-consistency counts neither "if" nor "nor" and leaves a heading that is a name with its acronym in
+  brackets (#2695, #2742). which-that-consistency leaves "consent which will not be unreasonably withheld" (#2744).
+- latin-spacing skips a lone letter between spaces, checks a label joined by または or 及び part by part, and leaves
+  the space between a title in letters and the name after it (#2698, #2759).
+- name-variant reads a form that fills a quotation by itself, "the White House" beside "Whitehouse", more word endings
+  and e for s as a period spelling (Turke / Turks) (#2704, #2736).
+- no-mixed-desumasu sets apart blog asides of feeling and a lone page pointer under its heading (#2702).
+  contraction-consistency leaves a plain-language summary beside the clauses out of the report (#2689).
+- bracket-width-consistency compares bracketed item numbers inside a line only with other labels (#2693).
+  fullwidth-alnum-consistency leaves examples bracketed after a width's name and the title after a dated list item's
+  date (#2710). quote-style-consistency ignores the quotes of a value after an unclosed code mark (#2700).
+  number-style-consistency does not count a number that names a coin or a note (十円玉) (#2751).
+
+### Dates
+
+- date-weekday-mismatch gives a yearless date the year of the one date in the document with the same month, day and
+  weekday, and pairs a weekday written before its date in brackets (#2734, #2740).
+- date-format-consistency groups a bracketed date at a list item's end on its own and compares line-head dates within
+  their section (#2715). date-without-year leaves a day the text gave earlier with its year (#2758).
+- period-label-conflict reads a quarter written with another year as that year's (#2669). elapsed-years-mismatch
+  reads the year a word of opening gives in the count's sentence (#2672).
+
+### Facts
+
+- net-amount-mismatch reads a payslip's 総支給額, 控除合計 and 差引支給額 set out in sections of their own (#2658).
+  change-rate-mismatch reads an earlier value written without its noun (#2664). serial-range-reversed reads a code
+  with a digit group before the hyphen (#2668). version-mismatch reads the current release stated in an earlier
+  sentence (#2670).
+- product-exceeds-maximum reads "in a day" and other English period forms (#2671). summary-fact-mismatch measures a
+  sentence's label without its article (#2674).
+- cross-doc-fact-conflict, cross-doc-term-variant and cross-doc-duplicate-definition report every side of an even
+  split (#2673, #2676).
+
+### Markdown, code and changelogs
+
+- code-fence-language-mix skips compiler error output after an error lead-in and a block of printed output with a
+  status mark and no prompt (#2707, #2746). shell-prompt-mix reads gdb, lldb and pdb sessions and digit-led unprompted
+  lines as output (#2708).
+- broken-link reads the section names MDN's Compat and Specifications macros give (#2747).
+- empty-section skips an empty heading inside a changelog's run of version headings; bold-label-list, bold-density and
+  sentence-rhythm are not measured inside a changelog's release sections (#2713, #2714, #2716).
+
+### Messages and CI
+
+- The excerpt above a finding in a table row stops at the row's end (#2675).
+- The prose scan reads `docs/ChangeLog.md`, not the rule sample pages (#2724).
+
 ## 0.50.0 — 2026-11-22
 
 This release completes the rule samples: every rule that runs as a lint has a page in each language it runs on. Writing
