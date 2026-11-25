@@ -120,3 +120,26 @@ describe("no-mixed-desumasu: 意図した声の形", () => {
     assert.equal(findingsOf(`# 対処法\n\nPDFが重くて送れない。\n\nそんなときの対処法を、順に書いていきます。${polite}\n`, "blog/tech").length, 1);
   });
 });
+
+describe("no-mixed-desumasu: 太字の札の後ろの短い注記", () => {
+  const troubles = (item: string): string =>
+    [
+      "# バックアップ",
+      "",
+      "毎晩二時に動きます。失敗したときはメールが届きます。",
+      "",
+      "よくある失敗は次の二つです。",
+      "",
+      item,
+      "- **認証が切れた**：パスワードを変えたときに起きます。入り直してください。",
+      "",
+    ].join("\n");
+
+  it("札の直後の注記が、同じ項目の続きの文と違う調子なら指さない", () =>
+    assert.deepEqual(findingsOf(troubles("- **ディスクが見つからない**：誰かが抜いたか、マウントされていない。差し直すと直ります。"), "technical/readme"), []));
+
+  it("項目に続きの文が無い注記と、札の無い項目は今までどおり指す", () => {
+    assert.equal(findingsOf(troubles("- **ディスクが見つからない**：誰かが抜いたか、マウントされていない。"), "technical/readme").length, 1);
+    assert.equal(findingsOf(troubles("- ディスクが見つからない。誰かが抜いたか、マウントされていない。差し直すと直ります。"), "technical/readme").length, 2);
+  });
+});
