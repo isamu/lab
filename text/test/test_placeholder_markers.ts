@@ -246,6 +246,28 @@ describe("templateSections: where a template heading reaches", () => {
   });
 });
 
+describe("unfilled-placeholder in a web address", () => {
+  const clone = (url: string, note = ""): string =>
+    ["# pdfmerge", "", "ソースからインストールする場合：", "", "```bash", `git clone ${url}`, "cd pdfmerge", "```", "", note].join("\n");
+
+  it("reports a template's user name left in a clone address, in a code block", () => {
+    assert.deepEqual(
+      findings(clone("https://example.com/yourname/pdfmerge.git"), ja).map((finding) => finding.line),
+      [6],
+    );
+    assert.deepEqual(
+      findings(clone("https://example.com/YOUR_USERNAME/pdfmerge"), en).map((finding) => finding.line),
+      [6],
+    );
+  });
+
+  it("leaves a real account, a longer word, and a blank the text explains", () => {
+    assert.deepEqual(findings(clone("https://example.com/kana/pdfmerge.git"), ja), []);
+    assert.deepEqual(findings(clone("https://example.com/yournamespace/pdfmerge.git"), en), []);
+    assert.deepEqual(findings(clone("https://example.com/yourname/pdfmerge.git", "`yourname` は自分のアカウント名に置き換えてください。\n"), ja), []);
+  });
+});
+
 describe("unfilled-placeholder in a table", () => {
   const table = ["# Status", "", "| Issue | Owner |", "| --- | --- |", "| Docs are late | [Name] |", "| Tests are slow | Dana |", ""].join("\n");
 
