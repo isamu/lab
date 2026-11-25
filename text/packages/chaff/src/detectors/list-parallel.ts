@@ -8,6 +8,7 @@ import { endsAsHeadline, markOrSkipped, withoutFootnoteReference, withoutTrailin
 import type { BulletList, Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { isLinkLabel } from "./link-label.ts";
 import { itemLayout, splitAtLeadIns } from "./list-layout.ts";
+import { itemOwnEnd, ownSentences } from "./list-item-own.ts";
 import { closesAsSentence, isFiniteVerb, isNounPhraseWithVerbs, isPastForm, isVerb, NOMINAL, NOUN_HEAD, opensObject } from "./list-item-phrase.ts";
 import { opensWithClause } from "./list-item-clause.ts";
 import { openingSeries, seriesTakesObject } from "./list-verb-series.ts";
@@ -179,6 +180,8 @@ export type HeadContext = {
   readonly subjectPronouns: ReadonlySet<string>;
   /** Words that open a prohibition before a noun (No calls), from prohibition-opener. */
   readonly prohibitionOpeners: ReadonlySet<string>;
+  /** Whether the list is numbered: the steps of a procedure. */
+  readonly numbered: boolean;
 };
 
 export const NO_HEAD_CONTEXT: HeadContext = {
@@ -188,6 +191,7 @@ export const NO_HEAD_CONTEXT: HeadContext = {
   headlineEndings: new Set(),
   subjectPronouns: new Set(),
   prohibitionOpeners: new Set(),
+  numbered: false,
 };
 
 type HeadReading = "verb" | "noun" | "unjudged" | undefined;
@@ -298,8 +302,9 @@ const instructionAfterOpener = (tokens: readonly Token[], at: number, context: H
 const isQuestion = (sentence: Sentence | undefined): boolean => /\?["'”’)]*$/u.test(sentence?.text.trim() ?? "");
 
 /**
- * A later sentence of the item that opens with a verb: the item says what happens and then gives the order (The printer
- * feeds a blank label. Throw that label away.), so its noun opening is not a form of its own.
+ * A later sentence of a numbered step that opens with a verb: the step says what the machine does and then gives the order
+ * (The printer feeds a blank label. Throw that label away.), so its noun opening is not a form of its own. A bulleted tip
+ * that opens with a statement (There is often more than one way. Discuss tradeoffs.) is still the odd one among orders.
  */
 const opensWithVerb = (sentence: Sentence, context: HeadContext): boolean => {
   const tokens = sentence.tokens ?? [];
@@ -313,7 +318,7 @@ const englishHead = (sentences: readonly Sentence[], context: HeadContext): stri
   if (at === -1 || isTitleCase(sentences[0]?.text ?? "") || isQuestion(sentences[0])) return undefined;
   const instruction = instructionAfterOpener(tokens, at, context);
   const head = headAt(tokens, instruction === -1 ? at : instruction, context);
-  return head === "noun" && sentences.slice(1).some((sentence) => opensWithVerb(sentence, context)) ? undefined : head;
+  return head === "noun" && context.numbered && sentences.slice(1).some((sentence) => opensWithVerb(sentence, context)) ? undefined : head;
 };
 
 /** An item's form on an axis, or undefined when its words do not tell. Japanese items have no head axis (the verb comes last). */
@@ -326,41 +331,6 @@ export const formOf = (axis: Axis, sentences: readonly Sentence[], language: str
   if (axis === "ending" && leadsIn(sentences)) return undefined;
   if (language === "ja") return axis === "ending" ? japaneseEnding(sentences, context.headlineEndings) : undefined;
   return axis === "ending" ? englishEnding(sentences, context) : englishHead(sentences, context);
-};
-
-const within = (inner: Span, outer: Span): boolean => inner.start >= outer.start && inner.end <= outer.end;
-
-/** The item's own sentences: those in its span, less those of a list nested inside it. */
-export const itemSentences = (doc: ProseDocument, item: Span): Sentence[] => {
-  const nested = doc.lists.map((list) => list.span).filter((span) => span.start > item.start && within(span, item));
-  return doc.sentences.filter((sentence) => within(sentence.span, item) && !nested.some((span) => within(sentence.span, span)));
-};
-
-/**
- * Where an item's own words end: before a line in it that opens, unindented, with a note lead (※応募書類は返却できません。,
- * "Note: …"). Markdown reads such a line as the last item's, but the note is about the whole list.
- */
-export const itemOwnEnd = (source: string, item: Span, noteLeads: readonly string[]): number => {
-  const lineStarts = [...source.slice(item.start, item.end).matchAll(/\n/gu)].map((match) => item.start + match.index + 1);
-  const noteLine = lineStarts.find((start) => noteLeads.some((lead) => lead !== "" && source.startsWith(lead, start)));
-  return noteLine === undefined ? item.end : noteLine - 1;
-};
-
-/** The sentence up to `end`: a note line under the item is not part of the item's last sentence. */
-const cutAt = (sentence: Sentence, end: number, source: string): Sentence =>
-  sentence.span.end <= end
-    ? sentence
-    : {
-        ...sentence,
-        span: { start: sentence.span.start, end },
-        text: source.slice(sentence.span.start, end),
-        ...(sentence.tokens === undefined ? {} : { tokens: sentence.tokens.filter((token) => token.span.end <= end) }),
-      };
-
-/** The item's own sentences, up to a note line under it. */
-const ownSentences = (doc: ProseDocument, item: Span, noteLeads: readonly string[]): Sentence[] => {
-  const end = itemOwnEnd(doc.source, item, noteLeads);
-  return itemSentences(doc, item).flatMap((sentence) => (sentence.span.start < end ? [cutAt(sentence, end, doc.source)] : []));
 };
 
 type Item = { readonly sentences: readonly Sentence[]; readonly form: string };
@@ -405,6 +375,7 @@ const wordCount = (sentences: readonly Sentence[]): number =>
 /** An item wholly in bold (**Nice to have**): the label of the items after it, not one of them. */
 const BOLD_LABEL = /^(\*\*|__)[^*_]+\1[:：]?$/u;
 const LIST_MARKER = /^\s*(?:\d+[.)]|[-*+])\s+/u;
+const NUMBERED_ITEM = /^\s*\d+[.)]\s/u;
 
 const isBoldLabel = (written: string): boolean => BOLD_LABEL.test(written.replace(LIST_MARKER, "").trim());
 
@@ -418,7 +389,8 @@ const runsOn = (sentences: readonly Sentence[]): boolean => RUNNING_ON.test(sent
 const wordsOf = (doc: ProseDocument, lexicon: string): ReadonlySet<string> =>
   new Set((doc.lexicons[lexicon] ?? []).map((entry) => entry.pattern.toLowerCase()));
 
-const headContext = (doc: ProseDocument, items: readonly (readonly Sentence[])[]): HeadContext => ({
+const headContext = (doc: ProseDocument, items: readonly (readonly Sentence[])[], numbered: boolean): HeadContext => ({
+  numbered,
   instructionVerbs: wordsOf(doc, "instruction-verb"),
   verbOrAdjective: wordsOf(doc, "verb-or-adjective"),
   headlineEndings: wordsOf(doc, "headline-ending"),
@@ -462,7 +434,11 @@ const groupFindings = (doc: ProseDocument, itemSpans: readonly Span[], heads: re
     if (span === undefined || written === undefined || notes.has(index) || isDatedTitle(written)) return false;
     return isJudged(written, sentences) && !isLinkLabel(written, linkEndings) && !(heads.includes(span) && isGroupLabel(sentences, doc.language));
   });
-  const context = headContext(doc, judged);
+  const context = headContext(
+    doc,
+    judged,
+    writtenOf.every((written) => NUMBERED_ITEM.test(written)),
+  );
   return axesOf(judged).flatMap((axis) => {
     const items = judged.flatMap((sentences) => {
       const form = formOf(axis, sentences, doc.language, context);

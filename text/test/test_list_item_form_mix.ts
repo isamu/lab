@@ -1,6 +1,7 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { formOf, itemOwnEnd, itemSentences, NO_HEAD_CONTEXT } from "../packages/chaff/src/detectors/list-parallel.ts";
+import { formOf, NO_HEAD_CONTEXT } from "../packages/chaff/src/detectors/list-parallel.ts";
+import { itemOwnEnd, itemSentences } from "../packages/chaff/src/detectors/list-item-own.ts";
 import { itemLayout } from "../packages/chaff/src/detectors/list-layout.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
@@ -478,11 +479,15 @@ describe("list-item-form-mix: a title split by its own mark, and items that are 
       [],
     ));
 
-  it("does not read the noun opening of a step that says what happens and then gives the order (en)", () => {
-    const loading = (last: string): string =>
-      list("Open the lid by pressing the button.", "Remove the empty core.", "Put the new roll in with the shiny side up.", last);
-    assert.deepEqual(flagged(en, loading("The printer will feed one blank label. Throw that label away.")), []);
-    assert.deepEqual(flagged(en, loading("The printer will feed one blank label. It lines itself up.")), ["head-noun:The printer will feed one blank label."]);
+  it("does not read the noun opening of a numbered step that says what happens and then gives the order (en)", () => {
+    const steps = ["Open the lid by pressing the button.", "Remove the empty core.", "Put the new roll in with the shiny side up."];
+    const numbered = (last: string): string => ["# 題", "", ...[...steps, last].map((item, index) => `${String(index + 1)}. ${item}`), ""].join("\n");
+    assert.deepEqual(flagged(en, numbered("The printer will feed one blank label. Throw that label away.")), []);
+    assert.deepEqual(flagged(en, numbered("The printer will feed one blank label. It lines itself up.")), ["head-noun:The printer will feed one blank label."]);
+    const tips = ["Ask questions rather than make statements.", "Avoid selective ownership of code.", "Be humble about what you know."];
+    assert.deepEqual(flagged(en, list(...tips, "There is often more than one way to a solution. Discuss tradeoffs.")), [
+      "head-noun:There is often more than one way to a solution.",
+    ]);
   });
 
   it("still reads the opening word when one item is a single sentence", () =>
