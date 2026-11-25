@@ -95,6 +95,22 @@ describe("ai-tell: the one-tip pitch of a generated post (en)", () => {
   });
 });
 
+describe("ai-tell: the turn after an opening problem (en)", () => {
+  it("reports it doesn't have to be (that way) as its own sentence in a blog post", () => {
+    const problem = "Every spring, owners spend long nights searching for receipts.";
+    assert.equal(aiTell(`# Receipts\n\n${problem} It doesn't have to be that way. A few habits help.\n`, en, "blog/owned-media").length, 1);
+    assert.equal(
+      aiTell(`# Winter\n\n"That's it for the bike until spring." It doesn't have to be. Plenty of people ride.\n`, en, "blog/owned-media").length,
+      1,
+    );
+  });
+
+  it("leaves the plain phrase that goes on (it doesn't have to be perfect)", () => {
+    assert.deepEqual(aiTell("# Drafts\n\nYour first draft doesn't have to be perfect. Write it anyway.\n", en, "blog/owned-media"), []);
+    assert.deepEqual(aiTell("# Drafts\n\nIt doesn't have to be long. Write it anyway.\n", en, "blog/owned-media"), []);
+  });
+});
+
 describe("ai-tell: a request recast as a benefit (ja); honesty markers are honesty-marker's", () => {
   it("adds にとっても有意義 to the other phrases", () => {
     const source =
