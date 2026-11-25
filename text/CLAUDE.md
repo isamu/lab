@@ -47,7 +47,9 @@ The direction is tracked in isamu/lab#130.
 ## Working here
 
 - `yarn format`, `yarn lint`, `yarn lint:oxlint`, `yarn typecheck`, `yarn build`, `yarn test` (node:test,
-  `test/test_*.ts`; `CHAFF_TEST_JOBS=4 yarn test` caps the processes when several checkouts share a machine).
+  `test/test_*.ts`; `CHAFF_TEST_JOBS=4 yarn test` caps the processes when several checkouts share a machine). CI splits
+  the suite into parts balanced by `scripts/test-times.json`; `yarn test:times <log>` rewrites it from a CI run's log
+  (the command is at the top of `scripts/test-times-update.ts`).
 - `yarn corpus`, `yarn bench` and `yarn planted` compare findings with committed expectations (`--update` accepts a
   change). `yarn rules:measure --apply` places a new or changed rule, over the documents pinned in
   `corpus/rules-measure-documents.json`. `yarn rules:precision --corpus <chaff-corpus clone> --apply` turns a rule off

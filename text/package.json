@@ -32,6 +32,7 @@
     "samples:update": "node scripts/samples.ts --update",
     "lint:oxlint": "npx --yes oxlint@1.82.0 -D correctness packages/",
     "test": "node scripts/test.ts",
+    "test:times": "node scripts/test-times-update.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
