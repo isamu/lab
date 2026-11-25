@@ -60,6 +60,9 @@ describe("emphasisSpanCount: bold that labels, heads or names is not emphasis", 
   it("leaves out the names of buttons and settings mid-sentence", () =>
     assert.equal(countOf("# T\n\nOpen the menu and click **Add Printer**, or look for **Network** in the list, then press **WPS**.\n"), 0));
   it("leaves out a bold opening a quoted list item", () => assert.equal(countOf("# T\n\n> - **Speed**: fast.\n"), 0));
+  it("leaves out bold codes to look for on a label, digits alone or with capitals", () =>
+    assert.equal(countOf("# T\n\nThe affected kettles have the date code **2602**, **2603**, or **2604** and lot **A-114/2**.\n"), 0));
+  it("still counts a bold figure with a unit or a sign", () => assert.equal(countOf("# T\n\nYou save **50%**, about **$129**, in **30 days**.\n"), 3));
 
   it("still counts lower-case bold mid-sentence, in a list item too", () =>
     assert.equal(countOf("# T\n\n- It **remembers** your passwords.\n- It **fills them in** for you.\n\nKeep **two copies** of it.\n"), 3));
