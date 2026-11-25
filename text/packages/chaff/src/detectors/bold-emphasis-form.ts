@@ -54,5 +54,14 @@ const startsASentence = (before: string): boolean => {
 export const isNameMidSentence = (source: string, span: Span): boolean =>
   CAPITALISED.test(source.slice(span.start, span.end)) && !startsASentence(source.slice(Math.max(0, span.start - LOOK_BACK), span.start));
 
+/**
+ * A bold holding only a code: digits, with capitals, hyphens, slashes or dots between them and no word (date code **2602**,
+ * lot **A-114**). It names a value the reader looks for on a label. A figure with a unit or a sign (**50%**, **$129**) is not one.
+ */
+const CODE_ONLY = /^(?:\*\*|__)(?=[^*_]*\p{Nd})[\p{Lu}\p{Nd}][\p{Lu}\p{Nd}\-/.]*(?:\*\*|__)$/u;
+
+export const isCodeValue = (source: string, span: Span): boolean => CODE_ONLY.test(source.slice(span.start, span.end));
+
 /** Whether a bold span emphasises words in running text, rather than labelling, heading or naming something. */
-export const isEmphasisBold = (source: string, span: Span): boolean => !opensItsBlock(source, span) && !isNameMidSentence(source, span);
+export const isEmphasisBold = (source: string, span: Span): boolean =>
+  !opensItsBlock(source, span) && !isNameMidSentence(source, span) && !isCodeValue(source, span);
