@@ -26,6 +26,9 @@ describe("pseudoHeadingText: a paragraph that is one bold line naming a section"
     ["**A. Third party liability**", "A. Third party liability"],
     ["**macOS / Linux の場合**", "macOS / Linux の場合"],
     ["  **Budget**  ", "Budget"],
+    ["**(2)　費用、期間の見積もり**", "(2)　費用、期間の見積もり"],
+    ["**(4) 完全性(integrity)**", "(4) 完全性(integrity)"],
+    ["**(1) 費用**", "(1) 費用"],
   ];
   read.forEach(([paragraph, text]) => {
     it(`reads ${JSON.stringify(paragraph)}`, () => assert.equal(pseudoHeadingText(paragraph), text));
@@ -48,6 +51,9 @@ describe("pseudoHeadingText: a paragraph that is one bold line naming a section"
     "** spaced **",
     "**Keep every receipt for travel, meals and lodging, and send them to the finance team within thirty days of return**",
     "**Budget**\nThe plan costs less.",
+    "**会議の内容を聞き、あとで要点を確かめたい社員**",
+    "**(案内文の例)**",
+    "**（Example of a notice）**",
     "plain text",
     "",
   ];
@@ -71,6 +77,24 @@ describe("pseudo-heading: reports a bold line in place of a heading", () => {
     const source =
       "# Setup\n\n## Install\n\nRun the installer.\n\n**On macOS**\n\n```sh\nbrew install tool\n```\n\n**On Windows**\n\n- Open the installer.\n- Click next.\n";
     assert.equal(count(source, en), 2);
+  });
+
+  it("reports numbered item titles, one with a reading comma", () => {
+    const source =
+      "# 指針\n\n## 第1 要件\n\n**(1)　費用、期間の見積もり**\n見積もりを出す。期限も書く。\n**(2)　体制**\n体制を示す。担当も書く。\n**(3)　保守**\n保守を示す。窓口も書く。\n";
+    assert.equal(count(source, ja), 3);
+  });
+
+  it("reports a numbered title with no caption over its block", () => {
+    const source =
+      "# 手引き\n\n## 第3 公開\n\n案内文には次の事項を書く。\n\n**1 お問い合わせ**\n(1) 窓口へご連絡ください。\n(2) 受付は平日です。\n**2 免責**\n(1) 一切の責任を負いません。\n\n本文に戻ります。\n";
+    assert.equal(count(source, ja), 1);
+  });
+
+  it("reports a bold label over a list of links that the section ends with", () => {
+    const source =
+      "# Guide\n\n## Throttling\n\nUse a slow profile.\n\n**References**\n\n- [Guide](https://example.com/a)\n- [Notes](https://example.com/b)\n\n## Devices\n\nTest on hardware.\n";
+    assert.equal(count(source, en), 1);
   });
 
   it("reports a document without a title whose first heading opens a section", () => {
@@ -108,6 +132,23 @@ describe("pseudo-heading: does not report", () => {
   it("a bold line in a list, a quotation or a table", () => {
     const source = "# 手引き\n\n## 準備\n\n- **道具**\n- 手袋\n\n> **他の人の言葉**\n\n| 項目 |\n| --- |\n| **太字** |\n\n本文です。\n";
     assert.equal(count(source, ja), 0);
+  });
+
+  it("a bold statement joining clauses, the answer of its section", () => {
+    const source = "# 計画\n\n## 対象\n\n### 主な利用者\n\n**会議の内容を聞き、あとで要点を確かめたい社員**\n\n- 営業\n- 開発\n\n## 費用\n\n安いです。\n";
+    assert.equal(count(source, ja), 0);
+  });
+
+  it("a bracketed caption, and the titles inside the example it introduces", () => {
+    const source =
+      "# 手引き\n\n## 第3 公開\n\n案内文には次の事項を書く。例を示す。\n書き方は自由である。必要に応じて変える。\n\n**(案内文の例)**\n**1 お問い合わせ**\n(1) 窓口へご連絡ください。受付は平日です。\n(2) 電話でも受け付けます。メールでも受け付けます。\n**2 免責**\n(1) 一切の責任を負いません。ご了承ください。\n\n本文に戻ります。以上です。\n";
+    assert.equal(count(source, ja), 0);
+  });
+
+  it("a bold label over a list of links when the section's text resumes after the list", () => {
+    const source =
+      "# Guide\n\n## Throttling\n\nUse a slow profile.\n\n**References**\n\n- [Guide](https://example.com/a)\n- [Notes](https://example.com/b)\n\nA request-level throttle differs from a packet-level one.\n\n## Devices\n\nTest on hardware.\n";
+    assert.equal(count(source, en), 0);
   });
 
   it("a bold line closed by punctuation or a colon", () => {
