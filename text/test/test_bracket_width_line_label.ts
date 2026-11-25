@@ -57,6 +57,14 @@ describe("bracket-width-consistency on line labels and item addresses", () => {
     assert.deepEqual(findingsOf(license), []);
   });
 
+  it("counts a count's bracket after a three-digit figure (831（16）) and a court case's kind (令和3年（ワ）第5285号) with the prose", () => {
+    const labels = ["", "(1)人数の表", "(2)判決の例", "(3)手続の例", ""];
+    const table = [...PROSE, "部門別の人数は製造部831（16）です。", ...labels].join("\n");
+    assert.deepEqual(findingsOf(table), []);
+    const caseNumber = [...PROSE, "例として東京地判令和3年（ワ）第5285号がある。", ...labels].join("\n");
+    assert.deepEqual(findingsOf(caseNumber), []);
+  });
+
   it("still counts a bracket after a Latin word, a figure's bracket in a table and a Japanese word at a line's head", () => {
     assert.equal(findingsOf([...PROSE, "OSI(Open Source Initiative)の定義を見てください。", ""].join("\n")).length, 1);
     assert.equal(findingsOf([...PROSE, "所有割合は100.0(100.0)プリンター関連です。", ""].join("\n")).length, 1);
