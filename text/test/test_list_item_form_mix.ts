@@ -75,6 +75,8 @@ describe("formOf: how an item ends and opens (English)", () => {
     ["Running tests is easy", undefined],
     ["Fast startup.", undefined],
     ["Text that is at least 11pt", "phrase"],
+    ["Text that the user types", "phrase"],
+    ["A base layer that wicks moisture", "phrase"],
     ["Black text on a white background to ensure contrast", "phrase"],
     ["Bulleted or numbered lists using the list tools", "phrase"],
     ["The server is down", undefined],
@@ -623,6 +625,11 @@ describe("list-item-form-mix: openings that are neither form (en)", () => {
     assert.deepEqual(flagged(en, list(...fonts, "Bulleted lists using the list tools", "Text that is left aligned. Full justification should be avoided.")), [
       "ending-sentence:Text that is left aligned.",
     ]);
+  });
+
+  it("reads the verb of a relative clause as the noun phrase's when a word the tagger misreads comes before it", () => {
+    const clothes = ["A **windproof outer layer**. A light rain jacket often works well.", "**Gloves** are a must. Cold hands are no fun."];
+    assert.deepEqual(flagged(en, list("A **base layer** that wicks moisture", ...clothes, "A thin **hat or headband** that fits under your helmet")), []);
   });
 
   it("does not judge an item whose words go on into a link after its last sentence", () => {
