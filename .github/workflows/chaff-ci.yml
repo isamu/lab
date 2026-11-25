@@ -2,7 +2,7 @@
 # paths で切っているので、coding/ だけを触る PR では走らない。
 # 静的な検査、テスト（3 OS × 部分）、実文書・corpus・bench:ai、bench を別の job にして並べて走らせる。
 # job の数はアカウントで同時に走らせられる数を取り合うので、増やしすぎない（macOS は特に少ない）。
-# Windows の広い実行（lint・typecheck・build と分けないテスト）は chaff-windows-daily.yml。
+# Windows の広い実行（lint・typecheck・build と、何も除かないテスト）は chaff-windows-daily.yml。
 name: chaff ci
 
 on:
@@ -109,6 +109,7 @@ jobs:
 
   # 公開しているパッケージなので 3 OS で回す。テストファイルを scripts/test-parts.ts の部分に分け、部分ごとに別の job で走らせる。
   # 部分 1 は全部の rule の例と手引きの画面を回す重いファイル、ほかのファイルは測った時間（scripts/test-times.json）で部分の時間が揃うように分ける。
+  # --run pr: Windows は遅く時間の上限に当たるので、OS に依らない遅いファイル（scripts/test-skips.json、理由つき）を除く。除いた分は毎日の chaff-windows-daily.yml が回す。
   test:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
@@ -182,7 +183,7 @@ jobs:
       # 2 つ目の reporter は、最後にファイルごとの時間を出す。yarn test:times がその実行のログを読んで scripts/test-times.json を書き直し、部分の分け方がそれに従う。
       - name: test
         if: runner.os == 'Linux' || steps.scope.outputs.code == 'true'
-        run: yarn test --part ${{ matrix.part }}/${{ env.TEST_SHARD_COUNT }} --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./scripts/test-times-reporter.ts --test-reporter-destination=stdout
+        run: yarn test --run pr --part ${{ matrix.part }}/${{ env.TEST_SHARD_COUNT }} --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./scripts/test-times-reporter.ts --test-reporter-destination=stdout
         env:
           # テストファイルはそれぞれ別の process で、同じ src を読み込む。コンパイルした結果を process の間で使い回す。
           NODE_COMPILE_CACHE: ${{ runner.temp }}/node-compile-cache
