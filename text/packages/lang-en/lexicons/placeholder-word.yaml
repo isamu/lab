@@ -76,3 +76,21 @@ entries:
     group: example-lead
   - pattern: incorrect
     group: example-lead
+  # group: address-blank — a path segment of a web address left as the template wrote it (example.com/yourname/tool).
+  # Matched whole and in any case (YOUR_USERNAME). A word the text also names outside an address (replace yourname with …) is meant.
+  - pattern: yourname
+    group: address-blank
+  - pattern: your-name
+    group: address-blank
+  - pattern: your_name
+    group: address-blank
+  - pattern: yourusername
+    group: address-blank
+  - pattern: your-username
+    group: address-blank
+  - pattern: your_username
+    group: address-blank
+  - pattern: your-org
+    group: address-blank
+  - pattern: yourorg
+    group: address-blank
