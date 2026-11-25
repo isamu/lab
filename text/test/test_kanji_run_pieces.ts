@@ -65,11 +65,14 @@ describe("unknownPieces", () => {
 });
 
 describe("standaloneNames", () => {
-  const units = ["理事会", "局"];
-  it("組織の語で閉じ、字数が下限から上限までの連なりだけ", () => {
-    assert.deepEqual([...standaloneNames(["改革", "安全保障理事会", "長周期地震動階級", "国際連合安全保障理事会"], 6, 8, units)], ["安全保障理事会"]);
-    assert.deepEqual([...standaloneNames(["理事会", "事務総長理事会"], 3, 8, units)], ["事務総長理事会"]);
-    assert.deepEqual([...standaloneNames([], 6, 8, units)], []);
+  const endings = ["理事会", "局", "申出書"];
+  it("組織の語か題を閉じる語で閉じ、字数が下限から上限までの連なりだけ", () => {
+    assert.deepEqual(
+      [...standaloneNames(["改革", "安全保障理事会", "提供依頼申出書", "長周期地震動階級", "内閣総理大臣", "国際連合安全保障理事会"], 6, 8, endings)],
+      ["安全保障理事会", "提供依頼申出書"],
+    );
+    assert.deepEqual([...standaloneNames(["理事会", "事務総長理事会"], 3, 8, endings)], ["事務総長理事会"]);
+    assert.deepEqual([...standaloneNames([], 6, 8, endings)], []);
   });
 });
 
@@ -93,9 +96,24 @@ describe("max-kanji-continuous: 知っている語で割る", () => {
     assert.deepEqual(kanjiWords("地域平均気温平年差\n\n地域ごとの気温平年差を平均して算出した値。\n", "docs/glossary"), []);
   });
 
-  it("invalid: 単独で使う名前が無いか、単独で使う語が組織の名前でなければ、割らない", () => {
+  it("valid: 文書が単独で使う書式の名前を含む連なり（提供依頼申出書）", () => {
+    assert.deepEqual(kanjiWords("提供依頼申出書を出す。提供依頼申出書作成説明会を開く。\n", "business/report"), []);
+  });
+
+  it("invalid: 単独で使う名前が無いか、単独で使う語が短いか名前の形をしなければ、割らない", () => {
     assert.deepEqual(kanjiWords("安全保障理事会常任理事国が隣国を侵略した。\n"), ["安全保障理事会常任理事国"]);
-    assert.deepEqual(kanjiWords("提供依頼申出書を出す。提供依頼申出書作成説明会を開く。\n", "business/report"), ["提供依頼申出書作成説明会"]);
+    assert.deepEqual(kanjiWords("申出書を出す。提供依頼申出書作成説明会を開く。\n", "business/report"), ["提供依頼申出書作成説明会"]);
+    assert.deepEqual(kanjiWords("料金は電子化手数料と呼ぶ。電子化手数料納付案内を送る。\n", "docs/faq"), ["電子化手数料納付案内"]);
+  });
+
+  it("valid: 漢数字と丁目の番地は、算用数字と同じく連なりを割る", () => {
+    assert.deepEqual(kanjiWords("市が中央通北二丁目地区再開発事業に着手した。\n", "business/report"), []);
+  });
+
+  it("invalid: 番地で割っても長い残りと、番地でない漢数字は割らない", () => {
+    assert.deepEqual(kanjiWords("市が中央通北二丁目地区市街地再開発事業計画を示した。\n", "business/report"), ["地区市街地再開発事業計画"]);
+    assert.deepEqual(kanjiWords("市が中央通北二番地区再開発事業に着手した。\n", "business/report"), ["中央通北二番地区再開発事業"]);
+    assert.deepEqual(kanjiWords("書類を中央区中央通北二丁目課に届ける。\n"), ["中央区中央通北二丁目課"]);
   });
 
   it("invalid: 知っている語を外しても長い残り、短い単独の語は割らない", () => {

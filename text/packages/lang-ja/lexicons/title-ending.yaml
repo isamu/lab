@@ -35,6 +35,7 @@ entries:
   - pattern: 申込書
   - pattern: 申請書
   - pattern: 届出書
+  - pattern: 申出書
   - pattern: 報告書
   - pattern: 証明書
   - pattern: 一覧
