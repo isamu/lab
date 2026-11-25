@@ -1,8 +1,19 @@
 // An and / or that joins words inside the last item rather than the list's last two items: an item not finished yet
 // ("on or before", "a flexible and lightweight grid") or a run that repeats the conjunction without commas. Pure.
-import { commaBefore, firstAt, firstContent, isBareIndefiniteModifier, isBareNounPhrase, isBarePreposition, lastAt } from "./list-item.ts";
+import {
+  commaBefore,
+  contentCount,
+  firstAt,
+  firstContent,
+  hasDeterminer,
+  isBareIndefiniteModifier,
+  isBareNounPhrase,
+  isBarePreposition,
+  lastAt,
+  lastContent,
+} from "./list-item.ts";
 import type { ItemScope } from "./list-sentence.ts";
-import { lastOf, type View } from "./list-view.ts";
+import { lastOf, secondLastOf, type View } from "./list-view.ts";
 import type { TokenRange } from "./token-column.ts";
 
 /**
@@ -41,4 +52,22 @@ export const repeatsConjunction = (scope: ItemScope, at: number, view: View, aft
   const bareLater = later !== -1 && isBareNounPhrase(scope, { start: at + 1, end: later });
   const startsLike = (conjunction: number, end: number): boolean => firstContent(scope, { start: conjunction + 1, end })?.pos === kind;
   return kind !== undefined && ((bareBefore && startsLike(before, at)) || (bareLater && startsLike(later, afterItem.end)));
+};
+
+/** 冠詞を連れない名詞 1 語だけの項目（taxis）。 */
+const isBareNoun = (scope: ItemScope, item: TokenRange): boolean =>
+  contentCount(scope, item) === 1 && firstContent(scope, item)?.pos === "NOUN" && !hasDeterminer(scope, item);
+
+const endsPlural = (scope: ItemScope, item: TokenRange): boolean => lastContent(scope, item)?.features?.["Number"] === "Plur";
+
+/**
+ * 読点の無い or が、複数形の名詞 1 語と名詞 1 語を結び、その前の項目が複数形の名詞で終わらなければ、or は最後の項目の中で 2 つの
+ * 選択肢を結ぶ（airfare, train tickets, parking, taxis or rideshares）。前の項目も複数形なら同じ形の並び（apples, pears or plums）、
+ * or の前が単数なら選択肢の並び（by card, cheque or cash）。解析器は見慣れない複数形（rideshares）に数を付けないので、or の後ろは数を問わない。
+ */
+export const pairsAlternatives = (scope: ItemScope, at: number, view: View, afterItem: TokenRange): boolean => {
+  const [previous, last] = [secondLastOf(view), lastOf(view)];
+  if (previous === undefined || last === undefined || commaBefore(scope, at)) return false;
+  if (scope.sentence.tokens[at]?.surface.toLowerCase() !== "or") return false;
+  return isBareNoun(scope, last.item) && endsPlural(scope, last.item) && isBareNoun(scope, afterItem) && !endsPlural(scope, previous.item);
 };
