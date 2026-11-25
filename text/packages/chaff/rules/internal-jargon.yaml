@@ -3,6 +3,7 @@ layer: L2
 status: stable
 how_to_find: internal-jargon
 word_list: internal-jargon
+uses: [pos]
 severity: warning
 
 name:

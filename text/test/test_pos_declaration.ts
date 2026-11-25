@@ -111,9 +111,9 @@ const runFilter = (rule: RuleDefinition, doc: ProseDocument, watch: Watch): void
   if (filter !== undefined) during(watch, () => filter(doc));
 };
 
-/** A rule that reads only the team's list (team_list) does not run while chaff.yaml lists nothing, so it gets the list its example's chaff.yaml gives. */
+/** A team rule (team_list, or group team) does nothing while chaff.yaml lists nothing, so it gets the lists its example's chaff.yaml gives. */
 const teamOf = (rule: RuleDefinition, example: RuleExample): TeamRules =>
-  rule.team_list === undefined ? EMPTY_TEAM : teamRules(configOf(example.config ?? {}, "chaff.yaml"));
+  rule.team_list === undefined && rule.guide?.group !== "team" ? EMPTY_TEAM : teamRules(configOf(example.config ?? {}, "chaff.yaml"));
 
 const tryExample = (rule: RuleDefinition, language: string, example: RuleExample, watch: Watch): void => {
   const adapter = ADAPTERS[language];
