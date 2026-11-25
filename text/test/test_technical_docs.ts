@@ -301,6 +301,29 @@ describe("step-statement-mix: a statement among numbered instructions", () => {
     assert.equal(findingsOf(en, "step-statement-mix", source).length, 1);
   });
 
+  it("does not report a step that says what the machine does and then gives the order", () => {
+    const source = steps(
+      "Open the lid by pressing the button.",
+      "Remove the empty core.",
+      "Put the new roll in.",
+      "The printer will feed one blank label. Throw that label away.",
+    );
+    assert.deepEqual(findingsOf(en, "step-statement-mix", source), []);
+    const statementOnly = steps(
+      "Open the lid.",
+      "Remove the empty core.",
+      "Put the new roll in.",
+      "The printer will feed one blank label. It lines itself up.",
+    );
+    assert.equal(findingsOf(en, "step-statement-mix", statementOnly).length, 1);
+    const paragraphs = steps(
+      "There is more than one user type. Data is central to the admin section.",
+      "The application grows into sections. Sectioned off functionality makes a good line.",
+      "There are small functions to extract. Data is central to applications.",
+    );
+    assert.deepEqual(findingsOf(en, "step-statement-mix", paragraphs), []);
+  });
+
   it("does not read a bulleted list, a list of terms, or a list of statements", () => {
     const bulleted = doc(["- Open the terminal.", "- Run the installer.", "- The installer asks for a password.", "- Restart the computer."].join("\n"));
     assert.deepEqual(findingsOf(en, "step-statement-mix", bulleted), []);
