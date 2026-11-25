@@ -1,0 +1,6 @@
+# 住所で、町の名前の後ろに漢数字と続けて街区を言う単位（駅前大通二丁目の「丁目」）。max-kanji-continuous は、漢字の連なりの中の
+# 漢数字とこの単位を、算用数字（2丁目）なら連なりを切る番地と読み、その前と後ろを別に数える。
+id: address-block-unit
+language: ja
+entries:
+  - pattern: 丁目
