@@ -105,6 +105,18 @@ describe("padded-intro", () => {
       "Our build took forty minutes last spring. We split the test suite in two. The slow half ran overnight. Nobody liked the wait. The good news is that the split held.";
     assert.ok(!idsFor(body, en).includes("padded-intro"));
   });
+
+  it("invalid: the clipped 'Good news:' turn in the opening", () => {
+    const source = "It snows here most of the winter. Visitors ask what there is to do. Good news: the snowy weeks are our busiest and best.";
+    assert.ok(idsFor(source, en).includes("padded-intro"));
+  });
+
+  it("valid: 'Good news:' past the opening, and 'good news' without the colon, are not reported", () => {
+    [
+      "Our build took forty minutes last spring. We split the test suite in two. The slow half ran overnight. Nobody liked the wait. Good news: the split held.",
+      "The quarterly figures arrived on Monday. That is good news for the team.",
+    ].forEach((source) => assert.ok(!idsFor(source, en).includes("padded-intro"), source));
+  });
 });
 
 describe("closing-cliche", () => {

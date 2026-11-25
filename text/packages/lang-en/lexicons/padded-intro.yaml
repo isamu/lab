@@ -25,3 +25,5 @@ entries:
   # The turn of a stock opening: a problem the reader is assumed to have, then "The good news is". Opening only;
   # a human post that reaches its good news after setting out its own problem does so later than the first sentences.
   - pattern: the good news is
+  # The same turn clipped to a label; the colon keeps "That is good news." out.
+  - pattern: "good news:"
