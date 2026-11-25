@@ -478,6 +478,13 @@ describe("list-item-form-mix: a title split by its own mark, and items that are 
       [],
     ));
 
+  it("does not read the noun opening of a step that says what happens and then gives the order (en)", () => {
+    const loading = (last: string): string =>
+      list("Open the lid by pressing the button.", "Remove the empty core.", "Put the new roll in with the shiny side up.", last);
+    assert.deepEqual(flagged(en, loading("The printer will feed one blank label. Throw that label away.")), []);
+    assert.deepEqual(flagged(en, loading("The printer will feed one blank label. It lines itself up.")), ["head-noun:The printer will feed one blank label."]);
+  });
+
   it("still reads the opening word when one item is a single sentence", () =>
     assert.deepEqual(flagged(en, list("Install the command-line tool", "Create an account on the website", "The configuration file in your home folder")), [
       "head-noun:The configuration file in your home folder",

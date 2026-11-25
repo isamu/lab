@@ -297,12 +297,23 @@ const instructionAfterOpener = (tokens: readonly Token[], at: number, context: H
 /** A question (Do you have …?, What is …?) opens with its question form, neither an instruction nor a noun phrase. */
 const isQuestion = (sentence: Sentence | undefined): boolean => /\?["'”’)]*$/u.test(sentence?.text.trim() ?? "");
 
+/**
+ * A later sentence of the item that opens with a verb: the item says what happens and then gives the order (The printer
+ * feeds a blank label. Throw that label away.), so its noun opening is not a form of its own.
+ */
+const opensWithVerb = (sentence: Sentence, context: HeadContext): boolean => {
+  const tokens = sentence.tokens ?? [];
+  const at = tokens.findIndex((token) => !SKIPPED_AT_END.has(token.pos));
+  return at !== -1 && !isQuestion(sentence) && headAt(tokens, at, context) === "verb";
+};
+
 const englishHead = (sentences: readonly Sentence[], context: HeadContext): string | undefined => {
   const tokens = sentences[0]?.tokens ?? [];
   const at = tokens.findIndex((token) => !SKIPPED_AT_END.has(token.pos));
   if (at === -1 || isTitleCase(sentences[0]?.text ?? "") || isQuestion(sentences[0])) return undefined;
   const instruction = instructionAfterOpener(tokens, at, context);
-  return headAt(tokens, instruction === -1 ? at : instruction, context);
+  const head = headAt(tokens, instruction === -1 ? at : instruction, context);
+  return head === "noun" && sentences.slice(1).some((sentence) => opensWithVerb(sentence, context)) ? undefined : head;
 };
 
 /** An item's form on an axis, or undefined when its words do not tell. Japanese items have no head axis (the verb comes last). */
