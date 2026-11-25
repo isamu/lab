@@ -151,3 +151,9 @@ entries:
     weight: 0.5
   - pattern: if you only make one
     weight: 0.5
+  # The turn after a generated post's opening problem ("…spend long nights searching. It doesn't have to be that way.").
+  # Only as a whole sentence: "It doesn't have to be perfect" is plain. In no human document of the judged or lab corpus.
+  - pattern: it doesn't have to be that way
+    weight: 0.5
+  - pattern: it doesn't have to be.
+    weight: 0.5
