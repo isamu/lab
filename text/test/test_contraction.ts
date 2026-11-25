@@ -333,6 +333,17 @@ describe("contraction-consistency", () => {
         assert.deepEqual(matchedFor(source), ["don't"]);
       });
 
+      it("valid: 要約を添えた文書の条項の中の長い形は、条項の文体なので指さない", () => {
+        // github-terms-of-service の形。札の無い平易な一言（Isn't this…? Yep.）が短縮形を多数派にしても、条項の is not は指さない。
+        const source = `## A. Terms\n\n**Short version:** _We don't bother you._\n\nYou keep your rights. Isn't this how it works already? Yep.\n\nThat information isn't public.\n\nTo the extent this agreement is not enforceable, you grant us the rights we need.`;
+        assert.deepEqual(matchedFor(source), []);
+      });
+
+      it("invalid: 要約の札が無ければ、条項の中の長い形もこれまでどおり指す", () => {
+        const source = `## A. Terms\n\nYou keep your rights. Isn't this how it works already? Yep.\n\nThat information isn't public.\n\nTo the extent this agreement is not enforceable, you grant us the rights we need.`;
+        assert.deepEqual(matchedFor(source), ["is not"]);
+      });
+
       it("invalid: 要約の札が無ければ、導入もこれまでどおり数える", () => {
         const source = `We don't bother you. We don't email you.\n\n## A. Terms\n\n${clauses.replace("You do not resell it.", "")}`;
         assert.deepEqual(matchedFor(source), ["do not"]);
