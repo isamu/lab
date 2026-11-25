@@ -1,7 +1,7 @@
 # Words in everyday technical and business writing that WordNet does not list. unknown-word reads them as known, with
 # their endings: function words WordNet leaves out (cannot, wherein, albeit, whilst), Latin phrases in English text
 # (a priori, in forma pauperis, de minimis), the legal words of contracts (thereunder, herefrom, monies, pendency,
-# cedent, telecopy), newer coinages (onboard, roadmap, phishing, vishing, ransomware, agentic, toolbar), clippings of operations writing (comms, admin, config) and everyday
+# cedent, telecopy), newer coinages (onboard, roadmap, phishing, vishing, ransomware, agentic, toolbar), clippings of operations writing (comms, admin, config), the lower-case names of standard tools (systemd, sudo) and everyday
 # words WordNet missed (amidst, ahold, barista, grift). A team adds its own words
 # under names in chaff.yaml; this list is only for words any document may use.
 id: extra-word
@@ -215,9 +215,11 @@ entries:
   - pattern: sublessee
   - pattern: sublicensee
   - pattern: subproject
+  - pattern: sudo
   - pattern: sustainably
   - pattern: synch
   - pattern: syntax
+  - pattern: systemd
   - pattern: tanto
   - pattern: telecopy
   - pattern: thenceforward
