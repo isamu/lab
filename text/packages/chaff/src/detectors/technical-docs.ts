@@ -262,8 +262,21 @@ type Step = { readonly start: number; readonly kind: "statement" | "instruction"
 export const isInstruction = (tokens: readonly Token[]): boolean =>
   INSTRUCTION_OPENER.has(tokens.find((token) => !SKIPPED.has(token.pos))?.pos ?? "") && !opensAsNounPhrase(tokens);
 
-const kindOf = (tokens: readonly Token[]): Step["kind"] => {
-  if (isStatement(tokens)) return "statement";
+/**
+ * A later sentence that gives an order: it opens with a verb in its base form (Throw that label away). Stricter than
+ * isInstruction, whose noun openers (Data is central) are a paragraph's statements once they are not the step's head.
+ */
+const givesOrder = (tokens: readonly Token[]): boolean => {
+  const head = tokens.find((token) => !SKIPPED.has(token.pos));
+  return head?.pos === "VERB" && head.surface.toLowerCase() === head.lemma;
+};
+
+/**
+ * A step read by its first sentence. One that states what the machine does and then gives the order in a later sentence
+ * (The printer feeds a blank label. Throw that label away.) is an instruction: the reader still has something to do.
+ */
+const kindOf = (tokens: readonly Token[], later: readonly (readonly Token[])[]): Step["kind"] => {
+  if (isStatement(tokens)) return later.some(givesOrder) ? "instruction" : "statement";
   return isInstruction(tokens) ? "instruction" : "other";
 };
 
@@ -273,10 +286,22 @@ const stepLists = (doc: ProseDocument): Step[][] =>
     .filter((list) => ORDERED_ITEM.test(doc.source.slice(list.span.start, list.span.end)))
     .map((list) =>
       list.itemSpans.flatMap((item): Step[] => {
-        const sentence = doc.sentences.find((candidate) => candidate.span.start >= item.start && candidate.span.start < item.end);
-        // Only the sentence on the item's own line: a note paragraph under it (**NOTE:** …) is not the step.
-        const onItemLine = sentence !== undefined && !doc.source.slice(item.start, sentence.span.start).includes("\n");
-        return sentence?.tokens === undefined || !onItemLine ? [] : [{ start: sentence.span.start, kind: kindOf(sentence.tokens) }];
+        // Only the sentences on the item's own line: a note paragraph under it (**NOTE:** …) is not the step.
+        const onItemLine = doc.sentences.filter(
+          (candidate) =>
+            candidate.span.start >= item.start && candidate.span.start < item.end && !doc.source.slice(item.start, candidate.span.start).includes("\n"),
+        );
+        const [sentence, ...later] = onItemLine;
+        if (sentence?.tokens === undefined) return [];
+        return [
+          {
+            start: sentence.span.start,
+            kind: kindOf(
+              sentence.tokens,
+              later.map((next) => next.tokens ?? []),
+            ),
+          },
+        ];
       }),
     )
     .filter((steps) => steps.length >= MIN_STEPS);

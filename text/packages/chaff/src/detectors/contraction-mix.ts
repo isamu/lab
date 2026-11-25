@@ -95,10 +95,12 @@ export const contractionMix: Detector = (doc, options): Finding[] => {
     const pair = entry.instead_of === undefined ? undefined : mixedPair(texts, { short: entry.pattern.toLowerCase(), long: entry.instead_of.toLowerCase() });
     return pair === undefined || pair.count > options.limit ? [] : [pair];
   });
+  // A plain register set apart beside the clauses makes the clauses the formal one: a full form there is its own form, not a slip.
+  const pointedAt = summaries.size > 0 ? mixed.filter((candidate) => candidate.side === "short") : mixed;
   const hits = doc.sentences.flatMap((sentence) => {
     if (!isWriters(sentence) || warnings.has(sentence) || summaries.has(sentence)) return [];
     const pointable = pointableText(sentence, stressed);
-    const pair = mixed.find((candidate) => usesMinority(pointable, candidate));
+    const pair = pointedAt.find((candidate) => usesMinority(pointable, candidate));
     return pair === undefined ? [] : [{ sentence, pair }];
   });
   return hits.map(({ sentence, pair }) => ({

@@ -2,6 +2,7 @@ import { endingTokens, isClosed } from "../sentence-shape.ts";
 import { enumeratedRuns, enumeratorStarts, numberedStarts } from "./enumerated-runs.ts";
 import { continuesThrough, groupOf, majorityOf, registerOf, slipsOf, type Register } from "./register.ts";
 import { isRunInLabel } from "./run-in-label.ts";
+import { labelNoteSentences } from "./register-label-note.ts";
 import { noticeSentences } from "./notice-paragraph.ts";
 import { separatePartSentences, trailingPartSentences } from "./register-separate-part.ts";
 import { askerSentences } from "./asker-voice.ts";
@@ -151,7 +152,10 @@ export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntr
     ...separatePartSentences(doc.sections, registerAt, majority),
     ...trailingPartSentences(doc.sentences, doc.paragraphs, registerAt, majority),
   ]);
-  const found = all.filter((entry) => !notices.has(entry.sentence) && !parts.has(entry.sentence));
+  const labelNotes = labelNoteSentences(doc.sentences, doc.source, registerAt);
+  const found = all
+    .filter((entry) => !notices.has(entry.sentence) && !parts.has(entry.sentence))
+    .map((entry) => (labelNotes.has(entry.sentence) ? { ...entry, quiet: true } : entry));
   const runs = runsOf(
     doc,
     found.map((entry) => entry.register),

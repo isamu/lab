@@ -81,6 +81,11 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
     assert.deepEqual(unknown("The upload stopped partwya through."), ['"partwya" is not in the dictionary; did you mean "partway"?']);
   });
 
+  it("systemd and sudo, the lower-case names of Linux tools, are known, but a typo of them is still reported", () => {
+    assert.deepEqual(unknown("For a permanent install there is a systemd unit file, and the installer runs with sudo."), []);
+    assert.deepEqual(unknown("For a permanent install there is a systemdd unit file."), ['"systemdd" is not in the dictionary; did you mean "systemd"?']);
+  });
+
   it("the legal words of contracts are known, but a typo among them is still reported", () => {
     const contract = [
       "Monies held by the cedent are paid to the designee, and notice given by telecopy is effective.",

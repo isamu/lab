@@ -2,6 +2,7 @@ import type { Detector, Finding, Lexicon, ProseDocument } from "../plugin.ts";
 import { entriesForGenre } from "../lexicon-genres.ts";
 import { unfilledPlaceholder } from "./ai-phrasing.ts";
 import { BLANK_SUFFIX, placeholderSpans } from "./placeholder-text.ts";
+import { addressBlankSpans } from "./address-blank.ts";
 import { TEMPLATE, isInside, templateSections } from "./template-sections.ts";
 import { tableBodyCells } from "../facts/table-facts.ts";
 import { proseAndTablesOf } from "../table-text.ts";
@@ -19,6 +20,17 @@ const cellBlanks = (doc: ProseDocument, lexicon: Lexicon): Finding[] =>
       values: { matched: cell.text.slice(span.start, span.end), offset: cell.start + span.start },
     })),
   );
+
+/** A template's word left as a segment of a web address, read from the whole source: a clone command sits in a code block. */
+const addressBlanks = (doc: ProseDocument, lexicon: Lexicon): Finding[] =>
+  addressBlankSpans(doc.source, lexicon).map((span) => ({
+    rule: "",
+    severity: "info" as const,
+    line: 0,
+    column: 0,
+    quote: (doc.source.slice(doc.source.lastIndexOf("\n", span.start - 1) + 1).split("\n")[0] ?? "").trim(),
+    values: { matched: doc.source.slice(span.start, span.end), offset: span.start },
+  }));
 
 /**
  * A bracket that is not a forgotten blank, read from the line around it: the caption of a form's fill line, a blank inside
@@ -47,7 +59,7 @@ export const unfilledPlaceholderOutsideTemplates: Detector = (doc, options) => {
   const words = lexicon.filter((word) => word.group === TEMPLATE);
   const templates = templateSections(doc.markup?.headings ?? [], doc.source.length, words);
   const named = isNamedOrExample(doc, lexicon);
-  return [...unfilledPlaceholder(doc, { ...options, lexicon }), ...cellBlanks(doc, lexicon)]
+  return [...unfilledPlaceholder(doc, { ...options, lexicon }), ...cellBlanks(doc, lexicon), ...addressBlanks(doc, lexicon)]
     .filter((finding) => !isInside(templates, Number(finding.values["offset"])))
     .filter((finding) => !named(finding))
     .toSorted((left, right) => Number(left.values["offset"]) - Number(right.values["offset"]));

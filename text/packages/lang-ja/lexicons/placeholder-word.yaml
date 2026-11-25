@@ -185,3 +185,21 @@ entries:
     group: example-lead
   - pattern: 悪い例
     group: example-lead
+  # group: address-blank — 雛形のまま残った URL のパスの一区切り（example.com/yourname/tool）。区切り全体が語と同じとき、
+  # 大文字小文字を問わず数える（YOUR_USERNAME）。URL の外でもその語を書いている文書（yourname を自分の名前に置き換える）は、わざと置いた語なので数えない。
+  - pattern: yourname
+    group: address-blank
+  - pattern: your-name
+    group: address-blank
+  - pattern: your_name
+    group: address-blank
+  - pattern: yourusername
+    group: address-blank
+  - pattern: your-username
+    group: address-blank
+  - pattern: your_username
+    group: address-blank
+  - pattern: your-org
+    group: address-blank
+  - pattern: yourorg
+    group: address-blank

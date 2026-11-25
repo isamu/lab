@@ -76,6 +76,13 @@ describe("obligation-without-deadline", () => {
     assert.deepEqual(wordsIn(en, en_("3. The club will submit its designs to the owner.")), ["submit"]);
   });
 
+  it("a return made under the other party's return authorization follows that process, which sets its time", () => {
+    const rma = "3. The buyer shall return faulty units after obtaining a return material authorization number from the seller.";
+    assert.deepEqual(wordsIn(en, en_(rma)), []);
+    assert.deepEqual(wordsIn(en, en_("3. The buyer shall return faulty units with a return authorization from the seller.")), []);
+    assert.deepEqual(wordsIn(en, en_("3. The buyer shall return faulty units to the seller.")), ["return"]);
+  });
+
   it("a notice period in the same sentence times the duty to notify; a notice with no period does not", () => {
     assert.deepEqual(wordsIn(en, en_("3. If we change prices, we will give at least 30 days notice and will notify you by email.")), []);
     assert.deepEqual(wordsIn(en, en_("3. The terminating party must notify the other party by giving 30 days advance notice.")), []);

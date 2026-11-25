@@ -42,6 +42,18 @@ describe("closing-cliche: 最後の段落でだけ定型になる言い回し", 
     assert.deepEqual(matchedFor(source, en, "blog/owned-media"), ["here to help"]);
   });
 
+  it("invalid: the same offer before a note set apart in italics (a disclaimer)", () => {
+    const source =
+      "# Receipts\n\nKeep every receipt in one folder.\n\nCall our office with questions. We're here to help you spend less time on paperwork.\n\n*This article is general information, not tax advice.*\n";
+    assert.deepEqual(matchedFor(source, en, "blog/owned-media"), ["here to help"]);
+  });
+
+  it("valid: an offer two paragraphs before the end is not the last line, italic note or not", () => {
+    const source =
+      "# Receipts\n\nKeep every receipt in one folder.\n\nWe're here to help with receipts.\n\nScan them each week.\n\n*This article is general information, not tax advice.*\n";
+    assert.deepEqual(matchedFor(source, en, "blog/owned-media"), []);
+  });
+
   it("valid: the same offer earlier in the text", () => {
     const source =
       "# Receipts\n\n## Our office\n\nWe're here to help with receipts.\n\nKeep every receipt in one folder.\n\nScan them each week.\n\nFile them by month.\n";

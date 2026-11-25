@@ -38,6 +38,22 @@ const lastParagraphSentences = (sentences: readonly Sentence[], paragraphs: read
   return paragraph === undefined ? [final] : sentences.filter((sentence) => sentence.span.start >= paragraph.span.start);
 };
 
+/** 段落全体が斜体（*…* か _…_）。本文の後ろに添える但し書き（*This article is not tax advice.*）の形。 */
+const ITALIC_PARAGRAPH = /^([*_])(?!\1)[\s\S]*[^\s*_]\1$/u;
+
+const isItalicNote = (source: string, paragraph: Paragraph): boolean => ITALIC_PARAGRAPH.test(source.slice(paragraph.span.start, paragraph.span.end).trim());
+
+/**
+ * 最後の段落の文に、後ろに続く斜体の但し書きを除いた最後の段落の文も加える。但し書きは書き手の結びではないので、
+ * その前の段落が最後の一行として読まれる。
+ */
+const lastLineSentences = (sentences: readonly Sentence[], paragraphs: readonly Paragraph[], source: string): readonly Sentence[] => {
+  const notes = new Set(paragraphs.filter((paragraph) => isItalicNote(source, paragraph)));
+  const inNote = (sentence: Sentence): boolean => [...notes].some((note) => note.span.start <= sentence.span.start && sentence.span.start < note.span.end);
+  const beforeNotes = sentences.slice(0, sentences.findLastIndex((sentence) => !inNote(sentence)) + 1);
+  return [...lastParagraphSentences(sentences, paragraphs), ...lastParagraphSentences(beforeNotes, paragraphs)];
+};
+
 type Words = {
   readonly closing: ReturnType<typeof exhortationWords>;
   readonly last: readonly LexiconEntry[];
@@ -53,8 +69,8 @@ const lastIn = (sentence: Sentence, words: Words): string | undefined =>
 type Hit = { readonly sentence: Sentence; readonly matched: string };
 
 /** 結びの、定型の言い回しのある文。一文に一つ。stacked の語は、ほかの定型が結びにあるときだけ数える。 */
-export const closingClicheHits = (sentences: readonly Sentence[], paragraphs: readonly Paragraph[], words: Words): Hit[] => {
-  const last = new Set(lastParagraphSentences(sentences, paragraphs));
+export const closingClicheHits = (sentences: readonly Sentence[], paragraphs: readonly Paragraph[], words: Words, source = ""): Hit[] => {
+  const last = new Set(lastLineSentences(sentences, paragraphs, source));
   const stock = new Map<Sentence, string>(
     sentences.flatMap((sentence): [Sentence, string][] => {
       const matched = exhortationIn(sentence, words.closing) ?? (last.has(sentence) ? lastIn(sentence, words) : undefined);
@@ -82,6 +98,7 @@ export const closingCliche: Detector = (doc, options): Finding[] => {
     closingSentences(doc.sections, doc.paragraphs),
     doc.paragraphs,
     closingClicheWords(entriesForGenre(options.lexicon ?? [], options.genre)),
+    doc.source,
   );
   if (hits.length < options.limit) return [];
   return hits.map((hit) => ({
