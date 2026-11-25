@@ -1,6 +1,7 @@
 // yarn test:times <log file>... [--job <job name prefix>]: rewrites scripts/test-times.json from CI logs, in which the test
-// jobs print each file's time (scripts/test-times-reporter.ts). The Windows parts are the slowest, so take their times:
-//   gh run view <run id> -R isamu/lab --log > run.log && yarn test:times run.log --job "test (windows-latest"
+// jobs print each file's time (scripts/test-times-reporter.ts). The Windows parts are the slowest, so take their times from
+// the daily full run (chaff-windows-daily.yml), since the pull-request run leaves some files out on Windows:
+//   gh run view <run id> -R isamu/lab --log > run.log && yarn test:times run.log --job "windows test"
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { timesFromLogs, timesTable } from "./test-times.ts";
