@@ -71,6 +71,19 @@ describe("space-before-punctuation: 句読点の前に空白がある", () => {
     assert.deepEqual(findingsOf("Run `make all .` now. It is *done*. It is **fine**, really.\n"), []);
   });
 
+  it("文字だけの規格文書に組んだ ABNF の文法の行は、注釈を始める「 ;」を見ない。文法の外の文は見る", () => {
+    const source = [
+      "   The record follows the grammar below ; it is short.",
+      "",
+      '   record  = "REC" SP *field ; one or more fields',
+      "             *line (end-field eol) ; exactly one required",
+      "   field   = %x21-7E ; a visible character",
+      '   end-field = "END" ; closes the record',
+      "",
+    ].join("\n");
+    assert.deepEqual(namedRuleRun(RULE, source, en, "a.txt").findings, ['A space before ";"']);
+  });
+
   it("句読点が付いていれば何も言わない", () => {
     assert.deepEqual(findingsOf("The form is ready, and the office has a copy.\n"), []);
     assert.deepEqual(marksIn(""), []);

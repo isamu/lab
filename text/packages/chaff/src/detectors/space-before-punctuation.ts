@@ -1,6 +1,7 @@
 import type { Detector, Finding, Span } from "../plugin.ts";
 import { referenceListSpans } from "../reference-lists.ts";
 import { quoteAround } from "./quote-around.ts";
+import { grammarSpans } from "./abnf-grammar.ts";
 
 /**
  * 字で終わる語（閉じ括弧や閉じ引用符が一つ付いてもよい）のすぐ後ろの半角空白一つと、それに続く句読点（"word ."、"(word) ,"）。句読点の後ろは空白か行の終わりか閉じの記号で、
@@ -41,12 +42,20 @@ const referencesOf = (source: string, headingWords: readonly { readonly pattern:
     (headingWords ?? []).map((entry) => entry.pattern),
   );
 
+/** A grammar laid out as text lines (ABNF in a plain-text specification) is code: its comment starts with " ;". */
+const outsideGrammar = (source: string): ((space: number) => boolean) => {
+  const grammar = grammarSpans(source);
+  return (space) => !grammar.some((span) => span.start <= space && space < span.end);
+};
+
 export const spaceBeforePunctuation: Detector = (doc): Finding[] =>
-  spacesBeforePunctuation(doc.prose ?? doc.source, doc.source, referencesOf(doc.source, doc.lexicons["reference-list-heading"])).map((space) => ({
-    rule: "",
-    severity: "warning",
-    line: 0,
-    column: 0,
-    quote: quoteAround(doc.source, space, space + 2),
-    values: { mark: doc.source.charAt(space + 1), offset: space },
-  }));
+  spacesBeforePunctuation(doc.prose ?? doc.source, doc.source, referencesOf(doc.source, doc.lexicons["reference-list-heading"]))
+    .filter(outsideGrammar(doc.source))
+    .map((space) => ({
+      rule: "",
+      severity: "warning",
+      line: 0,
+      column: 0,
+      quote: quoteAround(doc.source, space, space + 2),
+      values: { mark: doc.source.charAt(space + 1), offset: space },
+    }));
