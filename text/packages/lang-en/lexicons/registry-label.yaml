@@ -1,0 +1,13 @@
+# Labels a register prints before a company's or an employer's number (Signature Orthopaedics Pty Ltd (ACN 106 702 416)).
+# The label names the number that follows and is not spelled out in practice. Matched as written, and only straight before
+# a number of seven digits or more: ACN or EIN alone stays an acronym.
+id: registry-label
+language: en
+entries:
+  - pattern: ACN
+  - pattern: ABN
+  - pattern: ARBN
+  - pattern: NZBN
+  - pattern: CRN
+  - pattern: EIN
+  - pattern: UEN
