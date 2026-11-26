@@ -37,5 +37,5 @@ example:
       The form is ready, and the office has a copy.
 
 not_flagged:
-  ja: コロン、空白で区切った省略の点や目次の点線（「. . .」、点の間で行を折り返したものも）、「.NET」「.5」のような語の頭の点、数の後ろの句読点、二つ以上の空白の後ろの句読点、コードと URL、文献一覧で値の落ちた大文字の欄の後ろの読点（「ISBN ,」）は指しません。
-  en: Colons, dots spaced out as an ellipsis or a leader (". . .", even across a line break), a dot that starts a word (".NET", ".5"), a mark after a number or after two or more spaces, code and URLs, and a comma after a capitalised field left empty in a reference list ("ISBN ,") are not reported.
+  ja: コロン、空白で区切った省略の点や目次の点線（「. . .」、点の間で行を折り返したものも）、「.NET」「.5」のような語の頭の点、数の後ろの句読点、二つ以上の空白の後ろの句読点、コードと URL（文字だけの規格文書に行として組んだ ABNF の文法と、その注釈を始める「 ;」も）、文献一覧で値の落ちた大文字の欄の後ろの読点（「ISBN ,」）は指しません。
+  en: Colons, dots spaced out as an ellipsis or a leader (". . .", even across a line break), a dot that starts a word (".NET", ".5"), a mark after a number or after two or more spaces, code and URLs (with a grammar laid out as lines in a plain-text specification, whose comments start with " ;"), and a comma after a capitalised field left empty in a reference list ("ISBN ,") are not reported.
