@@ -4,6 +4,9 @@
 # position: before の語は、最上級のすぐ前にあるときだけ効く。「SES との最大の分岐点」の「との」は相手を言うが、
 # 「チームとの会議で最高の成果」の「との」は最上級と関わらない。
 # 「Ｇ７の中で最も低い」の「の中で」も、すぐ前で何の中で最もなのかを言う。
+# 「県内でも」「社内でも」は「も」まで付けて範囲を強く言う形で、最上級から離れていても（雲南省内でも特に緑が豊かな景観と、
+# 最も保存状態が良い都市群）その文の最上級の範囲になる。「も」の無い「内で」は文のどこにでも効くとは限らない。
+# 解析器は「県内」「省内」を一語にするので、場を言う「〜内」の語ごとに挙げる。一語にならない「内」（業界内）は「内でも」で当たる。
 id: comparison-marker
 language: ja
 entries:
@@ -12,6 +15,21 @@ entries:
   - pattern: と比べる
   - pattern: のうち
   - pattern: のほうが
+  - pattern: 内でも
+  - pattern: 国内でも
+  - pattern: 県内でも
+  - pattern: 省内でも
+  - pattern: 州内でも
+  - pattern: 都内でも
+  - pattern: 道内でも
+  - pattern: 府内でも
+  - pattern: 市内でも
+  - pattern: 区内でも
+  - pattern: 町内でも
+  - pattern: 村内でも
+  - pattern: 域内でも
+  - pattern: 圏内でも
+  - pattern: 社内でも
   - pattern: との
     position: before
   - pattern: の中で
