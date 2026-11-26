@@ -1,0 +1,15 @@
+# Words that end a topic (reference-topic-missing): "see Section 4 for Security Considerations regarding well-known
+# locations" names Security Considerations; what follows says what about it, and need not be in the section.
+id: reference-topic-end
+language: en
+entries:
+  - pattern: "regarding"
+  - pattern: "concerning"
+  - pattern: "about"
+  - pattern: "related"
+  - pattern: "relating"
+  - pattern: "pertaining"
+  - pattern: "with"
+  - pattern: "when"
+  - pattern: "that"
+  - pattern: "which"
