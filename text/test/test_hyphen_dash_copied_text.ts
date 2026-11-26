@@ -23,6 +23,8 @@ describe("isInCopiedText", () => {
     ["a log line with a dotted name", "Ran the job - Cookbook ops.servers.restart-all failed"],
     ["a bare address", "The alert fired - see https://example.org/runbook for steps"],
     ["HTML shown as text", 'See <a class="usa-link usa-link--external" href="x">the data</a> for more.'],
+    ["an issue's title listed with its number", "* Plan of Action - Remaining Items [#1417](https://example.org/issues/1417)"],
+    ["an issue's title in a numbered list", "2. Charter review - next steps [#88](https://example.org/issues/88)"],
   ].forEach(([form, line]) => {
     it(`copied: ${form}`, () => assert.equal(at(line ?? ""), true));
   });
@@ -36,6 +38,9 @@ describe("isInCopiedText", () => {
     ["a Markdown link's address", "Follow the rules -- see the [code of conduct](https://example.org/code)."],
     ["an abbreviation with periods", "Some tools - e.g. linters - help."],
     ["a dotted name inside a link's address", "It causes bugs - some call it a [costly mistake](https://www.example.org/watch?v=abc)!"],
+    ["a sentence that is not a list item, before an issue link", "We met late - very late [#12](https://example.org/issues/12)"],
+    ["a list item whose link is not an issue number", "- We met late - very late [notes](https://example.org/notes)"],
+    ["a hyphen after the issue link", "- [#12](https://example.org/issues/12) late - very late"],
   ].forEach(([form, line]) => {
     it(`written: ${form}`, () => assert.equal(at(line ?? ""), false));
   });
@@ -48,6 +53,7 @@ describe("hyphen-as-dash: copied text", () => {
       "",
       "- [12] A. Smith (2021) My robot friend - a study of trust. Journal of Studies.",
       "- **Expense Category:** Office Space - Monthly",
+      "- Plan of Action - Remaining Items [#1417](https://example.org/issues/1417)",
       "",
     ].join("\n");
     assert.deepEqual(findingsOf(source), []);
