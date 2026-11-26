@@ -4,7 +4,7 @@ import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { calendarUnitsOf } from "../packages/chaff/src/calendar-number.ts";
-import { chronologyRowIndexes, opensWithDateStamp } from "../packages/chaff/src/chronology-rows.ts";
+import { chronologyRowIndexes, opensWithDateStamp, opensWithPresentStamp } from "../packages/chaff/src/chronology-rows.ts";
 
 // 年表の行（日付のすぐ後ろに出来事）は本文の文として数えない。例文はすべて自作。
 
@@ -30,6 +30,16 @@ describe("opensWithDateStamp: 年から始まる日付のすぐ後ろに出来�
     assert.equal(opens("新工場は1950年4月に完成。"), false);
     assert.equal(opens("1950年4月"), false);
     assert.equal(opens(""), false);
+  });
+});
+
+describe("opensWithPresentStamp: 今を指す語と範囲の印のすぐ後ろに出来事", () => {
+  it("「現在～」の後ろに出来事があれば行、印が無いか出来事が無ければ行ではない", () => {
+    assert.equal(opensWithPresentStamp("現在～　役者として活動。", ["現在"]), true);
+    assert.equal(opensWithPresentStamp("現在〜ドラマに出演。", ["現在"]), true);
+    assert.equal(opensWithPresentStamp("現在、ドラマに出演している。", ["現在"]), false);
+    assert.equal(opensWithPresentStamp("現在～", ["現在"]), false);
+    assert.equal(opensWithPresentStamp("現在～　役者として活動。", []), false);
   });
 });
 
@@ -85,6 +95,21 @@ describe("taigen-dome-in-prose と no-mixed-desumasu: 年表の行は本文の�
     assert.equal(findingsOf("taigen-dome-in-prose", yearly).length, 1);
     const mixed = "2020年売上高は100億円です。2021年売上高は110億円です。2022年売上高は120億円です。2023年売上高は125億円です。2024年売上高は130億円だった。";
     assert.equal(findingsOf("no-mixed-desumasu", mixed).length, 1);
+  });
+
+  it("年表の最後の「現在～」の行も年表の行で、本文の文体と比べない", () => {
+    const profile = [
+      "当社は新しい商品を発売します。発売日は来月です。店頭でお試しいただけます。",
+      "",
+      "1999年　養成所に入る。",
+      "2000年　同級生とコンビを結成。",
+      "2007年　大会の決勝に進出。",
+      "現在～　役者としても活動の幅を広げている。",
+      "",
+    ].join("\n");
+    assert.deepEqual(findingsOf("no-mixed-desumasu", profile), []);
+    const prose = ["当社は新しい商品を発売します。発売日は来月です。店頭でお試しいただけます。現在、在庫を増やしている。", ""].join("\n");
+    assert.equal(findingsOf("no-mixed-desumasu", prose).length, 1);
   });
 
   it("本文の文体の混ざりは、年表があっても指す", () => {

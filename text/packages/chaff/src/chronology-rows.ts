@@ -78,9 +78,22 @@ export const chronologyRowIndexes = (heads: readonly boolean[]): ReadonlySet<num
 const TOPIC = "は";
 const hasTopic = (sentence: Sentence): boolean => (sentence.tokens ?? []).some((token) => token.surface === TOPIC && token.pos === "ADP");
 
+/** 範囲の印（～）。「現在～役者として活動」の「～」は、今まで続いていることを言う。 */
+const OPEN_RANGE = /^\s*[～〜~]\s*/u;
+
+/** 今を指す語と範囲の印で始まり、出来事が続く文（現在～役者としても活動）。年表の最後の、終わっていない行。 */
+export const opensWithPresentStamp = (text: string, presentWords: readonly string[]): boolean => {
+  const lead = text.length - text.trimStart().length;
+  const word = presentWords.find((candidate) => candidate !== "" && text.startsWith(candidate, lead));
+  const mark = word === undefined ? undefined : OPEN_RANGE.exec(text.slice(lead + word.length))?.[0];
+  return word !== undefined && mark !== undefined && text.slice(lead + word.length + mark.length).trim() !== "";
+};
+
 /** 文書の中の、年表の行の文。 */
 export const chronologyRows = (doc: ProseDocument): ReadonlySet<Sentence> => {
   const units = calendarUnitsOf(doc);
-  const rows = chronologyRowIndexes(doc.sentences.map((sentence) => opensWithDateStamp(sentence.text, units) && !hasTopic(sentence)));
+  const present = (doc.lexicons["chronology-present"] ?? []).map((entry) => entry.pattern);
+  const opensRow = (sentence: Sentence): boolean => opensWithDateStamp(sentence.text, units) || opensWithPresentStamp(sentence.text, present);
+  const rows = chronologyRowIndexes(doc.sentences.map((sentence) => opensRow(sentence) && !hasTopic(sentence)));
   return new Set(doc.sentences.filter((_, index) => rows.has(index)));
 };
