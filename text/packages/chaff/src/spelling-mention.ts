@@ -28,3 +28,16 @@ const listBefore = (text: string, at: number): Span[] => {
  */
 export const mentionedSpellingSpans = (text: string, phrases: readonly string[]): Span[] =>
   phrases.flatMap((phrase) => startsOf(text, phrase).flatMap((at) => listBefore(text, at)));
+
+/** 行の頭か空白の後のバツ印と、そのすぐ後の語（× Rspec、✕JAVA）。区切りの空白・斜線・読点の前まで。 */
+const MARKED_WRONG = /(?<=^|\s)[×✕✗☓][ \t\u3000]*[^\s/／、，,。]+/gu;
+
+/** 正しい書き方の印（○ RSpec）。誤りの印と対にして書き方を示す。 */
+const MARKED_RIGHT = /[○◯✓✔]/u;
+
+/**
+ * 誤った書き方として示した語（× Rspec / ○ RSpec の Rspec）。書き方そのものを話題にした例で、文書の書き方ではないので比べない。
+ * 正しい書き方の印と同じ文にあるときだけ。「法令」×「デジタル」の × は掛け合わせで、正しい書き方の印を伴わない。
+ */
+export const markedWrongSpans = (text: string): Span[] =>
+  MARKED_RIGHT.test(text) ? [...text.matchAll(MARKED_WRONG)].map((match) => ({ start: match.index, end: match.index + match[0].length })) : [];
