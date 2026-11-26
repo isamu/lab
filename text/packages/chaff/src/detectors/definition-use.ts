@@ -89,6 +89,7 @@ export const useBeforeDefinition: Detector = (doc): Finding[] =>
     : usesBeforeDefinition(ownDefinitions(doc.structure), bodyOf(doc), mentionedIn(doc), titleIn(doc), {
         selfPrefixes: patternsOf(doc, "self-prefix"),
         sourceMarkers: patternsOf(doc, "term-source-marker"),
+        forwardReferences: doc.lexicons["forward-reference"] ?? [],
         singleKanjiNames: new Set(patternsOf(doc, "party-short-name")),
       }).map((use) => findingAt(doc, use.offset, { term: use.term.term, defined: use.term.line }));
 

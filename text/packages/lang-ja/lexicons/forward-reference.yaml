@@ -1,0 +1,13 @@
+# 語の前に置いて、読み手を後ろの本文へ向ける言葉（下記パブリック・ライセンス、後述の利用条件）。
+# この言葉の付いた語は、後ろで定義することを先に断って書いた所なので、定義より前の使用に数えない（use-before-definition）。
+# 「次の」は「次の買主」のように順番の意味でも書くので入れない。
+id: forward-reference
+language: ja
+entries:
+  - pattern: 下記
+  - pattern: 下記の
+  - pattern: 後記
+  - pattern: 後記の
+  - pattern: 後述の
+  - pattern: 後述する
+  - pattern: 以下の
