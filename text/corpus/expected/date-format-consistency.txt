@@ -2,5 +2,4 @@ aoml-hurricane-faq  1
 arxiv-astro-ph-new-2025-01-03  3
 asf-board-minutes-2025-01  5
 mhlw-icd-committee-26-minutes  2
-soumu-wp-r06-ai-rules-japan  2
 tc39-agenda-2026-07  1
