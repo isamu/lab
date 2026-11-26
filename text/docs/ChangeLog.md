@@ -2,6 +2,40 @@
 
 Newest first.
 
+## 0.52.0 — 2026-11-26
+
+This release comes from judging findings in isamu/chaff-corpus: most changes narrow a rule where a judged document showed
+a false positive, and a few add a pattern a judged document showed chaff missing.
+
+### New patterns
+
+- unfilled-placeholder reports a template's user name left in a web address (#2822).
+- ai-tell holds "It doesn't have to be (that way)." (#2827). cliche reports "speak for themselves" / "speaks for itself"
+  (#2830). padded-intro reports the clipped "Good news:" turn in an English opening (#2831).
+
+### Fewer false positives
+
+- preferred-term and internal-jargon declare `uses: [pos]` (#2817). unknown-word knows systemd and sudo (#2821).
+- step-statement-mix and list-item-form-mix read a step that states, then orders, as an instruction (#2818, #2824);
+  list-item-form-mix reads a relative clause's verb as the noun phrase's (#2832).
+- bold-emphasis leaves a bold that holds only a code to look for (#2819). pseudo-heading leaves a bold statement, a
+  bracketed caption and its example, and a mid-section link-list label (#2834).
+- obligation-without-deadline leaves a return made under a return authorization (#2820).
+- closing-cliche reads the last line before a closing note set in italics (#2823).
+- contraction-consistency leaves a full form in a clause beside plain-language summaries (#2825).
+- no-mixed-desumasu leaves the note after a list item's bold label (#2826). no-doubled-joshi separates a である clause
+  with one の (#2836).
+- oxford-comma-consistency reads a final "taxis or rideshares" as one item (#2833).
+- bracket-width-consistency counts a count's bracket and a case number's kind with the prose (#2835).
+- topic-predicate-distance stops at a prefixed noun topic after 〜ますが and at であるため before a request (#2837).
+- max-kanji-continuous splits at a form name used alone and at a kanji-numeral 丁目 block (#2838). max-sentence-length
+  measures a Japanese link title run into its blurb apart (#2842).
+- ngram-repetition leaves a run of sentence endings to repeated-sentence-ending (#2839).
+- use-before-definition leaves a use that points ahead (下記, 後述の, the following, below) (#2841).
+- expletive-construction leaves a passive whose it names a thing (It is designed to …) (#2843).
+- requirement-smell leaves an open word in a reason clause (〜となるため、) (#2844).
+- currency-notation-consistency leaves a coin named by a code and one digit (#2845).
+
 ## 0.51.0 — 2026-11-25
 
 This release takes in what markdownlint, textlint, Vale and remark-lint offer and chaff lacked: a team can now list its
