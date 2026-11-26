@@ -324,6 +324,13 @@ describe("step-statement-mix: a statement among numbered instructions", () => {
     assert.deepEqual(findingsOf(en, "step-statement-mix", paragraphs), []);
   });
 
+  it("does not read an item whose verb follows a preposition and a relative word as a statement", () => {
+    const fields = steps("Name the field.", "Describe the field.", "Give its status.", "The document in which the field is published.");
+    assert.deepEqual(findingsOf(en, "step-statement-mix", fields), []);
+    const inThat = steps("Name the field.", "Describe the field.", "Give its status.", "The file in that folder holds the list.");
+    assert.equal(findingsOf(en, "step-statement-mix", inThat).length, 1);
+  });
+
   it("does not read a bulleted list, a list of terms, or a list of statements", () => {
     const bulleted = doc(["- Open the terminal.", "- Run the installer.", "- The installer asks for a password.", "- Restart the computer."].join("\n"));
     assert.deepEqual(findingsOf(en, "step-statement-mix", bulleted), []);
