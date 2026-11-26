@@ -144,10 +144,28 @@ const predicateNounTakesGa = (tokens: readonly Token[], at: number, last: number
   );
 };
 
+/** A topic on the nominaliser こと after a predicate (公表することは): an act made a noun. */
+const isActTopic = (tokens: readonly Token[], topic: number): boolean =>
+  tokens[topic - 1]?.surface === "こと" && tokens[topic - 1]?.pos === "NOUN" && PREDICATE.has(tokens[topic - 2]?.pos ?? "");
+
+/**
+ * The sentence ends on a copula, and an act made a noun with が or も past at and past the last comma is what it is said of
+ * (〜支援を行うことも重要な役割であります, 〜を図ることが極めて重要である).
+ */
+const finalCopulaTakesAct = (tokens: readonly Token[], at: number, last: number): boolean => {
+  const lastComma = tokens.findLastIndex((token, index) => index < last && isComma(token));
+  return (
+    isCopula(tokens[beforeTail(tokens, last)]) &&
+    tokens.some(
+      (token, index) => index > Math.max(at, lastComma) && index < last && (isParticle(token, "が") || isParticle(token, "も")) && isActTopic(tokens, index),
+    )
+  );
+};
+
 /**
  * 収益は、…の積上げであり、…ストック型が主要を占めております: the copula's continuing form closes the topic's clause when a new
  * topic follows, or a subject of its own (が, a clause made a noun too: 〜することが求められている) whose predicate is not again a
- * copula or ある, or the subject of the final copula's noun (〜を図ることが必要である). 信頼型は、…ものであり、…ものではありません
+ * copula or ある, or the subject of the final copula's noun (〜を図ることが必要である, 〜を行うことも重要な役割である). 信頼型は、…ものであり、…ものではありません
  * and これは…リンクであり、ユーザーが…ということです say two things of the same topic. With another topic between the topic and it
  * (復興は、…進んでいる一方で、…状況は様々であり、), the copula is that topic's, not the first one's. A が there (〜ことは、パレスチナが
  * …共存することであり、) is inside a clause the topic's own predicate takes, and does not count.
@@ -157,7 +175,8 @@ const closesWithCopulaContinuing = (tokens: readonly Token[], topic: number, at:
   !newTopicAfter(tokens, topic, at) &&
   (newTopicAfter(tokens, at + 1, last) ||
     ((subject > at || finalGaAfter(tokens, at, last)) && !endsOnCopulaOrBeing(tokens, last)) ||
-    predicateNounTakesGa(tokens, at, last));
+    predicateNounTakesGa(tokens, at, last) ||
+    finalCopulaTakesAct(tokens, at, last));
 
 /**
  * 〜する想定のため: a clause, a noun it ends on, and の before ため, the copula's attributive form (想定であるため). A bare noun
@@ -274,10 +293,6 @@ const newNameTopicRunsToEnd = (tokens: readonly Token[], comma: number, last: nu
   const wa = tokens[topic];
   return topic > start && wa !== undefined && isParticle(wa, "は") && lastOwnSubject(tokens, last) <= topic;
 };
-
-/** A topic on the nominaliser こと after a predicate (公表することは): an act made a noun. */
-const isActTopic = (tokens: readonly Token[], topic: number): boolean =>
-  tokens[topic - 1]?.surface === "こと" && tokens[topic - 1]?.pos === "NOUN" && PREDICATE.has(tokens[topic - 2]?.pos ?? "");
 
 /**
  * 当社は…を営んでおりますが、…の重要性が乏しいため、…の記載は行っておりません: after 〜ますが、 the words up to the next comma
