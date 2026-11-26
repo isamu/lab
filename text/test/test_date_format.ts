@@ -247,6 +247,38 @@ describe("date-format-consistency: 文献と注、題の下のページの日付
     assert.deepEqual(mixed(paper), []);
   });
 
+  it("参照日の括弧書きの日付は、番号の並びと読めない注の中でも本文と比べない", () => {
+    const paper = [
+      "2023年5月に会議を設け、同年12月21日に指針の案を示した。2024年4月19日に第1.0版が公表された。",
+      "",
+      "31　会議決定，「原則」，<https://example.go.jp/a.pdf>（2024/3/12参照）",
+      "",
+      "32　研究会，「指針」，<https://example.go.jp/b.html>（2024/3/12参照）",
+      "",
+      "33　協議会，「論点」，<https://example.go.jp/c.pdf>（2024/3/12参照）",
+      "",
+      "34　研究所，<https://example.go.jp/>（閲覧日 2024/3/12）",
+      "",
+      "35　省，「手引」，<https://example.go.jp/d.pdf>（2024/3/12参照）",
+    ].join("\n");
+    assert.deepEqual(mixed(paper), []);
+    const english = [
+      "The panel met in 2023 and published the guide on 19 April 2024.",
+      "",
+      "Sources: the charter (accessed 2024-03-12), the draft (accessed 2024-03-12), the notes (retrieved 2024-03-12) and the minutes (last accessed 2024-03-12).",
+    ].join("\n");
+    assert.deepEqual(mixed(english, en), []);
+  });
+
+  it("参照の語の無い括弧書きの日付は、本文と比べる", () => {
+    const paper = [
+      "2023年9月1日に案を示し、2023年12月21日に指針を出し、2024年4月19日に第1.0版が公表された。",
+      "",
+      "次の会合は来年に開く（2025/3/12予定）。",
+    ].join("\n");
+    assert.deepEqual(mixed(paper), ["日付「2025/3/12」の書き方が、この文書のほかの日付（「2023年12月21日」など 2 箇所）と違います"]);
+  });
+
   it("本文の中の違う書き方の日付は、注の並びがあっても指す", () => {
     const paper = [
       "新しい版は2026年6月3日に出た。次の版は2026年11月9日、その次は2027年5月1日、最後の版は2027-11-01に出る。",
