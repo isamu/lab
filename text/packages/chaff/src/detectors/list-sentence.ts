@@ -161,16 +161,18 @@ export type ListSentence = {
   readonly inCitedTitle: (at: number) => boolean;
 };
 
+const capitalised = (word: string): string => word.charAt(0).toUpperCase() + word.slice(1);
+
 /**
  * start から例の句の語を読んだときの、最後の語の位置。無ければ -1。項目は同じ深さの読点を持たないので、start と同じ深さの読点は
- * 飛ばす。続いた読点は同じ深さなので、まとめて飛ぶ。
+ * 飛ばす。続いた読点は同じ深さなので、まとめて飛ぶ。文頭の句は最初の字だけ大文字で書く（E.g., / Such as）。ほかの字の大文字（頭文字の E.G. Evans）は句ではない。
  */
 const phraseEnd = (tokens: readonly Token[], depths: readonly number[], notComma: Column, start: number, words: readonly Token[]): number =>
   words.reduce((at, word, offset) => {
     if (at === -1) return -1;
     const next = offset === 0 ? start : at + 1;
     const kept = tokens[next]?.surface === "," && depths[next] === depths[start] ? (notComma.next[next] ?? tokens.length) : next;
-    return tokens[kept]?.surface === word.surface ? kept : -1;
+    return tokens[kept]?.surface === word.surface || (offset === 0 && tokens[kept]?.surface === capitalised(word.surface)) ? kept : -1;
   }, start);
 
 const exampleEndsOf = (tokens: readonly Token[], depths: readonly number[], column: Columns, example: Lexicon): number[][] =>

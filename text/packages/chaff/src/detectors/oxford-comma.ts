@@ -60,6 +60,7 @@ import { joinsUnfinished, pairsAlternatives, repeatsConjunction } from "./list-j
 import { insideSentenceCaseTitle } from "./title-list.ts";
 import { insideByline } from "./byline-list.ts";
 import { withoutOpeningConjunction } from "./list-opening-conjunction.ts";
+import { afterClauseBeforeInfinitives } from "./list-purpose-clause.ts";
 
 const EMPTY: TokenRange = { start: 0, end: 0 };
 
@@ -387,7 +388,7 @@ const listAt = (list: ItemList, at: number, walk: Walk): boolean | undefined => 
   if (closesExampleAside(wholeList(list), at)) return undefined;
   const afterItem = itemAfter(scope, at);
   const opened = afterClosedList(withoutLead(afterRelativeAside(afterVerbAside(afterClauseTurn(withoutCoordinateAdjective(wholeList(list)), afterItem)))));
-  const items = fromParticiplePhrase(fromExample(opened, afterItem), afterItem);
+  const items = fromParticiplePhrase(fromExample(afterClauseBeforeInfinitives(opened, afterItem), afterItem), afterItem);
   if (listContinues(scope, afterItem, walk) || isAppositive(scope, at, items, afterItem) || insideLastItem(scope, at, items, afterItem)) return undefined;
   if (namesDivision(items) || qualifiesPrevious(items)) return undefined;
   const last = lastOf(items);
