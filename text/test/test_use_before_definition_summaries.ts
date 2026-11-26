@@ -87,6 +87,14 @@ describe("use-before-definition: a summary section and a numbered heading are no
     assert.deepEqual(early(`You may share the work under the Licence.${terms}`, en), ['"Licence" is used here, before it is defined on line 4']);
     assert.deepEqual(early(`You may share the work under the Licence belowground.${terms}`, en), ['"Licence" is used here, before it is defined on line 4']);
   });
+
+  it("after a use that points ahead, later early uses are not reported; an earlier one still is", () => {
+    const later = "\n## 第1条\n\nこの文書の条項（以下「利用条件」という。）に従い、利用を許諾する。\n";
+    assert.deepEqual(early(`作品は、下記利用条件に従って共有できます。\n\n利用条件は取り消せません。${later}`), []);
+    assert.deepEqual(early(`利用条件は取り消せません。\n\n作品は、下記利用条件に従って共有できます。${later}`), [
+      "「利用条件」を、6 行目の定義より前で使っています",
+    ]);
+  });
 });
 
 describe("use-before-definition: a run-in item heading straight before the defining sentence is not a use", () => {

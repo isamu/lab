@@ -417,7 +417,7 @@ export type EarlyUseWords = {
  * 文の途中で括弧に入れて定義した語（(the "Seller")、以下「甲」という）を、その定義の文より前で使っている所。最初の一つだけ。
  * 定義の文の中の現れ（株式会社GovTech東京（以下「GovTech東京」という。））は、定義する名前そのものなので数えない。札の文も、
  * isTitle が言う題・見出し・目次の行も、漢字で終わる語にさらに漢字が続く長い語の一部も、定義の括弧の前の長い名前を写した所も、
- * 語を含むもっと長い名前の中も、語の前に意味の出どころを書いた所（69条の3所定の小規模宅地等）も、後ろで定義することを先に断った所（下記パブリック・ライセンス）も数えない。
+ * 語を含むもっと長い名前の中も、語の前に意味の出どころを書いた所（69条の3所定の小規模宅地等）も、後ろで定義することを先に断った所（下記パブリック・ライセンス）とそれより後ろも数えない。
  * 英語の語を長い名前の終わりに書いた所（The National Security Act of 1947）より後ろの現れ（the Act）は、その名前を指すので数えない。文書自身の名前を定義した語は、selfPrefixes（この、本、this）を付けて前で書いても数えない。
  * 定義の条（"Seller" means、「甲」とは）は条の並びの頭にも終わりにも置く書き方があるので、前で使っても言わない。
  * 定義の語の無い括弧の引用（("The key point is")）は例の引用と同じ形なので、その語を引用符で挙げただけの現れ
@@ -440,9 +440,11 @@ export const usesBeforeDefinition = (
       const defining = sentenceAt(texts, defined.span.start)?.start ?? defined.span.start;
       const uses = usesOf(defined.term, texts, spans, "exact", defined.bare === true ? mentioned : NEVER_MENTIONED).filter((offset) => offset < defining);
       const namedFirst = uses.find((offset) => endsNameAt(texts, defined.term, offset));
+      const announced = uses.find((offset) => pointsAheadAt(texts, forwardReferences, defined.term, offset));
       const first = uses.find(
         (offset) =>
           !(namedFirst !== undefined && namedFirst < offset) &&
+          !(announced !== undefined && announced <= offset) &&
           !isLabel(sentenceAt(texts, offset), defined.term) &&
           !headsDefiningSentence(sentenceAt(texts, offset), defining) &&
           !insideCaption(sentenceAt(texts, offset), offset) &&
@@ -453,8 +455,7 @@ export const usesBeforeDefinition = (
           !insideDefiningName(texts, inline, defined, offset) &&
           !insideLongerName(defined.term, offset) &&
           !explainedInPlace(texts, defined.term, names.get(defined), selfPrefixes, offset) &&
-          !citesSource(texts, sourceMarkers, offset) &&
-          !pointsAheadAt(texts, forwardReferences, defined.term, offset),
+          !citesSource(texts, sourceMarkers, offset),
       );
       return first === undefined ? [] : [{ term: defined, offset: first }];
     });
