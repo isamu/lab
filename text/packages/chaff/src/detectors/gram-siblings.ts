@@ -1,7 +1,7 @@
 import type { Section, Sentence } from "../plugin.ts";
 
-const DIGITS = new Set([..."0123456789０１２３４５６７８９"]);
-const NUMBER_CLOSERS = new Set([..."．.:："]);
+const DIGITS = new Set("0123456789０１２３４５６７８９");
+const NUMBER_CLOSERS = new Set("．.:：");
 
 /** 同じ名前に番号を振った節がこれだけ並べば、ひな形に沿って書いた節の並び（例の並び、事例の並び）。 */
 const MIN_SIBLINGS = 3;
