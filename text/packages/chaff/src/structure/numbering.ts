@@ -4,6 +4,7 @@ import { numbersQuotedInside } from "./quoted-number.ts";
 import { isVersionHistory } from "./version-order.ts";
 import { withRepeatsNamed } from "./repeated-number.ts";
 import { labelWrittenBetween } from "./unread-label.ts";
+import { parentNumberMismatches } from "./parent-number.ts";
 
 const labelOf = (node: StructureNode): string => String(node.attrs["label"] ?? node.address);
 
@@ -139,6 +140,7 @@ const isOneNumber = (sequence: readonly Ordered[]): boolean => {
  * isSideStep は、番号の代わりに「and」と書いた手順（前の手順と並べて行う）。その数だけ、次の番号は飛んでよい。
  * clauses は、別案の条（並びに入れない）と、番号を空けた条の位置（そこから振り直す）。
  * skips は、抜けを言わない場合: 抜けた番号を木が読まずに本文に書いてある（(e) の前の行末の (d)）か、抜粋と書いた見出しの下。
+ * 5 の中の 4.3 のように、点の前の番号が上の条と違うものも言う（parent-number.ts）。抜けか重なりで言った番号は重ねて言わない。
  */
 export const numberingBreaks = (
   tree: StructureNode,
@@ -162,5 +164,7 @@ export const numberingBreaks = (
     .flatMap((parent) => sequencesOf(parent, quoting, isSideStep, clauses))
     .filter((sequence) => !isVersionHistory(sequence.map((ordered) => labelOf(ordered.node))) && !isOneNumber(sequence))
     .flatMap(breaksIn(unread, restarts, isSkipAllowed));
-  return withRepeatsNamed(tree, quoting, breaks, unread);
+  const named = withRepeatsNamed(tree, quoting, breaks, unread);
+  const reported = new Set(named.map((issue) => issue.offset));
+  return [...named, ...parentNumberMismatches(tree, quoting).filter((issue) => !reported.has(issue.offset))];
 };
