@@ -1,10 +1,14 @@
 # Words that point the reader ahead to the text that defines a term: the following Licence (position: before), the
-# Licence below (position: after). A term written with one names its later definition in advance, so it is not an early
-# use (use-before-definition).
+# Licence below and the Licence (defined below) (position: after). A term written with one names its later definition in
+# advance, so it is not an early use (use-before-definition).
 id: forward-reference
 language: en
 entries:
   - pattern: the following
     position: before
   - pattern: below
+    position: after
+  - pattern: (defined below
+    position: after
+  - pattern: (as defined below
     position: after
