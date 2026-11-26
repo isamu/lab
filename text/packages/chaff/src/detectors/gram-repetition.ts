@@ -15,12 +15,13 @@ import {
   screenLabelSpans,
 } from "./gram-furniture.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
+import { isSentenceEndingOnly, sentencesInEndingRuns } from "./gram-ending.ts";
 import { gramPassagesOf } from "./gram-passages.ts";
 import { narrowestStretch, sentencePositions } from "./gram-spread.ts";
 import { namedByHeading } from "./gram-heading.ts";
 import { entryOpeners, filledForms, labelLines, nounFragments, rowEndCells, sectionOpeners } from "./gram-openers.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
-import type { Detector, Finding, LengthUnit, ProseDocument, Sentence, Span, StructureNode } from "../plugin.ts";
+import type { Detector, Finding, LengthUnit, ProseDocument, Sentence, Span, StructureNode, Token } from "../plugin.ts";
 
 /**
  * 同じ言い回しの繰り返し。文字の並びで見るので、adapter の語の区切り（wordSplit）が要らない。英語の窓は空白で語の切れ目にそろえる。
@@ -203,11 +204,30 @@ const repeatsOf = (doc: ProseDocument, limit: number): Repeat[] => {
   );
 };
 
-const predicateAt = (occurrence: Occurrence, unit: LengthUnit): boolean | undefined => {
+type TokenJudge = (tokens: readonly Token[], window: Span) => boolean;
+
+/** 出現が文の中で占める範囲（文書の中の位置）を judge に見せる。品詞か範囲が無ければ決めない。 */
+const judgeAt = (occurrence: Occurrence, judge: TokenJudge): boolean | undefined => {
   const { sentence, place } = occurrence;
   if (sentence.tokens === undefined || place === undefined) return undefined;
   const start = sentence.span.start;
-  return hasPredicateIn(sentence.tokens, { start: start + place.start, end: start + place.end }, unit);
+  return judge(sentence.tokens, { start: start + place.start, end: start + place.end });
+};
+
+const predicateAt = (occurrence: Occurrence, unit: LengthUnit): boolean | undefined =>
+  judgeAt(occurrence, (tokens, window) => hasPredicateIn(tokens, window, unit));
+
+/**
+ * 出現の半分以上が、同じ形で終わる文の並びの中にある、文の結びだけの語句（gram-ending.ts）。結びの単調さは repeated-sentence-ending が見る。
+ * 品詞が無ければ見分けられないので、これまでどおり数える。
+ */
+const endingInRuns = (occurrences: readonly Occurrence[], inRuns: ReadonlySet<Sentence>): boolean => {
+  const owned = (occurrence: Occurrence): boolean | undefined => {
+    const endingOnly = judgeAt(occurrence, isSentenceEndingOnly);
+    return endingOnly === undefined ? undefined : endingOnly && inRuns.has(occurrence.sentence);
+  };
+  const judged = occurrences.map(owned).filter((found) => found !== undefined);
+  return judged.length > 0 && judged.filter(Boolean).length * 2 >= judged.length;
 };
 
 /**
@@ -222,9 +242,13 @@ const hasPredicate = (occurrences: readonly Occurrence[], unit: LengthUnit): boo
 
 export const ngramRepetition: Detector = (doc, options): Finding[] => {
   if (wordsOf(doc) < MIN_DOCUMENT_LENGTH[doc.lengthUnit]) return [];
+  const inRuns = sentencesInEndingRuns(
+    doc.paragraphs,
+    (doc.lexicons["calendar-era"] ?? []).map((entry) => entry.pattern),
+  );
   const worst = repeatsOf(doc, options.limit)
     .toSorted((left, right) => right.occurrences.length - left.occurrences.length)
-    .find(({ occurrences }) => hasPredicate(occurrences, doc.lengthUnit));
+    .find(({ occurrences }) => hasPredicate(occurrences, doc.lengthUnit) && !endingInRuns(occurrences, inRuns));
   if (worst === undefined) return [];
   const first = worst.occurrences.find((occurrence) => occurrence.place !== undefined) ?? worst.occurrences[0];
   const at = first?.sentence;
