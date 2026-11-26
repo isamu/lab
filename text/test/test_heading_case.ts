@@ -147,6 +147,11 @@ describe("isTitleCase と見出しの最初の語", () => {
     assert.equal(isTitleCase("The Plan"), true);
     assert.equal(isTitleCase("Incident Review", names), undefined);
   });
+
+  it("小文字で始まる最初の語（コードや名前）は数え、それを含めて 2 語ないと判定しない", () => {
+    assert.equal(isTitleCase("impl DispatchFromDyn for Cell and UnsafeCell"), false);
+    assert.equal(isTitleCase("iOS"), undefined);
+  });
 });
 
 describe("title-case-consistency と文の途中の名前を含む見出し", () => {
