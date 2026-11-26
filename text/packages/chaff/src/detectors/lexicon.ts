@@ -131,6 +131,8 @@ const DIGIT = /\p{Nd}/u;
 type Qualifiers = {
   readonly comparison: ComparisonMarkers;
   readonly scope: ScopeMarkers;
+  /** 字の並びで照らす、文のどこにあっても範囲を言う語（県内でも）。 */
+  readonly scopeTexts: readonly string[];
   readonly quantityNouns: Lexicon;
   readonly suffixes: Lexicon;
   readonly amounts: Lexicon;
@@ -143,6 +145,7 @@ type Qualifiers = {
 const qualifiersOf = (doc: ProseDocument): Qualifiers => ({
   comparison: comparisonMarkersOf(doc.lexicons["comparison-marker"] ?? []),
   scope: scopeMarkersOf(doc.lexicons["superlative-scope"] ?? [], doc.lexicons["superlative-purpose"], doc.lexicons["superlative-realm"]),
+  scopeTexts: (doc.lexicons["superlative-scope-text"] ?? []).map((entry) => entry.pattern),
   quantityNouns: doc.lexicons["quantity-noun"] ?? [],
   suffixes: doc.lexicons["superlative-suffix"] ?? [],
   amounts: doc.lexicons["superlative-amount"] ?? [],
@@ -192,6 +195,7 @@ const qualified = (sentence: Sentence, entry: LexiconEntry, qualifiers: Qualifie
   asked(sentence) ||
   onlyQuoted(sentence, entry) ||
   qualifiers.comparison.anywhere.some((marker) => entryIn(sentence, marker)) ||
+  qualifiers.scopeTexts.some((text) => sentence.text.includes(text)) ||
   everyQualified(sentence, entry, qualifiers);
 
 const bareHits = (doc: ProseDocument, lexicon: Lexicon): Hit[] => {
