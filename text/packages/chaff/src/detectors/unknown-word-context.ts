@@ -170,6 +170,19 @@ const VERSION_AFTER = /^[ \t]+v?\d+\.\d+\.\d+/u;
 /** The word names what a release number follows (golang 1.21.5): a product or a tool, written as its makers write it. */
 export const beforeVersion = (source: string, offset: number, word: string): boolean => VERSION_AFTER.test(source.slice(offset + word.length));
 
+/** A release number of three parts or more (1.21.5, v2.0.1), as a whole chunk between spaces. */
+const VERSION = /^v?\d+\.\d+\.\d+/u;
+const LETTERS_ONLY = /^\p{L}+$/u;
+
+/**
+ * Every word the source writes before a release number (Diego 2.85.0), lower-cased: the name of a component, also when the
+ * document writes it bare in lower case elsewhere (update diego sync).
+ */
+export const versionedWordsOf = (source: string): Set<string> => {
+  const chunks = source.split(/\s+/u);
+  return new Set(chunks.flatMap((chunk, index) => (LETTERS_ONLY.test(chunk) && VERSION.test(chunks[index + 1] ?? "") ? [chunk.toLowerCase()] : [])));
+};
+
 /** A journal's volume and issue (22 (3), 5(2)), after spaces. */
 const VOLUME_AFTER = /^[ \t]+\d+[ \t]*\(\d+\)/u;
 
