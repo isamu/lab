@@ -133,6 +133,12 @@ describe("oxford-comma-consistency: what is not a list", () => {
     assert.equal(reportedWithout("This note defines a shared folder for them, to reduce the risk of loss, to save time, and to keep one copy."), true);
     assert.equal(reportedWith("We want to read, to write and to sing."), true);
   });
+
+  it("reads an example marker that opens a sentence in capitals (E.g.,) as the marker, not as a first item", () => {
+    assert.equal(reportedWith("E.g., the design team and the review team were chartered that way."), false);
+    assert.equal(reportedWith("I.e., the posters and the cards stay in stock."), false);
+    assert.equal(reportedWith("E.g., posters, cards and calendars sell well."), true);
+  });
 });
 
 describe("excerptSpans", () => {
