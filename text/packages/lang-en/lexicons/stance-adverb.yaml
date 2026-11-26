@@ -11,6 +11,7 @@ entries:
   - pattern: frankly
   - pattern: honestly
   - pattern: hopefully
+  - pattern: likely
   - pattern: possibly
   - pattern: presumably
   - pattern: probably
