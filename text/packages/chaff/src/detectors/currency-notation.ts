@@ -34,6 +34,15 @@ const amountPattern = (form: CurrencyForm, multipliers: readonly string[]): RegE
     : new RegExp(`(?<![\\w.,，０-９])${AMOUNT}${multiplier}\\s?${mark}${latinEdge(form.pattern, "end")}`, "gu");
 };
 
+// 前の読点を探す幅。改行と空行（段落の切れ目）をまたいでも届く長さ。
+const APPOSITIVE_LOOKBEHIND_CHARS = 8;
+
+/** 通貨コードに一桁だけを続けて読点のあとに置いた語（a coin, USD1.）は、ステーブルコインのような名前で、金額ではない。 */
+const isCodeName = (text: string, offset: number, written: string): boolean =>
+  /^[A-Za-z]+\d$/u.test(written) &&
+  /,\s*$/u.test(text.slice(Math.max(0, offset - APPOSITIVE_LOOKBEHIND_CHARS), offset)) &&
+  /^(?:[.,;:!?)]|$)/u.test(text.charAt(offset + written.length));
+
 const overlaps = (left: WrittenAmount, right: WrittenAmount): boolean =>
   left.offset < right.offset + right.written.length && right.offset < left.offset + left.written.length;
 
@@ -42,12 +51,14 @@ export const amountsIn = (text: string, forms: readonly CurrencyForm[], multipli
   forms
     .toSorted((left, right) => right.pattern.length - left.pattern.length)
     .flatMap((form) =>
-      [...text.matchAll(amountPattern(form, multipliers))].map((match) => ({
-        offset: match.index,
-        written: match[0],
-        form: `${form.position}:${form.pattern}`,
-        currency: form.currency,
-      })),
+      [...text.matchAll(amountPattern(form, multipliers))]
+        .filter((match) => !isCodeName(text, match.index, match[0]))
+        .map((match) => ({
+          offset: match.index,
+          written: match[0],
+          form: `${form.position}:${form.pattern}`,
+          currency: form.currency,
+        })),
     )
     .reduce<WrittenAmount[]>((kept, amount) => (kept.some((other) => overlaps(other, amount)) ? kept : [...kept, amount]), [])
     .toSorted((left, right) => left.offset - right.offset);
