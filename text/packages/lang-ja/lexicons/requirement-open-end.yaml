@@ -40,6 +40,11 @@ entries:
   - { pattern: 義務, group: scope-nominal }
   - { pattern: 責任, group: scope-nominal }
   - { pattern: 必要, group: scope-nominal }
+  # group: method-case は、動詞＋「など」のすぐ後ろの名詞に付く格助詞（分離するなどデータ構造を改める）。後ろの動詞が求める行いで、
+  # 「など」の前はそのやり方の一例。「などして」「などの措置」「氏名、住所など」は数えない。
+  - { pattern: を, group: method-case }
+  - { pattern: に, group: method-case }
+  - { pattern: が, group: method-case }
   # group: list-anaphor は、前に挙げた一覧を指し直す語（当該改良、改善等）。一覧が開いているなら、挙げたところで指す。
   - { pattern: 当該, group: list-anaphor }
   - { pattern: 前記, group: list-anaphor }
