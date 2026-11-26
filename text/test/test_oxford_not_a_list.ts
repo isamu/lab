@@ -127,6 +127,12 @@ describe("oxford-comma-consistency: what is not a list", () => {
     assert.equal(reportedWith(editor), false);
     assert.equal(reportedWith("To bake bread, which takes time, buy flour, yeast and salt."), true);
   });
+
+  it("does not count a clause as the first item of the purpose clauses that follow it", () => {
+    assert.equal(reportedWith("This note defines a shared folder for them, to reduce the risk of loss and to save time for the team."), false);
+    assert.equal(reportedWithout("This note defines a shared folder for them, to reduce the risk of loss, to save time, and to keep one copy."), true);
+    assert.equal(reportedWith("We want to read, to write and to sing."), true);
+  });
 });
 
 describe("excerptSpans", () => {
