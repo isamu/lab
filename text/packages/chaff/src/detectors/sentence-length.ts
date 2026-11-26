@@ -7,13 +7,15 @@ import { isNameList } from "./name-list-sentence.ts";
 import { pageMarkerPattern, pageMarkerSize } from "./page-marker.ts";
 import { quotedSentenceParts } from "./quoted-sentences.ts";
 import { isReproduced, reproducedSpans } from "./reproduced-text.ts";
+import { runInTitleParts } from "./run-in-title.ts";
 import { colonQuotationParts, flattenedTableParts, isGrammarBlock, labelLineParts, parentheticalSentenceParts } from "./sentence-parts.ts";
 import { isInListItem, isReferenceLine, isTitleLine, quotedTitleWords, remarkAfterTitle, termSeriesSaving } from "./sentence-title.ts";
 
 type Measure = { readonly size: number; readonly limit: number; readonly variant?: string };
 
-/** The page markers' pattern, the citation signals ("see"), the era names and the spans of the list items, read once per document. */
+/** The source, the page markers' pattern, the citation signals ("see"), the era names and the spans of the list items, read once per document. */
 type SentenceWords = {
+  readonly source: string;
   readonly markers: RegExp | undefined;
   readonly citationSignals: readonly string[];
   readonly eras: readonly string[];
@@ -66,9 +68,19 @@ const measureOf = (sentence: Sentence, unit: LengthUnit, options: DetectorOption
 const isUnwritten = (sentence: Sentence, text: string, unit: LengthUnit, words: SentenceWords): boolean =>
   isGrammarBlock(sentence.text) || isCitationString(text, words.citationSignals) || (unit === "word" && isTitleLine(text));
 
-/** The parts measured one by one when the splitter ran several things into one sentence (label lines, table cells, a quotation). */
-const partsOf = (sentence: Sentence, text: string, eras: readonly string[]): readonly string[] | undefined =>
-  labelLineParts(sentence.text) ?? flattenedTableParts(text, eras) ?? colonQuotationParts(text) ?? parentheticalSentenceParts(text);
+const startsLine = (sentence: Sentence, source: string): boolean => sentence.span.start === 0 || source[sentence.span.start - 1] === "\n";
+
+/** A link title run into its blurb, where characters are the unit and the sentence opens a line. */
+const titleParts = (sentence: Sentence, text: string, unit: LengthUnit, source: string): readonly string[] | undefined =>
+  unit === "char" && startsLine(sentence, source) ? runInTitleParts(text) : undefined;
+
+/** The parts measured one by one when the splitter ran several things into one sentence (label lines, table cells, a quotation, a title). */
+const partsOf = (sentence: Sentence, text: string, unit: LengthUnit, words: SentenceWords): readonly string[] | undefined =>
+  labelLineParts(sentence.text) ??
+  flattenedTableParts(text, words.eras) ??
+  colonQuotationParts(text) ??
+  parentheticalSentenceParts(text) ??
+  titleParts(sentence, text, unit, words.source);
 
 /** The length of a sentence in the document's language, without what the writer did not write as one. */
 const ownSize = (sentence: Sentence, unit: LengthUnit, words: SentenceWords): number => {
@@ -76,7 +88,7 @@ const ownSize = (sentence: Sentence, unit: LengthUnit, words: SentenceWords): nu
   if (isUnwritten(sentence, text, unit, words)) return 0;
   const aroundCitation = unit === "word" ? wordsAroundCitation(text, words.citationSignals) : undefined;
   if (aroundCitation !== undefined) return sizeOf(aroundCitation, unit);
-  const parts = partsOf(sentence, text, words.eras);
+  const parts = partsOf(sentence, text, unit, words);
   if (parts !== undefined) return Math.max(0, ...parts.map((part) => sizeOf(part, unit) - pageMarkerSize(part, words.markers, unit)));
   const remark = unit === "word" ? remarkAfterTitle(text) : undefined;
   if (remark !== undefined) return sizeOf(remark, unit);
@@ -99,6 +111,7 @@ const subjectTexts = (doc: ProseDocument): ReadonlySet<string> =>
 
 export const sentenceLength: Detector = (doc, options): Finding[] => {
   const words: SentenceWords = {
+    source: doc.source,
     markers: pageMarkerPattern((options.lexicon ?? []).map((entry) => entry.pattern)),
     citationSignals: (doc.lexicons["citation-signal"] ?? []).map((entry) => entry.pattern),
     eras: (doc.lexicons["calendar-era"] ?? []).map((entry) => entry.pattern),
