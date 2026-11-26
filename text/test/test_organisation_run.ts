@@ -60,6 +60,19 @@ describe("isOrganisationRun — 漢字の連なりが 1 つの組織の名前か
     assert.ok(isOrganisation("東京大学社会科学研究所"));
   });
 
+  it("valid: 地名の代わりに地方公共団体の段（都道府県・市町村）が立ち、組織の語で閉じる（高齢社会白書）", () => {
+    assert.ok(isOrganisation("都道府県社会福祉協議会"));
+    assert.ok(isOrganisation("市町村社会福祉協議会"));
+    assert.ok(isOrganisation("市区町村教育委員会"));
+    assert.ok(isOrganisation("区市町村保健福祉部"));
+  });
+
+  it("invalid: 地方公共団体の段に、組織の語で閉じない語が続く", () => {
+    assert.ok(!isOrganisation("都道府県労働局長"));
+    assert.ok(!isOrganisation("市町村国民健康保険"));
+    assert.ok(!isOrganisation("都道府県社会福祉協議会資料"));
+  });
+
   it("valid: 組織の語で閉じる区切りが 2 つ以上続く（〜省〜局〜課）", () => {
     assert.ok(isOrganisation("経済産業省製造産業局自動車課"));
     assert.ok(isOrganisation("国土交通省鉄道局総務課"));

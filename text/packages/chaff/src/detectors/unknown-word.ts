@@ -6,6 +6,7 @@ import { quoteAt } from "./structure-tree.ts";
 import {
   addressWordsOf,
   beforeVersion,
+  versionedWordsOf,
   beforeVolume,
   besideForeignWord,
   hasDrugStem,
@@ -83,6 +84,7 @@ export const unknownWord: Detector = (doc): Finding[] => {
     ...codeWordsOf(doc.source),
     ...addressWordsOf(doc.source),
     ...innerCapitalWordsOf(doc.source),
+    ...versionedWordsOf(doc.source),
   ]);
   const drugStems = patternsOf(doc, "drug-stem");
   const words = wordsToCheck(doc.prose ?? doc.source, MIN_LENGTH, MAX_LENGTH).filter(({ offset }) => !isSplitWord(doc.source, offset));

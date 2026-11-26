@@ -7,7 +7,6 @@ da-minister-press-conference-2026-09-18  15
 da-service-design-guidelines-2  3
 genai-web-procedure  1
 jma-tokubetsu-keiho  1
-jstage-jniph-74-1-2-rehabilitation  1
 jstage-jniph-74-2-119-wbgt  1
 k8s-overview-ja  1
 kantei-unga81-general-debate-speech  4

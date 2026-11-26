@@ -1,0 +1,12 @@
+# 登記や届出の番号の前に置く札（Signature Orthopaedics Pty Ltd (ACN 106 702 416)）。札は後ろの番号が何かを言うだけで、実務で展開しない。
+# 日本語の文書も海外の会社の名前と番号を写すので、英語と同じ語を置く。字面どおりに照らし、7 桁以上の番号のすぐ前でだけ外す。ACN や EIN だけなら略語のまま。
+id: registry-label
+language: ja
+entries:
+  - pattern: ACN
+  - pattern: ABN
+  - pattern: ARBN
+  - pattern: NZBN
+  - pattern: CRN
+  - pattern: EIN
+  - pattern: UEN

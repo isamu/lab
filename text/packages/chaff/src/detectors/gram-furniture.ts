@@ -154,3 +154,13 @@ export const figureAsideSpans = (text: string, unit: LengthUnit): Span[] => (uni
 const SCREEN_LABEL = /[[［【][^[\]［］【】]+[\]］】][\p{Script=Katakana}ー]*[をがにでへ]/gu;
 
 export const screenLabelSpans = (text: string, unit: LengthUnit): Span[] => (unit === "char" ? spansOf(text, SCREEN_LABEL, () => true) : []);
+
+/**
+ * 引用符でくくった、空白の無いファイルの名前（"security.txt"、"robots.txt"）。仕様書が定める名前で、どの規則の主語にもなる。
+ * 名前と同じく、触れる語句（A "security.txt" file）は数えない。
+ */
+const QUOTED_CHUNK = /["“]([^"“”\s]+)["”]/gu;
+const FILE_EXTENSION = /\.[A-Za-z0-9]+$/u;
+
+export const quotedFileNameSpans = (text: string, unit: LengthUnit): Span[] =>
+  unit === "word" ? spansOf(text, QUOTED_CHUNK, (match) => FILE_EXTENSION.test(match[1] ?? "")) : [];

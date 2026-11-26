@@ -17,6 +17,7 @@ import { referenceEntrySpans } from "./reference-entry.ts";
 import { chatLogSpans } from "./chat-log-line.ts";
 import { quotedLabelSpans } from "./quoted-label.ts";
 import { eventTitleSpans } from "./event-title-item.ts";
+import { priceListSpans } from "./price-list.ts";
 
 /**
  * 大文字の語が略語ではなく、決まった書き方の一部として読める所（3:30 PM、1pm ET、USD 1,000、Kansas City, MO 64108、Fort Lauderdale FL 33304）。
@@ -49,6 +50,8 @@ export type NotationWords = {
   readonly openingConjunctions?: readonly string[];
   /** 電話番号の前に置く語（TEL、FAX）。大文字で書いた形だけを、番号のすぐ前でだけ外す。 */
   readonly phoneLabels?: readonly string[];
+  /** 登記や届出の番号の前に置く札（ACN、EIN）。番号のすぐ前でだけ外す。 */
+  readonly registryLabels?: readonly string[];
 };
 
 const MINUTES = String.raw`:[0-5]\d`;
@@ -136,10 +139,10 @@ const MIN_PHONE_DIGITS = 7;
 const DIGIT = new RegExp(PHONE_DIGIT, "gu");
 
 /**
- * 電話番号の前の大文字の札（TEL  03-3222-1061、FAX: (202) 555-0100）。札は語彙表 phone-label の語を大文字にした形で、
- * すぐ後ろに 7 桁以上の番号が続くときだけ外す。番号の無い TEL や FAX（the FAX machine）は略語のまま数える。
+ * 番号の前の大文字の札（TEL  03-3222-1061、FAX: (202) 555-0100、ACN 106 702 416）。札は語彙表 phone-label と registry-label の語を
+ * 大文字にした形で、すぐ後ろに 7 桁以上の番号が続くときだけ外す。番号の無い TEL や ACN（the FAX machine）は略語のまま数える。
  */
-const phoneLabelSpans = (labels: readonly string[]): ((text: string) => Span[]) => {
+const labelledNumberSpans = (labels: readonly string[]): ((text: string) => Span[]) => {
   const capitals = [...new Set(labels.filter((label) => /^[A-Za-z]{2,6}$/u.test(label)).map((label) => label.toUpperCase()))];
   if (capitals.length === 0) return () => [];
   const pattern = new RegExp(
@@ -180,9 +183,9 @@ export type NotAcronymSpans = (text: string) => Span[];
  */
 export const notAcronymSpansOf = (words: NotationWords): NotAcronymSpans => {
   const patterns = patternsOf(words);
-  const phoneLabels = phoneLabelSpans(words.phoneLabels ?? []);
+  const numberLabels = labelledNumberSpans([...(words.phoneLabels ?? []), ...(words.registryLabels ?? [])]);
   return (text) => [
-    ...phoneLabels(text),
+    ...numberLabels(text),
     ...patterns.flatMap((pattern) => [...text.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }))),
     ...citationKeySpans(text),
     ...dottedNameSpans(text),
@@ -214,6 +217,7 @@ export const lexiconNotationOf = (wordsOf: (id: string) => string[]): NotAcronym
     textMessageVerbs: wordsOf("text-message-verb"),
     openingConjunctions: wordsOf("opening-conjunction"),
     phoneLabels: wordsOf("phone-label"),
+    registryLabels: wordsOf("registry-label"),
   });
   const names = nameSpansOf({
     legalForms: wordsOf("legal-form"),
@@ -239,13 +243,14 @@ const clockZoneSpans = (source: string, timeZones: readonly string[]): Span[] =>
   return [...source.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
 };
 
-/** 文書全体で読む、略語として数えない範囲。文献一覧の誌名や会議名、番号の付いた区切りの見出し、ABNF の文法、文に切れ目の入る所在地（Rd. NE）。 */
+/** 文書全体で読む、略語として数えない範囲。文献一覧の誌名や会議名、番号の付いた区切りの見出し、ABNF の文法、文に切れ目の入る所在地（Rd. NE）、値段表の品名。 */
 export const sourceNotAcronymSpans = (source: string, wordsOf: (id: string) => string[]): Span[] => [
   ...postalAddressSpans(source, wordsOf("street-suffix"), wordsOf("us-state-code")),
   ...referenceListSpans(source, wordsOf("reference-list-heading")),
   ...outlineLabelSpans(source, wordsOf("numbered-division")),
   ...grammarSpans(source),
   ...clockZoneSpans(source, wordsOf("time-zone")),
+  ...priceListSpans(source),
 ];
 
 /**

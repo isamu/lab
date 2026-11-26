@@ -30,6 +30,19 @@ describe("のほうが・と比べる（文のどこにあっても相手を言�
   });
 });
 
+describe("〜内でも（文のどこにあっても範囲を言う）", () => {
+  it("範囲があれば、最上級が離れていても指摘しない", () => {
+    assert.ok(!superlativeReported(ja, "この道は、県内でも特に眺めが良い峠と、最も古い宿場町を通ります。"));
+    assert.ok(!superlativeReported(ja, "社内でも、この部署は最も残業が少ないです。"));
+    assert.ok(!superlativeReported(ja, "業界内でも、この会社は最も古いです。"));
+  });
+
+  it("範囲が無ければ指摘する", () => {
+    assert.ok(superlativeReported(ja, "この道は、特に眺めが良い峠と、最も古い宿場町を通ります。"));
+    assert.ok(superlativeReported(ja, "店内で見ると、この店は最も客が多いです。"));
+  });
+});
+
 describe("との（最上級のすぐ前にあるときだけ相手を言う）", () => {
   it("すぐ前にあれば指摘しない", () => {
     assert.ok(!superlativeReported(ja, "ここが SES との最大の分岐点です。"));

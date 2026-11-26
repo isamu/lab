@@ -1,0 +1,22 @@
+# 文のどこにあっても最上級の範囲を言う語。「も」まで付けて範囲を強く言う形で、最上級から離れていても（雲南省内でも特に緑が
+# 豊かな景観と、最も保存状態が良い都市群）その文の最上級の範囲になる。解析器は「県内」「省内」を一語にしたりしなかったりし、
+# 「でも」も一語にすることがあるので、語の並びではなく字の並びで照らす。「以内でも」「案内でも」は範囲ではないので、場を言う
+# 「〜内」の語ごとに挙げる。unqualified-superlative は、この語のある文の最上級を指さない。
+id: superlative-scope-text
+language: ja
+entries:
+  - pattern: 国内でも
+  - pattern: 県内でも
+  - pattern: 省内でも
+  - pattern: 州内でも
+  - pattern: 都内でも
+  - pattern: 道内でも
+  - pattern: 府内でも
+  - pattern: 市内でも
+  - pattern: 区内でも
+  - pattern: 町内でも
+  - pattern: 村内でも
+  - pattern: 域内でも
+  - pattern: 圏内でも
+  - pattern: 社内でも
+  - pattern: 業界内でも
