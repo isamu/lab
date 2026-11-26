@@ -113,6 +113,19 @@ const beAfter = (tokens: readonly Token[], head: Token): Token | undefined => {
 /** The sentence's opening, from There / It through its be: the finding names the form this sentence uses (There were, It was). */
 type Opening = { readonly head: Token; readonly be: Token };
 
+/**
+ * It + be + a past participle + to ("It is designed to give the public a clear sense …") is a passive whose it names the
+ * thing before it: the that later in the sentence (", and that understanding is …") belongs to another clause. A be
+ * before an adjective (It is important to, It's tempting to, which the tagger may call a verb) stays the empty it.
+ */
+const isPassiveOfThing = (tokens: readonly Token[], be: Token): boolean => {
+  const after = tokens.filter((token) => token.span.start >= be.span.end && token.pos !== "ADV");
+  const verb = after[0];
+  return verb?.pos === "VERB" && !verb.surface.toLowerCase().endsWith("ing") && after[1]?.surface.toLowerCase() === "to";
+};
+
+const hasThat = (tokens: readonly Token[]): boolean => tokens.some((token) => token.surface.toLowerCase() === "that");
+
 const expletiveAt = (tokens: readonly Token[]): Opening | undefined => {
   const head = tokens.find((token) => token.pos !== "PUNCT");
   if (head === undefined) return undefined;
@@ -121,7 +134,7 @@ const expletiveAt = (tokens: readonly Token[]): Opening | undefined => {
   const be = beAfter(tokens, head);
   if (be === undefined) return undefined;
   // "it is" は "it is raining" のような正当な用法があるので、that 節を伴うときだけ数える。
-  if (lead === "it" && !beforeConcession(tokens).some((token) => token.surface.toLowerCase() === "that")) return undefined;
+  if (lead === "it" && (!hasThat(beforeConcession(tokens)) || isPassiveOfThing(tokens, be))) return undefined;
   return { head, be };
 };
 
