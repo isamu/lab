@@ -1,6 +1,6 @@
 // Text a writer copies rather than writes, where a spaced or doubled hyphen is the source's own separator and not a hyphen
 // standing in for a dash: a label quoted as printed, a reference list entry, a short category name in a field, a log or bot
-// line, and HTML markup shown as text. Pure.
+// line, HTML markup shown as text, and an issue's title listed with its number. Pure.
 import { QUOTATION_MARKS, quotedSpans } from "../quoted-span.ts";
 
 type Line = { readonly text: string; readonly at: number };
@@ -58,8 +58,20 @@ const HTML_TAG = /<\/?[A-Za-z][^<>]*>/gu;
 
 const isInHtmlTag = (line: Line): boolean => [...line.text.matchAll(HTML_TAG)].some((tag) => line.at > tag.index && line.at < tag.index + tag[0].length);
 
+/**
+ * A list item that ends with a link to an issue by its number ("- Plan of Action - Remaining Items [#1417](https://…)"): the
+ * words before the link are the issue's title, listed verbatim.
+ */
+const ISSUE_LINK_END = /\[#\d{1,7}\]\(https?:\/\/[^)\s]+\)[ \t]*$/u;
+const LIST_ITEM = /^\s*(?:[-*+]|\d{1,3}[.)])\s/u;
+
+const isIssueTitle = (line: Line): boolean => {
+  const link = ISSUE_LINK_END.exec(line.text);
+  return link !== null && line.at < link.index && LIST_ITEM.test(line.text);
+};
+
 /** Whether the hyphen at `offset` sits in copied text, where it is the source's separator and not the writer's dash. */
 export const isInCopiedText = (source: string, offset: number): boolean => {
   const line = lineAround(source, offset);
-  return isQuotedLabelPart(line) || REFERENCE_ENTRY.test(line.text) || isFieldName(line) || isMachineLine(line) || isInHtmlTag(line);
+  return isQuotedLabelPart(line) || REFERENCE_ENTRY.test(line.text) || isFieldName(line) || isMachineLine(line) || isInHtmlTag(line) || isIssueTitle(line);
 };
