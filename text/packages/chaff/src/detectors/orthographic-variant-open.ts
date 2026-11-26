@@ -11,7 +11,7 @@ import { furiganaSpans } from "../furigana.ts";
 import { contactEntrySpans } from "../contact-entry.ts";
 import { japaneseCompanyNameSpans } from "../company-name-run.ts";
 import { leadingLabelSpans } from "../leading-label.ts";
-import { mentionedSpellingSpans } from "../spelling-mention.ts";
+import { markedWrongSpans, mentionedSpellingSpans } from "../spelling-mention.ts";
 import { quoteGlossSpans } from "../quote-gloss.ts";
 import { lawTitleSpans } from "../law-title.ts";
 import { referenceListSpans } from "../reference-lists.ts";
@@ -103,7 +103,7 @@ const ownSpellingSpans = (sentence: Sentence, names: Names): Span[] => [
 
 /**
  * Whether a stretch of the sentence is outside a quotation, the team's names, a company's name (関東珪曹硝子㈱), a reading in
- * brackets (HTTP（えいちてぃーてぃーぴー）), a label opening the sentence (（答）), a spelling mentioned (（曇）とも書く), a
+ * brackets (HTTP（えいちてぃーてぃーぴー）), a label opening the sentence (（答）), a spelling mentioned (（曇）とも書く) or marked wrong (× Rspec), a
  * contact's name beside its phone number, what keeps a spelling of its own and a phrase repeated from a quotation: a reading is
  * not a spelling at all, a label is a fixed short form, a mention is the subject, and the rest keep their own spelling.
  */
@@ -117,6 +117,7 @@ export const isOpenIn = (sentence: Sentence, names: Names): IsOpen => {
     ...inSentence(sentence, names.singleQuoted),
     ...leadingLabelSpans(sentence.text),
     ...mentionedSpellingSpans(sentence.text, names.mentions),
+    ...markedWrongSpans(sentence.text),
     ...ownSpellingSpans(sentence, names),
   ];
   const named = nameSpans(sentence.text, names.team);
