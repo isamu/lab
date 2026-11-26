@@ -100,3 +100,20 @@ describe("expletive-construction: the forms of be", () => {
     assert.equal(counted("There, we have a garden."), false);
   });
 });
+
+describe("expletive-construction: an it that names a thing", () => {
+  const PLAIN = "The committee met on Tuesday. There were three items. There is a gap in the budget.";
+  const counted = (sentence: string): boolean => fires(`${PLAIN} There are two new members. ${sentence}\n`);
+
+  it("does not count a passive about a thing, whose that belongs to a later clause", () => {
+    assert.equal(counted("It is designed to show members the plan, and that view helps them vote."), false);
+  });
+
+  it("still counts an adjective's empty it, a that-clause after a participle and a cleft", () => {
+    assert.equal(counted("It is important for members to read the plan, and that reading takes an hour."), true);
+    assert.equal(counted("It's tempting to start projects that grow too big."), true);
+    assert.equal(counted("It is essential that applicants submit the form."), true);
+    assert.equal(counted("It was agreed that the rota starts in April."), true);
+    assert.equal(counted("It is the finance team that will lead it."), true);
+  });
+});
