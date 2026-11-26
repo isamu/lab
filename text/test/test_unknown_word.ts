@@ -86,6 +86,10 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
     assert.deepEqual(unknown("For a permanent install there is a systemdd unit file."), ['"systemdd" is not in the dictionary; did you mean "systemd"?']);
   });
 
+  it("cmake and rustc, the lower-case names of build tools, and the clipping collab are known", () => {
+    assert.deepEqual(unknown("We moved the build to cmake, and the closure is lowered inside rustc before the collab summit."), []);
+  });
+
   it("the legal words of contracts are known, but a typo among them is still reported", () => {
     const contract = [
       "Monies held by the cedent are paid to the designee, and notice given by telecopy is effective.",

@@ -148,6 +148,11 @@ describe("unknown-word: words whose place makes them a name or a term", () => {
     assert.deepEqual(unknown("- Upgraded to golang 1.21"), [typo("golang", "golan")]);
   });
 
+  it("a word the document writes before a release number elsewhere is a name, also bare in lower case", () => {
+    assert.deepEqual(unknown("- Update diego sync to fetch less.\n\n### Diego 2.85.0 up from 2.84.0\n"), []);
+    assert.deepEqual(unknown("- Update diego sync to fetch less.\n\n### Release 2.85.0 up from 2.84.0\n"), [typo("diego", "dingo")]);
+  });
+
   it("a word before a journal's volume and issue ends the journal's title, but the same word elsewhere is still reported", () => {
     assert.deepEqual(unknown("- M. L. McHugh. Interrater reliability: the kappa statistic. Biochemia medica 22 (3), pp. 276–282."), []);
     assert.deepEqual(unknown("- M. L. McHugh. Interrater reliability. Biochemia medica 22(3): 276–282."), []);
