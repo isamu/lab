@@ -1,7 +1,7 @@
 // A defined term used later in another form, and a long name used again after its short name was defined. Pure. The
 // definitions come from the document's structure tree (以下「甲」という, ("Seller")); which words may stand in a long
 // name is read from the tokens' parts of speech.
-import { inEntryOfTerm } from "./term-mention-sentence.ts";
+import { inEntryOfTerm, opensEntryOfTerm } from "./term-mention-sentence.ts";
 import { definedTerms, usesOf, type BodyText, type DefinedTerm } from "../structure/definition-use.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { prefixGroupsOf, prefixVariants, variantUses } from "../structure/term-prefix.ts";
@@ -158,7 +158,8 @@ const patternsOf = (doc: ProseDocument, lexicon: string): string[] => (doc.lexic
 /**
  * The term set in quotes again, unless the document's profile says a quoted term is the term mentioned (「株主」とあるのは),
  * the words before the quote name it as a term (the definition of "Material Adverse Effect"), or the quote is a provision's
- * or a document's wording (憲法一九条にいう「良心の自由」, 「謝罪」の文言).
+ * or a document's wording (憲法一九条にいう「良心の自由」, 「謝罪」の文言). The name that opens a definitions entry
+ * (a. "Capital Contributions" The capital …) defines the term again; it is no quoted use.
  */
 const quotedFindings = (doc: ProseDocument, term: DefinedTerm, uses: readonly number[], definingEnd: number): Finding[] => {
   if (doc.profile?.quoteMentionsTerm === true) return [];
@@ -166,7 +167,10 @@ const quotedFindings = (doc: ProseDocument, term: DefinedTerm, uses: readonly nu
   const wording = wordingCuesOf(doc.lexicons["quoted-wording-cue"] ?? []);
   return quotedUses(doc.source, term.term, uses, definingEnd)
     .filter(
-      (offset) => !isNamedAsTerm(doc.source, offset - 1, cues) && !quotesWording(doc.source, offset - 1, closingAt(doc.source, term.term, offset), wording),
+      (offset) =>
+        !isNamedAsTerm(doc.source, offset - 1, cues) &&
+        !quotesWording(doc.source, offset - 1, closingAt(doc.source, term.term, offset), wording) &&
+        !opensEntryOfTerm(doc.sentences, term.term, offset),
     )
     .map((offset) => finding(doc, "defined-term-form", offset, "quoted", { term: term.term, line: term.line }));
 };

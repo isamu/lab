@@ -29,3 +29,15 @@ export const inEntryOfTerm = (sentences: readonly Sentence[], term: string, offs
   const head = entryHead(term).exec(sentence.text);
   return head !== null && offset - sentence.span.start >= head[0].length;
 };
+
+/** After an entry's quoted name, its body: a capital (The capital contribution …) or a colon or dash before it. */
+const ENTRY_BODY = /^\s*(?:[:：—–-]|\p{Lu})/u;
+
+/** Whether offset is inside the quoted name that opens a definitions entry, and the entry's body follows the name. */
+export const opensEntryOfTerm = (sentences: readonly Sentence[], term: string, offset: number): boolean => {
+  const sentence = sentences.find((candidate) => candidate.span.start <= offset && offset < candidate.span.end);
+  if (sentence === undefined) return false;
+  const head = entryHead(term).exec(sentence.text);
+  const at = offset - sentence.span.start;
+  return head !== null && at + term.length <= head[0].length && ENTRY_BODY.test(sentence.text.slice(head[0].length));
+};
