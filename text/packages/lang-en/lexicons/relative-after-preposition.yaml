@@ -1,0 +1,9 @@
+# Relative words that follow a preposition (step-statement-mix): "the document in which the field is published", "the
+# person to whom it is sent". The verb after one belongs to the clause, so the item names a thing; it is not a subject
+# and its verb. "that" is left out: after a preposition it is a demonstrative (in that folder).
+id: relative-after-preposition
+language: en
+entries:
+  - pattern: which
+  - pattern: whom
+  - pattern: whose

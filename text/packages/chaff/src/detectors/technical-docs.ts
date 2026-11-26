@@ -275,13 +275,26 @@ const givesOrder = (tokens: readonly Token[]): boolean => {
  * A step read by its first sentence. One that states what the machine does and then gives the order in a later sentence
  * (The printer feeds a blank label. Throw that label away.) is an instruction: the reader still has something to do.
  */
-const kindOf = (tokens: readonly Token[], later: readonly (readonly Token[])[]): Step["kind"] => {
-  if (isStatement(tokens)) return later.some(givesOrder) ? "instruction" : "statement";
+/**
+ * A preposition and a relative word before the first verb (The document in which the field is published): the verb is
+ * the clause's, and the item is a noun phrase naming a thing, not a subject and its verb.
+ */
+const opensRelativeAfterPreposition = (tokens: readonly Token[], relatives: ReadonlySet<string>): boolean => {
+  const words = tokens.filter((token) => !SKIPPED.has(token.pos));
+  const verbAt = words.findIndex((token) => PREDICATE.has(token.pos));
+  return words.slice(1, verbAt === -1 ? words.length : verbAt).some((token, at) => words[at]?.pos === "ADP" && relatives.has(token.surface.toLowerCase()));
+};
+
+const kindOf = (tokens: readonly Token[], later: readonly (readonly Token[])[], relatives: ReadonlySet<string>): Step["kind"] => {
+  if (isStatement(tokens) && !opensRelativeAfterPreposition(tokens, relatives)) return later.some(givesOrder) ? "instruction" : "statement";
   return isInstruction(tokens) ? "instruction" : "other";
 };
 
+const relativesOf = (doc: ProseDocument): ReadonlySet<string> =>
+  new Set((doc.lexicons["relative-after-preposition"] ?? []).map((entry) => entry.pattern.toLowerCase()));
+
 /** The steps of each numbered list: each item's first sentence, read as a statement or not. */
-const stepLists = (doc: ProseDocument): Step[][] =>
+const stepLists = (doc: ProseDocument, relatives: ReadonlySet<string> = relativesOf(doc)): Step[][] =>
   doc.lists
     .filter((list) => ORDERED_ITEM.test(doc.source.slice(list.span.start, list.span.end)))
     .map((list) =>
@@ -299,6 +312,7 @@ const stepLists = (doc: ProseDocument): Step[][] =>
             kind: kindOf(
               sentence.tokens,
               later.map((next) => next.tokens ?? []),
+              relatives,
             ),
           },
         ];
