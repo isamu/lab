@@ -55,3 +55,26 @@ describe("all-caps-shouting and the wording of a resolution", () => {
     assert.equal(findingsOf(`${RESOLUTION}\nThe treasurer said: DO IT NOW, before the board is closed.\n`).length, 1);
   });
 });
+
+const TIMELINE = [
+  "# Incident report",
+  "",
+  "The web servers were overloaded during a large sporting event, and the outage starts and ends here in the timeline.",
+  "The site was down again for an hour after the outage begins, and it ends when load drops.",
+  "",
+  "- 17:58 The app servers get overloaded with requests OUTAGE STARTS HERE",
+  "- 18:22 Load goes down and the workers recover OUTAGE ENDS HERE",
+  "- 20:59 Errors begin being served (OUTAGE BEGINS)",
+  "- 21:09 Errors return to normal rates (OUTAGE ENDS)",
+  "",
+].join("\n");
+
+describe("all-caps-shouting and the outage markers of an incident timeline", () => {
+  it("valid: OUTAGE STARTS HERE, OUTAGE ENDS HERE, OUTAGE BEGINS and OUTAGE ENDS mark the timeline by convention", () => {
+    assert.deepEqual(findingsOf(TIMELINE), []);
+  });
+
+  it("invalid: shouting of its own in the timeline is still reported", () => {
+    assert.equal(findingsOf(`${TIMELINE}- 21:30 THE WHOLE SITE WAS DOWN AGAIN for users\n`).length, 1);
+  });
+});
