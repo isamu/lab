@@ -1,0 +1,9 @@
+# 出典の後ろの括弧書きで、参照日を言う語（（2024/3/12参照）、（閲覧日 2024年3月12日）、（最終アクセス 2024-03-12））。
+# date-format-consistency は、中身がこの語で始まるか終わる括弧書きの日付を、本文の日付と比べない。参照日は出典の書き方の決まりに従う。
+id: access-date-label
+language: ja
+entries:
+  - pattern: 参照
+  - pattern: 閲覧
+  - pattern: アクセス
+  - pattern: 最終アクセス
