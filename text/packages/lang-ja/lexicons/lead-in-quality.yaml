@@ -1,0 +1,7 @@
+# 義務の語が「で」に続いて前置きを閉じる形（「手引きは次のようなものでなければならない：」）は、行うことや部品でなく
+# 性質（見つけやすい所に置く、平易に書く）を並べるので、colon-lead-in は前置きとして数える。前置きの終わりでだけ当たる。
+id: lead-in-quality
+language: ja
+entries:
+  - { pattern: でなければならない, position: after }
+  - { pattern: でなければなりません, position: after }

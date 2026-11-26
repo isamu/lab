@@ -58,6 +58,12 @@ describe("L3 英語", () => {
       assert.ok(!idsFor(padded(source)).includes("adverb-overuse"));
     });
 
+    it("valid: 見込みを言う likely（would likely be）は probably と同じで、数えない", () => {
+      const source =
+        "Inflation would likely be slower next year. Rates will likely stay where they are. Hiring will likely take longer. Prices would likely rise in spring. The board will likely help the banks. Demand will likely increase later.";
+      assert.ok(!idsFor(padded(source)).includes("adverb-overuse"));
+    });
+
     it("valid: 数の前の -ly の語（only 26）と括弧の頭の呼び名の前置き（collectively,）は動詞を修飾せず、数えない", () => {
       const source =
         "The agencies (collectively, the regulators) sent the notice. Only 26 of the banks replied, and nearly 40 did not. Only 1 bank asked for more time, and roughly 12 asked for a call. Exactly 3 banks wrote back twice.";

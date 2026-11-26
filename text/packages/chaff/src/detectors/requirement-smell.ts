@@ -7,6 +7,7 @@ import { openEndAt, openEndNames, type OpenEndNames } from "./open-end-names.ts"
 import { asksAfter, questionWordsOf } from "./open-end-question.ts";
 import { anaphorWordsOf, isAnaphorCue, refersBack } from "./open-end-anaphor.ts";
 import { itemsOpenOnPurpose } from "./open-end-lead.ts";
+import { exemplifiesMethod, isMethodCue, methodWordsOf } from "./open-end-method.ts";
 import { isScopeCue, openOnPurpose, scopeWordsOf } from "./open-end-scope.ts";
 import { statesConcrete } from "./vague-deadline.ts";
 
@@ -74,12 +75,15 @@ const boundedInTime = (doc: ProseDocument, sentence: Sentence, entry: LexiconEnt
  * lexicon also holds the cues of a class named after the list and of what holds it, which are no smell.
  */
 const smellWords = (doc: ProseDocument, lexicon: string, genre: string | undefined): LexiconEntry[] =>
-  entriesForGenre(doc.lexicons[lexicon] ?? [], genre).filter((entry) => !isClassCue(entry) && !isScopeCue(entry) && !isAnaphorCue(entry));
+  entriesForGenre(doc.lexicons[lexicon] ?? [], genre).filter(
+    (entry) => !isClassCue(entry) && !isScopeCue(entry) && !isAnaphorCue(entry) && !isMethodCue(entry),
+  );
 
 /**
  * Where the word stands as a smell. An open-end word inside a name the document gives (業務執行取締役等), giving examples
  * of a class named right after it (印刷等、二次的に利用), ending a list a condition, a permission or a prohibition holds
- * (転載等をしてはならない), ending a list a pointing word opens (当該改良、改善等), or part of a term law fixes (消費税等), is
+ * (転載等をしてはならない), ending a list a pointing word opens (当該改良、改善等), giving an example of how to do the act
+ * that follows (分離するなどデータ構造を改める), or part of a term law fixes (消費税等), is
  * none; without tokens none of these can be told apart.
  */
 const smellAt = (doc: ProseDocument, sentence: Sentence, entry: LexiconEntry, lexicon: string, names: () => OpenEndNames): number | undefined => {
@@ -89,12 +93,17 @@ const smellAt = (doc: ProseDocument, sentence: Sentence, entry: LexiconEntry, le
   const classWords = classWordsOf(doc.lexicons[OPEN_END] ?? []);
   const scopeWords = scopeWordsOf(doc.lexicons[OPEN_END] ?? []);
   const anaphors = anaphorWordsOf(doc.lexicons[OPEN_END] ?? []);
+  const methodCases = methodWordsOf(doc.lexicons[OPEN_END] ?? []);
   return openEndAt(
     doc,
     sentence,
     entry,
     names(),
-    (tokens, range) => namesClassAfter(tokens, range, classWords) || openOnPurpose(tokens, range, scopeWords) || refersBack(tokens, range, anaphors),
+    (tokens, range) =>
+      namesClassAfter(tokens, range, classWords) ||
+      openOnPurpose(tokens, range, scopeWords) ||
+      refersBack(tokens, range, anaphors) ||
+      exemplifiesMethod(tokens, range, methodCases),
   );
 };
 
