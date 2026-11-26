@@ -346,6 +346,12 @@ const CAPTION = new RegExp(
   "gmu",
 );
 
+/** A clause's heading run in before its number (writing. Valuation of Interest 39. In the absence): the title is captured. */
+const HEADING_BEFORE_NUMBER = new RegExp(
+  String.raw`(?:^|(?<=[.;:][ \t]+))(${CAPTION_WORD}(?:[ \t]+(?:${CAPTION_SMALL})*${CAPTION_WORD}){1,10})[ \t]+\d{1,3}\.[ \t]+(?=\p{Lu})`,
+  "gmu",
+);
+
 const spansOf = (source: string, pattern: RegExp): Span[] =>
   [...source.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
 
@@ -357,6 +363,8 @@ const LINK_DESTINATION = /\]\([^)\n]*\)|<?https?:\/\/[^\s)>]+>?/gu;
 /** The source with link destinations and URLs blanked: the words a reader sees. */
 export const readableText = (source: string): string => source.replaceAll(LINK_DESTINATION, (destination) => " ".repeat(destination.length));
 
-/** The words set in quotes or bold anywhere in a source, without the emphasis marks. */
+/** The words set in quotes or bold anywhere in a source, without the emphasis marks, and the headings run in before a clause's number. */
 export const namedWords = (source: string): string[] =>
-  [BOLD, QUOTED].flatMap((pattern) => [...source.matchAll(pattern)].map((match) => (match[1] ?? match[2] ?? "").replaceAll(/[*_]/gu, "").trim()));
+  [BOLD, QUOTED, HEADING_BEFORE_NUMBER].flatMap((pattern) =>
+    [...source.matchAll(pattern)].map((match) => (match[1] ?? match[2] ?? "").replaceAll(/[*_]/gu, "").trim()),
+  );
