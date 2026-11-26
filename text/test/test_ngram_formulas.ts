@@ -89,4 +89,30 @@ describe("ngram-repetition: a fixed formula an item carries", () => {
     const copied = PROJECTS.map((project) => `## ${project}\n\nThere are currently 5 committers and 4 members in this project.\n`);
     assert.notEqual(worst(en, `# Minutes\n\n${copied.join("\n")}`), undefined);
   });
+
+  it("does not count a minutes' fixed line for a report not given, and counts a line the writer wrote", () => {
+    const missing = PROJECTS.map((project) => `## ${project}\n\nNo report was submitted.\n`);
+    assert.equal(worst(en, `# Minutes\n\n${missing.join("\n")}`), undefined);
+    const calm = PROJECTS.map((project) => `## ${project}\n\nThere are no issues requiring board attention.\n`);
+    assert.equal(worst(en, `# Minutes\n\n${calm.join("\n")}`), undefined);
+    const written = PROJECTS.map((project) => `## ${project}\n\nThe report was written late again.\n`);
+    assert.notEqual(worst(en, `# Minutes\n\n${written.join("\n")}`), undefined);
+  });
+
+  it("does not count the words around a quoted file name a specification defines, and counts them around a plain word", () => {
+    const quoted = ACTIONS.map((action, index) => `Our ${SUBJECTS[index] ?? ""} are listed in a "status.txt" file that we ${action}.`);
+    assert.equal(worst(en, `# Format\n\n${quoted.join(" ")}\n`), undefined);
+    const plain = ACTIONS.map((action, index) => `Our ${SUBJECTS[index] ?? ""} are listed in a status file that we ${action}.`);
+    assert.notEqual(worst(en, `# Format\n\n${plain.join(" ")}\n`), undefined);
+  });
+
+  it("does not count a closing each numbered example carries once, and counts it in numbered steps or repeated in one example", () => {
+    const example = (subject: string, index: number): string =>
+      `## Example ${String(index + 1)}\n\nThe firm keeps ${subject} in a cabinet. The record trail begins at the ${subject} because they hold the detail.\n`;
+    assert.equal(worst(en, `# Examples\n\n${SUBJECTS.map(example).join("\n")}`), undefined);
+    const step = (subject: string, index: number): string => example(subject, index).replace("Example", "Step");
+    assert.notEqual(worst(en, `# Steps\n\n${SUBJECTS.map(step).join("\n")}`), undefined);
+    const repeated = SUBJECTS.map((subject) => `The record trail begins at the ${subject} because they hold the detail.`).join(" ");
+    assert.notEqual(worst(en, `# Examples\n\n## Example 1\n\n${repeated}\n\n## Example 2\n\nNone.\n\n## Example 3\n\nNone.\n`), undefined);
+  });
 });
