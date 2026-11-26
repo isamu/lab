@@ -15,7 +15,7 @@ import {
   screenLabelSpans,
 } from "./gram-furniture.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
-import { isSentenceEndingOnly } from "./gram-ending.ts";
+import { isSentenceEndingOnly, sentencesInEndingRuns } from "./gram-ending.ts";
 import { gramPassagesOf } from "./gram-passages.ts";
 import { narrowestStretch, sentencePositions } from "./gram-spread.ts";
 import { namedByHeading } from "./gram-heading.ts";
@@ -217,9 +217,16 @@ const judgeAt = (occurrence: Occurrence, judge: TokenJudge): boolean | undefined
 const predicateAt = (occurrence: Occurrence, unit: LengthUnit): boolean | undefined =>
   judgeAt(occurrence, (tokens, window) => hasPredicateIn(tokens, window, unit));
 
-/** 出現の半分以上が文の結びだけ（gram-ending.ts）。品詞が無ければ見分けられないので、これまでどおり数える。 */
-const onlySentenceEnding = (occurrences: readonly Occurrence[]): boolean => {
-  const judged = occurrences.map((occurrence) => judgeAt(occurrence, isSentenceEndingOnly)).filter((found) => found !== undefined);
+/**
+ * 出現の半分以上が、同じ形で終わる文の並びの中にある、文の結びだけの語句（gram-ending.ts）。結びの単調さは repeated-sentence-ending が見る。
+ * 品詞が無ければ見分けられないので、これまでどおり数える。
+ */
+const endingInRuns = (occurrences: readonly Occurrence[], inRuns: ReadonlySet<Sentence>): boolean => {
+  const owned = (occurrence: Occurrence): boolean | undefined => {
+    const endingOnly = judgeAt(occurrence, isSentenceEndingOnly);
+    return endingOnly === undefined ? undefined : endingOnly && inRuns.has(occurrence.sentence);
+  };
+  const judged = occurrences.map(owned).filter((found) => found !== undefined);
   return judged.length > 0 && judged.filter(Boolean).length * 2 >= judged.length;
 };
 
@@ -235,9 +242,13 @@ const hasPredicate = (occurrences: readonly Occurrence[], unit: LengthUnit): boo
 
 export const ngramRepetition: Detector = (doc, options): Finding[] => {
   if (wordsOf(doc) < MIN_DOCUMENT_LENGTH[doc.lengthUnit]) return [];
+  const inRuns = sentencesInEndingRuns(
+    doc.paragraphs,
+    (doc.lexicons["calendar-era"] ?? []).map((entry) => entry.pattern),
+  );
   const worst = repeatsOf(doc, options.limit)
     .toSorted((left, right) => right.occurrences.length - left.occurrences.length)
-    .find(({ occurrences }) => hasPredicate(occurrences, doc.lengthUnit) && !onlySentenceEnding(occurrences));
+    .find(({ occurrences }) => hasPredicate(occurrences, doc.lengthUnit) && !endingInRuns(occurrences, inRuns));
   if (worst === undefined) return [];
   const first = worst.occurrences.find((occurrence) => occurrence.place !== undefined) ?? worst.occurrences[0];
   const at = first?.sentence;

@@ -2,7 +2,7 @@ import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
-import { isSentenceEndingOnly } from "../packages/chaff/src/detectors/gram-ending.ts";
+import { isSentenceEndingOnly, sentencesInEndingRuns } from "../packages/chaff/src/detectors/gram-ending.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 
 // ngram-repetition: 文の結びだけの語句（してまいります。）は、結びの単調さを見る repeated-sentence-ending に任せて数えない。例文はすべて自作。
@@ -28,10 +28,13 @@ const ITEMS = [
   "社内の会議を減らして決める手順を短くし、現場の判断で動ける仕組みの導入を",
 ];
 
-const report = (ending: (stem: string, index: number) => string): string =>
-  ["# 経営の方針", "", "当社グループは、経営の基盤を固めて成長を続けるために、次の項目に重点を置いて取り組みます。", ""]
-    .concat(ITEMS.map((stem, index) => `${ending(stem, index)}\n`))
-    .join("\n");
+const INTRO = ["# 経営の方針", "", "当社グループは、経営の基盤を固めて成長を続けるために、次の項目に重点を置いて取り組みます。", ""];
+
+/** 項目を一つの段落に続けて書く（同じ結びの文が並ぶ）。 */
+const runOn = (ending: (stem: string, index: number) => string): string => INTRO.concat(ITEMS.map(ending).join("")).join("\n");
+
+/** 項目ごとに段落を分ける（同じ結びが離れた所で何度も出る）。 */
+const apart = (ending: (stem: string, index: number) => string): string => INTRO.concat(ITEMS.map((stem, index) => `${ending(stem, index)}\n`)).join("\n");
 
 const LIGHT_VERBS = ["推進", "強化", "実施", "整備", "拡充", "徹底", "展開", "加速", "強化", "改善", "推進", "検討"];
 
@@ -43,12 +46,18 @@ const endingOnly = (text: string, phrase: string): boolean => {
 };
 
 describe("ngram-repetition: 文の結びだけの語句", () => {
-  it("名詞に付けた「〜してまいります。」の繰り返しを言い回しとして数えない", () => {
-    assert.deepEqual(findingsOf(report((stem, index) => `${stem}${LIGHT_VERBS[index] ?? "推進"}してまいります。`)), []);
+  const lightEnding = (stem: string, index: number): string => `${stem}${LIGHT_VERBS[index] ?? "推進"}してまいります。`;
+
+  it("続けて並ぶ文の「〜してまいります。」は、文末の繰り返しとして repeated-sentence-ending に任せる", () => {
+    assert.deepEqual(findingsOf(runOn(lightEnding)), []);
   });
 
-  it("中身の動詞を持つ結び（〜努めてまいります。）は今までどおり指摘する", () => {
-    assert.equal(findingsOf(report((stem) => `${stem}進めるよう努めてまいります。`)).length, 1);
+  it("離れた所で何度も出る「〜してまいります。」は言い回しの癖として指摘する", () => {
+    assert.equal(findingsOf(apart(lightEnding)).length, 1);
+  });
+
+  it("中身の動詞を持つ結び（〜努めてまいります。）は、並んでいても指摘する", () => {
+    assert.equal(findingsOf(runOn((stem) => `${stem}進めるよう努めてまいります。`)).length, 1);
   });
 
   it("結びだけかどうかの見分け", () => {
@@ -60,5 +69,6 @@ describe("ngram-repetition: 文の結びだけの語句", () => {
     assert.equal(endingOnly("販売の仕組みを強化してまいります。", "強化してまいります"), false);
     assert.equal(endingOnly("販売の仕組みを強化してまいります。", ""), false);
     assert.equal(isSentenceEndingOnly([], { start: 0, end: 8 }), false);
+    assert.equal(sentencesInEndingRuns([], []).size, 0);
   });
 });
