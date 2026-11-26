@@ -180,6 +180,12 @@ describe("request-without-deadline: 期限も担当も無い依頼", () => {
     assert.deepEqual(findingsOf("Please review the agenda in advance.", en), []);
   });
 
+  it("決まった間隔で繰り返す依頼（定期的に、regularly）は期限が要らないので言わない", () => {
+    assert.deepEqual(findingsOf("在庫の一覧を定期的に確認してください。"), []);
+    assert.deepEqual(findingsOf("Please review regularly our list of open issues.", en), []);
+    assert.deepEqual(findingsOf("Please check the backup log periodically.", en), []);
+  });
+
   it("時機の語が次の文にあるだけなら言う（次の文は別の話）", () => {
     assert.deepEqual(findingsOf("申込書をご提出ください。その後、面談の日程をお知らせします。"), [MESSAGE_JA]);
     assert.deepEqual(findingsOf("Please send the form. After you leave, the doors lock.", en), [MESSAGE_EN]);
