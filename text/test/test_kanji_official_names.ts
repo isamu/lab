@@ -157,4 +157,12 @@ describe("max-kanji-continuous: 職名と組の人の名前、組織と書類の
     assert.deepEqual(kanjiWords("電子化手数料対象書類一覧を御参照ください。"), ["電子化手数料対象書類一覧"]);
     assert.deepEqual(kanjiWords("新規顧客獲得施策部隊を作る。"), ["新規顧客獲得施策部隊"]);
   });
+
+  it("valid: 「各」と地方公共団体の段で始まる組織の名前（高齢社会白書）", () => {
+    assert.deepEqual(kanjiWords("各都道府県社会福祉協議会において、資金の貸付けを行う制度を実施した。"), []);
+  });
+
+  it("invalid: 地方公共団体の段に普通の語が続く連なりは数える", () => {
+    assert.deepEqual(kanjiWords("各都道府県社会福祉協議会職員数を調べた。"), ["各都道府県社会福祉協議会職員数"]);
+  });
 });
