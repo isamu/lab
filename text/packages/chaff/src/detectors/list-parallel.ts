@@ -69,14 +69,25 @@ const isInstruction = (words: readonly Token[], after: string): boolean =>
  * 確認すること) or a headline's あり / なし after a noun (翻訳あり) is a phrase; an instruction ending in こと。 is neither. Marks
  * after the last word (!!, a footnote reference) are not words.
  */
-const japaneseSentenceEnding = (sentence: Sentence | undefined, headlineEndings: ReadonlySet<string>): string | undefined => {
-  const words = withoutTrailingMarks(withoutClosingAside(withoutFootnoteReference(sentence?.tokens ?? [], isMark)), isMark);
+/**
+ * The words before a word that says the list goes on (等, など), when a predicate comes right before it: 「嫌なことをされる 等」
+ * ends, for its form, at される. After a noun (東京や大阪など) the word stays.
+ */
+const withoutListContinues = (words: readonly Token[], listContinues: ReadonlySet<string>): readonly Token[] => {
+  if (!listContinues.has(words.at(-1)?.surface ?? "")) return words;
+  const before = withoutTrailingMarks(words.slice(0, -1), isMark);
+  return PREDICATE.has(before.at(-1)?.pos ?? "") ? before : words;
+};
+
+const japaneseSentenceEnding = (sentence: Sentence | undefined, context: HeadContext): string | undefined => {
+  const marked = withoutTrailingMarks(withoutClosingAside(withoutFootnoteReference(sentence?.tokens ?? [], isMark)), isMark);
+  const words = withoutListContinues(marked, context.listContinues);
   const last = words.at(-1);
   if (sentence === undefined || last === undefined) return undefined;
   const after = sentence.text.slice(last.span.end - sentence.span.start);
   if (isInstruction(words, after)) return undefined;
   if (QUESTION_AFTER.test(after)) return "sentence";
-  if (NOMINAL.has(last.pos) || endsAsHeadline(words, headlineEndings)) return "phrase";
+  if (NOMINAL.has(last.pos) || endsAsHeadline(words, context.headlineEndings)) return "phrase";
   return PREDICATE.has(last.pos) ? "sentence" : undefined;
 };
 
@@ -106,11 +117,11 @@ const splitInName = (sentence: Sentence): boolean => /[!?！？]$/u.test(sentenc
  * ステータスメッセージ。ステータスコードの…; an author and a title) is neither form; else an item of several sentences is a
  * sentence (ownEnding aside), and one sentence is read by its ending.
  */
-const japaneseEnding = (item: readonly Sentence[], headlineEndings: ReadonlySet<string>): string | undefined => {
+const japaneseEnding = (item: readonly Sentence[], context: HeadContext): string | undefined => {
   const sentences = ownEnding(item);
   if (isName(item.flatMap((sentence) => sentence.tokens ?? [])) && item.slice(0, -1).every(splitInName)) return NAME;
   if (isName(item[0]?.tokens ?? [])) return undefined;
-  return sentences.length > 1 ? "sentence" : japaneseSentenceEnding(sentences[0], headlineEndings);
+  return sentences.length > 1 ? "sentence" : japaneseSentenceEnding(sentences[0], context);
 };
 
 /**
@@ -176,6 +187,8 @@ export type HeadContext = {
   readonly nounsInList: ReadonlySet<string>;
   /** Words that end a Japanese item as a headline does after a noun (翻訳あり), from headline-ending. */
   readonly headlineEndings: ReadonlySet<string>;
+  /** Words that say a list goes on (等, など), from list-continues. */
+  readonly listContinues: ReadonlySet<string>;
   /** Pronouns that open a clause (you, we), from subject-pronoun. */
   readonly subjectPronouns: ReadonlySet<string>;
   /** Words that open a prohibition before a noun (No calls), from prohibition-opener. */
@@ -189,6 +202,7 @@ export const NO_HEAD_CONTEXT: HeadContext = {
   verbOrAdjective: new Set(),
   nounsInList: new Set(),
   headlineEndings: new Set(),
+  listContinues: new Set(),
   subjectPronouns: new Set(),
   prohibitionOpeners: new Set(),
   numbered: false,
@@ -329,7 +343,7 @@ const leadsIn = (sentences: readonly Sentence[]): boolean => LEAD_IN.test(senten
 
 export const formOf = (axis: Axis, sentences: readonly Sentence[], language: string, context: HeadContext = NO_HEAD_CONTEXT): string | undefined => {
   if (axis === "ending" && leadsIn(sentences)) return undefined;
-  if (language === "ja") return axis === "ending" ? japaneseEnding(sentences, context.headlineEndings) : undefined;
+  if (language === "ja") return axis === "ending" ? japaneseEnding(sentences, context) : undefined;
   return axis === "ending" ? englishEnding(sentences, context) : englishHead(sentences, context);
 };
 
@@ -394,6 +408,7 @@ const headContext = (doc: ProseDocument, items: readonly (readonly Sentence[])[]
   instructionVerbs: wordsOf(doc, "instruction-verb"),
   verbOrAdjective: wordsOf(doc, "verb-or-adjective"),
   headlineEndings: wordsOf(doc, "headline-ending"),
+  listContinues: wordsOf(doc, "list-continues"),
   subjectPronouns: wordsOf(doc, "subject-pronoun"),
   prohibitionOpeners: wordsOf(doc, "prohibition-opener"),
   nounsInList: new Set(
