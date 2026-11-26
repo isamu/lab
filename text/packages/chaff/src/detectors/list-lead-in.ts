@@ -121,6 +121,19 @@ const closesLeadIn = (sentence: Sentence, entry: LexiconEntry): boolean => witho
 const statesDuty = (sentence: Sentence, duties: readonly LexiconEntry[]): boolean =>
   duties.some((entry) => (entry.position === "after" ? closesLeadIn(sentence, entry) : dutyAsVerb(sentence, entry)));
 
+/** The words that close a duty on a copula (The guide should be:), from the lead-in-quality lexicon: what follows is qualities. */
+const QUALITY_LEXICON = "lead-in-quality";
+
+/** A duty that ends in a copula hands over the qualities something must have, not steps or parts, so it still counts. */
+const statesQualities = (sentence: Sentence, qualities: readonly LexiconEntry[]): boolean => qualities.some((entry) => closesLeadIn(sentence, entry));
+
+/** The duty words of the lead-in-duty lexicon, and the copula endings of the lead-in-quality lexicon that undo them. */
+export type DutyWords = { readonly duties: readonly LexiconEntry[]; readonly qualities: readonly LexiconEntry[] };
+
+const NO_DUTY_WORDS: DutyWords = { duties: [], qualities: [] };
+
+const handsOverProcedure = (sentence: Sentence, words: DutyWords): boolean => statesDuty(sentence, words.duties) && !statesQualities(sentence, words.qualities);
+
 /**
  * Prose sentences ending in a colon that hand the reader straight to a list (「以下の通りです：」, "Here's what you need:").
  * An item of a list is not prose: 「例: `code`」 ends in a colon once its code is masked, and it leads nowhere.
@@ -131,7 +144,7 @@ export const colonLeadIns = (
   listSpans: readonly Span[],
   source: string,
   markdown = true,
-  duties: readonly LexiconEntry[] = [],
+  dutyWords: DutyWords = NO_DUTY_WORDS,
 ): Sentence[] => {
   const leadIns = lists.flatMap((list) => {
     if (isValueList(list, source)) return [];
@@ -140,7 +153,7 @@ export const colonLeadIns = (
   });
   const fields = fieldLabels(leadIns);
   const namesItsList = (sentence: Sentence): boolean => (markdown ? isBoldNounLabel(sentence, source) : isPlainNounLabel(sentence, source));
-  return leadIns.filter((sentence) => !fields.has(labelWords(sentence.text)) && !namesItsList(sentence) && !statesDuty(sentence, duties));
+  return leadIns.filter((sentence) => !fields.has(labelWords(sentence.text)) && !namesItsList(sentence) && !handsOverProcedure(sentence, dutyWords));
 };
 
 /** Lead-ins in one or two sections are a how-to's procedure or a pair of lists; the rule's why is section after section. */
@@ -164,8 +177,8 @@ const sectionsHolding = (doc: ProseDocument, leadIns: readonly Sentence[]): numb
  */
 export const colonLeadIn: Detector = (doc, options): Finding[] => {
   const inDocumentLanguage = doc.sentences.filter((sentence) => sentence.embeddedLanguage === undefined);
-  const duties = doc.lexicons[DUTY_LEXICON] ?? [];
-  const leadIns = colonLeadIns(inDocumentLanguage, doc.lists, doc.listSpans, doc.source, isMarkdownPath(doc.path), duties);
+  const dutyWords = { duties: doc.lexicons[DUTY_LEXICON] ?? [], qualities: doc.lexicons[QUALITY_LEXICON] ?? [] };
+  const leadIns = colonLeadIns(inDocumentLanguage, doc.lists, doc.listSpans, doc.source, isMarkdownPath(doc.path), dutyWords);
   if (sectionsHolding(doc, leadIns) < minSections(options)) return [];
   const hits = leadIns.map((sentence) => ({ sentence, matched: sentence.text.trim() }));
   return densityFindings(doc, hits, options.limit);
