@@ -52,8 +52,7 @@ export type BracketProblem = {
 
 /** continues は、行の頭で同じ引用符を開き直したときの、その前の開き（詩の引用は行ごとに開き直し、終わりで一度だけ閉じる）。 */
 type Open = { readonly bracket: Bracket; readonly offset: number; readonly continues?: Open };
-/** strays は、開きの無い閉じの引用符（”）のうち、同じ行の後ろの ” と組になるのを待つものの位置。 */
-type Scan = { readonly open: Open[]; readonly problems: BracketProblem[]; readonly strays: number[] };
+type Scan = { readonly open: Open[]; readonly problems: BracketProblem[] };
 
 /** 半角の「｢｣」。幅の違いは hankaku-kana が指すので、全角と組んでも幅の違いとしては指さない。 */
 const HALFWIDTH_KAGI: ReadonlySet<string> = new Set(["｢", "｣"]);
@@ -63,22 +62,11 @@ const isWidthSlip = (opened: Bracket, closing: Bracket): boolean =>
 
 const unclosedOf = (entry: Open): BracketProblem => ({ kind: "unclosed", offset: entry.offset, mark: entry.bracket.open });
 
-/**
- * 開きの無い ” の後ろの、同じ行の ” か（”天気”）。開きを閉じの字で書いた一つの誤りで、後ろの ” はその閉じとして正しい。
- * 指すのは前の ” だけにする。
- */
-const pairsStray = (scan: Scan, text: string, offset: number): boolean => {
-  const stray = scan.strays.pop();
-  return stray !== undefined && !text.slice(stray, offset).includes("\n");
-};
-
 const closeWith = (scan: Scan, text: string, bracket: Bracket, offset: number): void => {
   const at = scan.open.findLastIndex((entry) => entry.bracket.family === bracket.family);
   const round = bracket.family === "round";
   if (at === -1) {
-    if (bracket.family === "quote" && pairsStray(scan, text, offset)) return;
     if (!(round && isLabelClose(text, offset))) scan.problems.push({ kind: "unopened", offset, mark: bracket.close });
-    if (bracket.family === "quote") scan.strays.push(offset);
     return;
   }
   if (round && isLabelInAside(text, offset, scan.open.filter((entry) => entry.bracket.family === "round").length)) return;
@@ -145,7 +133,7 @@ const openWith = (scan: Scan, text: string, bracket: Bracket, offset: number, he
  * 詩の連や、段落をまたぐ引用があるので、括弧は段落を越えて組にする。節の終わりまで閉じない開きを指摘する。題の行で日付を添える開き（Year of Meteors [1859-60）は除く。
  */
 export const bracketProblems = (text: string): BracketProblem[] => {
-  const scan: Scan = { open: [], problems: [], strays: [] };
+  const scan: Scan = { open: [], problems: [] };
   const heads: Heads = { paragraphs: paragraphHeads(text), lines: lineHeads(text) };
   [...text.matchAll(MARKS)].forEach((match) => {
     const quoteOpen = scan.open.some((entry) => entry.bracket.family === "quote");
