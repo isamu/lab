@@ -23,6 +23,12 @@ describe("unbalanced-bracket: 括弧が組になっていない", () => {
     assert.deepEqual(findingsOf("会議の「議題」について」話します。\n"), ["「」」に対応する開きがありません"]);
   });
 
+  it("開きを閉じの字で書いた引用符（”天気”）は、前の ” だけを指す。後ろの ” はその閉じ", () => {
+    assert.deepEqual(findingsOf("一日ごとの状態を予報するので”天気”を用いる。\n"), ["「”」に対応する開きがありません"]);
+    assert.deepEqual(findingsOf("”晴れ”と”曇り”を使い分ける。\n"), ["「”」に対応する開きがありません", "「”」に対応する開きがありません"]);
+    assert.deepEqual(findingsOf("一つ目は晴れ”です。\n\n二つ目は曇り”です。\n"), ["「”」に対応する開きがありません", "「”」に対応する開きがありません"]);
+  });
+
   it("全角の開きを半角で閉じた", () => {
     assert.deepEqual(findingsOf("国際機関（FAO)が定めました。\n"), ["「（」を「)」で閉じています（全角と半角が違います）"]);
   });
@@ -166,6 +172,11 @@ describe("unbalanced-bracket: 括弧が組になっていない", () => {
     assert.deepEqual(findingsOf("住所は `https://example.jp`）です。\n"), ["「）」に対応する開きがありません"]);
   });
 
+  it("IPv6 のアドレスを書いた URL の角括弧は URL の字", () => {
+    assert.deepEqual(findingsOf("The file for the IPv6 address:\n\n   https://[2001:db8:8:4::2]/.well-known/security.txt\n", en, "a.txt"), []);
+    assert.deepEqual(findingsOf("The host (https://[2001:db8::1]/ is down.\n", en), ['"(" is never closed']);
+  });
+
   it("テキストの文書でも動く", () => {
     assert.deepEqual(findingsOf("資料（別紙を参照してください。\n", ja, "a.txt").length, 1);
   });
@@ -243,10 +254,7 @@ describe("unbalanced-bracket: a curly quote written as the inch mark", () => {
     assert.deepEqual(findingsOf("In 1969 “Hurricane Camille struck the coast.\n", en), ['"“" is never closed']);
     assert.deepEqual(findingsOf("In 1969 “Camille fell 2 “Hg at landfall.\n", en), ['"“" is never closed', '"“" is never closed']);
     assert.deepEqual(findingsOf("In 1969 “Hurricane Camille struck” the coast, and “it was over.\n", en), ['"“" is never closed']);
-    assert.deepEqual(findingsOf("Smith, 1996:”Hurricane landfall” was the paper.\n", en), [
-      '"”" closes nothing that was opened',
-      '"”" closes nothing that was opened',
-    ]);
+    assert.deepEqual(findingsOf("Smith, 1996:”Hurricane landfall” was the paper.\n", en), ['"”" closes nothing that was opened']);
     assert.deepEqual(findingsOf("The pipe is 12” wide.\n", en), ['"”" closes nothing that was opened']);
   });
 });

@@ -4,9 +4,10 @@ import type { Span } from "./plugin.ts";
  * `https://…` をそのまま書いた URL。GFM の autolink 拡張を入れていないので mdast では
  * ただのテキストになり、本文として残る。残すと、見出しと URL の中の識別子が一致して
  * 「見出しの繰り返し」と読まれる。表示される文字も本文ではない。
+ * IPv6 のアドレスを書いた URL（https://[2001:db8::1]/）の角括弧は URL の字。
  * 空白が来るまでを取るので、URL の直後に続けた日本語（「https://example.jp/をご覧ください」の「をご覧ください」）も入る。
  */
-export const BARE_URL = /https?:\/\/[^\s)<>"'\]]+/gu;
+export const BARE_URL = /https?:\/\/(?:\[[\dA-Fa-f:.]+\][^\s)<>"'\]]*|[^\s)<>"'\]]+)/gu;
 
 /** 文の終わりの句読点。URL の最後の字としてはまず書かれず、URL の後ろの文の字。 */
 const PUNCTUATION: ReadonlySet<string> = new Set([".", ",", ";", ":", "!", "?"]);
