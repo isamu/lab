@@ -65,11 +65,12 @@ const LETTER_LABEL = /^\s*\(?(?:[A-Za-z]|[ivxlc]{2,6}|[IVXLC]{2,6})[.)]\s+/u;
  * どちらの流儀の証拠にもならないので数えない。
  */
 export const isTitleCase = (heading: string, fixedCase: ReadonlySet<string> = new Set()): boolean | undefined => {
+  // 見出しの最初の語は、どちらの流儀でも大文字で始まる。流儀の証拠になるのは 2 語目から（Incident Review Completion の Completion）。
   const words = [...withoutCodeWords(straightApostrophes(withoutLeadingLabel(heading).replace(LETTER_LABEL, ""))).matchAll(WORD)]
+    .slice(1)
     .map((match) => match[0])
     .filter((word) => !MINOR_WORDS.has(word.toLowerCase()) && !SHORT_CONJUNCTIONS.has(word.toLowerCase()) && !ACRONYM.test(word) && !fixedCase.has(word));
-  // 1 語の見出しは、どちらの流儀でも先頭が大文字になる。判定できない。
-  if (words.length < 2) return undefined;
+  if (words.length === 0) return undefined;
   const capitalized = words.filter((word) => word[0] === word[0]?.toUpperCase()).length;
   return capitalized === words.length;
 };

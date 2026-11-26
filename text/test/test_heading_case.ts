@@ -137,6 +137,37 @@ describe("isTitleCase と略語", () => {
   });
 });
 
+describe("isTitleCase と見出しの最初の語", () => {
+  it("最初の語はどちらの流儀でも大文字なので数えない。名前や略語を除いて残る後ろの 1 語で判定する", () => {
+    const names = new Set(["Incident", "Review"]);
+    assert.equal(isTitleCase("Incident Review Completion", names), true);
+    assert.equal(isTitleCase("Incident Review completion", names), false);
+    assert.equal(isTitleCase("API Reference"), true);
+    assert.equal(isTitleCase("API reference"), false);
+    assert.equal(isTitleCase("The Plan"), true);
+    assert.equal(isTitleCase("Incident Review", names), undefined);
+  });
+});
+
+describe("title-case-consistency と文の途中の名前を含む見出し", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+  });
+
+  it("valid: 名前の後ろの語が大文字なら Title Case に数え、流儀が半々なら少数派は無い（an incident review handbook page）", () => {
+    const source = [
+      "## Roles\n\nThe Review Lead opens every Incident Review.",
+      "## Incident Review Completion\n\nText.",
+      "## Customer Engagement\n\nText.",
+      "## Unowned Services\n\nText.",
+      "## Guidance for conducting a review\n\nText.",
+      "## Match actions to the root cause\n\nText.",
+      "## The criteria that trigger a review\n\nText.",
+    ].join("\n\n");
+    assert.deepEqual(quotesFor(source), []);
+  });
+});
+
 describe("isTitleCase と語の中のアポストロフィ", () => {
   it("字に挟まれた ’ と ʼ は ' と同じく語の中の字。’s は小文字の語にならない（Fed’s）", () => {
     assert.equal(isTitleCase("Monetary Policy and the Fed’s Framework Review"), true);
