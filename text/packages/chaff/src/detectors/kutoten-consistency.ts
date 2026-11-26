@@ -97,12 +97,12 @@ const isItemReference = ({ text, at }: Place): boolean => DIGIT.test(text.charAt
 const isInsideNumber = (text: string, at: number): boolean => DIGIT.test(text.charAt(at - 1)) && DIGIT.test(text.charAt(at + 1));
 
 /**
- * 符号（特許の図の符号や記号）。数字に一、二文字の英字を添えたもの（３０ａ、１１ｅ、Ｓ１）か、一、二文字の英字だけ（ａ、ｂ）。
+ * 符号（特許の図の符号や記号）。数字に一、二文字の英字を添えたもの（３０ａ、１１ｅ、Ｓ１）か、一、二文字の英字だけ（ａ、ｂ）。後ろにプライム（ａ′、３０ａ′）を添えてもよい。
  * 「Word，Excel」のような語は符号ではない。
  */
-const SIGN = /^(?:[A-Za-zＡ-Ｚａ-ｚ]{0,2}[\d０-９]{1,4}[A-Za-zＡ-Ｚａ-ｚ]{0,2}|[A-Za-zＡ-Ｚａ-ｚ]{1,2})$/u;
-const SIGN_BEFORE = /(?:^|[^\dA-Za-z０-９Ａ-Ｚａ-ｚ])([\dA-Za-z０-９Ａ-Ｚａ-ｚ]+)(?:[（(][^（）()]{0,20}[）)])?$/u;
-const SIGN_AFTER = /^([\dA-Za-z０-９Ａ-Ｚａ-ｚ]+)(?![\dA-Za-z０-９Ａ-Ｚａ-ｚ])/u;
+const SIGN = /^(?:[A-Za-zＡ-Ｚａ-ｚ]{0,2}[\d０-９]{1,4}[A-Za-zＡ-Ｚａ-ｚ]{0,2}|[A-Za-zＡ-Ｚａ-ｚ]{1,2})[′″]?$/u;
+const SIGN_BEFORE = /(?:^|[^\dA-Za-z０-９Ａ-Ｚａ-ｚ])([\dA-Za-z０-９Ａ-Ｚａ-ｚ]+[′″]?)(?:[（(][^（）()]{0,20}[）)])?$/u;
+const SIGN_AFTER = /^([\dA-Za-z０-９Ａ-Ｚａ-ｚ]+[′″]?)(?![\dA-Za-z０-９Ａ-Ｚａ-ｚ′″])/u;
 const SIGN_REACH = 32;
 
 /**
