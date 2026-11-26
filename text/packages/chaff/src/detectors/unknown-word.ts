@@ -20,6 +20,7 @@ import {
   usedOnce,
   writtenApart,
 } from "./unknown-word-context.ts";
+import { capitalisedTwin, capitalisedWordsOf, followedWordsOf } from "./unknown-word-capital.ts";
 
 /** これより短い語は見ない。短い語は一字違いの語が多すぎて言い直しが決まらず（tost は test か toast か）、略した語（impl）も多い。 */
 const MIN_LENGTH = 5;
@@ -76,6 +77,32 @@ const isTermByPlace = (source: string, offset: number, word: string): boolean =>
  * 大文字を含む語（固有名詞・略語）、コード・URL の中、頭の字を分けた語の残り、二度以上使う語、言い直しの無い語、
  * 文書がコードにも書いた語は言わない。
  */
+const findingAt = (source: string, offset: number, word: string, suggestion: string): Finding => ({
+  rule: "",
+  severity: "warning",
+  line: 0,
+  column: 0,
+  quote: quoteAt(source, offset),
+  values: { word, suggestion, offset },
+});
+
+/**
+ * 頭だけ大文字の辞書に無い語（Sechedule）で、内側の一字を抜くか隣の二字を入れ替えた辞書の語を、文書が同じ語の後に同じ大文字で
+ * 書き（Release Schedule）、小文字でも書いているもの。同じ図の題を二度打ち、一度だけ誤った形。何度使っても言う。
+ */
+const capitalisedSlips = (doc: ProseDocument, speller: Speller, known: ReadonlySet<string>, lowerCaseWords: ReadonlySet<string>): Finding[] => {
+  const text = doc.prose ?? doc.source;
+  const words = capitalisedWordsOf(text, MIN_LENGTH, MAX_LENGTH).filter(({ offset }) => !isSplitWord(doc.source, offset));
+  const written = { capitalised: followedWordsOf(words), lowerCase: lowerCaseWords };
+  return words.flatMap((found) => {
+    const { offset, word } = found;
+    const lower = word.toLowerCase();
+    if (known.has(lower) || isFormedWord(lower, speller) || isTermByPlace(doc.source, offset, word)) return [];
+    const twin = capitalisedTwin(found, written, speller, MIN_LENGTH);
+    return twin === undefined ? [] : [findingAt(doc.source, offset, word, twin)];
+  });
+};
+
 export const unknownWord: Detector = (doc): Finding[] => {
   if (doc.dictionary === undefined) return [];
   const speller = spellerOf(doc, doc.dictionary());
@@ -94,7 +121,7 @@ export const unknownWord: Detector = (doc): Finding[] => {
     known.has(word) || isKnownWord(word, speller) || !isClosedCompound(word, speller) || isQuotedAt(doc.source, offset, offset + word.length)
       ? undefined
       : writtenApart(word, speller, doc.prose ?? doc.source, offset);
-  return usedOnce(words, speller).flatMap(({ offset, word }) => {
+  const lowerCase = usedOnce(words, speller).flatMap(({ offset, word }) => {
     const apart = apartAt(word, offset);
     if (
       !(unformed.has(word) || apart !== undefined) ||
@@ -104,7 +131,9 @@ export const unknownWord: Detector = (doc): Finding[] => {
     )
       return [];
     const suggestion = apart ?? suggestionFor(word, speller, used);
-    if (suggestion === undefined) return [];
-    return [{ rule: "", severity: "warning", line: 0, column: 0, quote: quoteAt(doc.source, offset), values: { word, suggestion, offset } }];
+    return suggestion === undefined ? [] : [findingAt(doc.source, offset, word, suggestion)];
   });
+  return [...lowerCase, ...capitalisedSlips(doc, speller, known, new Set(words.map(({ word }) => word)))].toSorted(
+    (left, right) => Number(left.values["offset"]) - Number(right.values["offset"]),
+  );
 };

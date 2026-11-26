@@ -1,0 +1,9 @@
+# Words that give the access date in the bracket after a source ((accessed 12 March 2024), (retrieved 2024-03-12)).
+# date-format-consistency does not compare a date in a bracket whose words open or close with one of these with the
+# dates of the body: an access date follows the citation style.
+id: access-date-label
+language: en
+entries:
+  - pattern: accessed
+  - pattern: last accessed
+  - pattern: retrieved

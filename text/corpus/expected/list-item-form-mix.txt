@@ -10,7 +10,6 @@ gitlab-meetings  1
 govuk-guidance-academy-senior-pay  1
 govuk-style-guide-a-to-z  6
 koenote-requirements  7
-moriguchi-satsuki-gakuen-ijime-houshin  1
 neeview-changelog-ja  9
 nttcom-onboarding-week1  1
 readygov-power-outages  1
