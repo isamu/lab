@@ -56,7 +56,7 @@ describe("ngram-repetition: a fixed formula an item carries", () => {
     assert.equal(worst(en, `# Records\n\n${boxes.join("\n")}`), undefined);
     const varied = SUBJECTS.map(
       (subject, index) =>
-        `## Rules on ${subject}\n\nFor ${subject}, the following rule has the force of law:\n\nYou must ${ACTIONS[index] ?? ""} them for six years.\n`,
+        `## Box ${String(index + 1)}\n\nFor ${subject}, the following rule has the force of law:\n\nYou must ${ACTIONS[index] ?? ""} them for six years.\n`,
     );
     assert.equal(worst(en, `# Records\n\n${varied.join("\n")}`), "following rule has");
   });
@@ -106,10 +106,12 @@ describe("ngram-repetition: a fixed formula an item carries", () => {
     assert.notEqual(worst(en, `# Format\n\n${plain.join(" ")}\n`), undefined);
   });
 
-  it("does not count a closing each numbered example carries once, and counts it when one example repeats it", () => {
+  it("does not count a closing each numbered example carries once, and counts it in numbered steps or repeated in one example", () => {
     const example = (subject: string, index: number): string =>
       `## Example ${String(index + 1)}\n\nThe firm keeps ${subject} in a cabinet. The record trail begins at the ${subject} because they hold the detail.\n`;
     assert.equal(worst(en, `# Examples\n\n${SUBJECTS.map(example).join("\n")}`), undefined);
+    const step = (subject: string, index: number): string => example(subject, index).replace("Example", "Step");
+    assert.notEqual(worst(en, `# Steps\n\n${SUBJECTS.map(step).join("\n")}`), undefined);
     const repeated = SUBJECTS.map((subject) => `The record trail begins at the ${subject} because they hold the detail.`).join(" ");
     assert.notEqual(worst(en, `# Examples\n\n## Example 1\n\n${repeated}\n\n## Example 2\n\nNone.\n\n## Example 3\n\nNone.\n`), undefined);
   });
