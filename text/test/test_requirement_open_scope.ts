@@ -41,6 +41,15 @@ describe("requirement-smell: a list a condition, a permission or a prohibition h
     assert.deepEqual(found("写真の削除などが難しいと判断されるときは、運営者は会員に知らせるものとします。", ja), []);
   });
 
+  it("a list in the reason the duty is given for (〜となるため、) is not reported", () => {
+    assert.deepEqual(found("表題や注記なども表の外にあれば違反となるため、別のシートに分ける必要があります。", ja, "technical/spec"), []);
+    assert.deepEqual(found("表題や注記なども `region` にかかわらず NG となるため、別のシートに分ける必要があります。", ja, "technical/spec"), []);
+  });
+
+  it("a list after the reason, in the duty, is still reported", () => {
+    assert.deepEqual(found("表の外にあれば違反となるため、表題や注記なども別のシートに分ける必要があります。", ja, "technical/spec"), ["open-end:など"]);
+  });
+
   it("a list in the duty itself is still reported", () => {
     assert.deepEqual(found("受託者は、写真、動画等を毎月提出しなければならない。", ja), ["open-end:等"]);
     assert.deepEqual(found("受託者は、故障等を委託者に申し出て、指示を受けなければならない。", ja), ["open-end:等"]);

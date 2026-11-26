@@ -70,6 +70,18 @@ describe("currency-notation-consistency: 通貨の書き方が混ざっている
     assert.deepEqual(formsIn("USDT 5 と 5USDC と $20AUD"), []);
   });
 
+  it("通貨コードに一桁を続けた同格の名前（a coin, USD1.）は金額と読まない", () => {
+    assert.deepEqual(formsIn("They issued a new coin, USD1. It trades widely."), []);
+    assert.deepEqual(formsIn("The coin, USD1, trades widely."), []);
+    assert.deepEqual(formsIn("The deficit, USD1 million, grew. The fee, USD 1.5, rose. The levy, USD1.5, fell. The tax, USD12, held."), [
+      "USD1 million=before:USD",
+      "USD 1.5=before:USD",
+      "USD1.5=before:USD",
+      "USD12=before:USD",
+    ]);
+    assert.deepEqual(findingsOf("The base fee is $300, the add-on is $50 and shipping is $20. They issued a coin, USD1. It is new.\n", en), []);
+  });
+
   it("コードの中は読まない", () => {
     assert.deepEqual(findingsOf("料金は 100円、200円、300円 です。`¥400` は例です。\n"), []);
   });

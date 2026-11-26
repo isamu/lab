@@ -51,8 +51,9 @@ const startsAt = (tokens: readonly Token[], entries: readonly LexiconEntry[], in
     return entryEndsAt(tokens, entry, end) && (entry.position !== "after" || closesSentence(tokens, end));
   });
 
-/** A comma right after a predicate closes the clause the list stands in (消去し、). */
-const closesClause = (tokens: readonly Token[], index: number): boolean => tokens[index]?.pos === PUNCT && PREDICATE_POS.has(tokens[index - 1]?.pos ?? "");
+/** A comma right after a predicate closes the clause the list stands in (消去し、). A space (code masked out, NG の前) does not. */
+const closesClause = (tokens: readonly Token[], index: number): boolean =>
+  tokens[index]?.pos === PUNCT && (tokens[index]?.surface.trim() ?? "") !== "" && PREDICATE_POS.has(tokens[index - 1]?.pos ?? "");
 
 /** A condition word that closes a clause about an act (行った際, 判断される場合): it follows a predicate. */
 const conditionAt = (tokens: readonly Token[], index: number, words: ScopeWords): boolean =>
