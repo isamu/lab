@@ -65,19 +65,29 @@ const isInstruction = (words: readonly Token[], after: string): boolean =>
   words.at(-1)?.surface === KOTO && isInstructedAct(words.at(-2)) && FULL_STOP_AFTER.test(after);
 
 /**
- * One Japanese sentence: a predicate at the end (出します, 済ませる, 早い) or a question (大丈夫？) is a sentence; a noun (月末,
- * 確認すること) or a headline's あり / なし after a noun (翻訳あり) is a phrase; an instruction ending in こと。 is neither. Marks
- * after the last word (!!, a footnote reference) are not words.
+ * The last kana of a verb's or an adjective's plain form (出す, される, 安い). A verb's stem used as a noun (立入り, 支払い) ends
+ * otherwise, and names the act.
  */
+const PLAIN_FORM_END: Readonly<Record<string, RegExp>> = { VERB: /[うくぐすつぬぶむる]$/u, ADJ: /い$/u };
+
+/** A predicate that ends a clause: an auxiliary (れる, た), or a verb or adjective in its plain form. */
+const endsClause = (token: Token | undefined): boolean => token?.pos === "AUX" || (PLAIN_FORM_END[token?.pos ?? ""]?.test(token?.surface ?? "") ?? false);
+
 /**
- * The words before a word that says the list goes on (等, など), when a predicate comes right before it: 「嫌なことをされる 等」
- * ends, for its form, at される. After a noun (東京や大阪など) the word stays.
+ * The words before a word that says the list goes on (等, など), when a clause ends right before it: 「嫌なことをされる 等」
+ * ends, for its form, at される. After a noun (東京や大阪など) or a verb's stem used as a noun (土地の立入り等) the word stays.
  */
 const withoutListContinues = (words: readonly Token[], listContinues: ReadonlySet<string>): readonly Token[] => {
   if (!listContinues.has(words.at(-1)?.surface ?? "")) return words;
   const before = withoutTrailingMarks(words.slice(0, -1), isMark);
-  return PREDICATE.has(before.at(-1)?.pos ?? "") ? before : words;
+  return endsClause(before.at(-1)) ? before : words;
 };
+
+/**
+ * One Japanese sentence: a predicate at the end (出します, 済ませる, 早い) or a question (大丈夫？) is a sentence; a noun (月末,
+ * 確認すること) or a headline's あり / なし after a noun (翻訳あり) is a phrase; an instruction ending in こと。 is neither. Marks
+ * after the last word (!!, a footnote reference) are not words.
+ */
 
 const japaneseSentenceEnding = (sentence: Sentence | undefined, context: HeadContext): string | undefined => {
   const marked = withoutTrailingMarks(withoutClosingAside(withoutFootnoteReference(sentence?.tokens ?? [], isMark)), isMark);

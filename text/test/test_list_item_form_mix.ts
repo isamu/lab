@@ -158,10 +158,12 @@ describe("list-item-form-mix: the minority form in one list", () => {
     assert.deepEqual(flagged(ja, list("金品を隠される", "仲間外れにされる", "持ち物に落書きをされる", "携帯電話で嫌なことをされるなど")), []);
   });
 
-  it("still reads a noun followed by 等 as a phrase (ja)", () =>
+  it("still reads a noun, or a verb's stem used as a noun, followed by 等 as a phrase (ja)", () => {
     assert.deepEqual(flagged(ja, list("金品を隠される", "仲間外れにされる", "持ち物に落書きをされる", "携帯電話での誹謗中傷 等")), [
       "ending-phrase:携帯電話での誹謗中傷 等",
-    ]));
+    ]);
+    assert.deepEqual(flagged(ja, list("協定に基づく復旧工事の実施", "物資の備蓄状況の公表", "復旧のための土地の立入り等")), []);
+  });
 
   it("reports a noun-first item among verb-first ones (en)", () =>
     assert.deepEqual(flagged(en, list("Install the command-line tool", "Create an account on the website", "The configuration file in your home folder")), [
