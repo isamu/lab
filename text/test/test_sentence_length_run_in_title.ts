@@ -23,10 +23,17 @@ describe("runInTitleParts", () => {
     assert.deepEqual(runInTitleParts(`${PLAIN_TITLE} ${PLAIN_BLURB}`), [PLAIN_TITLE, PLAIN_BLURB]);
   });
 
-  it("leaves a head that is a clause, holds a stop or a comma, is short, or is not repeated", () => {
-    [`「はい」と答えた ${BLURB}`, `「地域」、「図書館」 ${BLURB}`, `図書館 ${BLURB}`, `中央公民館講座 ${BLURB}`, BLURB, ""].forEach((text) =>
-      assert.equal(runInTitleParts(text), undefined, text),
-    );
+  it("leaves a head that is a clause, holds a stop, a comma or an open bracket, is short, or is not repeated", () => {
+    [
+      `「はい」と答えた ${BLURB}`,
+      `「地域」、「図書館」 ${BLURB}`,
+      `「Library Lab」は、${BLURB}`,
+      `「Library Lab」 「Library ${BLURB}`,
+      `図書館 ${BLURB}`,
+      `中央公民館講座 ${BLURB}`,
+      BLURB,
+      "",
+    ].forEach((text) => assert.equal(runInTitleParts(text), undefined, text));
   });
 });
 
@@ -41,8 +48,9 @@ describe("max-sentence-length: a link title run into its blurb", () => {
     assert.equal(findingsOf(`${TITLE} ${LONG_BLURB}`).length, 1);
   });
 
-  it("still reports a long sentence whose head is a clause, or that does not open the line", () => {
+  it("still reports a long sentence whose head is a clause or a bracketed name cut at its space, or that does not open the line", () => {
     assert.equal(findingsOf(`「はい」と答えた ${BLURB}`).length, 1);
+    assert.equal(findingsOf(`「Library Lab」は、${BLURB}`).length, 1);
     assert.equal(findingsOf(`中央公民館講座 ${BLURB}`).length, 1);
     assert.equal(findingsOf(`催しの案内です。${TITLE} ${BLURB}`).length, 1);
   });
