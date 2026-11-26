@@ -28,7 +28,7 @@ import { maskSpans } from "../mask.ts";
 import { quotedSpans } from "../quoted-span.ts";
 import { nameSpans } from "../team-names.ts";
 import { isIn } from "../lexicon-genres.ts";
-import { holdsKnown, isInnerSuffix, isTitledPerson, standaloneNames, unknownPieces } from "./kanji-run-pieces.ts";
+import { type BreakMarks, holdsKnown, isBreakMark, isTitledPerson, standaloneNames, surfaceWithin, unknownPieces } from "./kanji-run-pieces.ts";
 import { isBibliographyEntry } from "./bibliography-entry.ts";
 import { isNamedByContext } from "./named-by-context.ts";
 
@@ -157,6 +157,8 @@ type NameWords = {
   readonly designations: readonly string[];
   /** お知らせやメールの題を閉じる語（お知らせ、ご案内）。 */
   readonly noticeEndings: readonly string[];
+  /** 漢数字の後ろで街区を言う単位（丁目）。漢数字と合わせた番地は、連なりの中でも切れ目を見せる。 */
+  readonly blockUnits: readonly string[];
 };
 
 type Tail = AddresseeSuffix;
@@ -169,7 +171,7 @@ type RunContext = {
   readonly titled: readonly string[];
   /** 文書の文の中に二度以上出る連なり（repeatedRuns）。題を閉じる語で終われば、書き手が名前として使い回している。 */
   readonly repeated: ReadonlySet<string>;
-  /** 文書がほかで単独の連なりとして使う組織の名前（standaloneNames: 安全保障理事会）と法令の名前とその名の元の語（statuteTerms）。 */
+  /** 文書がほかで単独の連なりとして使う組織や題の名前（standaloneNames: 安全保障理事会、提供依頼申出書）と法令の名前とその名の元の語（statuteTerms）。 */
   readonly terms: ReadonlySet<string>;
   /** 文書のどこかで、括弧の中身がまるごとその連なりである名前（「署名用電子証明書確認画面」）。 */
   readonly presented: ReadonlySet<string>;
@@ -275,25 +277,21 @@ const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, contex
   return longestUnknown(tokens, rest, keptHead, context);
 };
 
-/** 語の、範囲（span）の中の字。連なりの頭や尻で外した語にまたがる語は、範囲の中だけ。 */
-const surfaceWithin = (token: Token, span: Span): string =>
-  token.surface.slice(Math.max(0, span.start - token.span.start), Math.max(0, span.end - token.span.start));
-
 /**
  * 連なりの、知っている語（文書がほかで単独で使う組織の名前と法令の名前、連なりを閉じる決まった語、職名の前後の人の名前）を外した残りのうち、最も長いもの。
  * 安全保障理事会常任理事国は（安全保障理事会を単独で使う文書なら）「常任理事国」、日本国内閣総理大臣は「日本国」を数える。
- * 名前に普通の語が続く連なり（日本弁護士連合会臨時総会決議）は、名前がその文書で単独で使われていなければ、まるごと数える。連なりの中ほどの、並べた物の後ろに付く語（高齢運転者等専用駐車区間の「等」）は語の終わりを、前を指す語（事業当連結会計年度の「当」）は語の頭を見せるので、その前後を別に数える。
+ * 名前に普通の語が続く連なり（日本弁護士連合会臨時総会決議）は、名前がその文書で単独で使われていなければ、まるごと数える。連なりの中ほどの、並べた物の後ろに付く語（高齢運転者等専用駐車区間の「等」）は語の終わりを、前を指す語（事業当連結会計年度の「当」）は語の頭を、漢数字の番地（二丁目）は算用数字と同じく切れ目を見せるので、その前後を別に数える。
  */
 const longestUnknown = (tokens: readonly Token[], rest: Span, keptHead: string, context: RunContext): string => {
   const runTokens = coveringOf(tokens, rest).flatMap((index) => tokens.slice(index, index + 1));
   const words = runTokens.map((token) => surfaceWithin(token, rest));
-  const breaks = [...context.words.listSuffixes, ...context.words.references];
+  const marks: BreakMarks = { suffixes: [...context.words.listSuffixes, ...context.words.references], blockUnits: context.words.blockUnits };
   // A run as long as the text holds no known word; reading it word by word would take a pass per word.
-  if (!holdsKnown(words, [...context.terms, ...context.words.knownWords], breaks)) return keptHead + words.join("");
+  if (!holdsKnown(runTokens, words, [...context.terms, ...context.words.knownWords], marks)) return keptHead + words.join("");
   const isKnown = (start: number, end: number): boolean => {
     const piece = words.slice(start, end).join("");
     return (
-      (end === start + 1 && isInnerSuffix(words, start, breaks)) ||
+      isBreakMark(runTokens, words, { start, end }, marks) ||
       context.terms.has(piece) ||
       (end === words.length && context.words.knownWords.has(piece)) ||
       isTitledPerson(runTokens, words, { start, end }, context.words.knownWords, context.maxKnownWords)
@@ -374,6 +372,7 @@ const nameWordsOf = (doc: ProseDocument): NameWords => {
     addressees: { prefixes: patterns("addressee-prefix"), titles: patterns("addressee-title"), endings: organisation.units, forms: organisation.closingForms },
     references: patterns("reference-prefix"),
     listSuffixes: [...patterns("list-suffix"), ...patterns("range-suffix")],
+    blockUnits: patterns("address-block-unit"),
     knownWords: new Set(patterns("kanji-known-word")),
     designations: patterns("designation-phrase"),
     noticeEndings: patterns("notice-title-ending"),
@@ -392,7 +391,7 @@ const contextOf = (doc: ProseDocument, options: DetectorOptions): RunContext => 
     titled: titledNames(doc, runs),
     repeated: repeatedRuns(inSentences),
     terms: new Set([
-      ...standaloneNames([...inSentences, ...headingRuns(doc)], MIN_TERM_LENGTH, options.limit, words.organisation.units),
+      ...standaloneNames([...inSentences, ...headingRuns(doc)], MIN_TERM_LENGTH, options.limit, [...words.organisation.units, ...words.title.endings]),
       ...statuteTerms(runs, words.fixedName, options.limit),
       ...labelNames(runs),
     ]),

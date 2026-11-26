@@ -184,6 +184,20 @@ const closesIfNewSubject = (tokens: readonly Token[], at: number): boolean => {
   return token?.pos === "VERB" && token.lemma === "おる" && token.features?.["Bound"] === "Yes";
 };
 
+/** Verbs of receiving a favour (〜していただく, 〜してもらう): their doer is the one asked, not the speaker. */
+const BENEFACTIVE = new Set(["いただく", "いただける", "くださる", "もらう", "もらえる"]);
+
+/** The forms that make a favour a request or a hope: 〜いただけると, 〜いただければ, 〜いただきたい. The tagger reads と as either. */
+const isRequestForm = (token: Token | undefined): boolean =>
+  ((token?.pos === "SCONJ" || token?.pos === "ADP") && (token.surface === "と" || token.surface === "ば")) || (token?.pos === "AUX" && token.lemma === "たい");
+
+/**
+ * 〜を示していただけると…つながるのではないか: past at, the speaker asks for a favour. What follows is the speaker's request, so a
+ * clause that may close the topic's predicate does close it, though no subject of its own is spelt out.
+ */
+const requestAfter = (tokens: readonly Token[], at: number, last: number): boolean =>
+  tokens.some((token, index) => index > at && index < last && BENEFACTIVE.has(token.lemma ?? "") && isRequestForm(tokens[index + 1]));
+
 /** The words a document's language gives for the shapes below (lang-ja's lexicons). Without them, only the shapes that need none. */
 export type TopicClauseWords = {
   /** Words that end a clause right after its predicate (ことから, つつ, としても): the topic-clause-close lexicon. */
@@ -246,14 +260,19 @@ const frameTopicAfter = (tokens: readonly Token[], at: number, last: number): bo
 /** A word of a name (赤澤, 大臣), not a noun that sets the time or the case (今後, 当日). */
 const isNameWord = (token: Token): boolean => NOMINAL.has(token.pos) && token.features?.["Adverbial"] !== "Yes";
 
+/** A prefix bound to the noun after it (本事業, 同社, 各部): the tagger reads it as a bound adjective. */
+const isNounPrefix = (token: Token | undefined): boolean => token?.pos === "ADJ" && token.features?.["Bound"] === "Yes";
+
 /**
- * 石破総理大臣は…明らかにしましたが、赤澤大臣は…どう考えているか: a name and は straight after the comma is a topic of its own
- * that the rest of the sentence is said of, when no subject of its own (が) follows it. A phrase before は (〜した行為は) is not one.
+ * 石破総理大臣は…明らかにしましたが、赤澤大臣は…どう考えているか / 〜しておりますが、本事業は、…: a noun (a prefix may stand before
+ * it) and は straight after the comma is a topic of its own that the rest of the sentence is said of, when no subject of its own
+ * (が) follows it. A phrase before は (〜した行為は) is not one.
  */
 const newNameTopicRunsToEnd = (tokens: readonly Token[], comma: number, last: number): boolean => {
-  const topic = tokens.findIndex((token, index) => index > comma && !isNameWord(token));
+  const start = isNounPrefix(tokens[comma + 1]) ? comma + 2 : comma + 1;
+  const topic = tokens.findIndex((token, index) => index >= start && !isNameWord(token));
   const wa = tokens[topic];
-  return topic > comma + 1 && wa !== undefined && isParticle(wa, "は") && lastOwnSubject(tokens, last) <= topic;
+  return topic > start && wa !== undefined && isParticle(wa, "は") && lastOwnSubject(tokens, last) <= topic;
 };
 
 /** A topic on the nominaliser こと after a predicate (公表することは): an act made a noun. */
@@ -338,7 +357,7 @@ export const topicClauseEnd = (tokens: readonly Token[], topic: number, last: nu
   const subject = lastOwnSubject(tokens, last);
   const closes = (at: number): boolean =>
     closesSurely(tokens, at, last) ||
-    (closesIfNewSubject(tokens, at) && subject > at) ||
+    (closesIfNewSubject(tokens, at) && (subject > at || requestAfter(tokens, at, last))) ||
     closesWithCopulaContinuing(tokens, topic, at, last, subject) ||
     closesFirstClauseWithNoun(tokens, topic, at, last) ||
     closesWithPoliteGa(tokens, topic, at, last, subject) ||

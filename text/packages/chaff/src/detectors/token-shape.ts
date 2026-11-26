@@ -7,7 +7,7 @@ import type { Detector, Finding, ProseDocument, Sentence, Span, Token } from "..
 import { countedTokens, uncountedWordsOf, type UncountedWords } from "../uncounted-particles.ts";
 import { boundWordParticles } from "../bound-word-particles.ts";
 import { setPhraseParticles } from "../set-phrase-particles.ts";
-import { clauseEnds, determinerParticles, longestClausePart } from "../clause-particles.ts";
+import { clauseEnds, copulaEnds, determinerParticles, longestClausePart } from "../clause-particles.ts";
 import { noteSentences } from "../note-paragraphs.ts";
 import { labelledNoteSentences } from "../labelled-note-paragraphs.ts";
 import { listLeadSentences } from "../list-lead-sentence.ts";
@@ -175,9 +175,10 @@ export const doubledParticle: Detector = (doc, options): Finding[] => {
         ...namedLongForms(sentence.text, sentence.span.start, sentence.tokens ?? [], namingMarkers, continuesName),
         ...quotedNameSpans(sentence.text, sentence.span.start, names),
       ];
-      // 「の」で主語を示した節（番号のついた版）の前と後ろは別の句。どちらかの句の中で上限を超える連なりだけを、連なり全体で言う。
+      // 「の」で主語を示した節（番号のついた版）や、一つの「の」だけの「である」の節（当社の子会社である法人）の前と後ろは別の句。どちらかの句の中で上限を超える連なりだけを、連なり全体で言う。
       const ends = clauseEnds(tokens, nesting);
-      const isLong = (run: Run): boolean => run.tokens.length > options.limit && longestClausePart(run.tokens, ends) > options.limit;
+      const copulas = copulaEnds(tokens);
+      const isLong = (run: Run): boolean => run.tokens.length > options.limit && longestClausePart(run.tokens, ends, copulas) > options.limit;
       const longRuns = (skipped: readonly Span[]): Run[] => runsOf(tokens, nesting, breaks, skipped).filter(isLong);
       const found = longRuns(quoted);
       // 文書の名前を読むのは長い連なりのある文だけ。名前は位置ごとに読むので、全部の文で読むと遅い。

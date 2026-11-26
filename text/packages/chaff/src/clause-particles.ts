@@ -20,15 +20,31 @@ export const clauseEnds = (tokens: readonly Token[], particles: readonly string[
     tokens.filter((token, at) => endsClause(token, tokens[at + 1]) && particles.includes(tokens[at - 1]?.surface ?? "") && touches(tokens[at - 1], token)),
   );
 
+/**
+ * The ある of a copula である (子会社である法人): the clause before it says what the next noun is. It ends a phrase only
+ * when the clause holds a single particle (当社の子会社である): a clause that nests itself (県の対策のトップである) is read with the run.
+ */
+export const copulaEnds = (tokens: readonly Token[]): ReadonlySet<Token> =>
+  new Set(
+    tokens.filter((token, at) => {
+      const before = tokens[at - 1];
+      return token.pos === "AUX" && token.surface === "ある" && before?.pos === "AUX" && before.surface === "で" && touches(before, token);
+    }),
+  );
+
 const endsBetween = (left: Token, right: Token, ends: ReadonlySet<Token>): boolean =>
   [...ends].some((verb) => verb.span.start >= left.span.end && verb.span.end <= right.span.start);
 
-/** The most particles of a run (in order) that no clause end (ends) falls between: 2 for 特定の番号の|ついた版の. 0 for none. */
-export const longestClausePart = (run: readonly Token[], ends: ReadonlySet<Token>): number =>
+/**
+ * The most particles of a run (in order) that no clause end (ends) falls between: 2 for 特定の番号の|ついた版の. 0 for none.
+ * A copula end (copulas) falls between only after a part of one particle: 2 for 当社の|子会社である東西商事の株式の, 3 for 県の対策のトップである部の.
+ */
+export const longestClausePart = (run: readonly Token[], ends: ReadonlySet<Token>, copulas: ReadonlySet<Token> = new Set()): number =>
   run.reduce<{ readonly current: number; readonly longest: number }>(
     (acc, token, at) => {
       const previous = run[at - 1];
-      const current = previous !== undefined && endsBetween(previous, token, ends) ? 1 : acc.current + 1;
+      const breaks = previous !== undefined && (endsBetween(previous, token, ends) || (acc.current === 1 && endsBetween(previous, token, copulas)));
+      const current = breaks ? 1 : acc.current + 1;
       return { current, longest: Math.max(acc.longest, current) };
     },
     { current: 0, longest: 0 },

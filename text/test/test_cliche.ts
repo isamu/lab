@@ -77,6 +77,11 @@ describe("cliche: a worn phrase", () => {
     assert.deepEqual(findingsOf("Delete every profile except the one you actually use. The alert was sent as an email."), []);
   });
 
+  it("reports the stock close of a quote that lets its subject speak for itself", () => {
+    assert.deepEqual(findingsOf("The results our customers are seeing speak for themselves."), ['"speak for themselves" is a cliché']);
+    assert.deepEqual(findingsOf("The new dashboard speaks for itself."), ['"speak for itself" is a cliché']);
+  });
+
   it("every lexicon phrase is found in a sentence", () => {
     const lexicon = en.lexicons[RULE] ?? [];
     assert.ok(lexicon.length > 0);

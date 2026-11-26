@@ -56,7 +56,7 @@ import { dashBreaks } from "./dash-break.ts";
 import { namesDivision, qualifiesPrevious } from "./list-comma-aside.ts";
 import { inExcerpt } from "./quoted-excerpt.ts";
 import { listContinues, walker, type Walk } from "./list-run.ts";
-import { joinsUnfinished, repeatsConjunction } from "./list-joint.ts";
+import { joinsUnfinished, pairsAlternatives, repeatsConjunction } from "./list-joint.ts";
 import { insideSentenceCaseTitle } from "./title-list.ts";
 import { insideByline } from "./byline-list.ts";
 import { withoutOpeningConjunction } from "./list-opening-conjunction.ts";
@@ -352,6 +352,7 @@ const insideLastItem = (scope: ItemScope, at: number, view: View, afterItem: Tok
   sharesNoun(scope, at, view, afterItem) ||
   joinsObjects(scope, at, view, afterItem) ||
   joinsUnfinished(scope, at, view, afterItem) ||
+  pairsAlternatives(scope, at, view, afterItem) ||
   repeatsConjunction(scope, at, view, afterItem);
 
 /**

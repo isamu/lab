@@ -10,8 +10,22 @@ type Pair = { readonly open: number; readonly close: number; readonly inner: str
 /** A sentence's end right before the bracket: the item opens a sentence of a joined line. */
 const AFTER_SENTENCE = /[。．！？]$/u;
 
-/** A section's number, with one word after it (第3条, 4), right before the bracket: not inside a figure (1,054). */
-const AFTER_NUMBER = /(?<![0-9０-９,，.．])[0-9０-９]{1,3}\p{Script=Han}?$/u;
+/**
+ * A section's number right before the bracket, with one word after it (第3条) or bare (4): not inside a figure (1,054). A bare
+ * figure of three digits is a count, and its bracket part of it (831（16）, a headcount with its temporary staff).
+ */
+const AFTER_NUMBER = /(?<![0-9０-９,，.．])(?:[0-9０-９]{1,3}\p{Script=Han}|[0-9０-９]{1,2})$/u;
+
+/** A court case's number (令和3年（ワ）第5285号): its bracket holds the case's kind and is written as the prose's brackets are. */
+const CASE_YEAR_BEFORE = /[0-9０-９]年$/u;
+const CASE_NUMBER_AFTER = /^第[0-9０-９]+号/u;
+const YEAR_REACH = 2;
+
+/** How far after a case's kind its number (第5285号) is read. */
+const CASE_NUMBER_REACH = 12;
+
+const isCaseKind = (source: string, open: number, close: number): boolean =>
+  CASE_YEAR_BEFORE.test(source.slice(Math.max(0, open - YEAR_REACH), open)) && CASE_NUMBER_AFTER.test(source.slice(close + 1, close + 1 + CASE_NUMBER_REACH));
 
 /** How far before a bracket the address's number is read. */
 const NUMBER_REACH = 5;
@@ -30,7 +44,8 @@ const valueOf = (inner: string): number | undefined => {
 const pairsOf = (source: string, isLabel: (inner: string) => boolean): Pair[] =>
   [...source.matchAll(PAIR)].flatMap((match) => {
     const inner = match[1] ?? match[2] ?? "";
-    return isLabel(inner) ? [{ open: match.index, close: match.index + match[0].length - 1, inner }] : [];
+    const close = match.index + match[0].length - 1;
+    return isLabel(inner) && !isCaseKind(source, match.index, close) ? [{ open: match.index, close, inner }] : [];
   });
 
 /** The next number of the run, in the same width, opening a word rather than taking a particle. */

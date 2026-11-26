@@ -155,3 +155,8 @@ entries:
     rewrite: say what it does better than its size suggests
   - pattern: above their weight
     rewrite: say what they do better than their size suggests
+  # The stock close of a quote ("The results speak for themselves"); the verb is inflected, so "speaks for itself" matches.
+  - pattern: speak for themselves
+    rewrite: give the result itself
+  - pattern: speak for itself
+    rewrite: give the result itself
