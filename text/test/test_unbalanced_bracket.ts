@@ -166,6 +166,11 @@ describe("unbalanced-bracket: 括弧が組になっていない", () => {
     assert.deepEqual(findingsOf("住所は `https://example.jp`）です。\n"), ["「）」に対応する開きがありません"]);
   });
 
+  it("IPv6 のアドレスを書いた URL の角括弧は URL の字", () => {
+    assert.deepEqual(findingsOf("The file for the IPv6 address:\n\n   https://[2001:db8:8:4::2]/.well-known/security.txt\n", en, "a.txt"), []);
+    assert.deepEqual(findingsOf("The host (https://[2001:db8::1]/ is down.\n", en), ['"(" is never closed']);
+  });
+
   it("テキストの文書でも動く", () => {
     assert.deepEqual(findingsOf("資料（別紙を参照してください。\n", ja, "a.txt").length, 1);
   });
