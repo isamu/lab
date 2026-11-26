@@ -144,6 +144,13 @@ describe("obligation-without-deadline", () => {
     assert.deepEqual(wordsIn(ja, ja_("第3条　乙は、本契約締結日から2か月を目途に、甲に対して、契約を締結するか否かを通知する。")), []);
   });
 
+  it("a duty done at a named occasion (次回の支払いの際に) or with another payment (翌月の請求と合算して) is timed", () => {
+    assert.deepEqual(wordsIn(ja, ja_("第3条　甲は、不足額を次回の支払いの際に合算して乙に支払う。")), []);
+    assert.deepEqual(wordsIn(ja, ja_("第3条　甲は、不足額を翌月の請求と合算して乙に支払う。")), []);
+    assert.deepEqual(wordsIn(ja, ja_("第3条　乙は、資料を作成し、甲に通知する。甲は、必要と判断した際に当該資料を確認する。")), []);
+    assert.deepEqual(wordsIn(ja, ja_("第3条　甲は、不足額を乙に支払う。")), ["支払"]);
+  });
+
   it("does not run in a statute nor outside the legal genres", () => {
     assert.deepEqual(wordsIn(ja, ja_("第3条　事業者は、手数料を国に支払う。"), "legal/statute"), []);
     assert.deepEqual(wordsIn(en, en_("3. The seller must deliver the goods."), "business/report"), []);
