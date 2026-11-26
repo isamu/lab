@@ -49,8 +49,8 @@ const duty = (leadIn: string): string => `## Step\n\nThe call has ended.\n\n${le
 
 const leadInsWithDuties = (source: string, adapter: LanguageAdapter): string[] => {
   const doc = buildDocument("t.md", source, adapter);
-  const duties = doc.lexicons["lead-in-duty"] ?? [];
-  return colonLeadIns(doc.sentences, doc.lists, doc.listSpans, doc.source, true, duties).map((sentence) => sentence.text.trim());
+  const dutyWords = { duties: doc.lexicons["lead-in-duty"] ?? [], qualities: doc.lexicons["lead-in-quality"] ?? [] };
+  return colonLeadIns(doc.sentences, doc.lists, doc.listSpans, doc.source, true, dutyWords).map((sentence) => sentence.text.trim());
 };
 
 describe("colonLeadIns: a lead-in that states a duty", () => {
@@ -67,6 +67,15 @@ describe("colonLeadIns: a lead-in that states a duty", () => {
   it("still counts a duty word inside a clause that names the list", () => {
     const named = ["Questions you should be asking from day one:", "Here's what you must know:"].map(duty).join("\n");
     assert.equal(leadInsWithDuties(`# Post\n\n${named}`, en).length, 2);
+  });
+
+  it("still counts a duty that ends in a copula: it hands over qualities, not steps", () => {
+    const qualities = ["The guide should be:", "Each handout must be:", "The form shall be:"].map(duty).join("\n");
+    assert.equal(leadInsWithDuties(`# Guide\n\n${qualities}`, en).length, 3);
+    assert.deepEqual(leadInsWithDuties(`# Order\n\n${duty("Entries must be sorted by:")}`, en), []);
+    assert.deepEqual(leadInsWithDuties(`# 手引き\n\n${duty("手引きは次のようなものでなければならない：")}`, ja), [
+      "手引きは次のようなものでなければならない：",
+    ]);
   });
 
   it("reads the Japanese duty only at the end of the lead-in", () => {
