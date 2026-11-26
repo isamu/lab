@@ -151,6 +151,34 @@ describe("unknown-word: a name the document also writes with an inner capital", 
   });
 });
 
+describe("unknown-word: a capitalised slip of a word the document writes capitalised", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+  });
+
+  it("invalid: a caption typed twice, once with a letter too many or two letters swapped", () => {
+    const captions = "*Release Sechedule 2021*\n\nThe schedule moved.\n\n*Release Schedule 2022*\n\n*Release Sechedule 2023*";
+    assert.deepEqual(unknown(captions), [
+      '"Sechedule" is not in the dictionary; did you mean "Schedule"?',
+      '"Sechedule" is not in the dictionary; did you mean "Schedule"?',
+    ]);
+    assert.deepEqual(unknown("Late Paymnet fees apply.\n\nLate Payment notices follow the payment run."), [
+      '"Paymnet" is not in the dictionary; did you mean "Payment"?',
+    ]);
+  });
+
+  it("valid: no capitalised twin, one after another word, or one the document never writes in lower case", () => {
+    assert.deepEqual(unknown("*Release Sechedule 2021*\n\nThe release schedule moved."), []);
+    assert.deepEqual(unknown("*Release Sechedule 2021*\n\n*Release Schedule 2022*"), []);
+    assert.deepEqual(unknown("Hurricane Greta was a great storm.\n\nThe Great Lakes froze."), []);
+  });
+
+  it("valid: a name made from another by a changed, first or last letter", () => {
+    assert.deepEqual(unknown("Run Kustomize first. Run Customize next to customize the theme."), []);
+    assert.deepEqual(unknown("Visit Grande Prairie. Visit Grand Forks for a grand view."), []);
+  });
+});
+
 describe("unknown-word: a name the document also writes in code", () => {
   before(async () => {
     await en.prepare?.({ pos: true });
