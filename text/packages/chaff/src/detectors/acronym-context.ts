@@ -19,6 +19,7 @@ import { quotedLabelSpans } from "./quoted-label.ts";
 import { eventTitleSpans } from "./event-title-item.ts";
 import { priceListSpans } from "./price-list.ts";
 import { codePrefixSpans } from "./code-prefix.ts";
+import { spacedNameSpans } from "./spaced-name.ts";
 
 /**
  * 大文字の語が略語ではなく、決まった書き方の一部として読める所（3:30 PM、1pm ET、USD 1,000、Kansas City, MO 64108、Fort Lauderdale FL 33304）。
@@ -244,7 +245,8 @@ const clockZoneSpans = (source: string, timeZones: readonly string[]): Span[] =>
   return [...source.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
 };
 
-/** 文書全体で読む、略語として数えない範囲。文献一覧の誌名や会議名、番号の付いた区切りの見出し、ABNF の文法、文に切れ目の入る所在地（Rd. NE）、値段表の品名。 */
+/** 文書全体で読む、略語として数えない範囲。文献一覧の誌名や会議名、番号の付いた区切りの見出し、ABNF の文法、文に切れ目の入る所在地（Rd. NE）、値段表の品名、
+ * 文書が一語でも書く名前を空けて書いたときの頭の大文字（JSConf と書く文書の JS Conf）。 */
 export const sourceNotAcronymSpans = (source: string, wordsOf: (id: string) => string[]): Span[] => [
   ...postalAddressSpans(source, wordsOf("street-suffix"), wordsOf("us-state-code")),
   ...referenceListSpans(source, wordsOf("reference-list-heading")),
@@ -252,6 +254,7 @@ export const sourceNotAcronymSpans = (source: string, wordsOf: (id: string) => s
   ...grammarSpans(source),
   ...clockZoneSpans(source, wordsOf("time-zone")),
   ...priceListSpans(source),
+  ...spacedNameSpans(source),
 ];
 
 /**
