@@ -2,6 +2,49 @@
 
 Newest first.
 
+## 0.53.0 — 2026-11-27
+
+This release comes from judging findings in isamu/chaff-corpus: most changes narrow a rule where a judged document showed
+a false positive, and a few add a pattern a judged document showed chaff missing.
+
+### New patterns
+
+- unknown-word reports a capitalised slip of a caption the document also writes correctly (#2867).
+- numbering-gap reports a two-part number whose first part is not its section's (4.3 inside 5) (#2883).
+
+### Fewer false positives
+
+- topic-predicate-distance closes 〜であり、 before an act the final copula is said of, and a passive 〜され、 before a new
+  topic (#2849, #2857).
+- max-kanji-continuous reads 都道府県/市町村 + organisation unit as one name (#2850).
+- undefined-acronym leaves a register's label before its number and the model letters of a price list (#2851).
+- unqualified-superlative reads 〜内でも as a scope anywhere in the sentence, and leaves the simplest form a writer
+  presents (#2852).
+- ngram-repetition leaves the formulas items carry: a closing per numbered example, a quoted file name, board minutes'
+  stock lines (#2853).
+- unknown-word knows cmake, rustc and collab, and a word the document writes before a release number elsewhere (#2854).
+- orthographic-variant does not compare a spelling shown as wrong (× Rspec / ○ RSpec) (#2855).
+- obligation-without-deadline reads 〜の際に and 〜と合算して as the duty's time (#2856). request-without-deadline reads a
+  request repeated at intervals as timed (#2859).
+- colon-lead-in counts a duty that ends in a copula (The guide should be:) (#2860).
+- adverb-overuse does not count likely, a stance adverb like probably (#2861).
+- hyphen-as-dash leaves an issue title a list item copies before its number (#2863).
+- space-before-punctuation leaves an ABNF grammar in a plain-text specification (#2864).
+- oxford-comma-consistency reads E.g., and a clause before purpose infinitives as no list item (#2865).
+- requirement-smell leaves an act + など that gives an example of how to do the act that follows (#2866).
+- list-item-form-mix reads a clause followed by 等 or など by its predicate (#2869). step-statement-mix reads an item
+  whose verb follows a preposition and a relative word as a noun phrase (#2879).
+- unbalanced-bracket reads the brackets of an IPv6 URL as the URL's (#2870).
+- date-format-consistency leaves an access date in brackets after a source (#2871).
+- teki-overuse leaves the fixed triad 身体的・精神的・社会的 (#2872).
+- all-caps-shouting leaves the outage markers of an incident timeline (#2874).
+- kutoten-consistency reads a comma between primed reference signs (ａ′，ｂ′) as a sign separator (#2875).
+- undefined-term leaves a heading run in before its clause's number, cited by its title (#2877).
+- reference-topic-missing ends an English topic before a word that says what about it (regarding) (#2878).
+- no-mixed-desumasu reads a chronology's last row opened by 現在～ as a row, not body text (#2880).
+- defined-term-form reads the quoted name that opens a definitions entry as a definition (#2881).
+- use-before-definition reads a term followed by (defined below) as pointing ahead (#2882).
+
 ## 0.52.0 — 2026-11-26
 
 This release comes from judging findings in isamu/chaff-corpus: most changes narrow a rule where a judged document showed
