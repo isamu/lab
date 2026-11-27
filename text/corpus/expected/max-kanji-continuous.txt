@@ -4,9 +4,7 @@ jstage-jniph-74-2-119-wbgt  4
 jstage-jniph-74-2-157-heat-policy  2
 kantei-221-shisei-hoshin  2
 kantei-unga81-general-debate-speech  1
-koho-tokyo-2026-06-suigai  1
 mhlw-icd-committee-26-minutes  1
-mhlw-kikan-gyomu-shokuin-boshu  1
 mhlw-norovirus-qa  3
 neeview-changelog-ja  4
 nta-taxanswer-1120  3
