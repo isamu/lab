@@ -48,6 +48,12 @@ const headingKey = (heading: string): string =>
     .replace(/\s+/gu, " ")
     .toLowerCase();
 
+/**
+ * 欄の名前の見出し（Description:、Project Status:）。報告の書式の欄で、報告ごとに同じ欄を埋める。コロンの無い札（【アドバイス等】）の下は
+ * 書き手が項目ごとに書く本文で、同じ説明を写せば言い直しになる。
+ */
+const FIELD_HEADING = /[:：]\s*$/u;
+
 /** 節のすぐ下の小見出しの並び（一段深い節の見出し）。小見出しが無ければ空。 */
 const outlineOf = (sections: readonly Outlined[], index: number): string => {
   const depth = sections[index]?.depth ?? 0;
@@ -70,11 +76,11 @@ const groupsOf = (sections: readonly Outlined[], keyOf: (section: Outlined, inde
 };
 
 /**
- * 同じ形を繰り返す節の文と、その文の節。同じ見出しの節（報告ごとの Description:）と、すぐ下に同じ小見出しを並べた節（名前の見出しの
+ * 同じ形を繰り返す節の文と、その文の節。同じ欄の名前の見出しの節（報告ごとの Description:）と、すぐ下に同じ小見出しを並べた節（名前の見出しの
  * 下に同じ問いを並べた報告）は、項目ごとに一つのひな形を埋めたもの。導入部（見出しの前）は節ではない。
  */
 export const repeatedBlocksOf = (sections: readonly Outlined[]): ReadonlyMap<Sentence, Heading> => {
-  const headed = (section: Outlined): string => (section.depth >= 1 ? headingKey(section.heading) : "");
+  const headed = (section: Outlined): string => (section.depth >= 1 && FIELD_HEADING.test(section.heading) ? headingKey(section.heading) : "");
   const outlined = (section: Outlined, index: number): string => {
     const outline = section.depth >= 1 ? outlineOf(sections, index) : "";
     return outline === "" ? "" : `${String(section.depth)}\n${outline}`;

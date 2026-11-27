@@ -116,12 +116,14 @@ describe("ngram-repetition: a fixed formula an item carries", () => {
     assert.notEqual(worst(en, `# Examples\n\n## Example 1\n\n${repeated}\n\n## Example 2\n\nNone.\n\n## Example 3\n\nNone.\n`), undefined);
   });
 
-  it("does not count the opening each section under a shared heading carries, and counts it under headings of their own", () => {
+  it("does not count the opening each section under a shared field heading carries, and counts it under other headings", () => {
     const report = (project: string, index: number, heading: string): string =>
       `## ${project}\n\n### ${heading}\n\nThe mission of ${project} is the creation and maintenance of software related to ${SUBJECTS[index] ?? ""}.\n`;
     assert.equal(worst(en, `# Reports\n\n${PROJECTS.map((project, index) => report(project, index, "Description:")).join("\n")}`), undefined);
     const own = PROJECTS.map((project, index) => report(project, index, `What ${project} does`));
     assert.notEqual(worst(en, `# Reports\n\n${own.join("\n")}`), undefined);
+    const label = PROJECTS.map((project, index) => report(project, index, "Advice"));
+    assert.notEqual(worst(en, `# Reports\n\n${label.join("\n")}`), undefined);
   });
 
   it("does not count a line each section with the same sub-headings carries, and counts it in sections without them", () => {
