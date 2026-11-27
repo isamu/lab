@@ -173,6 +173,34 @@ export const filledForms = (sentences: readonly Sentence[], source: string): Sen
   return owning.filter((sentence) => linesOf(sentence).some((line) => (fillings.get(formOf(line))?.size ?? 0) > 1));
 };
 
+/** 文の頭の、大文字で始まる語に大文字か数字で始まる語が続く並び（Apache Trinidad、Maven JXR 3.6.0、GO-18.0.0）と、その後ろの小文字で始まる述部。 */
+const NAME_LED = /^(\p{Lu}[\p{L}\p{N}.'’-]*(?:[ \t]+[\p{Lu}\p{N}][\p{L}\p{N}.'’-]*)*)[ \t]+(\p{Ll}.*)$/su;
+/** 一語だけの頭は、識別子（GO-18.0.0、ExtVal）なら名前。文頭の大文字の普通の語（Customers、Our）は名前と見分けられない。 */
+const PLAIN_WORD = /^\p{Lu}\p{Ll}*$/u;
+
+const nameLedParts = (sentence: Sentence): { name: string; form: string } | undefined => {
+  const match = NAME_LED.exec(sentence.text.trim());
+  const name = match?.[1];
+  const rest = match?.[2];
+  if (name === undefined || rest === undefined || (!/\s/u.test(name) && PLAIN_WORD.test(name))) return undefined;
+  return { name, form: rest.replace(/\s+/gu, " ").replace(DIGITS, "0").toLowerCase() };
+};
+
+/**
+ * 行を独り占めし、頭の名前だけが違って述部が同じ形の文（数字は伏せる）が 2 度以上あり、名前が違うもの（Apache Trinidad is in maintenance
+ * mode. と Myfaces Tomahawk is in maintenance mode.、Maven JXR 3.6.0 was released on 2024-10-22.）。項目ごとに状態を一行で書く一覧の書式で、
+ * 書き手の言い直しではない。同じ名前の文の繰り返しと、頭が名前でない文（Our team is …）と、段落の中の文は書式ではない。
+ */
+export const nameLedLines = (sentences: readonly Sentence[], source: string): Sentence[] => {
+  const lines = sentences.flatMap((sentence) => {
+    const parts = ownsLines(sentence, source) ? nameLedParts(sentence) : undefined;
+    return parts === undefined ? [] : [{ sentence, ...parts }];
+  });
+  const names = new Map<string, Set<string>>();
+  lines.forEach(({ name, form }) => names.set(form, (names.get(form) ?? new Set()).add(name)));
+  return lines.filter(({ form }) => (names.get(form)?.size ?? 0) > 1).map(({ sentence }) => sentence);
+};
+
 /** 大文字だけの語と読点で始まる頭（RESOLVED,、WHEREAS,、NOW, THEREFORE, BE IT RESOLVED,）。 */
 const ENACTING_HEAD = /^(?:\p{Lu}{2,}[ ,]+)*\p{Lu}{3,},/u;
 
