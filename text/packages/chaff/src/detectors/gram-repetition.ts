@@ -21,7 +21,17 @@ import { gramPassagesOf } from "./gram-passages.ts";
 import { narrowestStretch, sentencePositions } from "./gram-spread.ts";
 import { namedByHeading } from "./gram-heading.ts";
 import { carriedBySiblings, numberedSiblingsOf, repeatedBlocksOf } from "./gram-siblings.ts";
-import { enactingClauses, entryOpeners, filledForms, labelLines, nameLedLines, nounFragments, rowEndCells, sectionOpeners } from "./gram-openers.ts";
+import {
+  enactingClauses,
+  entryOpeners,
+  filledForms,
+  labelLines,
+  nameLedLines,
+  nounFragments,
+  resolutionOutcomes,
+  rowEndCells,
+  sectionOpeners,
+} from "./gram-openers.ts";
 import { onlySubjectIn, subjectLemmas } from "./gram-subject.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import type { Detector, Finding, LengthUnit, ProseDocument, Sentence, Span, StructureNode, Token } from "../plugin.ts";
@@ -151,6 +161,7 @@ const templatesOf = (doc: ProseDocument): ReadonlySet<Sentence> => {
     ...filledForms(doc.sentences, doc.source),
     ...nameLedLines(doc.sentences, doc.source),
     ...enactingClauses(doc.sentences),
+    ...resolutionOutcomes(doc.sentences, doc.source),
   ]);
 };
 
