@@ -399,6 +399,19 @@ const closesCleftInNounPhrase = (tokens: readonly Token[], topic: number, at: nu
 };
 
 /**
+ * 食の大部分は家庭が担っているという実態を踏まえれば、食に関する指導は、…: a topic inside a clause that という makes a noun's
+ * content, with no comma between, and a new topic of its own after the comma that ends that noun's phrase. The topic is said
+ * within the phrase; the new topic takes the rest of the sentence. Without a new topic (本書は…という問題を扱い、…) the noun
+ * phrase is more often what the topic's own predicate takes.
+ */
+const closesTopicInNounClause = (tokens: readonly Token[], topic: number, at: number, last: number): boolean => {
+  if (tokens[at]?.surface !== "という" || !PREDICATE.has(tokens[at - 1]?.pos ?? "") || !isOwnNoun(tokens[at + 1])) return false;
+  if (tokens.slice(topic + 1, at).some(isComma)) return false;
+  const comma = tokens.findIndex((token, index) => index > at && index < last && isComma(token));
+  return comma !== -1 && ownTopicAfter(tokens, comma, last);
+};
+
+/**
  * The index of the word that ends the topic's own clause, between the topic and the sentence's last word, or undefined when the
  * topic's predicate is the one the sentence ends on.
  */
@@ -413,7 +426,8 @@ export const topicClauseEnd = (tokens: readonly Token[], topic: number, last: nu
     closesWithPoliteGa(tokens, topic, at, last, subject) ||
     closesAfterPredicate(tokens, topic, at, words) ||
     closesWithItemMark(tokens, at) ||
-    closesCleftInNounPhrase(tokens, topic, at, last);
+    closesCleftInNounPhrase(tokens, topic, at, last) ||
+    closesTopicInNounClause(tokens, topic, at, last);
   const end = tokens.findIndex((_, at) => at > topic && at < last && closes(at));
   return end === -1 ? undefined : end;
 };
