@@ -28,5 +28,4 @@ tcu-rishu-toroku-2026-kouki  1
 vue-docs-ja-reactivity-fundamentals  1
 wikipedia-ja-talk-oden  3
 zenn-coji-ai-smell-lint  2
-zenn-coji-xstate-api-reference  1
 zenn-kaityo256-what-is-linker  1
