@@ -34,9 +34,6 @@ entries:
     group: last
   - pattern: やってみてください
     group: last
-  # 「できるところから、ぜひ始めてみてください」。始めるよう勧めて終えるのも、試すよう勧めるのと同じ結びの定型。
-  - pattern: 始めてみてください
-    group: last
   - pattern: ましょう！
     group: last
   - pattern: ましょう!
