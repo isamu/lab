@@ -90,6 +90,15 @@ describe("ngram-repetition: a fixed formula an item carries", () => {
     assert.notEqual(worst(en, `# Minutes\n\n${copied.join("\n")}`), undefined);
   });
 
+  it("does not count one-line status items that differ only by a leading name, and counts them in prose or after plain words", () => {
+    const items = PROJECTS.map((project, index) => `- Apache ${project} ${String(index + 1)}.0 is in maintenance mode.`);
+    assert.equal(worst(en, `# Minutes\n\nSub-projects:\n\n${items.join("\n")}\n`), undefined);
+    const prose = PROJECTS.map((project, index) => `Apache ${project} ${String(index + 1)}.0 is in maintenance mode.`);
+    assert.match(worst(en, `# Minutes\n\n${prose.join(" ")}\n`) ?? "", /maintenance mode/u);
+    const plain = SUBJECTS.map((subject) => `- ${subject.charAt(0).toUpperCase()}${subject.slice(1).split(" ")[0] ?? ""} is in maintenance mode.`);
+    assert.match(worst(en, `# Minutes\n\nSub-projects:\n\n${plain.join("\n")}\n`) ?? "", /maintenance mode/u);
+  });
+
   it("does not count a minutes' fixed line for a report not given, and counts a line the writer wrote", () => {
     const missing = PROJECTS.map((project) => `## ${project}\n\nNo report was submitted.\n`);
     assert.equal(worst(en, `# Minutes\n\n${missing.join("\n")}`), undefined);
