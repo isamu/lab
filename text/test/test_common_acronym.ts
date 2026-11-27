@@ -61,6 +61,14 @@ const PENDING = { en: "SRE, XYZ and CBA are pending.", ja: "SRE、XYZ、CBAは�
   });
 });
 
+describe("common-acronym（en）: a place named by its letters", () => {
+  it("NYC, like USA, is not asked for; an organisation's letters beside it still are", () => {
+    const found = reported(en, `# Guides\n\n${PENDING.en} See the NYC Accessible Virtual Meetings Guide. The GSA guide is free.\n`);
+    assert.ok(!found.includes("NYC"), found.join(","));
+    assert.ok(found.includes("GSA"), found.join(","));
+  });
+});
+
 describe("common-acronym の無い言語", () => {
   it("rule は動かず、語彙表が無いと理由を言う（通じる略語まで指摘しない）", () => {
     const bare: LanguageAdapter = { ...en, lexicons: {} };
