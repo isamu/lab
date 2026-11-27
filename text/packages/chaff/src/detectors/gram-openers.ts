@@ -172,3 +172,12 @@ export const filledForms = (sentences: readonly Sentence[], source: string): Sen
   owning.flatMap(linesOf).forEach((line) => fillings.set(formOf(line), (fillings.get(formOf(line)) ?? new Set()).add(line)));
   return owning.filter((sentence) => linesOf(sentence).some((line) => (fillings.get(formOf(line))?.size ?? 0) > 1));
 };
+
+/** 大文字だけの語と読点で始まる頭（RESOLVED,、WHEREAS,、NOW, THEREFORE, BE IT RESOLVED,）。 */
+const ENACTING_HEAD = /^(?:\p{Lu}{2,}[ ,]+)*\p{Lu}{3,},/u;
+
+/**
+ * 議決の条項（RESOLVED, that the office of … be and hereby is created; and be it further）。条項ごとに同じ頭と同じ言い回しで書くのは
+ * 議決の書式で、書き手の言い直しではない。大文字だけの語で始めるのは条項の書き方で、地の文にはない。
+ */
+export const enactingClauses = (sentences: readonly Sentence[]): Sentence[] => sentences.filter((sentence) => ENACTING_HEAD.test(sentence.text.trimStart()));

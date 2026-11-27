@@ -115,4 +115,17 @@ describe("ngram-repetition: a fixed formula an item carries", () => {
     const repeated = SUBJECTS.map((subject) => `The record trail begins at the ${subject} because they hold the detail.`).join(" ");
     assert.notEqual(worst(en, `# Examples\n\n## Example 1\n\n${repeated}\n\n## Example 2\n\nNone.\n\n## Example 3\n\nNone.\n`), undefined);
   });
+
+  it("does not count the wording of a resolution's clauses, and counts the same wording in plain sentences", () => {
+    const resolution = (project: string): string =>
+      [
+        `## Establish ${project}\n`,
+        `RESOLVED, that the ${project} committee be and hereby is established; and be it further`,
+        `RESOLVED, that the office of chair of ${project} be and hereby is created; and be it further`,
+        `RESOLVED, that the persons listed below be and hereby are appointed to ${project}.\n`,
+      ].join("\n\n");
+    assert.equal(worst(en, `# Resolutions\n\n${PROJECTS.slice(0, 3).map(resolution).join("\n")}`), undefined);
+    const plain = PROJECTS.slice(0, 3).map((project) => resolution(project).replaceAll("RESOLVED, that", "We agreed that"));
+    assert.notEqual(worst(en, `# Resolutions\n\n${plain.join("\n")}`), undefined);
+  });
 });
