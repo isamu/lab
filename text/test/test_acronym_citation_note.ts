@@ -83,4 +83,12 @@ describe("undefined-acronym: a note that is a reference", () => {
     assert.deepEqual(reportedAcronyms(en, "# Contact\n\nWrite to PO Box 128, West Glacier.\n"), []);
     assert.deepEqual(reportedAcronyms(en, "# Orders\n\nSend the PO to the buyer.\n"), ["PO"]);
   });
+
+  it("AN in the stand-in name AN Other is not an acronym; AN alone still is", () => {
+    assert.deepEqual(
+      reportedAcronyms(en, "# Sample invoice\n\nSales invoice no 174\n\nTo: AN Other LTD57 North Road, London N1 5NA\n\nSale: Time of supply 30/10/07\n"),
+      [],
+    );
+    assert.deepEqual(reportedAcronyms(en, "# Sample invoice\n\nThe AN rate applies.\n"), ["AN"]);
+  });
 });
