@@ -7,3 +7,5 @@ entries:
   - pattern: "NOW, THEREFORE"
   - pattern: "AND/OR"
   - pattern: "PO Box"
+  # The British stand-in name of a sample (To: AN Other Ltd), A. N. Other run together; AN alone is still counted.
+  - pattern: "AN Other"

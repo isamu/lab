@@ -1,0 +1,11 @@
+# 番号の頭に付く文字を示す言い方（XIで始まる番号）。{code} が文字の置き場所。文字は番号の頭に印刷された記号で、書き手が
+# 直せない。undefined-acronym は数に入れるが、展開を求めない。英文をそのまま載せた文書のために英語の形も置く。
+id: code-prefix-phrase
+language: ja
+entries:
+  - pattern: "{code}で始まる"
+  - pattern: "{code}から始まる"
+  - pattern: "{code}で始まり"
+  - pattern: "{code}から始まり"
+  - pattern: "starts with {code}"
+  - pattern: "begins with {code}"

@@ -84,6 +84,8 @@ entries:
   - pattern: UK
   - pattern: EU
   - pattern: UN
+  # A place a general reader names by its letters, as USA (New York City).
+  - pattern: NYC
   - pattern: WHO
   - pattern: ASEAN
   - pattern: DNA

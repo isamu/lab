@@ -168,13 +168,15 @@ const finalCopulaTakesAct = (tokens: readonly Token[], at: number, last: number)
  * copula or ある, or the subject of the final copula's noun (〜を図ることが必要である, 〜を行うことも重要な役割である). 信頼型は、…ものであり、…ものではありません
  * and これは…リンクであり、ユーザーが…ということです say two things of the same topic. With another topic between the topic and it
  * (復興は、…進んでいる一方で、…状況は様々であり、), the copula is that topic's, not the first one's. A が there (〜ことは、パレスチナが
- * …共存することであり、) is inside a clause the topic's own predicate takes, and does not count.
+ * …共存することであり、) is inside a clause the topic's own predicate takes, and does not count. An act made a noun as the topic
+ * (育成することは重要であり、…影響を及ぼす可能性があります) is what the copula judges; a subject of its own after it takes the rest,
+ * whatever the sentence ends on.
  */
 const closesWithCopulaContinuing = (tokens: readonly Token[], topic: number, at: number, last: number, subject: number): boolean =>
   isCopulaContinuing(tokens, at) &&
   !newTopicAfter(tokens, topic, at) &&
   (newTopicAfter(tokens, at + 1, last) ||
-    ((subject > at || finalGaAfter(tokens, at, last)) && !endsOnCopulaOrBeing(tokens, last)) ||
+    ((subject > at || finalGaAfter(tokens, at, last)) && (!endsOnCopulaOrBeing(tokens, last) || isActTopic(tokens, topic))) ||
     predicateNounTakesGa(tokens, at, last) ||
     finalCopulaTakesAct(tokens, at, last));
 
@@ -211,6 +213,26 @@ const ownGaInClause = (tokens: readonly Token[], topic: number, at: number): boo
  */
 const closesWithContinuingPassive = (tokens: readonly Token[], topic: number, at: number, last: number): boolean =>
   isContinuingPassive(tokens, at) && !newTopicAfter(tokens, topic, at) && !ownGaInClause(tokens, topic, at) && ownTopicAfter(tokens, at + 1, last);
+
+/** The conjunctions that give a reason (から, ので). */
+const REASONS = new Set(["から", "ので"]);
+
+/**
+ * それは…いただけるものですから、今、私たちは…: a copula's reason and a comma close the topic's clause when a new topic of its
+ * own takes the rest of the sentence and no other topic stands between. 今後は after it sets the time of the same topic's
+ * next clause, and does not count.
+ */
+const closesWithCopulaReason = (tokens: readonly Token[], topic: number, at: number, last: number): boolean => {
+  const token = tokens[at];
+  return (
+    token?.pos === "SCONJ" &&
+    REASONS.has(token.surface) &&
+    isComma(tokens[at + 1]) &&
+    copulaBefore(tokens, at) &&
+    !newTopicAfter(tokens, topic, at) &&
+    ownTopicAfter(tokens, at + 1, last)
+  );
+};
 
 /**
  * 〜する想定のため: a clause, a noun it ends on, and の before ため, the copula's attributive form (想定であるため). A bare noun
@@ -399,6 +421,19 @@ const closesCleftInNounPhrase = (tokens: readonly Token[], topic: number, at: nu
 };
 
 /**
+ * 食の大部分は家庭が担っているという実態を踏まえれば、食に関する指導は、…: a topic inside a clause that という makes a noun's
+ * content, with no comma between, and a new topic of its own after the comma that ends that noun's phrase. The topic is said
+ * within the phrase; the new topic takes the rest of the sentence. Without a new topic (本書は…という問題を扱い、…) the noun
+ * phrase is more often what the topic's own predicate takes.
+ */
+const closesTopicInNounClause = (tokens: readonly Token[], topic: number, at: number, last: number): boolean => {
+  if (tokens[at]?.surface !== "という" || !PREDICATE.has(tokens[at - 1]?.pos ?? "") || !isOwnNoun(tokens[at + 1])) return false;
+  if (tokens.slice(topic + 1, at).some(isComma)) return false;
+  const comma = tokens.findIndex((token, index) => index > at && index < last && isComma(token));
+  return comma !== -1 && ownTopicAfter(tokens, comma, last);
+};
+
+/**
  * The index of the word that ends the topic's own clause, between the topic and the sentence's last word, or undefined when the
  * topic's predicate is the one the sentence ends on.
  */
@@ -409,11 +444,13 @@ export const topicClauseEnd = (tokens: readonly Token[], topic: number, last: nu
     (closesIfNewSubject(tokens, at) && (subject > at || requestAfter(tokens, at, last))) ||
     closesWithCopulaContinuing(tokens, topic, at, last, subject) ||
     closesWithContinuingPassive(tokens, topic, at, last) ||
+    closesWithCopulaReason(tokens, topic, at, last) ||
     closesFirstClauseWithNoun(tokens, topic, at, last) ||
     closesWithPoliteGa(tokens, topic, at, last, subject) ||
     closesAfterPredicate(tokens, topic, at, words) ||
     closesWithItemMark(tokens, at) ||
-    closesCleftInNounPhrase(tokens, topic, at, last);
+    closesCleftInNounPhrase(tokens, topic, at, last) ||
+    closesTopicInNounClause(tokens, topic, at, last);
   const end = tokens.findIndex((_, at) => at > topic && at < last && closes(at));
   return end === -1 ? undefined : end;
 };
