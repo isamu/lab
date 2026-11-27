@@ -133,4 +133,24 @@ describe("ngram-repetition: a fixed formula an item carries", () => {
     assert.equal(worst(en, `# Podlings\n\n${PROJECTS.map((project, index) => report(project, index, questions)).join("\n")}`), undefined);
     assert.notEqual(worst(en, `# Podlings\n\n${PROJECTS.map((project, index) => report(project, index, "")).join("\n")}`), undefined);
   });
+
+  it("does not count the wording of a resolution's clauses, and counts the same wording in plain sentences", () => {
+    const resolution = (project: string): string =>
+      [
+        `## Establish ${project}\n`,
+        `RESOLVED, that the ${project} committee be and hereby is established; and be it further`,
+        `RESOLVED, that the office of chair of ${project} be and hereby is created; and be it further`,
+        `RESOLVED, that the persons listed below be and hereby are appointed to ${project}.\n`,
+      ].join("\n\n");
+    assert.equal(worst(en, `# Resolutions\n\n${PROJECTS.slice(0, 3).map(resolution).join("\n")}`), undefined);
+    const plain = PROJECTS.slice(0, 3).map((project) => resolution(project).replaceAll("RESOLVED, that", "We agreed that"));
+    assert.notEqual(worst(en, `# Resolutions\n\n${plain.join("\n")}`), undefined);
+  });
+
+  it("does not count a phrase whose only content word is the document's subject, and counts one with other words", () => {
+    const body = (verb: string): string => SUBJECTS.map((subject, index) => `For ${subject}, you can ${verb} the ${MEANINGS[index] ?? ""}.`).join(" ");
+    assert.equal(worst(en, `# Record keeping\n\n${body("record")}\n`), undefined);
+    assert.match(worst(en, `# Bookkeeping basics\n\n${body("record")}\n`) ?? "", /record/u);
+    assert.notEqual(worst(en, `# Record keeping\n\n${body("file")}\n`), undefined);
+  });
 });
