@@ -211,3 +211,15 @@ describe("unqualified-superlative は範囲を持つ最上級を指摘しない"
     assert.ok(result.skipped.find((entry) => entry.rule === RULE)?.why.includes("superlative-scope"));
   });
 });
+
+describe("unqualified-superlative: 「〜ためには」が目的を言う最上級", () => {
+  it("目的を言う文の最上級は、その目的のための手立ての中で最もなのかを言っている", () => {
+    assert.ok(!superlativeReported(ja, "そのためには、この会議こそが、最も効果的で唯一の場です。"));
+    assert.ok(!superlativeReported(ja, "店を長く続けるためには、地元の客が最も大切です。"));
+  });
+
+  it("目的を言わない「ために」や、目的の無い文の最上級は指摘する", () => {
+    assert.ok(superlativeReported(ja, "雨のために最大の被害が出ました。"));
+    assert.ok(superlativeReported(ja, "この会議こそが、最も効果的で唯一の場です。"));
+  });
+});
