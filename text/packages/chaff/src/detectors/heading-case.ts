@@ -40,6 +40,8 @@ const ACRONYM = /^[A-Z]{2,}s?$/u;
 
 const TITLE_DEPTH = 1;
 
+const CAPITAL_START = /^[A-Z]/u;
+
 /**
  * 見出しの頭の番号の札（Section 3. / Day 1: / Part II:）。札の語は流儀によらず大文字で始まり、続く題の語数にも数えない。
  * 番号は 3 桁までで、後ろに「.」「:」「)」か ダッシュ、または括弧に入れた題（Rule 1 (Labels)）があるものだけ（Windows 11 Setup も Budget 2026: も札ではない）。
@@ -65,11 +67,14 @@ const LETTER_LABEL = /^\s*\(?(?:[A-Za-z]|[ivxlc]{2,6}|[IVXLC]{2,6})[.)]\s+/u;
  * どちらの流儀の証拠にもならないので数えない。
  */
 export const isTitleCase = (heading: string, fixedCase: ReadonlySet<string> = new Set()): boolean | undefined => {
-  const words = [...withoutCodeWords(straightApostrophes(withoutLeadingLabel(heading).replace(LETTER_LABEL, ""))).matchAll(WORD)]
-    .map((match) => match[0])
-    .filter((word) => !MINOR_WORDS.has(word.toLowerCase()) && !SHORT_CONJUNCTIONS.has(word.toLowerCase()) && !ACRONYM.test(word) && !fixedCase.has(word));
-  // 1 語の見出しは、どちらの流儀でも先頭が大文字になる。判定できない。
-  if (words.length < 2) return undefined;
+  const all = [...withoutCodeWords(straightApostrophes(withoutLeadingLabel(heading).replace(LETTER_LABEL, ""))).matchAll(WORD)].map((match) => match[0]);
+  // 大文字で始まる最初の語は、どちらの流儀でもそう書くので数えず、後ろの 1 語で決まる（Incident Review Completion の Completion）。
+  // 小文字で始まる最初の語（impl、iOS）は名前やコードで、それを含めて 2 語ないと決めない。
+  const capitalStart = CAPITAL_START.test(all[0] ?? "");
+  const words = (capitalStart ? all.slice(1) : all).filter(
+    (word) => !MINOR_WORDS.has(word.toLowerCase()) && !SHORT_CONJUNCTIONS.has(word.toLowerCase()) && !ACRONYM.test(word) && !fixedCase.has(word),
+  );
+  if (words.length < (capitalStart ? 1 : 2)) return undefined;
   const capitalized = words.filter((word) => word[0] === word[0]?.toUpperCase()).length;
   return capitalized === words.length;
 };
