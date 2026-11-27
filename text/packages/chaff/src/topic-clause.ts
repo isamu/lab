@@ -168,13 +168,15 @@ const finalCopulaTakesAct = (tokens: readonly Token[], at: number, last: number)
  * copula or ある, or the subject of the final copula's noun (〜を図ることが必要である, 〜を行うことも重要な役割である). 信頼型は、…ものであり、…ものではありません
  * and これは…リンクであり、ユーザーが…ということです say two things of the same topic. With another topic between the topic and it
  * (復興は、…進んでいる一方で、…状況は様々であり、), the copula is that topic's, not the first one's. A が there (〜ことは、パレスチナが
- * …共存することであり、) is inside a clause the topic's own predicate takes, and does not count.
+ * …共存することであり、) is inside a clause the topic's own predicate takes, and does not count. An act made a noun as the topic
+ * (育成することは重要であり、…影響を及ぼす可能性があります) is what the copula judges; a subject of its own after it takes the rest,
+ * whatever the sentence ends on.
  */
 const closesWithCopulaContinuing = (tokens: readonly Token[], topic: number, at: number, last: number, subject: number): boolean =>
   isCopulaContinuing(tokens, at) &&
   !newTopicAfter(tokens, topic, at) &&
   (newTopicAfter(tokens, at + 1, last) ||
-    ((subject > at || finalGaAfter(tokens, at, last)) && !endsOnCopulaOrBeing(tokens, last)) ||
+    ((subject > at || finalGaAfter(tokens, at, last)) && (!endsOnCopulaOrBeing(tokens, last) || isActTopic(tokens, topic))) ||
     predicateNounTakesGa(tokens, at, last) ||
     finalCopulaTakesAct(tokens, at, last));
 
