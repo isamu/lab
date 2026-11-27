@@ -1251,12 +1251,6 @@ detector はそれだけを見る。動作主の語（によって / by）は L2
 `lang-ja` の SudachiPy、`lang-en` の spaCy は、いずれも Python 依存で npx 単体では成立しない。
 eval と calibration の専用経路としてなら価値があるが、lint の常用パスには入れない。
 
----
-
-## 17. npx で動かすための設計
-
-最終目標は `npx chaffjs lint article.md` の一発で動くことである。
-
 ### 16.4 判定役は差し替えられる
 
 L4 の判定役は provider ごとに違うが、**違うのは要求の包みかただけ**である。
@@ -1288,6 +1282,10 @@ Claude Code は自前の system prompt とツール定義を毎回積むため�
 その全部が乗る。API 経由の 1 件およそ 500 トークンに対して 100 倍近い。採らない。
 
 ---
+
+## 17. npx で動かすための設計
+
+最終目標は `npx chaffjs lint article.md` の一発で動くことである。
 
 ### 17.1 予算
 
