@@ -2,6 +2,28 @@
 
 Newest first.
 
+## 0.54.0 — 2026-11-28
+
+This release comes from judging findings in isamu/chaff-corpus: every change narrows a rule where a judged document
+showed a false positive.
+
+### Fewer false positives
+
+- undefined-acronym leaves the letters a sentence says an identifier starts with (starts with XI) (#2887), knows NYC as
+  an everyday place name (#2889) and the stand-in name AN Other (#2890), reads the acronym that heads a name spelled out
+  with its own longer acronym as explained (XSL Transformations (XSLT)) (#2896), and does not count the spaced capitals
+  of a name the document also writes joined (JS Conf / JSConf) (#2899).
+- max-kanji-continuous reads 〜貯蓄, 〜融資, 〜講習 as scheme names (#2888), skips a quoted name that ends in a bracketed
+  note (#2895), reads a line ending in a notice title word (について, お知らせ) as a title (#2897), and takes 方針 as a
+  title ending (#2898).
+- topic-predicate-distance closes a topic at a question's 〜のか、 (#2891), at a copula's reason (〜ですから、) before a
+  new noun topic (#2892), at 〜であり、 when an act topic (〜することは) is followed by a subject of its own (#2893), and
+  inside a 〜という clause before a new topic (#2894).
+- unqualified-superlative reads 〜ためには in the same sentence as the superlative's purpose (#2901).
+- no-doubled-joshi reads a time word's の before the run's last noun as one name (#2903).
+- ngram-repetition leaves the phrase every section of a repeated form carries (#2904), the clauses of a resolution
+  (RESOLVED, / WHEREAS,) (#2905), and a phrase built only on the words of the document's title (#2906).
+
 ## 0.53.0 — 2026-11-27
 
 This release comes from judging findings in isamu/chaff-corpus: most changes narrow a rule where a judged document showed
