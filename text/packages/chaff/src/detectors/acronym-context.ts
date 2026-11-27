@@ -18,6 +18,7 @@ import { chatLogSpans } from "./chat-log-line.ts";
 import { quotedLabelSpans } from "./quoted-label.ts";
 import { eventTitleSpans } from "./event-title-item.ts";
 import { priceListSpans } from "./price-list.ts";
+import { codePrefixSpans } from "./code-prefix.ts";
 
 /**
  * 大文字の語が略語ではなく、決まった書き方の一部として読める所（3:30 PM、1pm ET、USD 1,000、Kansas City, MO 64108、Fort Lauderdale FL 33304）。
@@ -256,8 +257,8 @@ export const sourceNotAcronymSpans = (source: string, wordsOf: (id: string) => s
 /**
  * 数には入れるが指さない略語の範囲。リンク先の題名、文献を引いて始まる注、判例の引用の当事者・裁判所・事件番号、
  * 角括弧の見出しで始まる文献の項目（[FETCH]    WHATWG, "Fetch"）、貼り付けたチャットの発言（<jinxer-wm> FIRING: …）、
- * 書式の部品の名前の前に括弧で引いた表示（the “VOID” box）、過去の講演や催しの一覧の題名（- 「…の改善」、- …の進め方～（2014/1/9））は、
- * 書き手が直せない。
+ * 書式の部品の名前の前に括弧で引いた表示（the “VOID” box）、過去の講演や催しの一覧の題名（- 「…の改善」、- …の進め方～（2014/1/9））、
+ * 番号の頭に付く文字（starts with XI）は、書き手が直せない。
  */
 export const unreportedAcronymSpans = (
   source: string,
@@ -272,4 +273,5 @@ export const unreportedAcronymSpans = (
   ...chatLogSpans(source),
   ...quotedLabelSpans(source, wordsOf("control-noun")),
   ...eventTitleSpans(source, wordsOf("talk-kind")),
+  ...codePrefixSpans(source, wordsOf("code-prefix-phrase")),
 ];
