@@ -212,6 +212,26 @@ const ownGaInClause = (tokens: readonly Token[], topic: number, at: number): boo
 const closesWithContinuingPassive = (tokens: readonly Token[], topic: number, at: number, last: number): boolean =>
   isContinuingPassive(tokens, at) && !newTopicAfter(tokens, topic, at) && !ownGaInClause(tokens, topic, at) && ownTopicAfter(tokens, at + 1, last);
 
+/** The conjunctions that give a reason (から, ので). */
+const REASONS = new Set(["から", "ので"]);
+
+/**
+ * それは…いただけるものですから、今、私たちは…: a copula's reason and a comma close the topic's clause when a new topic of its
+ * own takes the rest of the sentence and no other topic stands between. 今後は after it sets the time of the same topic's
+ * next clause, and does not count.
+ */
+const closesWithCopulaReason = (tokens: readonly Token[], topic: number, at: number, last: number): boolean => {
+  const token = tokens[at];
+  return (
+    token?.pos === "SCONJ" &&
+    REASONS.has(token.surface) &&
+    isComma(tokens[at + 1]) &&
+    copulaBefore(tokens, at) &&
+    !newTopicAfter(tokens, topic, at) &&
+    ownTopicAfter(tokens, at + 1, last)
+  );
+};
+
 /**
  * 〜する想定のため: a clause, a noun it ends on, and の before ため, the copula's attributive form (想定であるため). A bare noun
  * before のため (安全管理のため) is more often a purpose, which the topic's own predicate still follows.
@@ -409,6 +429,7 @@ export const topicClauseEnd = (tokens: readonly Token[], topic: number, last: nu
     (closesIfNewSubject(tokens, at) && (subject > at || requestAfter(tokens, at, last))) ||
     closesWithCopulaContinuing(tokens, topic, at, last, subject) ||
     closesWithContinuingPassive(tokens, topic, at, last) ||
+    closesWithCopulaReason(tokens, topic, at, last) ||
     closesFirstClauseWithNoun(tokens, topic, at, last) ||
     closesWithPoliteGa(tokens, topic, at, last, subject) ||
     closesAfterPredicate(tokens, topic, at, words) ||
