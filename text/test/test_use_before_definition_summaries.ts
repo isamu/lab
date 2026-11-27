@@ -88,6 +88,18 @@ describe("use-before-definition: a summary section and a numbered heading are no
     assert.deepEqual(early(`You may share the work under the Licence belowground.${terms}`, en), ['"Licence" is used here, before it is defined on line 4']);
   });
 
+  // Self-written: a term used with a parenthesis that says its definition comes later.
+  it("a use followed by (defined below) or (as defined below) is not an early use", () => {
+    const terms = '\n## Section 1\n\nThese terms (the "Licence") let anyone share the work.\n';
+    assert.deepEqual(early(`You may share the work under the Licence (defined below).${terms}`, en), []);
+    assert.deepEqual(early(`You may share the work under the Licence (as defined below).${terms}`, en), []);
+    const bold = 'This Agreement incorporates the Cover Page (defined below). The parties sign a cover page ("**Cover Page**").\n';
+    assert.deepEqual(early(bold, en), []);
+    assert.deepEqual(early(`You may share the work under the Licence (defined in Section 1).${terms}`, en), [
+      '"Licence" is used here, before it is defined on line 4',
+    ]);
+  });
+
   it("after a use that points ahead, later early uses are not reported; an earlier one still is", () => {
     const later = "\n## 第1条\n\nこの文書の条項（以下「利用条件」という。）に従い、利用を許諾する。\n";
     assert.deepEqual(early(`作品は、下記利用条件に従って共有できます。\n\n利用条件は取り消せません。${later}`), []);

@@ -1,6 +1,6 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { inEntryOfTerm } from "../packages/chaff/src/detectors/term-mention-sentence.ts";
+import { inEntryOfTerm, opensEntryOfTerm } from "../packages/chaff/src/detectors/term-mention-sentence.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { profileFor } from "../packages/chaff/src/profile/for-file.ts";
 import { EMPTY } from "../packages/chaff/src/config/load.ts";
@@ -14,7 +14,7 @@ import type { Sentence } from "../packages/chaff/src/plugin.ts";
 
 const RULE = "defined-term-form";
 
-const casesOf = (source: string): string[] =>
+const variantsOf = (source: string, variant: string): string[] =>
   runRules(
     buildDocument("t.md", source, en, undefined, profileFor(EMPTY, "t.md", source, en.id, "legal/contract")),
     loadRules(en.id),
@@ -22,8 +22,11 @@ const casesOf = (source: string): string[] =>
     false,
     "legal/contract",
   )
-    .findings.filter((finding) => finding.rule === RULE && finding.variant === "case")
+    .findings.filter((finding) => finding.rule === RULE && finding.variant === variant)
     .map((finding) => String(finding.values["term"]));
+
+const casesOf = (source: string): string[] => variantsOf(source, "case");
+const quotedOf = (source: string): string[] => variantsOf(source, "quoted");
 
 const contract = (...lines: string[]): string =>
   [
@@ -60,6 +63,48 @@ describe("defined-term-form: the body of a definitions entry", () => {
   it("invalid: a lower-case use before the quoted term in the same sentence is still reported", () => {
     const source = contract('3. Any capital contribution paid in property counts toward the "Capital Contribution" of that Partner.');
     assert.deepEqual(casesOf(source), ["Capital Contribution"]);
+  });
+});
+
+describe("defined-term-form: the quoted name that opens a definitions entry", () => {
+  it("valid: the entry's own quoted name is a definition, not a quoted use", () => {
+    const source = contract("3. Definitions.", "", 'a. "Capital Contributions" The capital contribution paid by the Partners, in cash or property.');
+    assert.deepEqual(quotedOf(source), []);
+  });
+
+  it("valid: an entry whose name is followed by a colon", () => {
+    const source = contract("3. Definitions.", "", '(a) "Capital Contribution": the money paid by the Partners.');
+    assert.deepEqual(quotedOf(source), []);
+  });
+
+  it("invalid: the term quoted again in the middle of a sentence is still reported", () => {
+    const source = contract('3. No Partner may withdraw the "Capital Contribution" without consent.');
+    assert.deepEqual(quotedOf(source), ["Capital Contribution"]);
+  });
+
+  it("invalid: a sentence that opens with the quoted term and goes on as a sentence is still reported", () => {
+    const source = contract('3. "Capital Contribution" earns no interest.');
+    assert.deepEqual(quotedOf(source), ["Capital Contribution"]);
+  });
+});
+
+describe("opensEntryOfTerm", () => {
+  const head = (text: string): boolean => {
+    const at = text.indexOf("Capital");
+    return opensEntryOfTerm([{ text, span: { start: 0, end: text.length } }], "Capital Contribution", at);
+  };
+
+  it("valid: the quoted name of an entry, followed by its body in capitals, after a colon or a dash", () => {
+    assert.equal(head('a. "Capital Contributions" The money paid.'), true);
+    assert.equal(head('"Capital Contribution": the money paid.'), true);
+    assert.equal(head("(b) “Capital Contribution” — the money paid."), true);
+  });
+
+  it("invalid: a quote in the middle, a sentence going on in lower case, or an offset outside the name", () => {
+    assert.equal(head('Members call it "Capital Contribution" The money.'), false);
+    assert.equal(head('"Capital Contribution" earns no interest.'), false);
+    assert.equal(opensEntryOfTerm([{ text: '"Capital Contribution" The money.', span: { start: 0, end: 33 } }], "Capital Contribution", 25), false);
+    assert.equal(opensEntryOfTerm([], "Capital Contribution", 1), false);
   });
 });
 
