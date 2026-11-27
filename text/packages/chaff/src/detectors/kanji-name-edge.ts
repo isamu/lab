@@ -16,6 +16,19 @@ const KANJI_OR_HIRAGANA = /[一-鿿ぁ-ゖ]/u;
 export const holdsName = (text: string, span: Span, start: number, end: number): boolean =>
   span.start <= start && end <= span.end && !KANJI_OR_HIRAGANA.test(text.slice(span.start, start) + text.slice(end, span.end));
 
+/** 括弧の中身の尻の、丸括弧の補い（「非常勤職員選考書類在中（健康・生活衛生局）」の「（健康・生活衛生局）」）。 */
+const TRAILING_NOTE = /[（(][^（）()]*[）)]$/u;
+
+/**
+ * 鉤括弧の中身（span）が holdsName か、それに尻の丸括弧の補いだけを足したものか。
+ * 封筒に書く文句のように、名前の後ろに宛先や区分を括弧で添えて引いたもの（「非常勤職員選考書類在中（健康・生活衛生局）」）。補いの中は名前の外。
+ */
+export const holdsQuotedName = (text: string, span: Span, start: number, end: number): boolean => {
+  if (holdsName(text, span, start, end)) return true;
+  const note = TRAILING_NOTE.exec(text.slice(end, span.end));
+  return note !== null && holdsName(text, { start: span.start, end: span.end - note[0].length }, start, end);
+};
+
 const HIRAGANA_HEAD = /^\s*[ぁ-ゖ]/u;
 
 /**

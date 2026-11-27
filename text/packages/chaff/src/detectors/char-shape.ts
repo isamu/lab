@@ -7,7 +7,7 @@ import {
   followsForm,
   followsUnit,
   fillsGloss,
-  holdsName,
+  holdsQuotedName,
   inWorkTitle,
   isListItem,
   labelsLines,
@@ -81,11 +81,11 @@ const maskedProse = (prose: string, profile: DocumentProfile | undefined, names:
   maskSpans(maskAddresses(prose, profile), nameSpans(prose, names));
 
 /**
- * 鉤括弧と隅付き括弧の中身が、この範囲（文の先頭からの位置）と、漢字も平仮名も無い語（ページ、センター）だけか。
+ * 鉤括弧と隅付き括弧の中身が、この範囲（文の先頭からの位置）と、漢字も平仮名も無い語（ページ、センター）だけか（尻の丸括弧の補いは除く）。
  * 括弧でくくった名前は、書き手が 1 つの名前として示したもの（「登録業者情報検索入力ページ」）。
  */
 const fillsQuote = (sentence: Sentence, start: number, end: number): boolean =>
-  quotedSpans(sentence.text, NAME_MARKS).some((span) => holdsName(sentence.text, span, start, end)) || fillsGloss(sentence.text, start, end);
+  quotedSpans(sentence.text, NAME_MARKS).some((span) => holdsQuotedName(sentence.text, span, start, end)) || fillsGloss(sentence.text, start, end);
 
 const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined, names: readonly string[]): KanjiRun[] => {
   const prose = proseText(sentence);
