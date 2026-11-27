@@ -1,0 +1,22 @@
+# いつかだけを言う語（現在の状態の「現在」）。no-doubled-joshi は、この語の直後の「の」が連なりの最後の名詞に係るとき
+# （任意のアクターの現在の状態）、その「の」を入れ子の「の」と数えない。「現在の状態」は一つの名前として前の語に係る。
+# 連なりの途中に立つとき（今後の種の保存法の在り方の検討）は、遠くの名詞に係るので数える。
+id: particle-run-time-word
+language: ja
+entries:
+  - pattern: 現在
+  - pattern: 将来
+  - pattern: 今後
+  - pattern: 従来
+  - pattern: 当時
+  - pattern: 最近
+  - pattern: 当初
+  - pattern: 今回
+  - pattern: 前回
+  - pattern: 本日
+  - pattern: 今年
+  - pattern: 本年
+  - pattern: 昨年
+  - pattern: 前年
+  - pattern: 毎年
+  - pattern: 以前
