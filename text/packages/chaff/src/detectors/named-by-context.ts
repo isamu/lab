@@ -5,10 +5,17 @@ type ContextWords = { readonly designations: readonly string[]; readonly noticeE
 /** 連なりの後ろ（next）が、制度が区分に入れることを言う句で始まるか（認定希少種保全動植物園等として認定）。 */
 const isDesignated = (run: Surroundings, words: ContextWords): boolean => words.designations.some((phrase) => run.next.startsWith(phrase));
 
-/** 行がお知らせの題で、連なりがその「の」の前か（[e-Gov]〜設定解除完了のお知らせ）。題は句点で閉じない一行。 */
+/** 文を閉じる印。題の行には無い。 */
+const SENTENCE_END = /[。．！？!?]/u;
+
+/**
+ * 行がお知らせや議題の題で、連なりがその中にあるか（[e-Gov]〜設定解除完了のお知らせ、〜指定管理者の選定に関する方針について）。
+ * 題は題を閉じる語で終わる一行で、続く行（議題の下の「資料配付のみ」）を含めて文を閉じる印が無い。
+ */
 const isNoticeTitle = (run: Surroundings, words: ContextWords): boolean => {
-  const next = run.next.trim();
-  return !run.before.includes("\n") && words.noticeEndings.some((ending) => next === `の${ending}`);
+  if (SENTENCE_END.test(run.before + run.next)) return false;
+  const lineRest = run.next.split("\n")[0]?.trim() ?? "";
+  return words.noticeEndings.some((ending) => lineRest.endsWith(ending));
 };
 
 /** 前後の字が、漢字の連なりを名前と示しているか: 制度が決めた区分の名前か、送り手が付けたお知らせの題の名前。 */
