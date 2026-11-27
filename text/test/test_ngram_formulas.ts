@@ -90,6 +90,15 @@ describe("ngram-repetition: a fixed formula an item carries", () => {
     assert.notEqual(worst(en, `# Minutes\n\n${copied.join("\n")}`), undefined);
   });
 
+  it("does not count one-line status items that differ only by a leading name, and counts them in prose or after plain words", () => {
+    const items = PROJECTS.map((project, index) => `- Apache ${project} ${String(index + 1)}.0 is in maintenance mode.`);
+    assert.equal(worst(en, `# Minutes\n\nSub-projects:\n\n${items.join("\n")}\n`), undefined);
+    const prose = PROJECTS.map((project, index) => `Apache ${project} ${String(index + 1)}.0 is in maintenance mode.`);
+    assert.match(worst(en, `# Minutes\n\n${prose.join(" ")}\n`) ?? "", /maintenance mode/u);
+    const plain = SUBJECTS.map((subject) => `- ${subject.charAt(0).toUpperCase()}${subject.slice(1).split(" ")[0] ?? ""} is in maintenance mode.`);
+    assert.match(worst(en, `# Minutes\n\nSub-projects:\n\n${plain.join("\n")}\n`) ?? "", /maintenance mode/u);
+  });
+
   it("does not count a minutes' fixed line for a report not given, and counts a line the writer wrote", () => {
     const missing = PROJECTS.map((project) => `## ${project}\n\nNo report was submitted.\n`);
     assert.equal(worst(en, `# Minutes\n\n${missing.join("\n")}`), undefined);
@@ -145,6 +154,23 @@ describe("ngram-repetition: a fixed formula an item carries", () => {
     assert.equal(worst(en, `# Resolutions\n\n${PROJECTS.slice(0, 3).map(resolution).join("\n")}`), undefined);
     const plain = PROJECTS.slice(0, 3).map((project) => resolution(project).replaceAll("RESOLVED, that", "We agreed that"));
     assert.notEqual(worst(en, `# Resolutions\n\n${plain.join("\n")}`), undefined);
+  });
+
+  it("does not count the outcome line after each resolution, and counts it after plain paragraphs", () => {
+    const item =
+      (body: (project: string, subject: string) => string) =>
+      (project: string, index: number): string =>
+        [
+          `## ${String.fromCharCode(65 + index)}. Establish ${project}\n`,
+          `${body(project, SUBJECTS[index] ?? "")}\n`,
+          `Special Order 7${String.fromCharCode(65 + index)}, Establish ${project}, was approved by Unanimous Vote of the directors present.\n`,
+        ].join("\n");
+    const resolved = PROJECTS.map(
+      item((project, subject) => `WHEREAS, the board has heard about ${subject}.\n\nRESOLVED, that the ${project} committee is established.`),
+    );
+    assert.equal(worst(en, `# Special Orders\n\n${resolved.join("\n")}`), undefined);
+    const plain = PROJECTS.map(item((project, subject) => `${project} looks after ${subject}.`));
+    assert.match(worst(en, `# Special Orders\n\n${plain.join("\n")}`) ?? "", /approved by unanimous|unanimous vote/iu);
   });
 
   it("does not count a phrase whose only content word is the document's subject, and counts one with other words", () => {
