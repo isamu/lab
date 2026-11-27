@@ -115,4 +115,11 @@ describe("ngram-repetition: a fixed formula an item carries", () => {
     const repeated = SUBJECTS.map((subject) => `The record trail begins at the ${subject} because they hold the detail.`).join(" ");
     assert.notEqual(worst(en, `# Examples\n\n## Example 1\n\n${repeated}\n\n## Example 2\n\nNone.\n\n## Example 3\n\nNone.\n`), undefined);
   });
+
+  it("does not count a phrase whose only content word is the document's subject, and counts one with other words", () => {
+    const body = (verb: string): string => SUBJECTS.map((subject, index) => `For ${subject}, you can ${verb} the ${MEANINGS[index] ?? ""}.`).join(" ");
+    assert.equal(worst(en, `# Record keeping\n\n${body("record")}\n`), undefined);
+    assert.match(worst(en, `# Bookkeeping basics\n\n${body("record")}\n`) ?? "", /record/u);
+    assert.notEqual(worst(en, `# Record keeping\n\n${body("file")}\n`), undefined);
+  });
 });

@@ -22,6 +22,7 @@ import { narrowestStretch, sentencePositions } from "./gram-spread.ts";
 import { namedByHeading } from "./gram-heading.ts";
 import { carriedBySiblings, numberedSiblingsOf } from "./gram-siblings.ts";
 import { entryOpeners, filledForms, labelLines, nounFragments, rowEndCells, sectionOpeners } from "./gram-openers.ts";
+import { onlySubjectIn, subjectLemmas } from "./gram-subject.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import type { Detector, Finding, LengthUnit, ProseDocument, Sentence, Span, StructureNode, Token } from "../plugin.ts";
 
@@ -251,15 +252,28 @@ const hasPredicate = (occurrences: readonly Occurrence[], unit: LengthUnit): boo
   return judged.length === 0 || judged.filter(Boolean).length * 2 >= judged.length;
 };
 
+/**
+ * 出現の半分以上で、語句の中身を持つ語が文書の題の語だけ（題 Record keeping の下の you can record the）。主題を扱うたびに出る言い方で、
+ * 言い直しではない（gram-subject.ts）。品詞が無ければ見分けられないので、これまでどおり数える。
+ */
+const aboutSubject = (occurrences: readonly Occurrence[], subject: ReadonlySet<string>): boolean => {
+  if (subject.size === 0) return false;
+  const judged = occurrences
+    .map((occurrence) => judgeAt(occurrence, (tokens, window) => onlySubjectIn(tokens, window, subject)))
+    .filter((found) => found !== undefined);
+  return judged.length > 0 && judged.filter(Boolean).length * 2 >= judged.length;
+};
+
 export const ngramRepetition: Detector = (doc, options): Finding[] => {
   if (wordsOf(doc) < MIN_DOCUMENT_LENGTH[doc.lengthUnit]) return [];
   const inRuns = sentencesInEndingRuns(
     doc.paragraphs,
     (doc.lexicons["calendar-era"] ?? []).map((entry) => entry.pattern),
   );
+  const subject = subjectLemmas(doc.sections);
   const worst = repeatsOf(doc, options.limit)
     .toSorted((left, right) => right.occurrences.length - left.occurrences.length)
-    .find(({ occurrences }) => hasPredicate(occurrences, doc.lengthUnit) && !endingInRuns(occurrences, inRuns));
+    .find(({ occurrences }) => hasPredicate(occurrences, doc.lengthUnit) && !endingInRuns(occurrences, inRuns) && !aboutSubject(occurrences, subject));
   if (worst === undefined) return [];
   const first = worst.occurrences.find((occurrence) => occurrence.place !== undefined) ?? worst.occurrences[0];
   const at = first?.sentence;
