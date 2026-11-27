@@ -4,6 +4,7 @@ import { lexiconNotationOf, sourceNotAcronymSpans, unreportedAcronymSpans, type 
 import { titledCodeSpans } from "./titled-code-citation.ts";
 import { abbreviates, expansionAt, termEntryAcronyms, type DefinitionWords, type ExpandedAt } from "./acronym-expansion.ts";
 import { parentItemAcronyms } from "./acronym-parent-item.ts";
+import { nameHeadAcronyms } from "./acronym-name-head.ts";
 import { isExplained } from "./acronym-compound.ts";
 import { statedAcronyms } from "./acronym-definition.ts";
 import { isBracketed, isInHeading, isNamePart } from "./acronym-lone.ts";
@@ -270,6 +271,7 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   // 2 つ以上の番号で引く続き物の名前（BCP 78、BCP 14）も、略語の説明と読む。
   // 文献一覧の見出し語（[UNIX]    The Open Group, "The Single UNIX Specification"）と、見出しに番号で立てた書簡の続き物（### SR 26-8: …）も。
   // 入れ子の箇条書きで、親の項目が書き出した名前（- No product owner: の下の - Unavailable PO）も。
+  // 長い略語を括弧に入れて書き出した名前の頭の略語（XSL Transformations (XSLT) の XSL）も。
   const headings = doc.sections.map((section) => halfWidth(section.heading));
   const counted = countedHitsOf(doc);
   // ファイルの種類の名前としてだけ書いた大文字（the MAP files、MAPファイル）も、展開を待つ略語ではない。
@@ -277,6 +279,7 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
     ...fileTypeNames(counted.map(fileUseOf), patternsOf(doc, "file-noun")),
     ...termEntryAcronyms(doc.source),
     ...parentItemAcronyms(doc.source),
+    ...nameHeadAcronyms(body),
     ...stated,
     ...linkedListTerms(doc.source),
     ...spelled,
