@@ -113,6 +113,10 @@ describe("kutoten-consistency: 句読点の書き方がそろっていない", (
     assert.deepEqual(findingsOf(source), []);
   });
 
+  it("プライムを添えた符号を並べる「，」も読点ではない（ａ′，ｂ′，ｃ′）", () => {
+    assert.deepEqual(findingsOf(`${PLAIN}素材は段部ａ′，ｂ′，ｃ′と、型３０ａ′，３１ａ′を有する。\n`), []);
+  });
+
   it("符号の後ろでも、続くのが日本語の語や長い英字の語なら読点（凸部１１ｅ，次に、AB，JSON）", () => {
     const comma = "読点を「，」と書いています（この文書はふつう「、」。5 箇所のうち 2 箇所が違う）";
     assert.deepEqual(findingsOf(`${PLAIN}凸部１１ｅ，次に穴を開ける。形式はAB，JSONです。\n`), [comma, comma]);

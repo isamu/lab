@@ -286,6 +286,13 @@ describe("setApartSpans and namedWords", () => {
     assert.deepEqual(namedWords(""), []);
   });
 
+  it("names a heading of two or more words run in before its clause's number, and not a one-word one or a sentence", () => {
+    assert.deepEqual(namedWords("in writing. Valuation of Interest 39. In the absence"), ["Valuation of Interest"]);
+    assert.deepEqual(namedWords("Dissolution of the Joint Venture 36. The Venture"), ["Dissolution of the Joint Venture"]);
+    assert.deepEqual(namedWords("in writing. Liquidation 37. On dissolution"), []);
+    assert.deepEqual(namedWords("The Company shall pay 39. Then it ends."), []);
+  });
+
   it("finds a clause's run-in caption, at a line's start or after a sentence, and not a sentence", () => {
     const captions = (source: string): string[] => setApartSpans(source).map((span) => source.slice(span.start, span.end).trim());
     assert.deepEqual(captions("5.8 No Representation or Warranty. Neither party makes a promise."), ["5.8 No Representation or Warranty"]);
