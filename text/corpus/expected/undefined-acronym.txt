@@ -24,7 +24,7 @@ gitlab-values  8
 go-1-23-release-notes  8
 govuk-cddo-roadmap-2022-2025  8
 govuk-incident-safe-browsing  2
-govuk-style-guide-a-to-z  25
+govuk-style-guide-a-to-z  24
 irs-online-account-faq  3
 kep-2214-indexed-job  5
 kimino-opendata-site  2
