@@ -156,6 +156,23 @@ describe("ngram-repetition: a fixed formula an item carries", () => {
     assert.notEqual(worst(en, `# Resolutions\n\n${plain.join("\n")}`), undefined);
   });
 
+  it("does not count the outcome line after each resolution, and counts it after plain paragraphs", () => {
+    const item =
+      (body: (project: string, subject: string) => string) =>
+      (project: string, index: number): string =>
+        [
+          `## ${String.fromCharCode(65 + index)}. Establish ${project}\n`,
+          `${body(project, SUBJECTS[index] ?? "")}\n`,
+          `Special Order 7${String.fromCharCode(65 + index)}, Establish ${project}, was approved by Unanimous Vote of the directors present.\n`,
+        ].join("\n");
+    const resolved = PROJECTS.map(
+      item((project, subject) => `WHEREAS, the board has heard about ${subject}.\n\nRESOLVED, that the ${project} committee is established.`),
+    );
+    assert.equal(worst(en, `# Special Orders\n\n${resolved.join("\n")}`), undefined);
+    const plain = PROJECTS.map(item((project, subject) => `${project} looks after ${subject}.`));
+    assert.match(worst(en, `# Special Orders\n\n${plain.join("\n")}`) ?? "", /approved by unanimous|unanimous vote/iu);
+  });
+
   it("does not count a phrase whose only content word is the document's subject, and counts one with other words", () => {
     const body = (verb: string): string => SUBJECTS.map((subject, index) => `For ${subject}, you can ${verb} the ${MEANINGS[index] ?? ""}.`).join(" ");
     assert.equal(worst(en, `# Record keeping\n\n${body("record")}\n`), undefined);

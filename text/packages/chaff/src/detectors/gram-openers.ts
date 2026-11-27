@@ -209,3 +209,33 @@ const ENACTING_HEAD = /^(?:\p{Lu}{2,}[ ,]+)*\p{Lu}{3,},/u;
  * 議決の書式で、書き手の言い直しではない。大文字だけの語で始めるのは条項の書き方で、地の文にはない。
  */
 export const enactingClauses = (sentences: readonly Sentence[]): Sentence[] => sentences.filter((sentence) => ENACTING_HEAD.test(sentence.text.trimStart()));
+
+const PARAGRAPH_REACH = 40;
+/** 議決は条項が 2 つ以上続き、最後の条項は句点で終わる。大文字だけの名前の行が並ぶ名簿（ELIOT L. ENGEL, New York）は議決ではない。 */
+const CLAUSES_BEFORE = 2;
+const CAPITALS_HEAD = /^\p{Lu}{2,}\b/u;
+const isBlank = (line: string | undefined): boolean => line !== undefined && line.trim() === "";
+
+/** 文が段落を独り占めしているか（前が空行、後ろが空行か文書の終わり）。 */
+const ownsParagraph = (sentence: Sentence, source: string): boolean => {
+  const before = source.slice(Math.max(0, sentence.span.start - PARAGRAPH_REACH), sentence.span.start).split("\n");
+  const after = source.slice(sentence.span.end, sentence.span.end + PARAGRAPH_REACH).split("\n");
+  return isBlank(before.at(-1)) && isBlank(before.at(-2)) && isBlank(after[0]) && (after.length === 1 || isBlank(after[1]));
+};
+
+/**
+ * 議決の最後の条項の直後の、一文だけの段落（Special Order 7A, Terminate the Apache Any23 Project, was approved by Unanimous Vote of the
+ * directors present.）。議決ごとに同じ言い方で結果を記す議事録の書式。条項の後ろに続く地の文の段落は、二文以上なら入れない。
+ */
+export const resolutionOutcomes = (sentences: readonly Sentence[], source: string): Sentence[] =>
+  sentences.filter((sentence, index) => {
+    const clauses = sentences.slice(Math.max(0, index - CLAUSES_BEFORE), index);
+    return (
+      clauses.length === CLAUSES_BEFORE &&
+      clauses.every((clause) => ENACTING_HEAD.test(clause.text.trimStart())) &&
+      SENTENCE_END.test(clauses.at(-1)?.text ?? "") &&
+      SENTENCE_END.test(sentence.text) &&
+      !CAPITALS_HEAD.test(sentence.text.trimStart()) &&
+      ownsParagraph(sentence, source)
+    );
+  });
