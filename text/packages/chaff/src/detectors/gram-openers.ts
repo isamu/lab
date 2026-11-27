@@ -173,8 +173,8 @@ export const filledForms = (sentences: readonly Sentence[], source: string): Sen
   return owning.filter((sentence) => linesOf(sentence).some((line) => (fillings.get(formOf(line))?.size ?? 0) > 1));
 };
 
-/** 文の頭の、大文字か数字で始まる語の並び（Apache Trinidad、Maven JXR 3.6.0、GO-18.0.0）と、その後ろの小文字で始まる述部。 */
-const NAME_LED = /^((?:[\p{Lu}\p{N}][\p{L}\p{N}.'’-]*[ \t]+)*[\p{Lu}\p{N}][\p{L}\p{N}.'’-]*)[ \t]+(\p{Ll}.*)$/su;
+/** 文の頭の、大文字で始まる語に大文字か数字で始まる語が続く並び（Apache Trinidad、Maven JXR 3.6.0、GO-18.0.0）と、その後ろの小文字で始まる述部。 */
+const NAME_LED = /^(\p{Lu}[\p{L}\p{N}.'’-]*(?:[ \t]+[\p{Lu}\p{N}][\p{L}\p{N}.'’-]*)*)[ \t]+(\p{Ll}.*)$/su;
 /** 一語だけの頭は、識別子（GO-18.0.0、ExtVal）なら名前。文頭の大文字の普通の語（Customers、Our）は名前と見分けられない。 */
 const PLAIN_WORD = /^\p{Lu}\p{Ll}*$/u;
 
