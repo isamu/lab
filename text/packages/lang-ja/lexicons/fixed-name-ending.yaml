@@ -16,6 +16,10 @@ entries:
   - pattern: 省令
   - pattern: 条例
   - pattern: 制度
+  # 貯蓄・融資は制度が名付けた貯蓄や融資の名前（勤労者財産形成住宅貯蓄、勤労者財産形成持家融資）、講習は法令が定める講習の名前（既存住宅状況調査技術者講習）。
+  - pattern: 貯蓄
+  - pattern: 融資
+  - pattern: 講習
   - pattern: 交付金
   - pattern: 補助金
   - pattern: 助成金
