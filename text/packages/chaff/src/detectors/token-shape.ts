@@ -7,6 +7,7 @@ import type { Detector, Finding, ProseDocument, Sentence, Span, Token } from "..
 import { countedTokens, uncountedWordsOf, type UncountedWords } from "../uncounted-particles.ts";
 import { boundWordParticles } from "../bound-word-particles.ts";
 import { setPhraseParticles } from "../set-phrase-particles.ts";
+import { timeWordParticles } from "../time-word-particles.ts";
 import { clauseEnds, copulaEnds, determinerParticles, longestClausePart } from "../clause-particles.ts";
 import { noteSentences } from "../note-paragraphs.ts";
 import { labelledNoteSentences } from "../labelled-note-paragraphs.ts";
@@ -134,15 +135,24 @@ const SET_PHRASE_LEXICON = "particle-run-set-phrase";
 /** どれを指すかだけを言う語（他の）。直後の「の」は名詞を名詞の中に入れない。 */
 const DETERMINER_LEXICON = "particle-run-determiner";
 
-/** 前の語と組んで一つの名前になる語（皆様、下）、決まった言い回し（おそれのある）、どれを指すかだけを言う語（他）。 */
-type Phrases = { readonly boundWords: readonly string[]; readonly setPhrases: readonly string[]; readonly determiners: readonly string[] };
+/** いつかだけを言う語（現在）。直後の「の」が連なりの最後の名詞に係るとき（アクターの現在の状態）は、その名詞と一つの名前に読む。 */
+const TIME_WORD_LEXICON = "particle-run-time-word";
+
+/** 前の語と組んで一つの名前になる語（皆様、下）、決まった言い回し（おそれのある）、どれを指すかだけを言う語（他）、いつかだけを言う語（現在）。 */
+type Phrases = {
+  readonly boundWords: readonly string[];
+  readonly setPhrases: readonly string[];
+  readonly determiners: readonly string[];
+  readonly timeWords: readonly string[];
+};
 
 /** 数えない助詞（番号をつなぐ「の」、敬って呼ぶ語や置き場所を言う語の前の「の」、決まった言い回しの中の「の」、他の）を除いた語。 */
-const chainTokens = (tokens: readonly Token[], numbering: UncountedWords, { boundWords, setPhrases, determiners }: Phrases): readonly Token[] => {
+const chainTokens = (tokens: readonly Token[], numbering: UncountedWords, { boundWords, setPhrases, determiners, timeWords }: Phrases): readonly Token[] => {
   const uncounted = new Set([
     ...boundWordParticles(tokens, numbering.particles, boundWords),
     ...setPhraseParticles(tokens, numbering.particles, setPhrases),
     ...determinerParticles(tokens, numbering.particles, determiners),
+    ...timeWordParticles(tokens, numbering.particles, timeWords),
   ]);
   const counted = countedTokens(tokens, numbering);
   return uncounted.size === 0 ? counted : counted.filter((token) => !uncounted.has(token));
@@ -159,6 +169,7 @@ export const doubledParticle: Detector = (doc, options): Finding[] => {
     boundWords: [HONORIFIC_GROUP_LEXICON, POSITION_LEXICON].flatMap((id) => (doc.lexicons[id] ?? []).map((entry) => entry.pattern)),
     setPhrases: (doc.lexicons[SET_PHRASE_LEXICON] ?? []).map((entry) => entry.pattern),
     determiners: (doc.lexicons[DETERMINER_LEXICON] ?? []).map((entry) => entry.pattern),
+    timeWords: (doc.lexicons[TIME_WORD_LEXICON] ?? []).map((entry) => entry.pattern),
   };
   const prose = doc.prose ?? doc.source;
   const namingMarkers = (doc.lexicons[NAMING_LEXICON] ?? []).map((entry) => entry.pattern);
