@@ -20,7 +20,7 @@ import { isSentenceEndingOnly, sentencesInEndingRuns } from "./gram-ending.ts";
 import { gramPassagesOf } from "./gram-passages.ts";
 import { narrowestStretch, sentencePositions } from "./gram-spread.ts";
 import { namedByHeading } from "./gram-heading.ts";
-import { carriedBySiblings, numberedSiblingsOf } from "./gram-siblings.ts";
+import { carriedBySiblings, numberedSiblingsOf, repeatedBlocksOf } from "./gram-siblings.ts";
 import { entryOpeners, filledForms, labelLines, nounFragments, rowEndCells, sectionOpeners } from "./gram-openers.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import type { Detector, Finding, LengthUnit, ProseDocument, Sentence, Span, StructureNode, Token } from "../plugin.ts";
@@ -197,10 +197,13 @@ const repeatsOf = (doc: ProseDocument, limit: number): Repeat[] => {
   const openers = sectionOpeners(doc.sections, doc.source);
   const title = titleOf(doc);
   const positions = sentencePositions(doc.sentences, doc.lengthUnit);
-  const siblings = numberedSiblingsOf(
-    doc.sections,
-    (doc.lexicons["ngram-example-heading"] ?? []).map((entry) => entry.pattern),
-  );
+  const siblings = new Map([
+    ...repeatedBlocksOf(doc.sections),
+    ...numberedSiblingsOf(
+      doc.sections,
+      (doc.lexicons["ngram-example-heading"] ?? []).map((entry) => entry.pattern),
+    ),
+  ]);
   return gramPassagesOf(doc.sections).flatMap((sentences) =>
     [...gramsOf(context, sentences).entries()].flatMap(([key, all]) => {
       const occurrences = all.filter((occurrence) => !templates.has(occurrence.sentence));
@@ -209,6 +212,7 @@ const repeatsOf = (doc: ProseDocument, limit: number): Repeat[] => {
       const carried = carriedBySiblings(
         occurrences.map((occurrence) => occurrence.sentence),
         siblings,
+        limit,
       );
       return counted && !carried && !spreadThin(occurrences, positions, limit, doc.lengthUnit) ? [{ key, occurrences }] : [];
     }),

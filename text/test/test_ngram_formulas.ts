@@ -115,4 +115,20 @@ describe("ngram-repetition: a fixed formula an item carries", () => {
     const repeated = SUBJECTS.map((subject) => `The record trail begins at the ${subject} because they hold the detail.`).join(" ");
     assert.notEqual(worst(en, `# Examples\n\n## Example 1\n\n${repeated}\n\n## Example 2\n\nNone.\n\n## Example 3\n\nNone.\n`), undefined);
   });
+
+  it("does not count the opening each section under a shared heading carries, and counts it under headings of their own", () => {
+    const report = (project: string, index: number, heading: string): string =>
+      `## ${project}\n\n### ${heading}\n\nThe mission of ${project} is the creation and maintenance of software related to ${SUBJECTS[index] ?? ""}.\n`;
+    assert.equal(worst(en, `# Reports\n\n${PROJECTS.map((project, index) => report(project, index, "Description:")).join("\n")}`), undefined);
+    const own = PROJECTS.map((project, index) => report(project, index, `What ${project} does`));
+    assert.notEqual(worst(en, `# Reports\n\n${own.join("\n")}`), undefined);
+  });
+
+  it("does not count a line each section with the same sub-headings carries, and counts it in sections without them", () => {
+    const report = (project: string, index: number, outline: string): string =>
+      `## ${project}\n\n${project} builds tools for ${SUBJECTS[index] ?? ""}.\n\n${project} has been incubating since 2022-10-${String(index + 10)}.\n${outline}`;
+    const questions = "\n### Issues to address\n\nNone.\n\n### Releases\n\nNone.\n";
+    assert.equal(worst(en, `# Podlings\n\n${PROJECTS.map((project, index) => report(project, index, questions)).join("\n")}`), undefined);
+    assert.notEqual(worst(en, `# Podlings\n\n${PROJECTS.map((project, index) => report(project, index, "")).join("\n")}`), undefined);
+  });
 });
