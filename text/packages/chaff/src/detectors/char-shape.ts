@@ -20,8 +20,8 @@ import {
 import { isNameList } from "./name-list-sentence.ts";
 import { maskAddresses } from "../address-chain.ts";
 import { isAddressRun } from "./place-run.ts";
-import { isOneName } from "./name-run.ts";
-import { closesAfterDot, isOrganisationHead, isOrganisationRun, type OrganisationWords } from "./organisation-run.ts";
+import { isNamed } from "./name-run.ts";
+import { closesAfterDot, isOrganisationHead, isOrganisationRun, leadingNamedOrganisation, type OrganisationWords } from "./organisation-run.ts";
 import { endsInTitle, inStatuteTitle, isTitlePosition, isTitledName, repeatedRuns, titleBody, type TitleWords } from "./titled-run.ts";
 import { proseText } from "../measure.ts";
 import { maskSpans } from "../mask.ts";
@@ -161,8 +161,6 @@ type NameWords = {
   readonly blockUnits: readonly string[];
 };
 
-type Tail = AddresseeSuffix;
-
 /** 1 つの文書で連なりを読むのに要るもの。titled は、文書の中で題として置かれた名前（titledNames）。 */
 type RunContext = {
   readonly profile: DocumentProfile | undefined;
@@ -190,7 +188,7 @@ const coveringOf = (tokens: readonly Token[], span: Span): number[] =>
  */
 const isPlaceName = (tokens: readonly Token[], span: Span, words: NameWords, formBefore: boolean): boolean => {
   const covering = coveringOf(tokens, span);
-  return isAddressRun(tokens, covering, words.topUnits) || isOneName(tokens, covering) || isOrganisationRun(tokens, covering, words.organisation, formBefore);
+  return isAddressRun(tokens, covering, words.topUnits) || isNamed(tokens, covering) || isOrganisationRun(tokens, covering, words.organisation, formBefore);
 };
 
 /** 中黒の後ろで閉じる組織の名前の前半（独立行政法人大学改革支援・学位授与機構の「独立行政法人大学改革支援」）。 */
@@ -217,7 +215,7 @@ const isAddresseeLine = (run: KanjiRun, words: NameWords): boolean => {
 const isNamedEntry = (run: KanjiRun, words: NameWords): boolean => run.listItem || isAddresseeLine(run, words);
 
 /** 尻の外す語: 数に付く接頭の語か条や項の番号か宛先に付く語と、宛名の行ならその前の役職（日本博物館協会会長殿の「会長殿」）。 */
-const tailOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: NameWords): Tail | undefined => {
+const tailOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: NameWords): AddresseeSuffix | undefined => {
   const prefix = trailingPrefix(tokens, span.end, run.text);
   const suffix =
     prefix === undefined
@@ -278,14 +276,15 @@ const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, contex
 };
 
 /**
- * 連なりの、知っている語（文書がほかで単独で使う組織の名前と法令の名前、連なりを閉じる決まった語、職名の前後の人の名前）を外した残りのうち、最も長いもの。
- * 安全保障理事会常任理事国は（安全保障理事会を単独で使う文書なら）「常任理事国」、日本国内閣総理大臣は「日本国」を数える。
- * 名前に普通の語が続く連なり（日本弁護士連合会臨時総会決議）は、名前がその文書で単独で使われていなければ、まるごと数える。連なりの中ほどの、並べた物の後ろに付く語（高齢運転者等専用駐車区間の「等」）は語の終わりを、前を指す語（事業当連結会計年度の「当」）は語の頭を、漢数字の番地（二丁目）は算用数字と同じく切れ目を見せるので、その前後を別に数える。
+ * 連なりの、知っている語（文書がほかで単独で使う組織の名前と法令の名前、連なりを閉じる決まった語、職名の前後の人の名前、頭の固有名詞を含む組織の名前）を外した残りのうち、最も長いもの。
+ * 安全保障理事会常任理事国は（安全保障理事会を単独で使う文書なら）「常任理事国」、日本国内閣総理大臣は「日本国」、国連安全保障理事会改革は「改革」を数える。
+ * 頭に名前の無い組織の名前に普通の語が続く連なり（個人情報保護委員会公表資料）は、名前がその文書で単独で使われていなければ、まるごと数える。連なりの中ほどの、並べた物の後ろに付く語（高齢運転者等専用駐車区間の「等」）は語の終わりを、前を指す語（事業当連結会計年度の「当」）は語の頭を、漢数字の番地（二丁目）は算用数字と同じく切れ目を見せるので、その前後を別に数える。
  */
 const longestUnknown = (tokens: readonly Token[], rest: Span, keptHead: string, context: RunContext): string => {
   const runTokens = coveringOf(tokens, rest).flatMap((index) => tokens.slice(index, index + 1));
   const words = runTokens.map((token) => surfaceWithin(token, rest));
-  const marks: BreakMarks = { suffixes: [...context.words.listSuffixes, ...context.words.references], blockUnits: context.words.blockUnits };
+  const leadingName = leadingNamedOrganisation(runTokens, context.maxKnownWords, context.words.organisation);
+  const marks: BreakMarks = { suffixes: [...context.words.listSuffixes, ...context.words.references], blockUnits: context.words.blockUnits, leadingName };
   // A run as long as the text holds no known word; reading it word by word would take a pass per word.
   if (!holdsKnown(runTokens, words, [...context.terms, ...context.words.knownWords], marks)) return keptHead + words.join("");
   const isKnown = (start: number, end: number): boolean => {

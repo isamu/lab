@@ -134,3 +134,24 @@ export const isOrganisationHead = (tokens: readonly Token[], covering: readonly 
   if (formBefore || formLength(run, new Set(words.forms)) > 0 || properLength(run) > 0) return true;
   return run.some((_, at) => at > 0 && segmentCount(run.slice(0, at), words.units) >= 1);
 };
+
+/**
+ * 連なりの頭の、固有名詞を含む組織の名前（国連安全保障理事会改革の「国連安全保障理事会」、東京電力福島第一原子力発電所事故の「東京電力福島第一原子力発電所」）の語数。
+ * 名前は maxWords 語まで、連なり全体は問わない。無ければ 0。名前は読み手が 1 語と知っているので、後ろの普通の語（改革、事故）は別に数える。
+ */
+export const leadingNamedOrganisation = (runTokens: readonly Token[], maxWords: number, organisation: OrganisationWords): number => {
+  const ends = Array.from({ length: Math.min(maxWords, runTokens.length - 1) }, (_, offset) => Math.min(maxWords, runTokens.length - 1) - offset);
+  return (
+    ends.find((end) => {
+      const head = runTokens.slice(0, end);
+      return (
+        head.some((token) => token.pos === "PROPN") &&
+        isOrganisationRun(
+          head,
+          head.map((_, index) => index),
+          organisation,
+        )
+      );
+    }) ?? 0
+  );
+};
