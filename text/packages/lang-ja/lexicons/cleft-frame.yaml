@@ -1,0 +1,19 @@
+# 分裂文（いちばん大きく変わったのは、季節に気づくようになったことだ。）の枠。topic は主題の節を閉じる語、close は文末で焦点を閉じる語。
+# 主題の節は焦点を差し出すだけで、文が言っているのは焦点。heading-echo は、焦点が見出しを言い直す最初の文を繰り返しとして読む。
+id: cleft-frame
+language: ja
+entries:
+  - pattern: のは
+    group: topic
+  - pattern: ことであった
+    group: close
+  - pattern: ことだった
+    group: close
+  - pattern: ことでした
+    group: close
+  - pattern: ことである
+    group: close
+  - pattern: ことです
+    group: close
+  - pattern: ことだ
+    group: close

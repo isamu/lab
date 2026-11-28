@@ -791,8 +791,8 @@ describe("English: a numbered bracket tag names another document only where this
 });
 
 describe("a plain-text specification's top-level sections (RFC 9457: '5.  Security Considerations')", () => {
-  // 二段の番号（3.1）は本文でも読むので、どの例も構造を読めた文書として比べる。
-  const withSubsection = (...head: string[]): string => lines(...head, "", "3.1.  Details", "", "Text.", "", "See Section 1.");
+  // 二段の番号（2.1）は本文でも読むので、どの例も構造を読めた文書として比べる。
+  const withSubsection = (...head: string[]): string => lines(...head, "", "2.1.  Details", "", "Text.", "", "See Section 1.");
   const missing = [["dangling-reference", { label: "Section 1", target: "1" }]];
 
   it("a number, a dot and two spaces before a short title is a section in a .txt document", () => {

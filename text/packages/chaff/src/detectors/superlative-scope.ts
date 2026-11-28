@@ -8,14 +8,20 @@ import type { TokenRange } from "./lexicon-match.ts";
 export type ScopeMarkers = {
   /** 最上級の直前に置く語（で）。その前に固有名詞か地名が要る。 */
   readonly before: Lexicon;
-  /** 最上級の名詞句の直後に置く語（in・of）。その後ろに名詞句が要る。 */
+  /** 最上級の名詞句の直後に置く語（in・of）。その後ろに名詞句か動名詞が要る。 */
   readonly after: Lexicon;
+  /** 名詞句の直後で、動名詞が続くときだけ範囲を言う語（the best tool for creating）。for + 名詞（the best opportunity for government）は受け手。 */
+  readonly purposes: Lexicon;
+  /** 名前でなくても、範囲の「で」の前で範囲になる名詞（世界で唯一の・業界で最も）。 */
+  readonly realms: Lexicon;
 };
 
 /** 語彙表の position で分ける。position の無い語は、どちら側の語か分からないので使わない。 */
-export const scopeMarkersOf = (lexicon: Lexicon): ScopeMarkers => ({
+export const scopeMarkersOf = (lexicon: Lexicon, purposes: Lexicon = [], realms: Lexicon = []): ScopeMarkers => ({
   before: lexicon.filter((entry) => entry.position === "before"),
   after: lexicon.filter((entry) => entry.position === "after"),
+  purposes,
+  realms,
 });
 
 const NOMINAL = new Set(["NOUN", "PROPN"]);
@@ -54,9 +60,12 @@ const clauseBefore = (tokens: readonly Token[], range: TokenRange): boolean => {
   return before !== undefined && first !== undefined && CLAUSE_END.has(before.pos) && before.surface === before.lemma && before.span.end === first.span.start;
 };
 
-/** 名前 + 範囲の語 + 最上級（日本で最も・トヨタで最も・東京都で最大）。「費用で最大の効果」の「費用」は名前ではないので範囲にしない。 */
-const namedBefore = (tokens: readonly Token[], range: TokenRange, markers: Lexicon): boolean =>
-  isMarker(tokens[range.start - 1], markers) && isNamed(tokens[range.start - 2]);
+/**
+ * 名前 + 範囲の語 + 最上級（日本で最も・トヨタで最も・東京都で最大）。「費用で最大の効果」の「費用」は名前ではないので範囲にしない。
+ * 名前でなくても、場や分野を言う名詞（世界で唯一の）は範囲。その名詞は言語パッケージの語彙表 superlative-realm が持つ。
+ */
+const namedBefore = (tokens: readonly Token[], range: TokenRange, markers: ScopeMarkers): boolean =>
+  isMarker(tokens[range.start - 1], markers.before) && (isNamed(tokens[range.start - 2]) || isMarker(tokens[range.start - 2], markers.realms));
 
 const HYPHENS = new Set(["-", "\u2010", "\u2011"]);
 
@@ -85,14 +94,23 @@ export const phraseEnd = (tokens: readonly Token[], at: number, nounSeen = false
   }
 };
 
-/** 最上級 + 名詞句 + 範囲の語 + 名詞句（the best pizza in Chicago・the most famous of the sculptures）。 */
-const phraseAfter = (tokens: readonly Token[], range: TokenRange, markers: Lexicon): boolean => {
+const isGerund = (token: Token | undefined): boolean => token?.features?.["VerbForm"] === "Ger";
+
+/**
+ * 最上級 + 名詞句 + 範囲の語 + 名詞句か動名詞（the best pizza in Chicago・the most famous of the sculptures・the most common
+ * form of debunking）。目的の語（for）は動名詞が続くときだけ（the most important tool for creating the culture）。
+ * 動名詞は、最上級に名詞が付いているときだけ範囲を言う。名詞の無い the best in helping teams は何の中で一番なのかを言っていない。
+ */
+const phraseAfter = (tokens: readonly Token[], range: TokenRange, markers: ScopeMarkers): boolean => {
   const at = phraseEnd(tokens, range.end);
   const last = tokens[at - 1];
   const endsPhrase = at === range.end || (last !== undefined && PHRASE_END.has(last.pos));
   const opens = tokens[at + 1];
-  return endsPhrase && isMarker(tokens[at], markers) && opens !== undefined && PHRASE_START.has(opens.pos);
+  if (!endsPhrase || opens === undefined) return false;
+  const gerund = at > range.end && isGerund(opens);
+  const scope = isMarker(tokens[at], markers.after) && (PHRASE_START.has(opens.pos) || gerund);
+  return scope || (isMarker(tokens[at], markers.purposes) && gerund);
 };
 
 export const scoped = (tokens: readonly Token[], range: TokenRange, markers: ScopeMarkers): boolean =>
-  compound(tokens, range) || clauseBefore(tokens, range) || namedBefore(tokens, range, markers.before) || phraseAfter(tokens, range, markers.after);
+  compound(tokens, range) || clauseBefore(tokens, range) || namedBefore(tokens, range, markers) || phraseAfter(tokens, range, markers);

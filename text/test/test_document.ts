@@ -159,4 +159,10 @@ describe("裸の URL", () => {
     assert.match(text ?? "", /説明/u);
     assert.ok(!(text ?? "").includes("example.com"));
   });
+
+  it("URL に続けて書いた文の終わりは文の区切りとして残す", () => {
+    const source = "表示は「https://（ドメイン名）/」のようになります。次の文です。";
+    assert.equal(texts(source).length, 2);
+    assert.equal(texts("See https://example.com/a. Next sentence here.").length, 2);
+  });
 });

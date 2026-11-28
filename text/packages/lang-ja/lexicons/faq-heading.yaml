@@ -1,0 +1,11 @@
+# 問いと答えを並べる節の見出し（よくある質問、Q&A）。その下の見出しは読み手の問いなので、構成の項目（chaff outline）は
+# その形（〜とは）を書き手の決まった見出しの形として数えない。見出しのどこにあっても当たる。
+id: faq-heading
+language: ja
+entries:
+  - pattern: よくある質問
+  - pattern: よくあるご質問
+  - pattern: よくあるお問い合わせ
+  - pattern: q&a
+  - pattern: ｑ＆ａ
+  - pattern: faq

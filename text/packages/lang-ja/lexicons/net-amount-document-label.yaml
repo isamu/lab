@@ -1,0 +1,11 @@
+# 給与明細の三つの名前（net-amount-mismatch）。group は net-amount-label と同じ gross・deduction・net。
+# 多くの給与明細は、総支給額を支給の表に、控除合計を控除の表に、差引支給額を差引の欄に分けて書くので、同じ表や節には三つがそろわない。
+# この三つの語だけは、文書全体で一つずつ（表の欄か「名前：金額」の行に一度ずつ、金額も一つずつ）で、ほかの net-amount-label の語に
+# 金額が無いとき、別々の表や節にあっても引き算と比べる。敷金の精算や学費の通知の語は入れない（控除合計 は 敷金 とも並ぶが、
+# 総支給額 と 差引支給額 がそろうのは給与明細だけ）。
+id: net-amount-document-label
+language: ja
+entries:
+  - { pattern: 総支給額, group: gross }
+  - { pattern: 控除合計, group: deduction }
+  - { pattern: 差引支給額, group: net }

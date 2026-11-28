@@ -25,15 +25,51 @@ const inCoordinatedNoun = (tokens: readonly Token[], index: number, unit: Length
   NOUNS.has(tokens[index + 1]?.pos ?? "") &&
   !isDependentNoun(tokens[index + 1]);
 
+/** 名詞を並べる中黒（資質・能力）。半角（･）も同じ。 */
+const NAKAGURO = new Set(["・", "･"]);
+
+/** index から助動詞を飛ばした先（育成すべき の す から 資質）。 */
+const afterAuxiliaries = (tokens: readonly Token[], index: number): number =>
+  tokens[index + 1]?.pos === "AUX" ? afterAuxiliaries(tokens, index + 1) : index + 1;
+
+/**
+ * 日本語で、中黒で並べた名詞（資質・能力）を飾る動詞と助動詞（育成すべき資質・能力）。名詞を中黒で並べた語は文書の決まった用語で、
+ * それを飾る節も用語の一部として繰り返される。中黒の無い名詞の前の動詞（〜の中にあるコンポーネント）は言い回しの一部のまま。
+ */
+const modifiesNounPair = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean => {
+  if (unit !== "char" || !PREDICATE_POS.has(tokens[index]?.pos ?? "")) return false;
+  const head = afterAuxiliaries(tokens, index);
+  return (
+    NOUNS.has(tokens[head]?.pos ?? "") &&
+    !isDependentNoun(tokens[head]) &&
+    NAKAGURO.has(tokens[head + 1]?.surface ?? "") &&
+    NOUNS.has(tokens[head + 2]?.pos ?? "")
+  );
+};
+
+/**
+ * 英語の大文字だけの語（AI、API）は略語の名前。解析器が動詞と読んでも（AI を ain't の ai と読む）述語ではない。
+ * 強調と分かった普通の語（NEVER、START）は除く。
+ */
+const ACRONYM = /^\p{Lu}[\p{Lu}\p{N}]+s?$/u;
+
+const acronymAt = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean => {
+  const token = tokens[index];
+  return unit === "word" && token !== undefined && ACRONYM.test(token.surface) && token.features?.["Emph"] !== "Yes";
+};
+
 /**
  * 英語で名詞のすぐ前の動詞は、名詞を飾る語（形容詞を挟んでも同じ）（the upcoming fiscal year、the Disclosing Party、the borrow checker）で、
  * 述語ではない。日本語の名詞の前の動詞（〜にあるコンポーネント）は言い回しの一部になるので、接続詞の後ろの用語の中（inCoordinatedNoun）だけを外す。
  */
 const modifiesNoun = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean =>
-  (unit === "word" && tokens[index]?.pos === "VERB" && NOUNS.has(tokens[index + 1]?.pos ?? "")) || inCoordinatedNoun(tokens, index, unit);
+  (unit === "word" && tokens[index]?.pos === "VERB" && (NOUNS.has(tokens[index + 1]?.pos ?? "") || acronymAt(tokens, index + 1, unit))) ||
+  inCoordinatedNoun(tokens, index, unit) ||
+  modifiesNounPair(tokens, index, unit);
 
-/** 英語で大文字の名前の一部になった動詞（Procedures Guide、the Location Object）も、述語ではない。 */
-const namePartAt = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean => unit === "word" && isNamePart(tokens, index);
+/** 英語で大文字の名前の一部になった動詞（Procedures Guide、the Location Object）と略語（AI）も、述語ではない。 */
+const namePartAt = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean =>
+  unit === "word" && (isNamePart(tokens, index) || acronymAt(tokens, index, unit));
 
 const isName = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean => {
   const token = tokens[index];
@@ -71,19 +107,60 @@ const OBJECT_START = new Set(["DET", "PRON", "NUM"]);
  * 英語で、窓の最後の名詞の形の動詞の前が名詞と形容詞だけ（先頭の冠詞は許す）で、後ろに目的語が続かなければ、動詞は名詞の続きの
  * 読み違い（the federal funds rate の rate、small business subcontracting）。窓の中に機能語があれば言い回し（your contract says）。
  */
-const endsNounCompound = (tokens: readonly Token[], index: number, window: Span, unit: LengthUnit): boolean => {
-  const verb = tokens[index];
-  if (unit !== "word" || verb?.pos !== "VERB" || !isNounShaped(verb) || OBJECT_START.has(tokens[index + 1]?.pos ?? "")) return false;
+/** 窓の最後の語が index で、その前が名詞と形容詞だけの用語（先頭の冠詞は許す）か。 */
+const closesTerm = (tokens: readonly Token[], index: number, window: Span, minWords: number = MIN_COMPOUND_WORDS): boolean => {
   const touched = tokens.flatMap((token, at) => (overlaps(token, window) ? [at] : []));
   if (touched.at(-1) !== index) return false;
   const before = touched.slice(0, -1).filter((at, order) => !(order === 0 && tokens[at]?.pos === "DET"));
-  return before.length >= MIN_COMPOUND_WORDS && before.every((at) => COMPOUND_POS.has(tokens[at]?.pos ?? ""));
+  return before.length >= minWords && before.every((at) => COMPOUND_POS.has(tokens[at]?.pos ?? ""));
+};
+
+const endsNounCompound = (tokens: readonly Token[], index: number, window: Span, unit: LengthUnit): boolean => {
+  const verb = tokens[index];
+  if (unit !== "word" || verb?.pos !== "VERB" || !isNounShaped(verb) || OBJECT_START.has(tokens[index + 1]?.pos ?? "")) return false;
+  return closesTerm(tokens, index, window);
+};
+
+const BE = new Set(["be", "is", "are", "was", "were"]);
+
+/**
+ * 英語で、用語のすぐ後ろの be で窓が終わる（the anticipatory mode is）。繰り返しているのは主語の用語で、be はその後ろに何を言うかの
+ * 入り口にすぎない。言い回しなら be の後ろまで同じになる。
+ */
+const copulaAfterTerm = (tokens: readonly Token[], index: number, window: Span, unit: LengthUnit): boolean => {
+  const token = tokens[index];
+  return unit === "word" && token !== undefined && BE.has(token.lemma ?? token.surface.toLowerCase()) && closesTerm(tokens, index, window);
+};
+
+/** 名詞の入る所の始まり: 前置詞と接続詞（of、that、because）、限定詞、what、読点でない句読点（: の後ろ）。 */
+const NOUN_SLOT_OPENERS = new Set(["ADP", "SCONJ", "DET", "PRON"]);
+
+const opensNounSlot = (token: Token | undefined): boolean =>
+  token !== undefined && (NOUN_SLOT_OPENERS.has(token.pos) || (token.pos === "PUNCT" && token.surface !== ","));
+
+/**
+ * 英語で、名詞の入る所に置いた -ing 形（what occupying the anticipatory mode requires、: occupying the … is）は行為の名前で、
+ * 文書の用語として繰り返す。述語ではない。文頭と読点の後ろの -ing 形は分詞の節（Using the form, send …）と見分けられないので外さない。
+ */
+const gerundAsNoun = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean =>
+  unit === "word" && tokens[index]?.features?.["VerbForm"] === "Ger" && opensNounSlot(tokens[index - 1]);
+
+const MODALS = new Set(["can", "could", "may", "might", "must", "shall", "should", "will", "would"]);
+
+/**
+ * 英語で、名詞の主語のすぐ後ろの助動詞 should や must で窓が終わる（the Manager should）。窓にあるのは誰がするかだけで、何をするかは
+ * 窓の外で出てくるたびに違う。手順書は手順ごとに役割を名指しし、名指しを繰り返すから誰の務めかが正確に読める。代名詞の主語（you should）は外さない。
+ */
+const modalAfterSubject = (tokens: readonly Token[], index: number, window: Span, unit: LengthUnit): boolean => {
+  const token = tokens[index];
+  return unit === "word" && token?.pos === "AUX" && MODALS.has(token.lemma ?? token.surface.toLowerCase()) && closesTerm(tokens, index, window, 1);
 };
 
 const countsAsPredicate = (tokens: readonly Token[], index: number, window: Span, unit: LengthUnit): boolean => {
   const token = tokens[index];
   if (token === undefined || !PREDICATE_POS.has(token.pos) || !overlaps(token, window)) return false;
   if (modifiesNoun(tokens, index, unit) || namePartAt(tokens, index, unit) || endsNounCompound(tokens, index, window, unit)) return false;
+  if (gerundAsNoun(tokens, index, unit) || copulaAfterTerm(tokens, index, window, unit) || modalAfterSubject(tokens, index, window, unit)) return false;
   return !isCut(token, window) || !onlyNamesBeside(tokens, index, window, unit);
 };
 

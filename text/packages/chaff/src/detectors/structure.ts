@@ -1,11 +1,14 @@
 import { charLength, lengthOf, proseText } from "../measure.ts";
 import { contractionExtraWords } from "../contraction-words.ts";
-import type { BulletList, Detector, DetectorOptions, Finding, LengthUnit, Paragraph, ProseDocument, Section, Sentence, Span } from "../plugin.ts";
+import type { Detector, DetectorOptions, Finding, LengthUnit, Paragraph, ProseDocument, Section, Sentence, Span } from "../plugin.ts";
 import { dateStampIndexes, stampCandidates } from "../date-stamp.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
 import { preambleParagraphs } from "../preamble-paragraphs.ts";
-import { isTooLongParagraph } from "../paragraph-length.ts";
-import { bodySectionOf } from "../body-section.ts";
+import { isTooLongParagraph, labelledBlocks, lostLineBreaks, opensWithFusedHeading } from "../paragraph-length.ts";
+import { bodySectionOf, hasOnlyMatterHeadings } from "../body-section.ts";
+import { opensWithDateline } from "../news-dateline.ts";
+import { threeShare } from "../rule-of-three.ts";
+import { isInterview, sectionLevels } from "../section-levels.ts";
 
 /**
  * ばらつきは変動係数（標準偏差 ÷ 平均）で測る。
@@ -36,7 +39,7 @@ const minimumCount = (options: DetectorOptions, name: string, fallback: number):
 };
 
 const DEFAULT_MIN_SECTIONS = 5;
-const DEFAULT_MIN_PARAGRAPHS = 6;
+const DEFAULT_MIN_PARAGRAPHS = 9;
 
 const uniformity = (doc: ProseDocument, values: readonly number[], span: { start: number }, limit: number, rule: string): Finding[] => {
   const cv = coefficientOfVariation(values);
@@ -60,23 +63,39 @@ const uniformity = (doc: ProseDocument, values: readonly number[], span: { start
 const sentenceSize = (sentence: Sentence, unit: LengthUnit): number =>
   lengthOf(sentence, unit) + (unit === "word" ? contractionExtraWords(proseText(sentence)) : 0);
 
+type Block = { readonly start: number; readonly sentences: readonly Sentence[] };
+
+/**
+ * 段落の中の、長さを測る文の組と、その頭の位置（最初の組は段落の頭）。見出しが本文に溶けた段落や、文どうしが空白なしでつながった段落（改行の落ちた文書）は測らない。
+ * 【】の見出しや段落番号だけの行で段落を割る。
+ */
+const measuredBlocks = (doc: ProseDocument, paragraph: Paragraph): Block[] => {
+  const text = doc.source.slice(paragraph.span.start, paragraph.span.end);
+  if (opensWithFusedHeading(text) || lostLineBreaks(paragraph.sentences)) return [];
+  return labelledBlocks(text, paragraph.span.start, paragraph.sentences).map((sentences, index) => ({
+    start: index === 0 ? paragraph.span.start : (sentences[0]?.span.start ?? paragraph.span.start),
+    sentences,
+  }));
+};
+
 /** 1 段落に文を詰めすぎると、読み手はどこで息継ぎしていいか分からなくなる。 */
 export const paragraphLength: Detector = (doc, options): Finding[] =>
   doc.paragraphs
-    .filter((paragraph) =>
+    .flatMap((paragraph) => measuredBlocks(doc, paragraph))
+    .filter((block) =>
       isTooLongParagraph(
-        paragraph.sentences.map((sentence) => sentenceSize(sentence, doc.lengthUnit)),
+        block.sentences.map((sentence) => sentenceSize(sentence, doc.lengthUnit)),
         options.limit,
         options.fullSentence,
       ),
     )
-    .map((paragraph) => ({
+    .map((block) => ({
       rule: "max-paragraph-length",
       severity: "warning",
       line: 0,
       column: 0,
-      quote: doc.source.slice(paragraph.span.start, paragraph.span.start + 80).trim(),
-      values: { count: paragraph.sentences.length, limit: options.limit, offset: paragraph.span.start },
+      quote: doc.source.slice(block.start, block.start + 80).trim(),
+      values: { count: block.sentences.length, limit: options.limit, offset: block.start },
     }));
 
 const charsOf = (paragraph: Paragraph): number => paragraph.sentences.reduce((sum, sentence) => sum + charLength(sentence), 0);
@@ -91,34 +110,45 @@ export const paragraphVariance: Detector = (doc, options): Finding[] => {
 
 const sectionChars = (section: Section): number => section.sentences.reduce((sum, sentence) => sum + charLength(sentence), 0);
 
-/** 節の長さが揃いすぎている。見出しごとに機械的に埋めた文書で起きる。 */
+const isEven = (lengths: readonly number[], least: number, limit: number): boolean => {
+  const cv = lengths.length < least ? undefined : coefficientOfVariation(lengths);
+  return cv !== undefined && asPercent(cv) < limit;
+};
+
+/**
+ * 節の長さが揃いすぎている。見出しごとに機械的に埋めた文書で起きる。
+ * 節を一つずつ数えて揃っていても、読み手が並べて比べる節（小見出しを含めた節どうし、まとめ見出しの下の小見出しどうし）でも
+ * 揃っていなければ指摘しない。短い小見出しが 4 つあるだけで、揃った節が 4 つあるように見えるから。
+ */
 export const sectionUniformity: Detector = (doc, options): Finding[] => {
+  const marks = (doc.lexicons["interviewer-mark"] ?? []).map((entry) => entry.pattern);
+  const starts = doc.paragraphs.map((paragraph) => paragraph.span.start);
+  if (isInterview(doc.source, doc.sections, starts, marks)) return [];
+  const least = minimumCount(options, "min_sections", DEFAULT_MIN_SECTIONS);
   const lengths = doc.sections.map(sectionChars).filter((length) => length > 0);
   const first = doc.sections[0];
-  if (first === undefined || lengths.length < minimumCount(options, "min_sections", DEFAULT_MIN_SECTIONS)) return [];
-  return uniformity(doc, lengths, first.span, options.limit, "section-length-uniformity");
+  if (first === undefined || lengths.length < least) return [];
+  const compared = sectionLevels(doc.sections, sectionChars).some((level) => isEven(level.lengths, least, options.limit));
+  return compared ? uniformity(doc, lengths, first.span, options.limit, "section-length-uniformity") : [];
 };
 
 /**
  * 3 項目の箇条書きばかりになっている。
  * 3 つ並べると収まりがよいので、言いたいことが 2 つでも 4 つでも 3 つにされる。
  */
-const isThree = (list: BulletList): boolean => list.items.length === 3;
-
 export const ruleOfThree: Detector = (doc, options): Finding[] => {
-  const lists = doc.lists;
-  const threes = lists.filter(isThree);
-  const share = lists.length === 0 ? 0 : Math.round((threes.length / lists.length) * PERCENT);
-  const first = threes[0];
-  if (lists.length < 3 || first === undefined || share <= options.limit) return [];
+  const openWords = (doc.lexicons["list-continues"] ?? []).map((entry) => entry.pattern);
+  const sentenceStarts = doc.sentences.map((sentence) => sentence.span.start);
+  const found = threeShare(doc.source, doc.lists, openWords, options.limit, sentenceStarts);
+  if (found === undefined) return [];
   return [
     {
       rule: "rule-of-three",
       severity: "info",
       line: 0,
       column: 0,
-      quote: doc.source.slice(first.span.start, first.span.start + 80).trim(),
-      values: { count: threes.length, total: lists.length, share, limit: options.limit, offset: first.span.start },
+      quote: doc.source.slice(found.first.span.start, found.first.span.start + 80).trim(),
+      values: { count: found.count, total: found.total, share: found.share, limit: options.limit, offset: found.first.span.start },
     },
   ];
 };
@@ -142,15 +172,21 @@ const withoutDateStamps = (doc: ProseDocument, paragraphs: readonly Paragraph[])
 /**
  * 本題に入るまでが長い。業務文書では、読み手は結論を探しに来ている。
  * 「本題」は最初の中見出し。中見出しが無い文書では、rule が requires の headings で動かず、動かなかった理由が出る。
+ * 見出しが末尾の問い合わせ先や参考文献だけの文書（手紙の形の諮問）も、本題の見出しが無いので測らない。
+ * 最初の段落が報道の日付行（AUSTIN, Texas — November 24, 2026 —）で始まる文書は、リードで全体を語る報道発表なので測らない。
  */
 export const preambleLength: Detector = (doc, options): Finding[] => {
   const body = bodySectionOf(doc.sections);
   if (body === undefined) return [];
+  const matter = (doc.lexicons["unnumbered-heading"] ?? []).map((entry) => entry.pattern.toLowerCase());
+  if (hasOnlyMatterHeadings(doc.sections, body, matter)) return [];
   const noteMarks = (doc.lexicons["note-mark"] ?? []).map((entry) => entry.pattern);
   const all = preambleParagraphs(doc.paragraphs, body.span.start, doc.source, noteMarks);
   if (all.length <= options.limit) return [];
   const before = withoutDateStamps(doc, all);
   if (before.length <= options.limit) return [];
+  const lead = all[0];
+  if (lead !== undefined && opensWithDateline(doc.source, lead.span, dateSpans(doc))) return [];
   const first = before[0];
   return first === undefined
     ? []

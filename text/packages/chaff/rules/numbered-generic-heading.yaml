@@ -83,7 +83,7 @@ not_flagged:
   en: 'A heading with a title after the label ("Benefit 1: no setup"), step, lesson, reason and feature headings ("Step 1", "Lesson 2", "Reason 3"), and chapter or section numbers ("Chapter 1") are not reported: each is a unit cited by its number. Only Markdown headings are read.'
 level_meaning:
   ja: 札と番号だけの見出しが {limit} 個から指摘
-  en: reported from {limit} such headings
+  en: reported from {limit} {limit|such heading|such headings}
 
 rewrite:
   depth: structure

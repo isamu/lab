@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { namedRuleRun } from "./rule-run.ts";
+import { namedRuleRun, ruleQuotes } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
@@ -33,6 +33,14 @@ const amount = (offset: number, written: string, value: number, unit: number | u
 const oddOf = (amounts: readonly ScaledAmount[]): string[] => scaleMixes(amounts).map((mix) => `${mix.odd.written}<${mix.usual.written}`);
 
 describe("amount-scale-consistency: 同じ桁の金額を二通りに書いている", () => {
+  it("引用は語の途中で切らず、金額のある文をそのまま見せる", () => {
+    const english =
+      "The roof costs $1.2 million and the hall costs $0.8 million. The new floors come to $2,400,000. We ask the council to approve the plan in May.\n";
+    assert.deepEqual(ruleQuotes(RULE, english, en), ["The new floors come to $2,400,000."]);
+    const japanese = "お見積もりの総額は55万円（税込）です。内訳は、設計費30万円、制作費250,000円です。お支払いは月末までにお願いします。\n";
+    assert.deepEqual(ruleQuotes(RULE, japanese, ja), ["内訳は、設計費30万円、制作費250,000円です。"]);
+  });
+
   it("同じ桁で少ないほうの書き方を指す", () => {
     assert.deepEqual(findingsOf("お見積もりの総額は55万円（税込）です。内訳は、設計費30万円、制作費250,000円です。\n"), [
       "「250,000円」と書いています（この文書は同じ桁の金額を「55万円」のように書きます）",

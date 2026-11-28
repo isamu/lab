@@ -1,0 +1,23 @@
+# Words that open a sentence and tie it to the one before ("However, even more important is …"). Followed by a comma at
+# the head of a sentence they are an introduction, not the first item of a list. Read by oxford-comma-consistency.
+id: connective-opener
+language: en
+entries:
+  - pattern: however
+  - pattern: therefore
+  - pattern: thus
+  - pattern: hence
+  - pattern: moreover
+  - pattern: furthermore
+  - pattern: additionally
+  - pattern: also
+  - pattern: meanwhile
+  - pattern: nevertheless
+  - pattern: nonetheless
+  - pattern: instead
+  - pattern: otherwise
+  - pattern: consequently
+  - pattern: indeed
+  - pattern: likewise
+  - pattern: similarly
+  - pattern: still

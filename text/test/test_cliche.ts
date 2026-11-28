@@ -19,12 +19,46 @@ describe("cliche: a worn phrase", () => {
     assert.deepEqual(findingsOf("At the end of the day, the new cache is faster."), ['"at the end of the day" is a cliché']);
     assert.deepEqual(findingsOf("Fixing the login page is low-hanging fruit."), ['"low-hanging fruit" is a cliché']);
     assert.deepEqual(findingsOf("We will touch base next week."), ['"touch base" is a cliché']);
+    assert.deepEqual(findingsOf("The museum punches way above its weight."), ['"above its weight" is a cliché']);
+  });
+
+  it("reports an idiom whose verb is inflected", () => {
+    assert.deepEqual(findingsOf("That change alone moved the needle."), ['"move the needle" is a cliché']);
+    assert.deepEqual(findingsOf("The plan moves the needle every quarter."), ['"move the needle" is a cliché']);
+    assert.deepEqual(findingsOf("They kept moving the goalposts."), ['"move the goalposts" is a cliché']);
+    assert.deepEqual(findingsOf("We reinvented the wheel."), ['"reinvent the wheel" is a cliché']);
+  });
+
+  it("does not report a phrase in the title of another work in the reference list", () => {
+    const source = "# Paper\n\nWe build on earlier work.\n\n## References\n\n- Doe (2025). Are we reinventing the wheel? A survey.\n";
+    assert.deepEqual(findingsOf(source), []);
+    assert.deepEqual(findingsOf("# Paper\n\nAre we reinventing the wheel?\n"), ['"reinvent the wheel" is a cliché']);
+  });
+
+  it("does not read an inflected verb into a phrase that does not open with one", () => {
+    assert.deepEqual(findingsOf("The needle moved. The base touched the frame."), []);
   });
 
   it("leaves literal uses of the same words alone", () => {
     assert.deepEqual(findingsOf("The meeting ends at the end of the month."), []);
     assert.deepEqual(findingsOf("The fruit on the low branches ripens first."), []);
     assert.deepEqual(findingsOf("Each base station reports its load."), []);
+  });
+
+  it("reads at the end of the day as the time of day after a verb and its object, and as the figure opening a clause", () => {
+    assert.deepEqual(findingsOf("Empty the grounds tray at the end of the day."), []);
+    assert.deepEqual(findingsOf("Back up the files at the end of the day and lock the room."), []);
+    assert.deepEqual(findingsOf("We do this because at the end of the day, we are stewards of the budget."), ['"at the end of the day" is a cliché']);
+    assert.deepEqual(findingsOf("At the end of the day it is about trust."), ['"at the end of the day" is a cliché']);
+    assert.deepEqual(findingsOf("The cache is faster, but at the end of the day nobody noticed."), ['"at the end of the day" is a cliché']);
+  });
+
+  it("reads on the same page as agreement only with a person as its subject or object", () => {
+    assert.deepEqual(findingsOf("Every version is on the same page."), []);
+    assert.deepEqual(findingsOf("Print both tables on the same page."), []);
+    assert.deepEqual(findingsOf("For a review to work, we all need to be on the same page."), ['"on the same page" is a cliché']);
+    assert.deepEqual(findingsOf("A short call gets everyone on the same page."), ['"on the same page" is a cliché']);
+    assert.deepEqual(findingsOf("Check that you're on the same page before you start."), ['"on the same page" is a cliché']);
   });
 
   it("reports more worn phrases, and not the same words used literally", () => {
@@ -34,10 +68,27 @@ describe("cliche: a worn phrase", () => {
     assert.deepEqual(findingsOf("The front wheel was replaced. Normal reviews resume on Monday."), []);
   });
 
+  it("reports the worn quips of generated advice, and not the same words in an instruction", () => {
+    assert.deepEqual(findingsOf("Honestly, the best one is the one you’ll actually use."), ['"is the one you\'ll actually use" is a cliché']);
+    assert.deepEqual(findingsOf("The best backup plan is the one you'll actually stick with, so start simple."), [
+      '"is the one you\'ll actually stick with" is a cliché',
+    ]);
+    assert.deepEqual(findingsOf("Fridays go to meetings that could probably have been an email."), ['"could probably have been an email" is a cliché']);
+    assert.deepEqual(findingsOf("Delete every profile except the one you actually use. The alert was sent as an email."), []);
+  });
+
+  it("reports the stock close of a quote that lets its subject speak for itself", () => {
+    assert.deepEqual(findingsOf("The results our customers are seeing speak for themselves."), ['"speak for themselves" is a cliché']);
+    assert.deepEqual(findingsOf("The new dashboard speaks for itself."), ['"speak for itself" is a cliché']);
+  });
+
   it("every lexicon phrase is found in a sentence", () => {
     const lexicon = en.lexicons[RULE] ?? [];
     assert.ok(lexicon.length > 0);
-    lexicon.forEach((entry) => assert.equal(findingsOf(`They said ${entry.pattern} again.`).length, 1, entry.pattern));
+    // A phrase read only as the figure (cliche-figurative) is tried where its figure stands: after a person, before a comma.
+    const figurative = new Set((en.lexicons["cliche-figurative"] ?? []).map((entry) => entry.group));
+    const sentenceOf = (pattern: string): string => (figurative.has(pattern) ? `We are all ${pattern}, they said.` : `They said ${pattern} again.`);
+    lexicon.forEach((entry) => assert.equal(findingsOf(sentenceOf(entry.pattern)).length, 1, entry.pattern));
   });
 
   it("does not read headings", () => {

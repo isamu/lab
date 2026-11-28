@@ -45,10 +45,10 @@ const CASES: readonly Case[] = [
   [
     "ai-generated-composite",
     "count",
-    { word: "delve", limit: 3 },
-    '"delve" occur together in this document (0 signals, 3 needed)',
-    '"delve" occurs in this document (1 signal, 3 needed)',
-    '"delve" occur together in this document (2 signals, 3 needed)',
+    { word: "ai-tell", signals: "Phrasing common in generated text", limit: 3 },
+    "0 signals of generated text occur together in this document (3 needed): Phrasing common in generated text",
+    "1 signal of generated text occurs in this document (3 needed): Phrasing common in generated text",
+    "2 signals of generated text occur together in this document (3 needed): Phrasing common in generated text",
   ],
   [
     "ai-tell",
@@ -77,10 +77,10 @@ const CASES: readonly Case[] = [
   [
     "expletive-construction",
     "count",
-    { word: "It", limit: 3 },
-    '"It is ..." appears 0 times (limit 3)',
-    '"It is ..." appears 1 time (limit 3)',
-    '"It is ..." appears 2 times (limit 3)',
+    { form: "It is", limit: 3 },
+    '"It is ..." is one of 0 sentences that open with "There is" or "It is ... that" (limit 3)',
+    '"It is ..." is one of 1 sentence that opens with "There is" or "It is ... that" (limit 3)',
+    '"It is ..." is one of 2 sentences that open with "There is" or "It is ... that" (limit 3)',
   ],
   [
     "internal-jargon",

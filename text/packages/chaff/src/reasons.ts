@@ -12,6 +12,8 @@ export type Reasons = {
   /** A rule of one house style: it runs when chaff.yaml names that style, or gives the rule a level. */
   readonly optIn: string;
   readonly turnedOff: string;
+  /** Turned off by one by_path entry, named as by-path-rules.ts names it. */
+  readonly turnedOffBy: (source: string) => string;
   readonly presetOff: (genre: string) => string;
   readonly noStructure: (language: string) => string;
   readonly unreadStructure: (clauses: number, units: number) => string;
@@ -20,8 +22,12 @@ export type Reasons = {
   readonly noHeadings: string;
   readonly patternTimeout: (budgetMs: number) => string;
   readonly notMarkdown: string;
+  /** A rule that reads what a message carries, on a draft: its attachments are added when sending. */
+  readonly draftMessage: string;
   /** A rule that compares documents, in a run of one: it runs when chaff is given two or more files, or a folder. */
   readonly oneDocument: string;
+  /** A rule that checks only what the team lists in chaff.yaml, with nothing listed under its key. */
+  readonly noTeamList: (key: string) => string;
 };
 
 /** A plugin's word list is named <plugin>/<list> (@scope/foo/list too); a language package's has no slash. */
@@ -45,6 +51,7 @@ export const REASONS: Texts<Reasons> = {
     experimental: "まだ試験中のため",
     optIn: "決まった書き方（chaff.yaml の style）のための rule で、style か rules で動かすため",
     turnedOff: "設定で止めているため",
+    turnedOffBy: (source) => `設定の ${source} で止めているため`,
     presetOff: (genre) => `ジャンル ${genre} では見ないため`,
     noStructure: (language) => `${language} のパッケージは文書の構造を読めないため`,
     unreadStructure: (clauses, units) =>
@@ -57,7 +64,9 @@ export const REASONS: Texts<Reasons> = {
     noHeadings: "表題より下の見出しが無いため",
     patternTimeout: (budgetMs) => `正規表現が ${String(budgetMs)} ms で終わらなかったため（chaff.yaml の pattern を単純にしてください）`,
     notMarkdown: "Markdown の文書ではないため",
+    draftMessage: "送る前の下書き（差出人や日時のヘッダーが無い）で、添付は送るときに付けるため本文からは見えないため",
     oneDocument: "比べるほかの文書が無いため（ファイルを二つ以上かフォルダを渡すと動きます）",
+    noTeamList: (key) => `chaff.yaml の ${key} に何も並べていないため（チームが並べたものだけを見ます）`,
   },
   en: {
     otherLanguage: (language) => `not a rule for ${language}`,
@@ -68,6 +77,7 @@ export const REASONS: Texts<Reasons> = {
     experimental: "still experimental",
     optIn: "it belongs to a house style, and runs when chaff.yaml names the style or gives it a level",
     turnedOff: "turned off in the settings",
+    turnedOffBy: (source) => `turned off in the settings by ${source}`,
     presetOff: (genre) => `the ${genre} genre does not check it`,
     noStructure: (language) => `the ${language} package cannot read a document's structure`,
     unreadStructure: (clauses, units) =>
@@ -80,6 +90,8 @@ export const REASONS: Texts<Reasons> = {
     noHeadings: "the document has no headings below its title",
     patternTimeout: (budgetMs) => `the pattern did not finish within ${String(budgetMs)} ms (simplify the pattern in chaff.yaml)`,
     notMarkdown: "the document is not Markdown",
+    draftMessage: "the text is a draft (no From: or Date: header), and a draft's files are attached when sending, out of the text's sight",
     oneDocument: "it compares documents, and there is only one to compare (it runs when chaff is given two or more files, or a folder)",
+    noTeamList: (key) => `nothing is listed under ${key} in chaff.yaml (it checks only what the team lists)`,
   },
 };

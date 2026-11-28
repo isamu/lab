@@ -1,7 +1,7 @@
 // A defined term used later in another form, and a long name used again after its short name was defined. Pure. The
 // definitions come from the document's structure tree (以下「甲」という, ("Seller")); which words may stand in a long
 // name is read from the tokens' parts of speech.
-import { inEntryOfTerm } from "./term-mention-sentence.ts";
+import { inEntryOfTerm, opensEntryOfTerm } from "./term-mention-sentence.ts";
 import { definedTerms, usesOf, type BodyText, type DefinedTerm } from "../structure/definition-use.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { prefixGroupsOf, prefixVariants, variantUses } from "../structure/term-prefix.ts";
@@ -9,7 +9,7 @@ import { quoteAt } from "./structure-tree.ts";
 import { quotesWording, wordingCuesOf } from "./quoted-wording.ts";
 import { isPartOfAddress } from "./address-word.ts";
 import { exactOffsets, extendedAfter, extendedBefore } from "./term-extension.ts";
-import { headsKindPhrase, insideLongerTerm, isNamedAsTerm, isNarrowedUse } from "./ordinary-phrase.ts";
+import { headsKindPhrase, insideLongerTerm, isCoordinatedModifier, isNamedAsTerm, isNarrowedUse, isPartitiveUse } from "./ordinary-phrase.ts";
 import { CLOSES_SENTENCE, isNameField, isSignatureLine, opensClosingBlock, SLACK } from "./name-field.ts";
 import type { Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 
@@ -158,7 +158,8 @@ const patternsOf = (doc: ProseDocument, lexicon: string): string[] => (doc.lexic
 /**
  * The term set in quotes again, unless the document's profile says a quoted term is the term mentioned (「株主」とあるのは),
  * the words before the quote name it as a term (the definition of "Material Adverse Effect"), or the quote is a provision's
- * or a document's wording (憲法一九条にいう「良心の自由」, 「謝罪」の文言).
+ * or a document's wording (憲法一九条にいう「良心の自由」, 「謝罪」の文言). The name that opens a definitions entry
+ * (a. "Capital Contributions" The capital …) defines the term again; it is no quoted use.
  */
 const quotedFindings = (doc: ProseDocument, term: DefinedTerm, uses: readonly number[], definingEnd: number): Finding[] => {
   if (doc.profile?.quoteMentionsTerm === true) return [];
@@ -166,27 +167,38 @@ const quotedFindings = (doc: ProseDocument, term: DefinedTerm, uses: readonly nu
   const wording = wordingCuesOf(doc.lexicons["quoted-wording-cue"] ?? []);
   return quotedUses(doc.source, term.term, uses, definingEnd)
     .filter(
-      (offset) => !isNamedAsTerm(doc.source, offset - 1, cues) && !quotesWording(doc.source, offset - 1, closingAt(doc.source, term.term, offset), wording),
+      (offset) =>
+        !isNamedAsTerm(doc.source, offset - 1, cues) &&
+        !quotesWording(doc.source, offset - 1, closingAt(doc.source, term.term, offset), wording) &&
+        !opensEntryOfTerm(doc.sentences, term.term, offset),
     )
     .map((offset) => finding(doc, "defined-term-form", offset, "quoted", { term: term.term, line: term.line }));
 };
 
 /**
  * A lower-case use that is the ordinary word in a phrase of its own: inside another defined term (certificate of merger),
- * narrowed by the word before it (the common parent), or heading a kind of thing (certificates of deposit).
+ * narrowed by the word before it (the common parent), picked out of a kind (some of these terms), joined to an ordinary word
+ * in front of a noun they share (customer and supplier information), or heading a kind of
+ * thing (certificates of deposit).
  */
 const isOrdinaryPhraseAt = (doc: ProseDocument, offset: number, term: string, defined: readonly string[]): boolean => {
   if (insideLongerTerm(doc.source, offset, term, defined)) return true;
   const { tokens, at } = tokensAt(doc, offset);
   if (at === -1) return false;
   const last = tokens.findLastIndex((token) => token.span.start < offset + term.length);
-  return isNarrowedUse(tokens, at, patternsOf(doc, "defined-term-pointer")) || headsKindPhrase(tokens, last);
+  return (
+    isNarrowedUse(tokens, at, patternsOf(doc, "defined-term-pointer")) ||
+    isPartitiveUse(tokens, at, patternsOf(doc, "defined-term-partitive")) ||
+    isCoordinatedModifier(tokens, at, last) ||
+    headsKindPhrase(tokens, last)
+  );
 };
 
 /** The term written longer with a word of its definition (文書管理責任者, the Application), after the sentence that defines it. */
 const extendedFindings = (doc: ProseDocument, texts: readonly BodyText[], term: DefinedTerm, spans: readonly Span[], defined: readonly string[]): Finding[] => {
   const definition = definingSentence(doc, term.span)?.text ?? "";
-  const pointers = patternsOf(doc, "defined-term-pointer");
+  // A pointer (当該管理責任者) points at the term, and the definition's own marker (以下本契約において同じ) is no word of its meaning.
+  const pointers = [...patternsOf(doc, "defined-term-pointer"), ...patternsOf(doc, "definition-marker")];
   // Every sentence that defines the term (a second definition too) holds the long words it is defined from.
   const defining = spans.map((span) => definingSentence(doc, span)?.span ?? span);
   const definingEnd = definingSentenceEnd(doc, term.span);
@@ -196,10 +208,21 @@ const extendedFindings = (doc: ProseDocument, texts: readonly BodyText[], term: 
     .flatMap((offset) => {
       const before = extendedBefore(doc.source, offset, term.term, definition, pointers);
       const written = before ?? (isSentenceStart(doc.source, offset) ? undefined : extendedAfter(doc.source, offset, term.term, definition));
-      if (written === undefined || defined.includes(written)) return [];
+      // The term written twice in a row (ライセンス対象物ライセンス対象物) is a run-in heading joined to its text, not a longer name.
+      if (written === undefined || defined.includes(written) || written === term.term.repeat(2)) return [];
       const start = before === undefined ? offset : offset + term.term.length - written.length;
       return [finding(doc, "defined-term-form", start, "extended", { term: term.term, written, line: term.line })];
     });
+};
+
+/**
+ * A definition that interprets another instrument's term (憲法一九条にいう「良心の自由」とは): the term is that instrument's
+ * wording, which the document goes on quoting as written, not a term of its own.
+ */
+const definesBorrowedWording = (doc: ProseDocument, spans: readonly Span[]): boolean => {
+  const wording = wordingCuesOf(doc.lexicons["quoted-wording-cue"] ?? []);
+  // A quoted definition's span runs from its opening quote to its closing one.
+  return spans.some((span) => OPENING_QUOTES.has(doc.source.charAt(span.start)) && quotesWording(doc.source, span.start, span.end - 1, wording));
 };
 
 export const definedTermForm: Detector = (doc, options): Finding[] => {
@@ -208,6 +231,7 @@ export const definedTermForm: Detector = (doc, options): Finding[] => {
   const terms = definedTerms(doc.structure);
   const defined = terms.map((term) => term.term);
   return firstDefinitions(terms).flatMap(({ term, spans }) => {
+    if (definesBorrowedWording(doc, spans)) return [];
     const uses = usesOf(term.term, texts, spans, "loose");
     const definingEnd = definingSentenceEnd(doc, term.span);
     const quoted = quotedFindings(doc, term, uses, definingEnd);
@@ -250,9 +274,20 @@ const isLongName = (name: string): boolean => {
   return !LATIN.test(name) || JAPANESE.test(name) || (words.length >= MIN_NAME_WORDS && words.some((word) => UPPER_START.test(word)));
 };
 
-/** A conjunction that joins the run to a name before it (書面または電磁的記録（以下「書面等」）): the bracket names them all. */
-const joinsList = (token: Token | undefined, joiners: readonly string[]): boolean =>
-  token !== undefined && token.pos === "CCONJ" && joiners.includes(token.surface.toLowerCase());
+const CLOSING_BRACKETS = new Set([")", "）"]);
+const COMMAS = new Set([",", "、", "，"]);
+
+/**
+ * A conjunction that joins the run to a name before it (書面または電磁的記録（以下「書面等」）): the bracket names them all.
+ * Right after another definition's bracket (Brookside Ltd (the "Client") and Harbour Works Ltd (the "Supplier")) it joins
+ * two parties, each given its own short name.
+ */
+const joinsList = (tokens: readonly Token[], at: number, joiners: readonly string[]): boolean => {
+  const token = tokens[at];
+  if (token === undefined || token.pos !== "CCONJ" || !joiners.includes(token.surface.toLowerCase())) return false;
+  const before = tokens.slice(0, at).findLast((candidate) => !COMMAS.has(candidate.surface));
+  return before === undefined || !CLOSING_BRACKETS.has(before.surface);
+};
 
 /**
  * The long name written right before an inline definition: the run of name words that ends at its opening bracket. A run
@@ -262,7 +297,7 @@ export const nameBefore = (sentence: Sentence, bracket: number, joiners: readonl
   if (LABELS_THE_CLAUSE.test(sentence.text.slice(bracket - sentence.span.start))) return undefined;
   const tokens = (sentence.tokens ?? []).filter((token) => token.span.end <= bracket);
   const firstOfRun = tokens.findLastIndex((token) => !isNamePart(token)) + 1;
-  if (isModifier(tokens[firstOfRun - 1]) || joinsList(tokens[firstOfRun - 1], joiners)) return undefined;
+  if (isModifier(tokens[firstOfRun - 1]) || joinsList(tokens, firstOfRun - 1, joiners)) return undefined;
   const run = tokens.slice(firstOfRun).filter((token, index, all) => index > 0 || !NAME_MARKS.has(token.surface) || all.length === 1);
   const first = run[0];
   const end = run.at(-1);

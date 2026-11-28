@@ -1,17 +1,24 @@
 import { lengthOf, proseText } from "../measure.ts";
-import type { Detector, DetectorOptions, Finding, LengthUnit, Sentence } from "../plugin.ts";
-import { citationLead } from "./citation-sentence.ts";
+import type { Detector, DetectorOptions, Finding, LengthUnit, ProseDocument, Sentence } from "../plugin.ts";
+import { authorListSaving, citationLead, withoutEarlierReference } from "./citation-sentence.ts";
+import { isCitationString, wordsAroundCitation } from "./citation-string.ts";
+import { documentSubjects } from "./email-letter.ts";
 import { isNameList } from "./name-list-sentence.ts";
 import { pageMarkerPattern, pageMarkerSize } from "./page-marker.ts";
 import { quotedSentenceParts } from "./quoted-sentences.ts";
-import { isInListItem, isTitleLine, quotedTitleWords, termSeriesSaving } from "./sentence-title.ts";
+import { isReproduced, reproducedSpans } from "./reproduced-text.ts";
+import { runInTitleParts } from "./run-in-title.ts";
+import { colonQuotationParts, flattenedTableParts, isGrammarBlock, labelLineParts, parentheticalSentenceParts } from "./sentence-parts.ts";
+import { isInListItem, isReferenceLine, isTitleLine, quotedTitleWords, remarkAfterTitle, termSeriesSaving } from "./sentence-title.ts";
 
 type Measure = { readonly size: number; readonly limit: number; readonly variant?: string };
 
-/** The page markers' pattern, the citation signals ("see") and the spans of the list items, read once per document. */
+/** The source, the page markers' pattern, the citation signals ("see"), the era names and the spans of the list items, read once per document. */
 type SentenceWords = {
+  readonly source: string;
   readonly markers: RegExp | undefined;
   readonly citationSignals: readonly string[];
+  readonly eras: readonly string[];
   readonly listItems: readonly { readonly start: number; readonly end: number }[];
 };
 
@@ -22,7 +29,17 @@ type SentenceWords = {
  * Only where words are the unit: the shapes are read from capitals and spaces.
  */
 const unwrittenWords = (sentence: Sentence, text: string, listItems: SentenceWords["listItems"]): number =>
-  termSeriesSaving(text) + (isInListItem(sentence.span, listItems) ? quotedTitleWords(text) : 0);
+  termSeriesSaving(text) + authorListSaving(text) + (isInListItem(sentence.span, listItems) || isReferenceLine(text) ? quotedTitleWords(text) : 0);
+
+/**
+ * A comma or a stop typed with one space before it ("the same brick , and"). It is no word of its own. One space only:
+ * the spaces that hide markup ("**TITLE**.", "[link](url),") are left counted, as the measure has always read them.
+ */
+const TYPED_LOOSE_STOP = /(?<=[\p{L}\p{N}]) [,.;:!?]+(?=\s|$)/gu;
+
+/** A sentence's length; where words are the unit, a typed loose comma or stop is not counted. */
+const sentenceSize = (sentence: Sentence, unit: LengthUnit): number =>
+  lengthOf(sentence, unit) - (unit === "word" ? [...sentence.text.matchAll(TYPED_LOOSE_STOP)].length : 0);
 
 const sizeOf = (text: string, unit: LengthUnit): number =>
   unit === "word" ? text.split(/\s+/u).filter((word) => word.length > 0).length : text.replace(/\s+/gu, "").length;
@@ -40,28 +57,82 @@ const longestQuotedPart = (text: string, size: number, markers: RegExp | undefin
  */
 const measureOf = (sentence: Sentence, unit: LengthUnit, options: DetectorOptions, words: SentenceWords): Measure => {
   const lead = citationLead(proseText(sentence), words.citationSignals);
-  if (lead !== undefined) return { size: sizeOf(lead, unit), limit: options.limit };
+  if (lead !== undefined) return { size: sizeOf(withoutEarlierReference(lead), unit), limit: options.limit };
   const embedded = sentence.embeddedLanguage;
   const limit = embedded === undefined ? undefined : options.embeddedLimits?.[embedded.id];
-  if (embedded === undefined || limit === undefined) {
-    const text = proseText(sentence);
-    if (unit === "word" && isTitleLine(text)) return { size: 0, limit: options.limit };
-    const unwritten = unit === "word" ? unwrittenWords(sentence, text, words.listItems) : 0;
-    const size = lengthOf(sentence, unit) - pageMarkerSize(text, words.markers, unit) - unwritten;
-    return { size: unit === "char" ? longestQuotedPart(text, size, words.markers) : size, limit: options.limit };
-  }
-  return { size: lengthOf(sentence, embedded.lengthUnit), limit, variant: `embedded-${embedded.id}` };
+  if (embedded === undefined || limit === undefined) return { size: ownSize(sentence, unit, words), limit: options.limit };
+  return { size: sentenceSize(sentence, embedded.lengthUnit), limit, variant: `embedded-${embedded.id}` };
 };
+
+/** Code or a citation string: nothing in it is the writer's sentence. A title line too, where words are the unit. */
+const isUnwritten = (sentence: Sentence, text: string, unit: LengthUnit, words: SentenceWords): boolean =>
+  isGrammarBlock(sentence.text) || isCitationString(text, words.citationSignals) || (unit === "word" && isTitleLine(text));
+
+const startsLine = (sentence: Sentence, source: string): boolean => sentence.span.start === 0 || source[sentence.span.start - 1] === "\n";
+
+/** A link title run into its blurb, where characters are the unit and the sentence opens a line. */
+const titleParts = (sentence: Sentence, text: string, unit: LengthUnit, source: string): readonly string[] | undefined =>
+  unit === "char" && startsLine(sentence, source) ? runInTitleParts(text) : undefined;
+
+/** The parts measured one by one when the splitter ran several things into one sentence (label lines, table cells, a quotation, a title). */
+const partsOf = (sentence: Sentence, text: string, unit: LengthUnit, words: SentenceWords): readonly string[] | undefined =>
+  labelLineParts(sentence.text) ??
+  flattenedTableParts(text, words.eras) ??
+  colonQuotationParts(text) ??
+  parentheticalSentenceParts(text) ??
+  titleParts(sentence, text, unit, words.source);
+
+/** The length of a sentence in the document's language, without what the writer did not write as one. */
+const ownSize = (sentence: Sentence, unit: LengthUnit, words: SentenceWords): number => {
+  const text = proseText(sentence);
+  if (isUnwritten(sentence, text, unit, words)) return 0;
+  const aroundCitation = unit === "word" ? wordsAroundCitation(text, words.citationSignals) : undefined;
+  if (aroundCitation !== undefined) return sizeOf(aroundCitation, unit);
+  const parts = partsOf(sentence, text, unit, words);
+  if (parts !== undefined) return Math.max(0, ...parts.map((part) => sizeOf(part, unit) - pageMarkerSize(part, words.markers, unit)));
+  const remark = unit === "word" ? remarkAfterTitle(text) : undefined;
+  if (remark !== undefined) return sizeOf(remark, unit);
+  const unwritten = unit === "word" ? unwrittenWords(sentence, text, words.listItems) : 0;
+  const size = sentenceSize(sentence, unit) - pageMarkerSize(text, words.markers, unit) - unwritten;
+  return unit === "char" ? longestQuotedPart(text, size, words.markers) : size;
+};
+
+/**
+ * The texts of the document's subject fields: each subject line (Subject: …) and each value (the line under a bare SUBJECT:).
+ * A subject is no sentence; email-subject-length measures it.
+ */
+const subjectTexts = (doc: ProseDocument): ReadonlySet<string> =>
+  new Set(
+    documentSubjects(doc)
+      .flatMap((line) => [line.subject, doc.source.slice(line.start).split("\n", 1)[0] ?? ""])
+      .map((text) => text.trim())
+      .filter((text) => text !== ""),
+  );
 
 export const sentenceLength: Detector = (doc, options): Finding[] => {
   const words: SentenceWords = {
+    source: doc.source,
     markers: pageMarkerPattern((options.lexicon ?? []).map((entry) => entry.pattern)),
     citationSignals: (doc.lexicons["citation-signal"] ?? []).map((entry) => entry.pattern),
+    eras: (doc.lexicons["calendar-era"] ?? []).map((entry) => entry.pattern),
     listItems: doc.lists.flatMap((list) => list.itemSpans),
   };
-  return doc.sentences
+  const long = doc.sentences
     .map((sentence) => ({ sentence, measure: measureOf(sentence, doc.lengthUnit, options, words) }))
-    .filter(({ sentence, measure }) => measure.size > measure.limit && !isNameList(proseText(sentence)))
+    .filter(({ sentence, measure }) => measure.size > measure.limit && !isNameList(proseText(sentence)));
+  const subjects = long.length === 0 ? new Set<string>() : subjectTexts(doc);
+  // 他の文書から引き写した文（法律の条、「reads as follows:」の後の段落）は書き手の文ではない。探すのに文書の木を組むので、長い文があるときだけ。
+  const reproduced =
+    long.length === 0
+      ? []
+      : reproducedSpans(
+          doc.structure,
+          doc.paragraphs,
+          doc.source,
+          (doc.lexicons["verbatim-lead"] ?? []).map((entry) => entry.pattern),
+        );
+  return long
+    .filter(({ sentence }) => !isReproduced(sentence.span, reproduced) && !subjects.has(proseText(sentence).trim()))
     .map(({ sentence, measure }) => ({
       rule: "max-sentence-length",
       severity: "warning",

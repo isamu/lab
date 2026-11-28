@@ -7,9 +7,22 @@ import { cellsOf, tablesOf } from "../facts/table-facts.ts";
 import { withoutEdgeMarks } from "../facts/trim-marks.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { quoteAt } from "./structure-tree.ts";
-import { sectionNetMismatch, tableNetMismatches, type LabelledLine, type NetCell, type NetIssue, type NetWords } from "../structure/net-amount.ts";
+import {
+  documentNetMismatch,
+  sectionAmounts,
+  sectionNetMismatch,
+  tableAmounts,
+  tableNetMismatches,
+  type DocumentLabels,
+  type LabelledLine,
+  type NetCell,
+  type NetIssue,
+  type NetWords,
+} from "../structure/net-amount.ts";
 
 const RULE = "net-amount-mismatch";
+/** Lexicon: the names of a payslip read across the whole document when each is set out on its own (総支給額, 控除合計, 差引支給額). */
+const DOCUMENT_LABEL = "net-amount-document-label";
 const HEADING = /^#{1,6}[ \t]/u;
 /** A line that is a label and an amount, after any list marker: "- 総支給額：117,380円", "Net pay: $1,396.41". */
 const LIST_MARKER = /^[ \t]*(?:[-*+]|\d{1,3}[.)])?[ \t]*/u;
@@ -63,17 +76,41 @@ export const sectionsOf = (lines: readonly Line[], sourceLines: readonly Line[])
     [[]],
   );
 
+const sectionLabelledLines = (lines: readonly Line[], source: string): LabelledLine[][] =>
+  sectionsOf(lines, linesOf(source)).map((section) => section.filter((line) => !line.text.includes("|")).flatMap(labelledLineOf));
+
 const sectionIssues = (lines: readonly Line[], source: string, words: NetWords): NetIssue[] =>
-  sectionsOf(lines, linesOf(source)).flatMap((section) => {
-    const issue = sectionNetMismatch(section.filter((line) => !line.text.includes("|")).flatMap(labelledLineOf), words);
+  sectionLabelledLines(lines, source).flatMap((section) => {
+    const issue = sectionNetMismatch(section, words);
     return issue === undefined ? [] : [issue];
   });
+
+const documentLabelsOf = (doc: ProseDocument): DocumentLabels => ({
+  gross: patternsOf(doc, DOCUMENT_LABEL, "gross"),
+  deduction: patternsOf(doc, DOCUMENT_LABEL, "deduction"),
+  net: patternsOf(doc, DOCUMENT_LABEL, "net"),
+});
+
+/** The three names of a payslip set out in sections or tables of their own, read across the whole document. */
+const documentIssues = (doc: ProseDocument, lines: readonly Line[], words: NetWords): NetIssue[] => {
+  const tables = tablesOf(lines).map((table) => [plainCellsOf(table.header), ...table.rows.map(plainCellsOf)]);
+  const sections = sectionLabelledLines(lines, doc.source);
+  const amounts = [
+    ...tables.flatMap(([header = [], ...rows]) => tableAmounts(header, rows, words)),
+    ...sections.flatMap((section) => sectionAmounts(section, words)),
+  ];
+  const labelTexts = [...tables.flat(2).map((cell) => cell.text), ...sections.flat().map((line) => line.label)];
+  const issue = documentNetMismatch(amounts, labelTexts, documentLabelsOf(doc), words);
+  return issue === undefined ? [] : [issue];
+};
 
 export const netAmountMismatch: Detector = (doc): Finding[] => {
   const words = wordsOf(doc);
   if (words.labels.gross.length === 0 || words.labels.deduction.length + words.labels["deduction-part"].length === 0) return [];
   const lines = linesOf(proseAndTablesOf(doc));
-  return [...tableIssues(lines, words), ...sectionIssues(lines, doc.source, words)]
+  const issues = [...tableIssues(lines, words), ...sectionIssues(lines, doc.source, words), ...documentIssues(doc, lines, words)];
+  return issues
+    .filter((issue, index) => issues.findIndex((other) => other.offset === issue.offset) === index)
     .toSorted((left, right) => left.offset - right.offset)
     .map((issue) => ({
       rule: RULE,

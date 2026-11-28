@@ -1,0 +1,21 @@
+# Spellings that were standard in English printed before about 1800 and are not written today (publick, shew). A document
+# that writes them is reproduced in the orthography of its age; known-misspelling then leaves its entries marked
+# group: period-spelling (maintainance), which were the spelling of that age, not a slip. Self-compiled.
+id: period-spelling
+language: en
+entries:
+  - pattern: publick
+  - pattern: musick
+  - pattern: physick
+  - pattern: logick
+  - pattern: critick
+  - pattern: catholick
+  - pattern: politick
+  - pattern: politicks
+  - pattern: shew
+  - pattern: shewn
+  - pattern: shewed
+  - pattern: shews
+  - pattern: compleat
+  - pattern: chuse
+  - pattern: antient

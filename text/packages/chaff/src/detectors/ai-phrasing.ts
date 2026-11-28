@@ -4,7 +4,6 @@ import { MIN_DOCUMENT_LENGTH } from "./signals.ts";
 import { entryIn, entryOpens } from "./lexicon-match.ts";
 import { contrastSentences, type ContrastWords } from "./contrast-frame.ts";
 import { placeholderSpans } from "./placeholder-text.ts";
-import { colonLeadIns } from "./list-lead-in.ts";
 import { followsInlineCode } from "./code-before.ts";
 import { isSentenceTail } from "./opener-tail.ts";
 
@@ -44,16 +43,34 @@ const contrastWordsOf = (doc: ProseDocument, frames: Lexicon): ContrastWords => 
   frames,
   leads: doc.lexicons["contrast-lead"] ?? [],
   turns: doc.lexicons["contrast-turn"] ?? [],
+  amounts: doc.lexicons["contrast-amount"] ?? [],
 });
 
-/** 対比の枠（It's not X, it's Y、単なる X ではなく）。1 つなら論点の整理だが、重なると言い回しの癖になる。 */
+/** 対比の枠は、一つなら論点の整理。二つ目から数える（割合の上限が、長い文書の二つを落とす）。 */
+const MIN_CONTRASTS = 2;
+/**
+ * 枠が 1000 語（日本語は 1000 字）に 1 つ以下なら重なっていない。文の長い文書（有価証券報告書の方針の節）は文の数が少なく、
+ * 離れた二つの枠でも割合が上限を超える。生成文は短い文書に二つ三つを詰める。
+ */
+const MIN_CONTRAST_DENSITY = 1;
+const PERCENT = 100;
+
+/** 文書の言語の文のうち、対比の枠で書いた文の割合（百分率、小数 1 桁）。文の長さが言語で違っても同じ物差しで比べられる。 */
+export const contrastShare = (doc: ProseDocument, contrasts: number): number => {
+  const sentences = doc.sentences.filter((sentence) => sentence.embeddedLanguage === undefined).length;
+  return sentences === 0 ? 0 : Math.round((contrasts / sentences) * PERCENT * TENTHS) / TENTHS;
+};
+
+/** 対比の枠（It's not X, it's Y、単なる X ではなく）。1 つなら論点の整理だが、文の割合が上限を超えると言い回しの癖になる。 */
 export const contrastFraming: Detector = (doc, options): Finding[] => {
   const words = contrastWordsOf(doc, options.lexicon ?? []);
-  const hits = contrastSentences(doc.sentences, words).map((sentence) => ({
-    sentence,
-    matched: (firstIn(sentence, words.frames) ?? firstIn(sentence, words.leads))?.pattern ?? "",
-  }));
-  return densityFindings(doc, hits, options.limit);
+  const hits = contrastSentences(doc.sentences, words)
+    .filter((sentence) => sentence.embeddedLanguage === undefined)
+    .map((sentence) => ({ sentence, matched: (firstIn(sentence, words.frames) ?? firstIn(sentence, words.leads))?.pattern ?? "" }));
+  const length = wordsOf(doc);
+  if (hits.length < MIN_CONTRASTS || length < MIN_DOCUMENT_LENGTH[doc.lengthUnit] || hits.length * PER <= length * MIN_CONTRAST_DENSITY) return [];
+  const share = contrastShare(doc, hits.length);
+  return share <= options.limit ? [] : hits.map((hit) => findingOf(hit, { count: hits.length, share, limit: options.limit }));
 };
 
 /** 語彙表の語で始まる文。 */
@@ -80,16 +97,6 @@ export const openerPile: Detector = (doc, options): Finding[] => {
   // A sentence that opens with inline code (`explain` でも) opens with the code, not with the word after it.
   const hits = openerHits(doc, options.lexicon ?? []).filter((hit) => !followsInlineCode(doc.source, doc.prose, firstWordAt(hit.sentence)) && !opensTail(hit));
   return hits.length === 0 || hits.length < options.limit ? [] : hits.map((hit) => findingOf(hit, { count: hits.length, limit: options.limit }));
-};
-
-/**
- * コロンで箇条書きへ渡す文（以下の通りです：）。1 つなら案内だが、節ごとに続くと説明が箇条書きの前置きだけになる。
- * 数えるのは文書の言語の文だけ。和文の中の英文（Examples include:）は、英語ではふつうの書き方なので数えない。
- */
-export const colonLeadIn: Detector = (doc, options): Finding[] => {
-  const inDocumentLanguage = doc.sentences.filter((sentence) => sentence.embeddedLanguage === undefined);
-  const hits = colonLeadIns(inDocumentLanguage, doc.lists, doc.listSpans, doc.source).map((sentence) => ({ sentence, matched: sentence.text.trim() }));
-  return densityFindings(doc, hits, options.limit);
 };
 
 const distinct = (lexicon: Lexicon): LexiconEntry[] => [...new Map(lexicon.map((entry) => [entry.pattern.toLowerCase(), entry])).values()];

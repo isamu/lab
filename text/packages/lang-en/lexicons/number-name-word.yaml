@@ -20,6 +20,8 @@ entries:
   - pattern: Part
   - pattern: Item
   - pattern: No.
+  - pattern: "§"
+  - pattern: "¶"
   - pattern: Version
   - pattern: Phase
   - pattern: Stage

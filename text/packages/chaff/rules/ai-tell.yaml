@@ -11,8 +11,8 @@ name:
   en: Phrasing common in generated text
 
 why:
-  ja: どれも単独では普通の日本語です。重なったときだけ意味があるので、重みを足し合わせて出しています。これだけで「AI が書いた」とは言えません。
-  en: Each is ordinary on its own. Only the pile-up means anything, so the weights are summed. This alone never says the text was generated.
+  ja: どれも単独では普通の日本語です。重なったときだけ意味があるので、重みを足し合わせて出しています（ブログでは、人の記事にほぼ出ない重い言い回しなら 1 つでも出します）。これだけで「AI が書いた」とは言えません。
+  en: Each is ordinary on its own. Only the pile-up means anything, so the weights are summed (in a blog post, one of the heavier phrases, which human posts rarely use, is enough). This alone never says the text was generated.
 
 message:
   ja: 「{word}」が揃っています（点 {density}、{limit} まで）
@@ -24,6 +24,10 @@ how_to_fix:
 
 # 重みの合計を 10 倍した点。0.9 の言い回しが 2 つで 18。
 levels: { strict: 10, normal: 18, relaxed: 30 }
+# ブログでは、生成した記事でも決まり文句は 1 つ 2 つしか出ないことが多く、上の段では届かない。重み 0.5 の言い回し 1 つから言う
+# （判定済み corpus と lab の corpus で測った段。人のブログにはほぼ出ない）。
+by_genre:
+  blog: { strict: 4, normal: 4, relaxed: 10 }
 
 use_for: [technical/readme, blog, business, legal, docs, academic, literature, speech]
 off_for:
@@ -35,12 +39,12 @@ sources: [kobak-2025, liang-2024, juzek-ward-2025]
 
 group: ai-tells
 summary:
-  ja: 「重要な役割を果たす」「と言えるでしょう」のような、生成された文章にありがちな言い回しが重なった所
+  ja: 「大きな可能性を秘める」「と言えるでしょう」のような、生成された文章にありがちな言い回しが重なった所
   en: Phrases common in generated text ("delve into", "plays a crucial role") piled up
 example:
   ja:
     before: |
-      現代社会において、データは重要な役割を果たすと言えるでしょう。
+      現代社会において、データは大きな可能性を秘めていると言えるのではないでしょうか。
     after: |
       当社では、在庫の数を毎朝データで確かめてから発注しています。
   en:
@@ -50,8 +54,8 @@ example:
       We check stock levels every morning before placing orders.
 
 not_flagged:
-  ja: どの言い回しも、一つだけなら普通の文章にあります。重みの合計が上限を超えるまでは何も言いません。これだけで生成された文章だとは言いません。
-  en: Each phrase is ordinary on its own; nothing is said until the weights add up past the limit. This alone never says the text was generated.
+  ja: どの言い回しも、一つだけなら普通の文章にあります。重みの合計が上限を超えるまでは何も言いません。長い文書（多くの著者の要旨を並べた一覧、長編）では、離れた所に一つずつある言い回しを足しません。言い回しが最も重なった一続きの所だけを数えます。文の途中で語ごとに大文字で書いた言い回し（Inspiring and Empowering という名前の案）は、名前の一部なので数えません。見出しの大文字書きは数えます。これだけで生成された文章だとは言いません。
+  en: Each phrase is ordinary on its own; nothing is said until the weights add up past the limit. In a long document (a listing of many authors' abstracts, a novel) phrases far apart are not added up; only the stretch where they pile up most is scored. A phrase capitalised word by word past the start of a sentence (a mood board called Inspiring and Empowering) is part of a name and is not counted; a heading's title case is. This alone never says the text was generated.
 level_meaning:
   ja: 言い回しの重みの合計が {limit} 点まで
   en: up to a score of {limit}
@@ -60,7 +64,7 @@ rewrite:
   ja:
     direction: 決まった言い回しを、その文が実際に言っている中身（誰が、何を、どれだけ）に置き換えてください。中身の無い文は消してください。
     pairs:
-      - before: 現代社会において、在庫データは発注の判断で重要な役割を果たしています。
+      - before: 現代社会において、在庫データは発注の判断で重要な役割を担っています。
         after: 発注は在庫データを見て決めています。
       - before: 原因の調査に三日間、時間を溶かしました。
         after: 原因の調査に三日かかりました。
@@ -71,7 +75,7 @@ rewrite:
       - 書き手の確かさ（言い切りか、推量か）
     avoid:
       - 書き手が書いていない例や数字を作る
-      - 決まり文句を別の決まり文句に替える（「重要な役割を果たす」を「欠かせない存在だ」に）
+      - 決まり文句を別の決まり文句に替える（「重要な役割を担う」を「欠かせない存在だ」に）
       - どの段落も同じ形に書き揃える
   en:
     direction: Replace the stock phrase with what the sentence actually claims, who does what and how much. If nothing is claimed, delete the sentence.

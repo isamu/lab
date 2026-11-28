@@ -1,6 +1,6 @@
 import type { Mention, NumberedLine, NumberingContext, StructurePatterns } from "chaffjs/plugin";
 import { parseJapaneseNumber, toHalfWidth } from "./numbers.ts";
-import { citationVocabulary, citedDocument, namedDocument } from "./citation.ts";
+import { citationVocabulary, citedName, namedDocument, type CitedName } from "./citation.ts";
 import { loadLexicons } from "./lexicons.ts";
 import { countedAfter, dates, quantities } from "./quantities.ts";
 import { sectionReferences, sectionVocabulary } from "./section-reference.ts";
@@ -12,8 +12,11 @@ import { deniesSaying } from "./denied-saying.ts";
 const NUMBER = "[0-9０-９〇一二三四五六七八九十百千]{1,6}";
 const SPACE = "[ \\t\\u3000]";
 
-/** 見出しとして読めるのは、番号の直後が空白・括弧・行末のとき。「第3条に定める」は本文。 */
-const ARTICLE = new RegExp(`^${SPACE}*第(?<n>${NUMBER})条(?:の(?<sub>${NUMBER}))?(?<rest>(?:${SPACE}|（|\\().*|)$`, "u");
+/**
+ * 見出しとして読めるのは、番号の直後が空白・括弧・行末のとき。「第3条に定める」は本文。
+ * ひな形が選択肢ごとに項を見出しにした「第1条1項（オプション1：…）」は第1条の見出し。項の後ろは括弧に限る（「第3条第2項中」は改める文）。
+ */
+const ARTICLE = new RegExp(`^${SPACE}*第(?<n>${NUMBER})条(?:の(?<sub>${NUMBER}))?(?:第?${NUMBER}項(?=[（(]))?(?<rest>(?:${SPACE}|（|\\().*|)$`, "u");
 /**
  * 見出しの行では、題を詰めて書いた「第7条委託」「第2章概要」も読む。後ろが平仮名（「第3条に定める」「第2章では」）、
  * 次の番号（「第2章第1節」）、並べる語（「第4条及び第5条」「第2条若しくは第3条」「第2条乃至第5条」）なら、番号は題の札でないので読まない。
@@ -209,7 +212,7 @@ const mentions = (
  * 括弧の中の定義は、法令の形（以下「X」という。以下「X」といい、）も、規約やポリシーの丁寧な形（以下、「X」といいます。）も読む。
  * 「以下「X」」の枠と、句点・読点・閉じ括弧で切れる述語が要るので、地の文（そう言います、以下、「X」という見出し）は当たらない。
  */
-const DEFINITIONS = [/以下[、，]?「(?<term>[^「」\n]{1,40})」とい(?:う|い(?:ます)?)(?=[。、，）)\s]|$)/gu, /「(?<term>[^「」\n]{1,40})」とは/gu];
+const DEFINITIONS = [/以下[、，]?「(?<term>[^「」\n]{1,40})」とい(?:う|い(?:ます)?)(?=[。、，）)\s]|$)/gu, /「(?<term>[^「」\n]{1,40})」[ \u3000]?とは/gu];
 
 /**
  * 範囲を限った定義。「この条において『X』とは」「前項に規定する『X』とは」は、その条や項の中だけの定義で、
@@ -258,8 +261,8 @@ const PARENTHESES = /（[^（）()]*）|\([^（）()]*\)/gu;
 /** 閉じの括弧が、開いたままの最後の括弧と組になるか。 */
 const closes = (char: string, opened: string | undefined): boolean => opened !== undefined && OPENER_OF.get(char) === opened;
 
-/** 間の文字列が、接続の語・読点・項や号の断片・括弧書きだけでできているか。 */
-const isContinuation = (gap: string): boolean => gap.replace(PARENTHESES, "").replace(FRAGMENT, "").replace(CONNECTORS, "") === "";
+/** 間の文字列が、接続の語・読点・項や号の断片・括弧書きと、「民法第1条、同第2条」の「同」（前の参照と同じ文書）だけでできているか。 */
+const isContinuation = (gap: string): boolean => /^同?$/u.test(gap.replace(PARENTHESES, "").replace(FRAGMENT, "").replace(CONNECTORS, ""));
 
 /** 行を一度だけ読んで、位置ごとの括弧の深さを出す。参照ごとに行を読み直さない。 */
 const depthsOf = (text: string): Int32Array => {
@@ -349,17 +352,17 @@ const articlesOf = (text: string): Mention[] =>
 const references = (text: string): Mention[] => {
   const depths = depthsOf(text);
   // 括弧書きの中の参照（「（同法第五十九条において準用する場合を含む。）」）は、外の並びを切らない。並びは括弧の深さごとに持つ。
-  const chains = new Map<number, { readonly end: number; readonly document: string | undefined }>();
+  const chains = new Map<number, { readonly end: number; readonly named: CitedName | undefined }>();
   return [...articlesOf(text), ...sectionsOf(text)]
     .toSorted((left, right) => left.start - right.start)
     .map((mention) => {
       const depth = depths[mention.start] ?? 0;
       const previous = chains.get(depth);
       const inherited =
-        previous?.document !== undefined && isContinuation(withoutClosedParentheses(text.slice(previous.end, mention.start))) ? previous.document : undefined;
-      const document = citedDocument(text, mention.start, CITATION) ?? inherited;
-      chains.set(depth, { end: mention.end, document });
-      return document === undefined ? mention : { ...mention, attrs: { ...mention.attrs, document } };
+        previous?.named !== undefined && isContinuation(withoutClosedParentheses(text.slice(previous.end, mention.start))) ? previous.named : undefined;
+      const named = citedName(text, mention.start, CITATION) ?? inherited;
+      chains.set(depth, { end: mention.end, named });
+      return named === undefined ? mention : { ...mention, attrs: { ...mention.attrs, ...named } };
     });
 };
 

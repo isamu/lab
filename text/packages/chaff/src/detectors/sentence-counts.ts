@@ -1,9 +1,12 @@
-import type { Detector, DetectorOptions, Finding, Lexicon, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
+import type { Detector, DetectorOptions, Finding, LengthUnit, Lexicon, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { isWithinAny, quotedIn } from "../quoted-span.ts";
 import { entryOpens } from "./lexicon-match.ts";
-import { laterAlternatives } from "../alternative-words.ts";
+import { laterAlternatives, laterJoined } from "../alternative-words.ts";
 import { isContrastiveGa } from "./adversative-ga.ts";
+import { isFlattenedTable } from "./sentence-parts.ts";
+import { bareListCommas } from "./bare-word-list.ts";
+import { definedTerms } from "../structure/definition-use.ts";
 
 type TokenTest = (token: Token, at: number, tokens: readonly Token[]) => boolean;
 
@@ -13,11 +16,11 @@ const wordsOf = (lexicon: Lexicon | undefined): ReadonlySet<string> => new Set((
 export const FIXED_TERM_LEXICON = "teki-fixed-term";
 
 /** Where the sentence holds one of the terms, in the document's coordinates. */
-const termSpans = (sentence: Sentence, terms: Lexicon): Span[] =>
-  terms.flatMap((entry) =>
-    [...sentence.text.matchAll(new RegExp(escapeRegExp(entry.pattern), "gu"))].map((match) => ({
+const termSpans = (sentence: Sentence, terms: readonly string[]): Span[] =>
+  terms.flatMap((term) =>
+    [...sentence.text.matchAll(new RegExp(escapeRegExp(term), "gu"))].map((match) => ({
       start: sentence.span.start + match.index,
-      end: sentence.span.start + match.index + entry.pattern.length,
+      end: sentence.span.start + match.index + term.length,
     })),
   );
 
@@ -25,7 +28,7 @@ const termSpans = (sentence: Sentence, terms: Lexicon): Span[] =>
  * The tokens of a sentence that pass the test, outside anything quoted in 「」『』 and outside the fixed terms: neither a
  * quotation nor a term the law defines (電磁的方法) is the writer's to rephrase.
  */
-const countedTokens = (sentence: Sentence, test: TokenTest, fixedTerms: Lexicon): Token[] => {
+const countedTokens = (sentence: Sentence, test: TokenTest, fixedTerms: readonly string[]): Token[] => {
   const kept = [...quotedIn(sentence), ...termSpans(sentence, fixedTerms)];
   return (sentence.tokens ?? []).filter((token, at, tokens) => test(token, at, tokens) && !isWithinAny(kept, token.span));
 };
@@ -41,29 +44,69 @@ const findingOf = (sentence: Sentence, counted: readonly Token[], limit: number)
 
 const sentencesOver = (doc: ProseDocument, limit: number, test: TokenTest, fixedTerms: Lexicon = []): Finding[] =>
   doc.sentences.flatMap((sentence) => {
-    const counted = countedTokens(sentence, test, fixedTerms);
+    const counted = countedTokens(
+      sentence,
+      test,
+      fixedTerms.map((entry) => entry.pattern),
+    );
     return counted.length > limit ? [findingOf(sentence, counted, limit)] : [];
   });
 
+/** The counted words that only repeat the point of the one before: a later option of a choice, a later half of a joined pair. */
+const laterOfOnePoint = (tokens: readonly Token[], counted: readonly number[]): ReadonlySet<number> =>
+  new Set([...laterAlternatives(tokens, counted), ...laterJoined(tokens, counted)]);
+
+/** A mark that opens an item with a circled number (③): an item of a list written inside the sentence. */
+const CIRCLED_ITEM = /^[①-⒇❶-❿]/u;
+
+/** The counted tokens of the sentence's largest part, the sentence cut before each circled item mark (①Credit：…、②…). */
+const largestItem = (sentence: Sentence, counted: readonly Token[]): readonly Token[] => {
+  const marks = (sentence.tokens ?? []).filter((token) => CIRCLED_ITEM.test(token.surface)).map((token) => token.span.start);
+  const itemOf = (token: Token): number => marks.filter((start) => start <= token.span.start).length;
+  const items = counted.reduce((byItem, token) => byItem.set(itemOf(token), [...(byItem.get(itemOf(token)) ?? []), token]), new Map<number, Token[]>());
+  return [...items.values()].reduce<readonly Token[]>((largest, item) => (item.length > largest.length ? item : largest), []);
+};
+
+/**
+ * The terms the document defines (「効果的な技術的保護手段」とは…) that hold one of the counted words. The word belongs to the
+ * term, which the document uses as it defined it, not to the writer's style.
+ */
+const termsHolding = (doc: ProseDocument, words: ReadonlySet<string>): readonly string[] =>
+  (doc.structure === undefined ? [] : definedTerms(doc.structure)).map(({ term }) => term).filter((term) => [...words].some((word) => term.includes(word)));
+
 /**
  * A sentence holding more than limit tokens written as one of the lexicon's words (the suffix 的). The options of one choice
- * (連続的か断続的か、一時的) count once: they name one point, the kinds a thing may be.
+ * (連続的か断続的か、一時的) and a joined pair (信仰的主観的) count once: each names one point. A list written inside the sentence
+ * (①…、②…) is counted item by item, as each item is a point of its own. A table a converter flattened into one sentence
+ * is cells, not the writer's sentence (the same 経常的 in each row).
  */
 export const sentenceWordCount: Detector = (doc, options): Finding[] => {
   const words = wordsOf(options.lexicon);
-  const alternatives = new WeakMap<readonly Token[], ReadonlySet<number>>();
+  const onePoint = new WeakMap<readonly Token[], ReadonlySet<number>>();
   const laterOf = (tokens: readonly Token[]): ReadonlySet<number> => {
-    const known = alternatives.get(tokens);
+    const known = onePoint.get(tokens);
     if (known !== undefined) return known;
-    const found = laterAlternatives(
+    const found = laterOfOnePoint(
       tokens,
       tokens.flatMap((token, at) => (words.has(token.surface) ? [at] : [])),
     );
-    alternatives.set(tokens, found);
+    onePoint.set(tokens, found);
     return found;
   };
   const isCounted: TokenTest = (token, at, tokens) => words.has(token.surface) && !laterOf(tokens).has(at);
-  return sentencesOver(doc, options.limit, isCounted, doc.lexicons[FIXED_TERM_LEXICON] ?? []);
+  const fixedTerms = (doc.lexicons[FIXED_TERM_LEXICON] ?? []).map((entry) => entry.pattern);
+  const cache: { defined?: readonly string[] } = {};
+  // Read only when a sentence is over the limit: building the structure is the costly part.
+  const defined = (): readonly string[] => (cache.defined ??= termsHolding(doc, words));
+  return doc.sentences.flatMap((sentence) => {
+    if (isFlattenedTable(sentence.text)) return [];
+    const over = (terms: readonly string[]): readonly Token[] => {
+      const counted = largestItem(sentence, countedTokens(sentence, isCounted, terms));
+      return counted.length > options.limit ? counted : [];
+    };
+    const counted = over(fixedTerms).length === 0 ? [] : over([...fixedTerms, ...defined()]);
+    return counted.length === 0 ? [] : [findingOf(sentence, counted, options.limit)];
+  });
 };
 
 const NOMINAL: ReadonlySet<string> = new Set(["NOUN", "PROPN", "NUM"]);
@@ -125,10 +168,22 @@ export const separatesItems = (at: number, tokens: readonly Token[]): boolean =>
   return betweenQuotations(at, tokens) || (isNominal(itemEnd) && startsNoun(at, tokens, itemEnd));
 };
 
-/** A sentence cut by more than limit of the lexicon's commas (読点). Commas between listed nouns are not counted. */
+/**
+ * A sentence cut by more than limit of the lexicon's commas (読点). Commas between listed nouns, and between the short bare words
+ * of a list, are not counted. A table a converter flattened into one sentence is cells, not the writer's sentence.
+ */
 export const sentenceCommaCount: Detector = (doc, options): Finding[] => {
   const commas = wordsOf(options.lexicon);
-  return sentencesOver(doc, options.limit, (token, at, tokens) => commas.has(token.surface) && !separatesItems(at, tokens));
+  const isComma = (token: Token): boolean => commas.has(token.surface);
+  const listed = new WeakMap<readonly Token[], ReadonlySet<number>>();
+  const listedIn = (tokens: readonly Token[]): ReadonlySet<number> => {
+    const known = listed.get(tokens) ?? bareListCommas(tokens, isComma);
+    listed.set(tokens, known);
+    return known;
+  };
+  const counts: TokenTest = (token, at, tokens) => isComma(token) && !separatesItems(at, tokens) && !listedIn(tokens).has(at);
+  const eras = (doc.lexicons["calendar-era"] ?? []).map((entry) => entry.pattern);
+  return sentencesOver({ ...doc, sentences: doc.sentences.filter((sentence) => !isFlattenedTable(sentence.text, eras)) }, options.limit, counts);
 };
 
 const CONJUNCTIVE = "SCONJ";
@@ -176,15 +231,28 @@ export const openerRuns = (sentences: readonly Sentence[], lexicon: Lexicon, not
     )
     .filter((run) => run.length > 0);
 
-const runFinding = (run: readonly Opened[], options: DetectorOptions): Finding => {
+/** The opening words that, repeated at the head of the next sentence, carry the same subject on (It … It …). */
+export const CONTINUING_LEXICON = "demonstrative-continuing";
+
+/**
+ * How many sentences of the run send the reader back: a sentence opening with the same continuing word as the one before
+ * keeps that sentence's subject, so a chain of them counts once.
+ */
+const runCount = (run: readonly Opened[], continuing: ReadonlySet<string>): number =>
+  run.filter((opened, at) => !(opened.opener !== undefined && continuing.has(opened.opener) && run[at - 1]?.opener === opened.opener)).length;
+
+/** Words are set apart by spaces, so sentences quoted together are too (…small purchases. This means …); characters are not. */
+const joinerOf = (unit: LengthUnit): string => (unit === "char" ? "" : " ");
+
+const runFinding = (run: readonly Opened[], count: number, options: DetectorOptions, unit: LengthUnit): Finding => {
   const first = run[0];
   return {
     rule: "",
     severity: "info",
     line: 0,
     column: 0,
-    quote: run.map(({ sentence }) => sentence.text.trim()).join(""),
-    values: { word: first?.opener ?? "", count: run.length, limit: options.limit, offset: first?.sentence.span.start ?? 0 },
+    quote: run.map(({ sentence }) => sentence.text.trim()).join(joinerOf(unit)),
+    values: { word: first?.opener ?? "", count, limit: options.limit, offset: first?.sentence.span.start ?? 0 },
   };
 };
 
@@ -192,9 +260,11 @@ const runFinding = (run: readonly Opened[], options: DetectorOptions): Finding =
 export const openerRun: Detector = (doc, options): Finding[] => {
   const lexicon = options.lexicon ?? [];
   const notOpeners = doc.lexicons[NOT_OPENER_LEXICON] ?? [];
+  const continuing = new Set((doc.lexicons[CONTINUING_LEXICON] ?? []).map((entry) => entry.pattern));
   return doc.paragraphs.flatMap((paragraph) =>
     openerRuns(paragraph.sentences, lexicon, notOpeners)
-      .filter((run) => run.length > options.limit)
-      .map((run) => runFinding(run, options)),
+      .map((run) => ({ run, count: runCount(run, continuing) }))
+      .filter(({ count }) => count > options.limit)
+      .map(({ run, count }) => runFinding(run, count, options, doc.lengthUnit)),
   );
 };

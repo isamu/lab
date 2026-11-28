@@ -111,6 +111,13 @@ describe("requirement-smell (ja)", () => {
     assert.deepEqual(found("監査等委員会は、報告を求めなければならない。", ja), ["open-end:等"]);
   });
 
+  it("等 right after a term the document defines widens the named thing and leaves no list open (秘密情報等)", () => {
+    const defined = "甲は、乙に開示した一切の情報（以下「秘密情報」という。）を定める。";
+    assert.deepEqual(found(`${defined}乙は、秘密情報等を役員に限り開示するものとし、秘密情報等を返還するものとする。`, ja, "legal/contract"), []);
+    assert.deepEqual(found(`${defined}乙は、秘密情報の写し等を返還するものとする。`, ja, "legal/contract"), ["open-end:等"]);
+    assert.deepEqual(found("乙は、秘密情報等を返還するものとする。", ja, "legal/contract"), ["open-end:等"]);
+  });
+
   it("等 after a name the document does not define still leaves the list open, beside one it does", () => {
     assert.deepEqual(found("委託先等（委託先及び再委託先をいう。）を定める。受託者は、ログ等を保存しなければならない。", ja), ["open-end:等"]);
     assert.deepEqual(found("受託者は、委託先等（委託先及び再委託先をいう。）及びログ等を管理しなければならない。", ja), ["open-end:等"]);
@@ -136,11 +143,21 @@ describe("requirement-smell (ja)", () => {
     assert.deepEqual(found("ログ等は、三十日保存するものとする。", ja), ["open-end:等"]);
     assert.deepEqual(found("一　ログ等は、三十日保存するものとする。", ja), ["open-end:等"]);
   });
+
+  it("等 in a term that law fixes (消費税等, 免許等) closes its own list, and a term not on the list stays open", () => {
+    assert.deepEqual(found("報酬の単価には、消費税等の税金が含まれるものとする。", ja, "legal/contract"), []);
+    assert.deepEqual(found("報酬の単価には、地方消費税等が含まれるものとする。", ja, "legal/contract"), []);
+    assert.deepEqual(found("期間は、免許等の日の翌日から起算するものとする。", ja, "legal/contract"), []);
+    assert.deepEqual(found("報酬の単価には、手数料等が含まれるものとする。", ja, "legal/contract"), ["open-end:等"]);
+  });
 });
 
 describe("requirement-smell (en)", () => {
   it("a loophole in a requirement with must, shall or is required to", () => {
     assert.deepEqual(found("The page must load as fast as possible.", en), ["loophole:as fast as possible"]);
+    assert.deepEqual(found("The supplier shall respond as quickly as possible.", en), ["loophole:as quickly as possible"]);
+    assert.deepEqual(found("The supplier shall report a breach as promptly as possible.", en), ["loophole:as promptly as possible"]);
+    assert.deepEqual(found("Staff must file the form as early as possible.", en), ["loophole:as early as possible"]);
     assert.deepEqual(found("The supplier shall report if necessary.", en), ["loophole:if necessary"]);
     assert.deepEqual(found("Staff are required to file the form where possible.", en), ["loophole:where possible"]);
   });
@@ -149,6 +166,7 @@ describe("requirement-smell (en)", () => {
     const bounded = "The closing shall take place as soon as possible, but in any event no later than two business days after the conditions are met.";
     assert.deepEqual(found(bounded, en, "legal/contract"), []);
     assert.deepEqual(found("The supplier shall reply as soon as possible, and in any case within five days.", en), []);
+    assert.deepEqual(found("The supplier shall reply as quickly as possible, and in any case within five days.", en), []);
     assert.deepEqual(found("The closing shall take place as soon as possible.", en, "legal/contract"), ["loophole:as soon as possible"]);
   });
 

@@ -1,0 +1,10 @@
+# 自分を呼ぶ語と並べて、ほかの人を話題に立てる語（「僕は左を向く、君は右を向いても」）。同じ文で「僕は」と「君は」を対にすると、
+# 例に出した二人の言葉で、書き手が自分を呼んだのではない。person-consistency は、そう対にした自分の呼び方を数えない。
+id: person-contrast
+language: ja
+entries:
+  - pattern: 君
+  - pattern: あなた
+  - pattern: お前
+  - pattern: 彼
+  - pattern: 彼女

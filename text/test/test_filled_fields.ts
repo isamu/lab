@@ -209,8 +209,9 @@ describe("where no finding exists, a placeholder reads as the rule's words for i
     const ja = loadRules("ja");
     const en = loadRules("en");
     const rule = (rules: readonly RuleDefinition[], id: string): RuleDefinition => rules.find((entry) => entry.id === id) ?? assert.fail(id);
-    assert.match(readableText(rule(ja, "preferred-term"), rule(ja, "preferred-term").how_to_fix, "ja"), /^「prefer に並べた使う書き方」に直してください。/u);
-    assert.match(readableText(rule(en, "preferred-term"), rule(en, "preferred-term").how_to_fix, "en"), /^Change it to "the spelling listed under prefer"\./u);
+    assert.match(readableText(rule(ja, "preferred-term"), rule(ja, "preferred-term").how_to_fix, "ja"), /^prefer に並べた使う書き方に直してください。/u);
+    assert.match(readableText(rule(en, "preferred-term"), rule(en, "preferred-term").how_to_fix, "en"), /^Change it to the spelling listed under prefer\./u);
+    assert.match(readableText(rule(ja, "katakana-long-vowel"), rule(ja, "katakana-long-vowel").how_to_fix, "ja"), /^直した書き方に直してください。/u);
     assert.match(readableText(rule(ja, "duplicate-definition"), rule(ja, "duplicate-definition").how_to_fix, "ja"), /「第2条に定める〇〇」/u);
   });
 
@@ -219,6 +220,15 @@ describe("where no finding exists, a placeholder reads as the rule's words for i
     assert.equal(readableText(rule, { en: "{term} {other} {n|item|items}" }, "en"), "the term {other} items");
     assert.equal(readableText({}, { en: "{term}" }, "en"), "{term}");
     assert.equal(readableText({ placeholders: { term: {} } }, { en: "{term}" }, "en"), "{term}");
+  });
+
+  it("drops the quotation marks around a description of the value, and keeps them around a sample or a stand-in", () => {
+    const rule = {
+      placeholders: { found: { ja: "見つけた語", en: "the word found" }, word: { ja: "すべて", en: "always" }, term: { ja: "〇〇", en: "the term" } },
+    };
+    assert.equal(readableText(rule, { ja: "「{found}」を直す。「{word}」と「{term}」" }, "ja"), "見つけた語を直す。「すべて」と「〇〇」");
+    assert.equal(readableText(rule, { en: 'Fix "{found}", not "{word}" or “{term}”' }, "en"), 'Fix the word found, not "always" or the term');
+    assert.equal(readableText(rule, { ja: "「{found}の形」" }, "ja"), "「見つけた語の形」");
   });
 
   it("reads each language in its own words, and falls back to English as the text does", () => {

@@ -16,6 +16,8 @@ export type ReferenceWords = {
   readonly topicLinks: readonly string[];
   /** 話題にならない語（詳細、内容、details）。どの節にも当てはまる。 */
   readonly vagueTopics: readonly string[];
+  /** 話題をそこで終える語（regarding、about）。後ろは話題の続きでなく、話題についての言葉。 */
+  readonly topicEnds: readonly string[];
   /** 二つの参照を一つの並びにする語（及び、から、and、to）。並びの後ろの括弧は並び全体の名前。 */
   readonly listJoints: readonly string[];
 };
@@ -116,12 +118,27 @@ const EN_TOPIC = /^(?:the |a |an )?([a-z][a-z-]{2,}(?: [a-z][a-z-]{2,}){0,2})/iu
 const STEM = 5;
 const LATIN_TOPIC = /^[a-z -]+$/iu;
 
-const topicAfter = (source: string, end: number, links: readonly string[]): string | undefined => {
+/** The link starts the text as a whole word: "for" in "for pricing", not in "formulate". */
+const startsWithLink = (text: string, link: string): boolean =>
+  text.toLowerCase().startsWith(link.toLowerCase()) && !(LATIN_TOPIC.test(link) && LETTER.test(text.charAt(link.length)));
+
+/** The English topic up to a word that ends it: "Security Considerations regarding well-known" is about Security Considerations. */
+const cutAtEnd = (topic: string, ends: readonly string[]): string | undefined => {
+  const words = topic.split(" ");
+  const at = words.findIndex((word) => ends.some((end) => end.toLowerCase() === word.toLowerCase()));
+  const kept = at === -1 ? words : words.slice(0, at);
+  return kept.length === 0 ? undefined : kept.join(" ");
+};
+
+const topicAfter = (source: string, end: number, words: ReferenceWords): string | undefined => {
   const after = source.slice(end, end + 60);
-  const link = links.find((candidate) => after.replace(SPACE_BEFORE, "").toLowerCase().startsWith(candidate.toLowerCase()));
+  const link = words.topicLinks.find((candidate) => startsWithLink(after.replace(SPACE_BEFORE, ""), candidate));
   if (link === undefined) return undefined;
   const rest = after.replace(SPACE_BEFORE, "").slice(link.length).replace(SPACE_BEFORE, "");
-  return JA_TOPIC.exec(rest)?.[0] ?? EN_TOPIC.exec(rest)?.[1];
+  const japanese = JA_TOPIC.exec(rest)?.[0];
+  if (japanese !== undefined) return japanese;
+  const english = EN_TOPIC.exec(rest)?.[1];
+  return english === undefined ? undefined : cutAtEnd(english, words.topicEnds);
 };
 
 /** 話題が参照先にあるか。英語の語は、語の頭から五文字で探す（pricing と price は同じ語の形違い、metadata の data は別の語）。 */
@@ -142,7 +159,7 @@ const isVague = (topic: string, words: ReferenceWords): boolean => {
 export const topicMisses = (input: ReferenceInput): StructureIssue[] =>
   input.references.flatMap((reference) => {
     const target = input.targetOf(reference);
-    const topic = topicAfter(input.source, reference.span.end, input.words.topicLinks);
+    const topic = topicAfter(input.source, reference.span.end, input.words);
     if (target === undefined || headingOf(target) === "" || topic === undefined || isVague(topic, input.words)) return [];
     if (mentions(input.source.slice(target.span.start, target.span.end), topic)) return [];
     return [{ offset: reference.span.start, values: { label: String(reference.attrs["label"] ?? ""), topic, heading: headingOf(target) } }];

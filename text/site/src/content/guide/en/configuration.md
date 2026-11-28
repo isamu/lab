@@ -281,6 +281,102 @@ When `preferred-term` finds the left-hand spelling, it asks for the right-hand o
 When the left-hand spelling is a verb in its dictionary form (`utilize: use`), its other forms ("utilizing") are found too.
 With nothing under `prefer`, it says nothing.
 
+## Choosing what a rule reads (scope)
+
+A team's rule reads body text and list items by default.
+To read only headings or only tables, or to leave quotations out, list the parts under `scope`.
+It can be written on a `words`, `pattern` or `tokens` rule under `custom_rules`, and on an entry under `prefer`.
+
+| Name | What it reads |
+| --- | --- |
+| `heading` | Headings (not the `#` or the underline) |
+| `list` | List items |
+| `table` | Table cells (below the header row) |
+| `quote` | `>` quotations (not the `>` marks). A GitHub `> [!NOTE]` is the writer's own text and is read as body text |
+| `paragraph` | Body text in none of the others |
+
+A `~` in front of a name leaves that part out.
+What a rule reads is decided in two steps: the names without `~` choose (none written: every part), then the names with `~` take parts away.
+A list item inside a quotation is both `list` and `quote`, so `[list, ~quote]` reads the list items outside quotations.
+An unknown name, or a scope that takes away everything it chooses, is a settings error and stops the run.
+
+A rule against a full stop at the end of a heading:
+
+```yaml
+custom_rules:
+  - id: heading-no-period
+    type: pattern
+    pattern: '\.$'
+    scope: [heading]
+    name: A heading ends with a full stop
+    why: A heading is not a sentence, so we write it without one.
+    how_to_fix: Remove the full stop.
+    example:
+      before: '## Overview.'
+      after: '## Overview'
+```
+
+To give a `prefer` entry a scope, write its right-hand side with `use` and `scope`.
+Here "our firm" is not reported inside a quotation of a customer's words.
+An entry whose right-hand side is only a spelling reads body text and list items, as before.
+
+```yaml
+prefer:
+  e-mail: email
+  our firm: { use: our company, scope: [~quote] }
+```
+
+## Keeping names and terms in their one form
+
+Product, company and technology names have one right form.
+A slip such as "Github", "ＧｉｔＨｕｂ" or "Java Script" is invisible to the rules that compare spellings when the right form never appears in the document.
+List the right forms, exactly as they must be written, under `terms`.
+
+```yaml
+terms:
+  - GitHub
+  - JavaScript
+  - Claude Code
+```
+
+`term-form` finds a form that differs only in capital letters, full or half width, hyphens or spaces, and asks for the listed one.
+
+```
+  3:16    warning Write "GitHub", not "Github"
+                  term-form
+```
+
+Code, URLs, e-mail addresses and file paths (`github.com`, `docs/github.md`) are left alone, and so is a longer word that holds the term (GitHubber).
+With nothing under `terms`, the rule does not run, and the list of rules that did not run says "nothing is listed under terms in chaff.yaml".
+A value that cannot be read as a term (not a list, an entry that is not text) and two terms that differ only in case and the like (`GitHub` and `Github`) are reported before the results.
+
+`terms` works the other way round from `names`: a name under `names` is read as one name so that it is not counted as a run of kanji or a repeated phrase, and its spelling is not checked.
+## Keeping words that are each right from mixing
+
+Some words are each right but should not be mixed in one document: "log in" and "sign in", "customer" and "client".
+To decide only that they are not mixed, not which one wins, list each group under `consistent`.
+
+```yaml
+consistent:
+  - [log in, sign in]
+  - [customer, client]
+```
+
+In a document that uses two or more words of a group, `term-consistency` points at the one the document uses less.
+
+```
+  5:1     warning "sign in" here, but the document uses "log in" in 2 other places
+                  term-consistency
+```
+
+When they are used equally, it takes no side and says once that they are mixed.
+Case does not count ("Log in" is "log in"), and a longer word that holds a member (login) is not counted.
+When two or more files or a folder are checked together, `cross-doc-term-variant` also compares the files and points at a file that uses another word than the rest.
+With nothing under `consistent`, the rule does not run, and the list of rules that did not run says "nothing is listed under consistent in chaff.yaml".
+A value that cannot be read as a group (not a list, a group without two different words) and a word listed in two groups are reported before the results.
+
+If the team has decided which word wins, write it under `prefer` instead (`client: customer`).
+
 ## Deciding the team's jargon and required headings
 
 `jargon` and `required_sections` are rules whose content your team decides.
@@ -340,6 +436,36 @@ Kanji outside the name are still counted: in 「個人情報保護委員会事�
 A run of kanji that fills a 「」 or 『』 quotation exactly is not counted, even without `names`.
 In 「英国大使館別荘記念公園」 the writer has marked it as one name. If the quotation also holds kana, the runs inside it are counted as before.
 
+## Allowing text that is always right
+
+Some text is right every time it appears, though a rule reports it: a product name spelt the vendor's way, a form a law
+requires, a quoted title. Writing a `stet` before each one is tedious. List it under `allow` instead, with the reason.
+
+```yaml
+allow:
+  - text: Kubernetes            # a literal string, matched as written
+    reason: product name, spelt as the vendor spells it
+  - pattern: 'v\d+\.\d+'       # a regular expression
+    reason: version numbers are not words
+    rules: [spelling-consistency] # only these rules (all rules when left out)
+    files: ["docs/**/*.md"]     # only these files (all files when left out)
+```
+
+A finding placed inside an occurrence of the text (or a match of the pattern) is not reported.
+A finding that covers more, such as a long sentence that happens to contain the text, still is.
+
+| Key | What it does |
+| --- | --- |
+| `text` | A literal string, matched as written, capital letters included |
+| `pattern` | A regular expression. The same safety checks as a team rule's `pattern` apply: a shape that can run for minutes on a long line is refused |
+| `reason` | Required. Why this text need not be reported. An entry without one stops the run, as a broken team rule does |
+| `rules` | The rule ids the entry covers. A rule chaff does not have is said before the results |
+| `files` | Globs, from the folder `chaff.yaml` is in, as in `by_path` |
+
+Each entry has exactly one of `text` and `pattern`.
+Nothing disappears silently: the file's header line counts what `allow` silenced, and `npx chaffjs suppressions`
+lists each entry with its count and reason, beside the stets.
+
 ## Changing settings per path
 
 One place can hold different kinds of documents. `by_path` changes the settings per path.
@@ -359,6 +485,67 @@ by_path:
 The last match wins. Paths are matched from the folder that holds the settings file,
 so the result is the same wherever you run it.
 `by_path` is a list of entries with `files`. Any other shape, such as a folder mapped to a genre (`guides: docs/manual`), and an entry without `files` are not used, and chaff says so before it checks anything.
+
+### Changing rules per path
+
+An entry also takes `rules` and `options`, written as at the top of the file: a level, `off` or a number under `rules`, a rule's options under `options`.
+One `chaff.yaml` can then hold contracts and manuals side by side.
+
+```yaml
+genre: blog/tech
+
+rules:
+  max-sentence-length: strict
+
+by_path:
+  - files: ["legal/**/*.md"]
+    genre: legal/contract
+    rules:
+      max-sentence-length: 60
+  - files: ["legal/archive/**/*.md"]
+    rules:
+      max-sentence-length: off
+```
+
+A file's level comes from the strongest place that sets it. Weakest first:
+
+| Place | Strength |
+| --- | --- |
+| The rule's default | Weakest |
+| The genre (and the kind of document) | |
+| `style:` | |
+| `rules` at the top of `chaff.yaml` | |
+| `rules` of the `by_path` entries that match the file | Strongest; of several, the one written later wins |
+
+A level written in `by_path` also replaces a number set above it: `relaxed` there is the setting, not `260` at the top.
+Options go the same way: a matching entry's `options` win over the top-level `options`, and the style's.
+
+A rule a `by_path` entry turns off is listed under "did not run" with that entry as the reason:
+
+```
+  max-sentence-length (turned off in the settings by by_path: legal/archive/**/*.md)
+```
+
+`explain` names every entry that changes the rule:
+
+<!-- chaff-screen: by-path-rules -->
+```
+$ npx chaffjs explain max-sentence-length
+…
+  Now: strict.
+
+  by_path in chaff.yaml changes it for these files (there it wins over the level above):
+    legal/**/*.md: 60
+    legal/archive/**/*.md: off
+…
+```
+
+`rules --json` lists the same entries under each rule's `by_path`.
+A rule name `by_path` does not know, a value that is not a level, and `rules` or `options` that are not a map are reported before the check, as they are at the top, with the entry named:
+
+```
+chaff: …/chaff.yaml (by_path: legal/**/*.md): there is no rule named max-sentense-length (npx chaffjs rules --json lists them)
+```
 
 ## Checking files other than Markdown
 
@@ -381,6 +568,29 @@ A finding points at the line and column in the file, so a `custom_rules` pattern
 A YAML file that cannot be parsed is read as plain text.
 Any other file, such as `.txt`, is read as plain text.
 A file named on the command line is checked whatever its extension.
+
+## Leaving files out
+
+`exclude` lists globs a folder walk leaves out.
+They are matched from the folder that holds the settings file, with the same globs as `by_path`.
+
+```yaml
+exclude:
+  - vendor/**
+  - CHANGELOG.md
+```
+
+A walk also leaves out what the repository's `.gitignore` files ignore, read as git reads them (`!` re-includes a file, a trailing `/` matches folders only, a leading `/` anchors a pattern to its folder).
+They are read from the project root down to each file: the nearest folder above the checked one that holds `.git` (a folder, or a worktree's `.git` file), so `chaff docs/` honours the repository's own `.gitignore`.
+Outside a repository, the root is the folder that holds chaff.yaml, and without one, the folder you check.
+When `.git` is a folder, `.git/info/exclude` is read too.
+A file named on the command line is still checked, even when `exclude` or `.gitignore` names it, as other linters do.
+
+The summary says how many files were left out, and why:
+
+```
+  3 files not checked (2 by exclude in chaff.yaml, 1 by .gitignore)
+```
 
 ## Setting the depth of a fix plan
 

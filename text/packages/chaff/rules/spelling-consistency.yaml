@@ -12,8 +12,8 @@ name:
   en: British and American spellings are mixed
 
 why:
-  ja: colour と color、centre と center、organise と organize のように、イギリスとアメリカの綴りはどちらも正しい英語です。困るのは一つの文書の中で混ざることで、検索で別の語になり、別の人が書いた段落がそこだけ違って見えます。chaff はどちらが正しいかを決めず、文書の中で少ないほうを指摘します。-ise と -ize は別に比べます（Oxford の綴りは colour と organize を一緒に使うため）。文の頭でないのに大文字で始まる語（Labor Day、World Health Organization）は名前なので数えず、引用符の中と引用符で引いた語（‘organize’）も数えません。古い文学の綴りは時代のものなので、文学のジャンルでは既定で止めています。少ないほうが三分の一を超える文書は、使い分けている（引用や固有の用語）と見て言いません。
-  en: British and American spellings (colour and color, centre and center, organise and organize) are both correct English. What reads badly is mixing them in one document, which makes search treat them as different words and makes another writer's paragraph stand out. chaff does not decide which is right; it points at whichever the document uses less. -ise and -ize are compared on their own, since Oxford spelling writes colour with organize. A word capitalised in the middle of a sentence (Labor Day, World Health Organization) is a name and is not counted, nor is anything in quotation marks or a word quoted on its own (‘organize’). The literature preset turns it off, since old spelling belongs to its time. It says nothing when the minority is more than a third, since the document then mixes them on purpose (quotations, fixed terms).
+  ja: colour と color、centre と center、organise と organize のように、イギリスとアメリカの綴りはどちらも正しい英語です。困るのは一つの文書の中で混ざることで、検索で別の語になり、別の人が書いた段落がそこだけ違って見えます。chaff はどちらが正しいかを決めず、文書の中で少ないほうを指摘します。-ise と -ize は別に比べます（Oxford の綴りは colour と organize を一緒に使うため）。文の頭でないのに大文字で始まる語（Labor Day、World Health Organization）は名前なので数えず、引用符の中と引用符で引いた語（‘organize’）、斜線で並べた二つの綴り（analyse/analyze）、文献一覧の中（引いた文献の題や出版者の名前はその文献の綴り）も数えません。古い文学の綴りは時代のものなので、文学のジャンルでは既定で止めています。少ないほうが三分の一を超える文書は、使い分けている（引用や固有の用語）と見て言いません。
+  en: British and American spellings (colour and color, centre and center, organise and organize) are both correct English. What reads badly is mixing them in one document, which makes search treat them as different words and makes another writer's paragraph stand out. chaff does not decide which is right; it points at whichever the document uses less. -ise and -ize are compared on their own, since Oxford spelling writes colour with organize. A word capitalised in the middle of a sentence (Labor Day, World Health Organization) is a name and is not counted, nor is anything in quotation marks, a word quoted on its own (‘organize’), the two spellings named side by side (analyse/analyze), or a reference list (a cited title or publisher keeps its own spelling). The literature preset turns it off, since old spelling belongs to its time. It says nothing when the minority is more than a third, since the document then mixes them on purpose (quotations, fixed terms).
 
 message:
   ja: 「{matched}」と書いています（この文書はふつう「{other}」の綴り。{of} 箇所のうち {count} 箇所が違う）
@@ -42,8 +42,8 @@ example:
       The colour of the logo is blue. The colour of the button is green. The colour of the link is red.
 
 not_flagged:
-  ja: どちらの綴りが正しいかは決めません。-ise と -ize は別に比べるので、Oxford の綴り（colour と organize）はそろっていると見ます。文の途中で大文字で始まる名前（Labor Day）と引用符の中は数えません。
-  en: Neither spelling is called right. -ise and -ize are compared on their own, so Oxford spelling (colour with organize) is consistent. Names capitalised mid-sentence (Labor Day) and quotations are not counted.
+  ja: どちらの綴りが正しいかは決めません。-ise と -ize は別に比べるので、Oxford の綴り（colour と organize）はそろっていると見ます。文の途中で大文字で始まる名前（Labor Day）、引用符の中、斜線で並べた二つの綴り（analyse/analyze）、文献一覧の中は数えません。
+  en: Neither spelling is called right. -ise and -ize are compared on their own, so Oxford spelling (colour with organize) is consistent. Names capitalised mid-sentence (Labor Day), quotations, the two spellings side by side (analyse/analyze) and reference lists are not counted.
 level_meaning:
   ja: 少ないほうが組の {limit}% 以下のとき指摘
   en: reported when the minority spelling is {limit}% of its group or less

@@ -1,0 +1,14 @@
+# ウェブページを文書に変換したときに残る、サイトの案内の行（ページの先頭です。メニューを飛ばして本文へ）。
+# 文書の本文ではないので、concrete-evidence-density は節の文に数えない。文全体と、文末の句点を除いて比べる。
+id: navigation-line
+language: ja
+entries:
+  - pattern: ページの先頭です
+  - pattern: メニューを飛ばして本文へ
+  - pattern: 本文へ
+  - pattern: 本文
+  - pattern: 本文ここから
+  - pattern: 本文ここまで
+  - pattern: ここから本文です
+  - pattern: ページの先頭へ
+  - pattern: ページの先頭に戻る

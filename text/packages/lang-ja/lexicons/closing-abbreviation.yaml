@@ -1,0 +1,6 @@
+# 列挙や句を閉じる英語の略語（phone, mail, etc.）。点で文が終わり得る。sentence-start-word の前では、空白が 2 つ続いても
+# 改行を挟んでも、点で文が終わる。日本語の文書の中の英文も同じ分割器で切るので、英語と同じ語を置く。字面どおりに照らす。
+id: closing-abbreviation
+language: ja
+entries:
+  - pattern: etc.

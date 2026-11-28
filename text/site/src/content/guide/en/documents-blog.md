@@ -27,7 +27,7 @@ These are the main rules for this genre.
 | `closing-cliche` | A stock closing | Always |
 | `ai-tell` | Phrases common in generated text ("delve into") piling up | Always (info) |
 | `announcing-opener` | Sentences opening with "The key point is" and the like, piling up | Always (info) |
-| `ai-generated-composite` | Three or more signals of generated text in one article | Always |
+| `ai-generated-composite` | Two or more signals of generated text in one article | Always |
 | `contraction-consistency` | "isn't" and "is not" mixed in one article | Always (info) |
 | `title-case-consistency` | Headings that mix Title Case and sentence case | Always (info) |
 | `announced-count-mismatch` | A count announced that differs from the list below it | Always |
@@ -98,16 +98,20 @@ article.md   blog/tech · English   genre from --genre
 
   1:71    info    Section length varies by only 25% (want at least 35%)
                   section-length-uniformity
-  3:1     info    "delve into, in today's fast-paced world, it's not just" appear together (score 25, limit 18)
+  3:1     info    "delve into, in today's fast-paced world, it's not just, quietly" appear together (score 25, limit 4)
                   ai-tell
   3:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro
-  3:1     warning "ai-tell, section-length-uniformity, padded-intro, closing-cliche, announcing-opener" occur together in this document (5 signals, 3 needed)
+  3:1     warning 7 signals of generated text occur together in this document (2 needed): Phrasing common in generated text, An honesty marker, Everything comes in threes, Section lengths are too uniform, Padded opening, Cliched closing, Too many sentences that announce before they say
                   ai-generated-composite
   11:1    info    "Honestly," and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
+  11:1    info    "honestly" flags this sentence as candid
+                  honesty-marker
   15:1    info    "The key point is" and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
+  19:1    info    2 of 2 lists have exactly three items (70% allowed)
+                  rule-of-three
   23:1    info    "What's important is" and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
   23:68   info    "it is" is written "it's" elsewhere in the document
@@ -149,7 +153,7 @@ Guide: Tech blog (blog/tech)
   - Does it say what was tried and failed, the limits, and the assumptions?
   - Does the ending point to what to read or try next, rather than restate the body?
 
-  Rules that matter most for this genre: closing-cliche, empty-conclusion, padded-intro, paragraph-length-variance, quote-without-source, rule-of-three, section-length-uniformity, sentence-rhythm
+  Rules that matter most for this genre: closing-cliche, empty-conclusion, generic-opening, padded-intro, paragraph-length-variance, quote-without-source, section-length-uniformity, sentence-rhythm
   Change it with guide: in chaff.yaml; leave it out with --no-guide.
 
 ════════════════════════════════════════════════════════════

@@ -2,11 +2,13 @@ import { surfaceStarts } from "./surface-starts.ts";
 import { wellFormed } from "./well-formed.ts";
 import { analyserPieces } from "./analyser-pieces.ts";
 import { readCounterTsu, type Morpheme } from "./counter-tsu.ts";
+import { readCompoundNounEnding } from "./compound-noun-ending.ts";
 import { outsideTheReport, isPassiveForm, passiveVocabulary, readsAsPassive } from "./passive-reading.ts";
 import { loadLexicons } from "./lexicons.ts";
 import { predicateFrameAfter } from "./predicate-frame.ts";
 import { distributiveVocabulary, isEchoAt, type Inflection } from "./reduplication.ts";
 import { isRaDroppedAt, raDroppedVocabulary } from "./ra-dropped.ts";
+import { isSaInsertedAt } from "./sa-inserted.ts";
 import type { Token } from "chaffjs/plugin";
 import { kuromojiDictionaryPath, kuromojiModule } from "./kuromoji-module.ts";
 
@@ -152,9 +154,15 @@ export const isReady = (): boolean => state.ready !== undefined;
  * 形の違うものが混ざったら、その 1 つを落とす。位置が NaN の token を下流に流さない。
  */
 /** 形態素を語にするときに、前後の形態素から決まる印。 */
-type Marks = { readonly passive: boolean; readonly echo: boolean; readonly light: boolean; readonly raDropped: boolean };
+type Marks = {
+  readonly passive: boolean;
+  readonly echo: boolean;
+  readonly light: boolean;
+  readonly raDropped: boolean;
+  readonly saInserted: boolean;
+};
 
-const toToken = (morpheme: Morpheme, start: number, { passive, echo, light, raDropped }: Marks): Token => ({
+const toToken = (morpheme: Morpheme, start: number, { passive, echo, light, raDropped, saInserted }: Marks): Token => ({
   span: { start, end: start + morpheme.surface_form.length },
   surface: morpheme.surface_form,
   // UD の日本語では「れる/られる」は AUX。IPADIC の「動詞,接尾」をそこへ寄せる。
@@ -162,7 +170,7 @@ const toToken = (morpheme: Morpheme, start: number, { passive, echo, light, raDr
   ...(morpheme.basic_form === "*" ? {} : { lemma: morpheme.basic_form }),
   ...(typeof morpheme.reading !== "string" || morpheme.reading === "*" ? {} : { reading: morpheme.reading }),
   ...withAdverbial(
-    withRaDropped(withEcho(withWordStatus(featuresOf(morpheme, passive), isBound(morpheme), light), echo), raDropped),
+    withSaInserted(withRaDropped(withEcho(withWordStatus(featuresOf(morpheme, passive), isBound(morpheme), light), echo), raDropped), saInserted),
     isAdverbialNoun(morpheme),
   ),
 });
@@ -197,6 +205,10 @@ const withEcho = (found: { features?: Readonly<Record<string, string>> }, echo: 
 /** ら抜き言葉の一部（「食べれる」の 食べ と れる、「見れる」）。日本語に固有の印で、UD の FEATS の言語別拡張。 */
 const withRaDropped = (found: { features?: Readonly<Record<string, string>> }, raDropped: boolean): { features?: Readonly<Record<string, string>> } =>
   raDropped ? { features: { ...found.features, PotentialRa: "Dropped" } } : found;
+
+/** さ入れ言葉の一部（「読まさせて」の 読ま と させ）。日本語に固有の印で、UD の FEATS の言語別拡張。 */
+const withSaInserted = (found: { features?: Readonly<Record<string, string>> }, saInserted: boolean): { features?: Readonly<Record<string, string>> } =>
+  saInserted ? { features: { ...found.features, CausativeSa: "Inserted" } } : found;
 
 /**
  * 副詞としても使える名詞（IPADIC の「副詞可能」: 今夜・当日・午前、その日の「日」、午前中の「中」）。今夜は来る、のように助詞なしで
@@ -326,6 +338,7 @@ const tokensOf = (read: readonly Placed[]): Token[] => {
       echo: isEchoAt(inflections, index, REDUPLICATING_NOUNS),
       light: isLightVerbAt(sequence, index),
       raDropped: isRaDroppedAt(sequence, index, RA_DROPPED_VOCABULARY),
+      saInserted: isSaInsertedAt(sequence, index),
     }),
   );
 };
@@ -334,7 +347,9 @@ const tokensOf = (read: readonly Placed[]): Token[] => {
 const PIECE_LIMIT = 1000;
 
 const analyse = (tokenizer: Tokenizer, text: string): Morpheme[] =>
-  readCounterTsu(analyserPieces(text, PIECE_LIMIT).flatMap((piece) => toArray(callMethod(tokenizer, "tokenize", [piece])).flatMap(toMorpheme)));
+  readCompoundNounEnding(
+    readCounterTsu(analyserPieces(text, PIECE_LIMIT).flatMap((piece) => toArray(callMethod(tokenizer, "tokenize", [piece])).flatMap(toMorpheme))),
+  );
 
 type Placed = { readonly morpheme: Morpheme; readonly start: number };
 

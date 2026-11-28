@@ -1,0 +1,7 @@
+# Opening words that carry the subject of the sentence before on when they open the next one too ("It does not attempt …
+# It does not seek …"). demonstrative-opener-run counts a chain of the same word once: each repeat points at what the
+# first pointed at, so the reader does not go further back.
+id: demonstrative-continuing
+language: en
+entries:
+  - pattern: It

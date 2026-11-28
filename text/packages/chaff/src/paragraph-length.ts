@@ -7,3 +7,43 @@ export const isTooLongParagraph = (sentenceSizes: readonly number[], limit: numb
   const size = sentenceSizes.reduce((sum, sentence) => sum + sentence, 0);
   return sentenceSizes.length > limit && (fullSentence === undefined || size > limit * fullSentence);
 };
+
+type Spanned = { readonly span: { readonly start: number; readonly end: number } };
+
+/** 【】の見出しや段落番号だけの行（【０００１】、【従来の技術】）。特許の明細書や公文書を写すと改行一つでつながり、Markdown では一つの段落になる。 */
+const LABEL_LINE = /^[ \t\u3000]*【[^】\n]+】[ \t\u3000]*$/gmu;
+
+/** 段落の頭の、番号付きの【】の見出しに、改行なしで本文が続く（２【沿革】1893年…）。写すときに改行が落ち、どこが段落の切れ目か分からない。 */
+const FUSED_HEADING = /^[ \t\u3000]*[0-9０-９①-⑳]{1,3}【[^】\n]+】[ \t\u3000]*[^\s]/u;
+
+/** 段落の本文が、番号付きの見出しから改行なしで始まる。段落の切れ目が失われた文書で、長さを測っても書き手の段落ではない。 */
+export const opensWithFusedHeading = (text: string): boolean => FUSED_HEADING.test(text);
+
+/** A sentence end glued to the next sentence with no space ("speculate about it.Judge the claim"): a line break lost in copying. The next word ends in a space or a mark other than a period: "Cong.Rec." is an abbreviation. */
+const GLUED_SENTENCES = /(?<=\p{Ll}\p{Ll})[.!?](?=\p{Lu}\p{Ll}+[\s,;:])/gu;
+
+/** One glued pair is a typo; two or more mean the block's line breaks were lost, so its sentences were not one paragraph. */
+const MIN_GLUED = 2;
+
+/** 文の終わりと次の文の頭が空白なしでつながる所が二つ以上ある。改行が落ちた塊で、長さを測っても書き手の段落ではない。 */
+export const lostLineBreaks = (sentences: readonly { readonly text: string }[]): boolean =>
+  sentences.reduce((count, sentence) => count + [...sentence.text.matchAll(GLUED_SENTENCES)].length, 0) >= MIN_GLUED;
+
+/** 【】のラベルだけの文（【０００１】【技術分野】、２【沿革】）。見出しで、文に数えない。 */
+const LABELS_ONLY = /^\s*(?:[0-9０-９①-⑳]{0,3}【[^】\n]+】\s*)+$/u;
+
+/**
+ * 段落の文を、【】の見出しや段落番号だけの行で割った組。読み手にとってはその行が段落の切れ目で、ラベルだけの文は数えない。
+ * text は段落の文字列で、start はその文書の中の位置（文の span と同じ座標）。割る行が無ければ段落の文がそのまま一つの組。
+ */
+export const labelledBlocks = <T extends Spanned>(text: string, start: number, sentences: readonly T[]): T[][] => {
+  const cuts = [...text.matchAll(LABEL_LINE)].map((match) => start + match.index);
+  const counted = sentences.filter((sentence) => !LABELS_ONLY.test(text.slice(sentence.span.start - start, sentence.span.end - start)));
+  if (cuts.length === 0) return counted.length === 0 ? [] : [counted];
+  const blocks = new Map<number, T[]>();
+  counted.forEach((sentence) => {
+    const block = cuts.filter((cut) => cut < sentence.span.end).length;
+    blocks.set(block, [...(blocks.get(block) ?? []), sentence]);
+  });
+  return [...blocks.values()];
+};

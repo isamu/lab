@@ -3,7 +3,21 @@ import assert from "node:assert/strict";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
-import { evidenceSpans, hasNumeral, isClaim, isLabelOnly, startsWithin, type AdviceWords } from "../packages/chaff/src/detectors/concrete-evidence.ts";
+import {
+  evidenceSpans,
+  familyWithSlots,
+  hasNumeral,
+  isClaim,
+  isConditionHeading,
+  isLabelOnly,
+  isNavigationLine,
+  namesAsEvidence,
+  startsWithin,
+  statesIntent,
+  withSubsections,
+  type AdviceWords,
+  type IntentWords,
+} from "../packages/chaff/src/detectors/concrete-evidence.ts";
 import { indexLetterOf } from "../packages/chaff/src/detectors/lettered-index.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
@@ -473,4 +487,233 @@ describe("concrete-evidence-density: minutes record opinions", () => {
   it("does not run on minutes, whose sections record what members said", () => assert.equal(ranIn("business/meeting-notes"), 0));
 
   it("still runs on a report", () => assert.ok(ranIn("business/report") > 0));
+});
+
+const INTENT: IntentWords = {
+  phrases: ["may", "would", "should", "we will", "we'll", "we recommend"],
+  endings: ["期待される", "べきである", "ことが重要である"],
+};
+
+describe("statesIntent", () => {
+  it("見込み・すべきこと・書き手の予定を述べる文", () => {
+    [
+      "Team members may continue using spreadsheets.",
+      "We will set a clear cutover date.",
+      "We’ll migrate only active projects.",
+      "We recommend a pilot.",
+    ].forEach((text) => assert.equal(statesIntent({ text }, INTENT), true, text));
+    ["栄養教諭の積極的な参画が期待される。", "専門学校も指定を受けられるようにすべきである。", "家庭と連携することが重要である。"].forEach((text) =>
+      assert.equal(statesIntent({ text }, INTENT), true, text),
+    );
+  });
+
+  it("valid: 事実を述べる文は意図ではない（語の一部、三人称の will、「が重要です」）", () => {
+    ["Changes are visible to everyone.", "This will save time.", "Mayors met in May.", "The willow grew.", "The team swould not."].forEach((text) =>
+      assert.equal(statesIntent({ text }, INTENT), false, text),
+    );
+    ["連携が重要です。", "期待されるほどではなかった。", ""].forEach((text) => assert.equal(statesIntent({ text }, INTENT), false, text));
+  });
+});
+
+describe("isNavigationLine / isConditionHeading", () => {
+  it("文全体が案内の語なら案内（句点・大文字小文字は問わない）", () => {
+    assert.equal(isNavigationLine({ text: "ページの先頭です。" }, ["ページの先頭です", "本文"]), true);
+    assert.equal(isNavigationLine({ text: " 本文 " }, ["ページの先頭です", "本文"]), true);
+    assert.equal(isNavigationLine({ text: "Skip to main content." }, ["skip to main content"]), true);
+  });
+
+  it("valid: 案内の語を含むだけの文は本文", () => {
+    assert.equal(isNavigationLine({ text: "本文を読んでください。" }, ["本文"]), false);
+    assert.equal(isNavigationLine({ text: "" }, []), false);
+  });
+
+  it("見出し全体が条件の語なら条件の節（末尾のコロンは問わない）", () => {
+    assert.equal(isConditionHeading("Requirements", ["requirements"]), true);
+    assert.equal(isConditionHeading("Responsibilities:", ["responsibilities"]), true);
+    assert.equal(isConditionHeading("応募資格：", ["応募資格"]), true);
+  });
+
+  it("valid: 条件の語を含むだけの見出しは条件の節ではない", () => {
+    assert.equal(isConditionHeading("Requirements we met last year", ["requirements"]), false);
+    assert.equal(isConditionHeading("", ["requirements"]), false);
+  });
+});
+
+describe("concrete-evidence-density: 条件・提言・案内の節", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+    await ja.prepare?.({ pos: true });
+  });
+
+  const withSection = (heading: string, body: string): string =>
+    `# Values\n\n## Openness\n\n${ABSTRACT_EN}\n\n## Trust\n\n${ABSTRACT_EN}\n\n## ${heading}\n\n${body}`;
+
+  it("valid: 求人の Requirements / Responsibilities の節は条件の一覧で、見ない", () => {
+    const requirements = "- Experience with container images.\n- Extensive Linux experience.\n- Familiar with multi-stage build systems.";
+    assert.deepEqual(flaggedIn(withSection("Requirements", requirements), en), OTHERS_EN);
+    assert.deepEqual(flaggedIn(withSection("Responsibilities", "- Dependency updates.\n- License management.\n- Access controls and patches."), en), OTHERS_EN);
+  });
+
+  it("valid: リスクと対策・提言の節（may, we will, we recommend, would）は見ない", () => {
+    const risks =
+      "Team members may keep old habits. We will set a clear cutover date. Moving projects takes time. We will move only active ones. A tool may not fit how we work.";
+    assert.deepEqual(flaggedIn(withSection("Risks", risks), en), OTHERS_EN);
+    const recommendation = "We recommend approving a short rollout. The change would give the team a clearer view. We would be happy to discuss it.";
+    assert.deepEqual(flaggedIn(withSection("Recommendation", recommendation), en), OTHERS_EN);
+  });
+
+  it("valid: 答申の方針の節（〜が期待される、〜すべきである、〜が必要である）は見ない", () => {
+    const policy = "指導の要としての役割を果たしていくことが期待される。家庭との連携を図ることが重要である。地域の協力を得ることが望まれる。";
+    assert.deepEqual(flaggedIn(japaneseWith(policy), ja), OTHERS_JA);
+  });
+
+  it("valid: 変換で残ったサイトの案内の行は節の文に数えない", () => {
+    const source = `ページの先頭です。 メニューを飛ばして本文へ\n\n本文\n\n# 方針\n\n## 公開\n\n${ABSTRACT_JA}\n\n## 信頼\n\n${ABSTRACT_JA}\n`;
+    assert.deepEqual(flaggedIn(source, ja), OTHERS_JA);
+  });
+
+  it("invalid: 主張を並べた利点の節は、箇条書きでも今までどおり指摘する", () => {
+    const benefits =
+      "- **Up-to-date status:** Changes are visible to everyone at once.\n- **Clear accountability:** Every task has a single owner.\n- **Better planning:** Timeline views make conflicts easy to spot.";
+    assert.ok(flaggedIn(withSection("Expected Benefits", benefits), en).includes("Expected Benefits"));
+  });
+
+  it("invalid: 三人称の will で述べた見込みは主張のまま", () => {
+    const forecast = "This will save the team a lot of time. Customers will love the new tool. Morale will rise.";
+    assert.ok(flaggedIn(withSection("Outlook", forecast), en).includes("Outlook"));
+  });
+
+  it("invalid: 「〜が重要です」で終わる価値の主張は、今までどおり指摘する", () => {
+    const values = "コミュニケーションが重要です。信頼関係が大切です。チームワークが鍵になります。";
+    assert.ok(flaggedIn(japaneseWith(values), ja).includes("最後"));
+  });
+
+  it("invalid: 条件の語を含むだけの見出しの節は、今までどおり指摘する", () => {
+    assert.ok(flaggedIn(withSection("Requirements we met", ABSTRACT_EN), en).includes("Requirements we met"));
+  });
+
+  it("invalid: 案内の行を除いた残りが主張なら指摘する", () => {
+    const source = `ページの先頭です。\n\n# 方針\n\n## 公開\n\n${ABSTRACT_JA}\n\n## 信頼\n\n${ABSTRACT_JA}\n\n## 最後\n\n本文\n\n${ABSTRACT_JA}\n`;
+    assert.deepEqual(flaggedIn(source, ja), ["公開", "信頼", "最後"]);
+  });
+});
+
+describe("withSubsections / namesAsEvidence", () => {
+  const at = (depth: number, start: number, end: number): { depth: number; span: { start: number; end: number } } => ({ depth, span: { start, end } });
+
+  it("節の下の、見出しがより深い節を続く限り含める", () => {
+    const parent = at(2, 5, 10);
+    const children = [at(3, 10, 15), at(3, 15, 20)];
+    const sibling = at(2, 20, 25);
+    const sections = [at(0, 0, 5), parent, ...children, sibling];
+    assert.deepEqual(withSubsections(sections, parent), [parent, ...children]);
+    assert.deepEqual(withSubsections(sections, sibling), [sibling]);
+  });
+
+  it("valid: 導入部（深さ 0）は親ではない。文書に無い節はその節だけ", () => {
+    const intro = at(0, 0, 5);
+    const sections = [intro, at(1, 5, 10)];
+    assert.deepEqual(withSubsections(sections, intro), [intro]);
+    const stray = at(2, 30, 40);
+    assert.deepEqual(withSubsections(sections, stray), [stray]);
+  });
+
+  it("半分以上の節に書かれた名前は主題で、具体物に数えない（大文字小文字は問わない）", () => {
+    const source = "Acme KubeCon. Acme. ACME. Plain.";
+    const sections = [at(1, 0, 14), at(1, 14, 20), at(1, 20, 26), at(1, 26, 33)];
+    const kubecon = { start: 5, end: 12 };
+    const names = [{ start: 0, end: 4 }, kubecon, { start: 14, end: 18 }, { start: 20, end: 24 }];
+    assert.deepEqual(namesAsEvidence(names, source, sections), [kubecon]);
+  });
+
+  const titled = (depth: number, heading: string): { depth: number; heading: string } => ({ depth, heading });
+
+  it("三つ以上の親の下に同じ見出しがある節は、親と親の下の節すべてと合わせる", () => {
+    const parentA = titled(2, "A");
+    const situationA = titled(3, "状況");
+    const solutionA = titled(3, "解決策");
+    const sections = [titled(1, "手引き"), parentA, situationA, solutionA, titled(2, "B"), titled(3, "状況"), titled(2, "C"), titled(3, "状況")];
+    assert.deepEqual(familyWithSlots(sections, situationA), [parentA, situationA, solutionA]);
+    assert.deepEqual(familyWithSlots(sections, solutionA), [solutionA]);
+  });
+
+  it("valid: 親が無い・導入部が親・見出しが空なら、その節と下の節だけ", () => {
+    const intro = { depth: 0, heading: "" };
+    const top = titled(1, "状況");
+    const blank = titled(2, "");
+    assert.deepEqual(familyWithSlots([intro, top, blank], top), [top, blank]);
+    assert.deepEqual(familyWithSlots([intro, top, blank, titled(2, ""), titled(2, "")], blank), [blank]);
+    const stray = titled(3, "状況");
+    assert.deepEqual(familyWithSlots([], stray), [stray]);
+  });
+
+  it("valid: 名前が無ければ何も数えない。節の外の名前も数えない", () => {
+    assert.deepEqual(namesAsEvidence([], "", [at(1, 0, 1)]), []);
+    assert.deepEqual(namesAsEvidence([{ start: 0, end: 4 }], "Acme", []), []);
+  });
+});
+
+describe("concrete-evidence-density: 名前・ドメイン名・下の節", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+    await ja.prepare?.({ pos: true });
+  });
+
+  it("valid: 催しや場所の名前を挙げた節は具体物がある（KubeCon）", () => {
+    const named = "Contributors gain time for planning and testing. They can prepare for events like KubeCon. They can also rest.";
+    assert.deepEqual(flaggedIn(englishWith(named), en), OTHERS_EN);
+  });
+
+  it("valid: 地の文のドメイン名は確かめに行ける具体物（IdentityTheft.gov）", () => {
+    const pointer = "If a scammer has your information, go to IdentityTheft.gov. There you see the steps to take. The steps depend on what you lost.";
+    assert.deepEqual(flaggedIn(englishWith(pointer), en), OTHERS_EN);
+  });
+
+  it("valid: 親の節は下の節と合わせて見る。導入が短くても、下の節に数字があれば指摘しない", () => {
+    const source = `${englishWith(ABSTRACT_EN)}\n\n### Detail\n\nThe queue fell from 40 to 12 items.\n`;
+    assert.deepEqual(flaggedIn(source, en), OTHERS_EN);
+  });
+
+  it("valid: 日本語でも、固有の名前を挙げた節は具体物がある", () => {
+    const named = "研修は大阪城ホールで開きます。案内は総務部が送ります。持ち物は筆記用具です。";
+    assert.deepEqual(flaggedIn(japaneseWith(named), ja), OTHERS_JA);
+  });
+
+  it("invalid: どの節にも出る名前は文書の主題で、具体物に数えない", () => {
+    const subject = "Acme values openness. Acme believes in trust. Acme acts with care.";
+    const source = `# Values\n\n## Openness\n\n${subject}\n\n## Trust\n\n${subject}\n\n## Last\n\n${subject}`;
+    assert.deepEqual(flaggedIn(source, en), ["Openness", "Trust", "Last"]);
+  });
+
+  it("invalid: 下の節にも具体物が無い親の節は、今までどおり指摘する", () => {
+    const source = `${englishWith(ABSTRACT_EN)}\n\n### Detail\n\n${ABSTRACT_EN}\n`;
+    assert.deepEqual(flaggedIn(source, en), [...OTHERS_EN, "Last", "Detail"]);
+  });
+
+  /** 項目ごとに「状況」「解決策」の欄を繰り返す手引き。具体物は解決策の欄にだけある。 */
+  const slotGuide = (items: readonly string[], solution: string): string =>
+    ["# 手引き", ...items.map((item) => `## ${item}\n\n### 状況\n\n${ABSTRACT_JA}\n\n### 解決策\n\n${solution}`)].join("\n\n");
+  const CONCRETE_SOLUTION = "週に 1 回、面談を開きます。面談は担当者が開きます。記録は全員が読みます。";
+
+  it("valid: 項目ごとに繰り返す型の欄は、項目の他の欄と合わせて見る（状況の欄に数字が無くても、解決策の欄にあれば指摘しない）", () => {
+    assert.deepEqual(flaggedIn(slotGuide(["面談", "歓迎", "共有"], CONCRETE_SOLUTION), ja), []);
+  });
+
+  it("invalid: 型の欄でも、項目のどの欄にも具体物が無ければ指摘する", () => {
+    assert.deepEqual(flaggedIn(slotGuide(["面談", "歓迎", "共有"], ABSTRACT_JA), ja), ["状況", "解決策", "状況", "解決策", "状況", "解決策"]);
+  });
+
+  it("invalid: 同じ見出しが二つの項目にしか無ければ型の欄とは見ず、その節だけで見る", () => {
+    assert.deepEqual(flaggedIn(slotGuide(["面談", "歓迎"], CONCRETE_SOLUTION), ja), ["状況", "状況"]);
+  });
+
+  it("invalid: 大文字だけの略語と、文頭の大文字の語は名前に数えない（API、Chimneys）", () => {
+    const generic = "We read the API notes first. Chimneys need care in winter. We keep the PDF copies safe.";
+    assert.ok(flaggedIn(englishWith(generic), en).includes("Last"));
+  });
+
+  it("invalid: 略語の点（e.g. i.e.）はドメイン名ではない", () => {
+    const abbreviated = "We value openness, e.g. in reviews. We believe in trust, i.e. good faith. We act with care.";
+    assert.ok(flaggedIn(englishWith(abbreviated), en).includes("Last"));
+  });
 });

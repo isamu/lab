@@ -1,2 +1,1 @@
 da-area-data-model  15
-plainlanguage-use-tables  1

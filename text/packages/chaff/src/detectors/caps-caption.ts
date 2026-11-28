@@ -120,8 +120,11 @@ export const isWithinSorted = (spans: readonly Span[], inner: Span): boolean => 
 
 /** Columns on a line: two spaces or more, or a tab, stand between them. */
 const COLUMN_CELL = /[^\t ]+(?: [^\t ]+)*/gu;
-/** A name in capitals, a comma, and a place or office in ordinary case: JANE Q. DOE, Ohio / JOHN DOE, JR., New Mexico. */
-const ROSTER_CELL = /^([A-Z][A-Z.'’-]*(?: [A-Z][A-Z.'’-]*)*(?:, [JS]R\.)?), \p{Lu}\p{Ll}+(?: \p{Lu}\p{Ll}+)*$/u;
+/**
+ * A name in capitals, a comma, and a place or office in ordinary case, which may be followed by the member's role:
+ * JANE Q. DOE, Ohio / JOHN DOE, JR., New Mexico / MARY ANN SMITH, West Virginia, Ranking Member.
+ */
+const ROSTER_CELL = /^([A-Z][A-Z.'’-]*(?: [A-Z][A-Z.'’-]*)*(?:, [JS]R\.)?)(?:, \p{Lu}\p{Ll}+(?: \p{Lu}\p{Ll}+)*)+$/u;
 
 /**
  * The names of a roster: a column that holds a name in capitals and the member's place in ordinary case (a committee's
@@ -135,3 +138,32 @@ export const rosterNameSpans = (source: string): Span[] =>
       return name === undefined ? [] : [{ start, end: start + name.length }];
     }),
   );
+
+/** Square brackets on one line, and what follows them. */
+const BRACKETS = /\[[^[\]\n]*\]/gu;
+const LINK_AFTER = /^[(:[]/u;
+
+/**
+ * Whether bracketed text holds capitals and no lower-case letter, as a placeholder does: [GRAPHIC(S) NOT AVAILABLE IN TIFF
+ * FORMAT]. The text of a Markdown link ([READ THIS](url)) is the writer's own words, so it is not one.
+ */
+const isCapitalPlaceholder = (bracketed: string, after: string): boolean => UPPER.test(bracketed) && !/\p{Ll}/u.test(bracketed) && !LINK_AFTER.test(after);
+
+/**
+ * Placeholders a publisher or editor puts in square brackets, wholly in capitals, for what the text leaves out (an image the
+ * text edition drops, a name withheld for review). Brackets mark an insertion that is not the writer's, so it is not shouting.
+ */
+export const bracketPlaceholderSpans = (source: string): Span[] =>
+  [...source.matchAll(BRACKETS)]
+    .filter((hit) => isCapitalPlaceholder(hit[0], source.slice(hit.index + hit[0].length, hit.index + hit[0].length + 1)))
+    .map((hit) => ({ start: hit.index, end: hit.index + hit[0].length }));
+
+const OPENING_QUOTE = /["“‘']$/u;
+const CLOSING_QUOTE = /^[.,;:!?]?["”’']/u;
+
+/**
+ * A capital run that is a whole quotation (mark it “THIS DOCUMENT CONTAINS CONFIDENTIAL INFORMATION.”): the words a reader is to
+ * write or will see as they stand, quoted from a label or a sign, not the writer raising their voice.
+ */
+export const isWholeQuotation = (source: string, start: number, end: number): boolean =>
+  OPENING_QUOTE.test(source.slice(Math.max(0, start - 1), start)) && CLOSING_QUOTE.test(source.slice(end, end + 2));

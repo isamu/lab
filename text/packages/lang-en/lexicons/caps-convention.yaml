@@ -16,3 +16,8 @@ entries:
   - pattern: NOW, THEREFORE
   - pattern: BE IT RESOLVED
   - pattern: BE IT FURTHER RESOLVED
+  # The markers an incident report's timeline puts in capitals where the outage starts and ends (OUTAGE STARTS HERE).
+  - pattern: OUTAGE STARTS HERE
+  - pattern: OUTAGE ENDS HERE
+  - pattern: OUTAGE BEGINS
+  - pattern: OUTAGE ENDS

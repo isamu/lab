@@ -7,20 +7,25 @@ import { isWithinAny, QUOTATION_MARKS, quotedIn } from "../quoted-span.ts";
 import { entryRanges } from "./lexicon-match.ts";
 import { obligationsOf } from "./modal-conflict.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { isNegation, negationWords } from "../structure/negated-act.ts";
 
 const REQUIRING: ReadonlySet<string> = new Set(["must", "must-not"]);
 
 type Hit = { readonly word: string; readonly span: Span };
 
-/** Where the lexicon's words stand in the sentence, outside quotations, in reading order. Needs the sentence's tokens. */
-const hitsIn = (sentence: Sentence, lexicon: Lexicon, quoted: readonly Span[]): Hit[] => {
+/**
+ * Where the lexicon's words stand in the sentence, outside quotations, in reading order. Needs the sentence's tokens. A word
+ * right after a negation ("not always") admits exceptions instead of ruling them out, and is left out.
+ */
+const hitsIn = (sentence: Sentence, lexicon: Lexicon, quoted: readonly Span[], negations: ReadonlySet<string> = new Set()): Hit[] => {
   const tokens = sentence.tokens ?? [];
   return lexicon
     .flatMap((entry) =>
       entryRanges(sentence, entry).flatMap((range) => {
         const first = tokens[range.start];
         const last = tokens[range.end - 1];
-        if (first === undefined || last === undefined) return [];
+        const previous = tokens[range.start - 1];
+        if (first === undefined || last === undefined || (previous !== undefined && isNegation(previous, negations))) return [];
         const span = { start: first.span.start, end: last.span.end };
         return isWithinAny(quoted, span) ? [] : [{ word: entry.pattern, span }];
       }),
@@ -48,12 +53,12 @@ const innermost = (spans: readonly Span[], offset: number): Span | undefined =>
 const unitAt = (units: Units, offset: number): number =>
   [units.articles, units.lists, units.paragraphs].map((spans) => innermost(spans, offset)).find((span) => span !== undefined)?.start ?? offset;
 
-type Words = { readonly absolute: Lexicon; readonly exception: Lexicon; readonly lightVerbs: ReadonlySet<string> };
+type Words = { readonly absolute: Lexicon; readonly exception: Lexicon; readonly lightVerbs: ReadonlySet<string>; readonly negations: ReadonlySet<string> };
 
 /** The sentence read for the rule, or nothing when it holds neither word. Only such sentences pay for the unit and the markers. */
 const statementOf = (sentence: Sentence, obligations: readonly Obligation[], words: Words, units: Units): Statement | undefined => {
   const quoted = quotedIn(sentence, QUOTATION_MARKS);
-  const absolute = hitsIn(sentence, words.absolute, quoted);
+  const absolute = hitsIn(sentence, words.absolute, quoted, words.negations);
   const exception = hitsIn(sentence, words.exception, quoted);
   const tokens = sentence.tokens;
   if ((absolute.length === 0 && exception.length === 0) || tokens === undefined) return undefined;
@@ -79,6 +84,7 @@ export const absoluteException: Detector = (doc, options): Finding[] => {
     absolute: options.lexicon ?? [],
     exception: doc.lexicons["exception-marker"] ?? [],
     lightVerbs: new Set((doc.lexicons["light-verb"] ?? []).map((entry) => entry.pattern.toLowerCase())),
+    negations: negationWords(doc.lexicons["negation-word"]),
   };
   const obligations = obligationsOf(doc.structure);
   const units = unitsOf(doc, doc.structure);

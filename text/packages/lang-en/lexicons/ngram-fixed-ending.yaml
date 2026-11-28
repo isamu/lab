@@ -1,0 +1,10 @@
+# The fixed line a record closes an item with, the same way for every item. Board minutes gather one report per project and
+# give each a stock line: a report not given (No report was submitted.), and a report with nothing to raise (There are no
+# issues requiring board attention.). ngram-repetition does not count this line as the writer's phrasing when it ends a
+# sentence.
+id: ngram-fixed-ending
+language: en
+entries:
+  - pattern: No report was submitted.
+  - pattern: There are no issues requiring board attention.
+  - pattern: There are no issues requiring board attention at this time.

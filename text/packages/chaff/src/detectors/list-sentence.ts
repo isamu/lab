@@ -18,6 +18,18 @@ export type ListWords = {
   readonly sequence?: ReadonlySet<string>;
   /** 番号を付けて呼ぶ法典の区分（title, chapter）。Title 44, Public Printing and Documents の読点は区分の名前を続ける読点。 */
   readonly unit?: ReadonlySet<string>;
+  /** 文頭で前の文とつなぐ一語（However, / Therefore,）。順番の語と同じく導入の語。 */
+  readonly connective?: ReadonlySet<string>;
+  /** 節だけをつなぐ接続詞（but / yet）。これで始まる項目は並びの項目ではなく、並びはその後ろから。 */
+  readonly clauseConjunction?: ReadonlySet<string>;
+  /** 不定冠詞（a / an）。冠詞と形容詞だけの項目（a simple）は、次の名詞にかかる語。 */
+  readonly indefinite?: ReadonlySet<string>;
+  /** 引用の中の省略の印（... / * * *）。省略を示す引用はほかの文書の抜き書き。 */
+  readonly elision?: readonly string[];
+  /** 並びの残りを言う語（so forth / the like）。and so forth の前まで並びが続く。 */
+  readonly openListEnd?: ReadonlySet<string>;
+  /** 読点で挟んで名前に添える関係節を始める語（who / which）。Tom, who repaired radios, opened … の節は並びの項目ではない。 */
+  readonly asideRelative?: ReadonlySet<string>;
 };
 
 const LIST_CONJUNCTION: ReadonlySet<string> = new Set(["and", "or"]);
@@ -116,6 +128,7 @@ const columnsOf = (tokens: readonly Token[], depths: readonly number[]) => {
     verbal: of((token) => VERBAL.has(token.pos)),
     adposition: of((token) => token.pos === "ADP"),
     determiner: of((token) => token.pos === "DET"),
+    adjective: of((token) => token.pos === "ADJ"),
     conjunction: of((token) => LIST_CONJUNCTION.has(token.surface.toLowerCase())),
     gerund: of((token) => verbFormOf(token) === "Ger"),
     participle: of((token) => verbFormOf(token) === "Part"),
@@ -148,16 +161,18 @@ export type ListSentence = {
   readonly inCitedTitle: (at: number) => boolean;
 };
 
+const capitalised = (word: string): string => word.charAt(0).toUpperCase() + word.slice(1);
+
 /**
  * start から例の句の語を読んだときの、最後の語の位置。無ければ -1。項目は同じ深さの読点を持たないので、start と同じ深さの読点は
- * 飛ばす。続いた読点は同じ深さなので、まとめて飛ぶ。
+ * 飛ばす。続いた読点は同じ深さなので、まとめて飛ぶ。文頭の句は最初の字だけ大文字で書く（E.g., / Such as）。ほかの字の大文字（頭文字の E.G. Evans）は句ではない。
  */
 const phraseEnd = (tokens: readonly Token[], depths: readonly number[], notComma: Column, start: number, words: readonly Token[]): number =>
   words.reduce((at, word, offset) => {
     if (at === -1) return -1;
     const next = offset === 0 ? start : at + 1;
     const kept = tokens[next]?.surface === "," && depths[next] === depths[start] ? (notComma.next[next] ?? tokens.length) : next;
-    return tokens[kept]?.surface === word.surface ? kept : -1;
+    return tokens[kept]?.surface === word.surface || (offset === 0 && tokens[kept]?.surface === capitalised(word.surface)) ? kept : -1;
   }, start);
 
 const exampleEndsOf = (tokens: readonly Token[], depths: readonly number[], column: Columns, example: Lexicon): number[][] =>

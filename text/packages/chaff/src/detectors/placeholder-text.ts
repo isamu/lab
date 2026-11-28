@@ -1,4 +1,5 @@
 import type { Lexicon } from "../plugin.ts";
+import { joinedBlanks } from "./blank-runs.ts";
 
 type Span = { readonly start: number; readonly end: number };
 
@@ -30,6 +31,7 @@ const withoutClosers = (text: string): string => {
 const MARKER = "marker";
 const INSTRUCTION = "instruction";
 const LABEL = "label";
+const CLOSING = "closing";
 
 const innerOf = (match: RegExpExecArray): string => (match[1] ?? match[2] ?? match[3] ?? "").trim().toLowerCase();
 
@@ -40,13 +42,40 @@ const holdsWord = (inner: string, words: Lexicon): boolean =>
     return inner === pattern || (inner.startsWith(pattern) && /^[\s'’]/u.test(inner.slice(pattern.length)));
   });
 
+/** A bracket a closing word ends: two to four words, each opening with a capital ([Candidate Name], [Start Date]). */
+const TITLED_BLANK = /^(?:\p{Lu}[\p{L}'’-]*\s+){1,3}\p{Lu}\p{L}*$/u;
+
+const rawInnerOf = (match: RegExpExecArray): string => (match[1] ?? match[2] ?? match[3] ?? "").trim();
+
+/**
+ * 括弧の中身が、語彙表の closing の語で終わる、語の頭がみな大文字の二語から四語か（[Candidate Name]、[Start Date]）。
+ * 小文字の語を挟む編者の補い（[the defendant's name]）や一語の注記（[sic]）は空欄ではない。
+ */
+const endsWithWord = (inner: string, words: Lexicon): boolean =>
+  TITLED_BLANK.test(inner) && words.some((word) => inner.toLowerCase().endsWith(` ${word.pattern.toLowerCase()}`));
+
 /** 括弧の中身が指示の書き出しで始まるか（ここに会社名を書く）。 */
 const opensWith = (inner: string, words: Lexicon): boolean => words.some((word) => inner.startsWith(word.pattern.toLowerCase()));
 
 const spanOf = (match: RegExpExecArray): Span => ({ start: match.index, end: match.index + match[0].length });
 
-const bracketedSpans = (text: string, pattern: RegExp, holds: (inner: string) => boolean): Span[] =>
-  [...text.matchAll(pattern)].filter((match) => !FILLED_AFTER.test(text.slice(match.index + match[0].length)) && holds(innerOf(match))).map(spanOf);
+/** A bracket glued into a web or mail address (hello@[yourcompany].com, example.com/[yourname]): the address goes on after it. */
+const ADDRESS_BEFORE = /[@/.]$/u;
+const ADDRESS_AFTER = /^(?:\.\p{L}|\/)/u;
+const ONE_TOKEN = /^[\p{Ll}\d_-]+$/u;
+
+/** A bracket inside an address holds one run-together lowercase token that opens with a bracket word ([yourcoworkingspace]). */
+const isAddressBlank = (text: string, match: RegExpExecArray, inner: string, words: Lexicon): boolean =>
+  ADDRESS_BEFORE.test(text.slice(0, match.index)) &&
+  ADDRESS_AFTER.test(text.slice(match.index + match[0].length)) &&
+  ONE_TOKEN.test(inner) &&
+  words.some((word) => inner.startsWith(word.pattern.toLowerCase()));
+
+const holdsBlank = (text: string, match: RegExpExecArray, holds: (inner: string, raw: string, match: RegExpExecArray) => boolean): boolean =>
+  !FILLED_AFTER.test(text.slice(match.index + match[0].length)) && holds(innerOf(match), rawInnerOf(match), match);
+
+const bracketedSpans = (text: string, pattern: RegExp, holds: (inner: string, raw: string, match: RegExpExecArray) => boolean): Span[] =>
+  [...text.matchAll(pattern)].filter((match) => holdsBlank(text, match, holds)).map(spanOf);
 
 /**
  * A value left as a marker: the whole text is the marker ("TBD", 「未定」), or the marker opens it before a colon
@@ -86,7 +115,7 @@ const lineMarkerSpans = (text: string, markers: Lexicon, labels: Lexicon): Span[
   });
 
 /** Lexicon groups of placeholder-word for a run of blank marks (〇〇): the word after it, the word before it, and a unit after it. */
-const BLANK_SUFFIX = "blank-suffix";
+export const BLANK_SUFFIX = "blank-suffix";
 const BLANK_PREFIX = "blank-prefix";
 const BLANK_UNIT = "blank-unit";
 
@@ -110,6 +139,18 @@ const endsWithAny = (text: string, words: Lexicon): boolean => words.some((word)
 
 type BlankWords = { readonly suffixes: Lexicon; readonly prefixes: Lexicon; readonly units: Lexicon };
 
+/** 行の残りが空白と伏せ字だけか（「代表取締役 〇〇 〇〇」の姓の後ろ）。 */
+const ONLY_BLANKS = /^[\s○〇◯△]*$/u;
+/** 項目名のコロンか空白の後ろ（「氏名：〇〇」「総務部長 〇〇」）。行の終わりまで伏せ字なら、その値が空欄。 */
+const VALUE_SEPARATOR = /[\s:：]$/u;
+/** 番号の組を繋ぐハイフン（〒〇〇〇-〇〇〇〇、03-〇〇〇〇-〇〇〇〇）。伏せ字がその一組なら、番号の空欄。 */
+const NUMBER_JOIN_BEFORE = /[-‐－][\d○〇◯]*$/u;
+const NUMBER_JOIN_AFTER = /^[-‐－]/u;
+
+/** 名前の長さの伏せ字が、行の終わりまで続く値か、番号の一組か。 */
+const isValueOrNumberBlank = (lineBefore: string, lineAfter: string): boolean =>
+  (VALUE_SEPARATOR.test(lineBefore) && ONLY_BLANKS.test(lineAfter)) || NUMBER_JOIN_BEFORE.test(lineBefore) || NUMBER_JOIN_AFTER.test(lineAfter);
+
 /** 記号の並びが空欄の位置にあるか。あれば、空欄として言う範囲（後ろに付いた語まで）。 */
 const blankSpanAt = (text: string, match: RegExpExecArray, words: BlankWords): Span | undefined => {
   const start = match.index;
@@ -122,6 +163,7 @@ const blankSpanAt = (text: string, match: RegExpExecArray, words: BlankWords): S
     if (suffix !== undefined) return { start, end: end + suffix.pattern.length };
     if (endsWithAny(before.trimEnd(), words.prefixes)) return { start, end };
     if (atLineHead(before) && lineAfter.trim() === "") return { start, end };
+    if (isValueOrNumberBlank(before.split("\n").at(-1) ?? "", lineAfter)) return { start, end };
   }
   const unit = startsWithAny(after, words.units);
   if (unit === undefined || NUMERAL_BEFORE.test(before)) return undefined;
@@ -135,10 +177,13 @@ const blankSpanAt = (text: string, match: RegExpExecArray, words: BlankWords): S
 const blankMarkSpans = (text: string, words: BlankWords): Span[] =>
   words.suffixes.length + words.prefixes.length + words.units.length === 0
     ? []
-    : [...text.matchAll(BLANK_MARKS)].flatMap((match) => {
-        const span = blankSpanAt(text, match, words);
-        return span === undefined ? [] : [span];
-      });
+    : joinedBlanks(
+        text,
+        [...text.matchAll(BLANK_MARKS)].flatMap((match) => {
+          const span = blankSpanAt(text, match, words);
+          return span === undefined ? [] : [span];
+        }),
+      );
 
 /** 文の中の、埋め忘れた雛形の空欄（[Your Name]、【会社名】、（ここに会社名を書く）、TBD: …、〇〇様）の範囲。words は placeholder-word の語彙表。 */
 export const placeholderSpans = (text: string, words: Lexicon): Span[] => {
@@ -146,13 +191,18 @@ export const placeholderSpans = (text: string, words: Lexicon): Span[] => {
   const instructions = words.filter((word) => word.group === INSTRUCTION);
   const markers = words.filter((word) => word.group === MARKER);
   const labels = words.filter((word) => word.group === LABEL);
+  const closings = words.filter((word) => word.group === CLOSING);
   const blankWords = {
     suffixes: words.filter((word) => word.group === BLANK_SUFFIX),
     prefixes: words.filter((word) => word.group === BLANK_PREFIX),
     units: words.filter((word) => word.group === BLANK_UNIT),
   };
   return [
-    ...bracketedSpans(text, BRACKETED, (inner) => holdsWord(inner, bracketWords)),
+    ...bracketedSpans(
+      text,
+      BRACKETED,
+      (inner, raw, match) => holdsWord(inner, bracketWords) || endsWithWord(raw, closings) || isAddressBlank(text, match, inner, bracketWords),
+    ),
     ...(instructions.length === 0 ? [] : bracketedSpans(text, PARENTHESIZED, (inner) => opensWith(inner, instructions))),
     ...lineMarkerSpans(text, markers, labels),
     ...blankMarkSpans(text, blankWords),

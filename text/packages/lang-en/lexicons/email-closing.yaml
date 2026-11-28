@@ -1,5 +1,7 @@
 # The closing a work email or letter ends with, before the writer's name. One of the last lines of the body (the name,
-# title and contact lines included) opening with one of these is a closing; case does not matter.
+# title and contact lines included) opening with one of these, or one of its later sentences opening with one, is a
+# closing; case does not matter. Between colleagues an email ends on a farewell (See you there) or on the apology it is
+# written for (Sorry again for the wasted morning).
 id: email-closing
 language: en
 entries:
@@ -26,3 +28,7 @@ entries:
   - pattern: Take care
   - pattern: Looking forward
   - pattern: I look forward
+  - pattern: See you
+  - pattern: Talk soon
+  - pattern: Sorry again
+  - pattern: Apologies again

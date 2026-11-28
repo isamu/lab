@@ -4,7 +4,8 @@
 import { escapeRegExp } from "../orthography.ts";
 import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { isCitation } from "./kutoten-consistency.ts";
-import type { Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
+import { inDocumentOrder } from "../structure/issues.ts";
+import type { Detector, Finding, ProseDocument, Sentence, Span, StructureNode, Token } from "../plugin.ts";
 
 export type NumberKind = "count" | "grouping" | "percent" | "count-small" | "count-large";
 
@@ -21,6 +22,10 @@ export type NumberWords = {
   readonly figureNouns: readonly string[];
   /** Words written before a number to name one of a series (Grade 5, Room 12): the number after one is not a count. */
   readonly nameWords: readonly string[];
+  /** Kanji counts read the native way (二通り, ふたとおり): written in kanji whatever the document's style for counts. */
+  readonly nativeCounts: readonly string[];
+  /** Words that make a number and its counter the name of a thing (十円玉, 千円札): written either way, not a count. */
+  readonly nameSuffixes: readonly string[];
 };
 
 const alternation = (words: readonly string[]): string =>
@@ -62,12 +67,30 @@ const isBeforeLongerWord = (numeral: string, written: string, offset: number, to
   return word !== undefined && word.surface.length > counter.length;
 };
 
+/** The ordinal suffix (三枚目): a word the tokenizer joins to a count that is still a number of things. */
+const ORDINAL_SUFFIX = "目";
+
+/**
+ * A kanji numeral and counter that open a longer word (二枚貝, 二枚舌, 三人称): the tokenizer reads the whole as one noun, a name
+ * for a thing rather than a count of it, and digits could not be written there.
+ */
+const isInsideWord = (written: string, offset: number, tokens: readonly Token[]): boolean => {
+  const word = tokens.find((token) => token.span.start === offset);
+  if (word === undefined || word.surface.length <= written.length || !word.surface.startsWith(written)) return false;
+  return word.surface.slice(written.length) !== ORDINAL_SUFFIX;
+};
+
+/** A number and counter that a name word follows (十円玉, 100円玉, 五円硬貨): the name of a coin or a note, not a count of yen. */
+const namesThing = (text: string, end: number, words: NumberWords): boolean =>
+  words.nameSuffixes.some((suffix) => suffix !== "" && text.startsWith(suffix, end));
+
 const countMarks = (text: string, base: number, words: NumberWords, tokens: readonly Token[]): NumberMark[] => {
   const pattern = countPattern(words);
   if (pattern === undefined) return [];
   return [...text.matchAll(pattern)].flatMap((match): NumberMark[] => {
     const [written, digits, kanji] = match;
-    if (kanji !== undefined && isIdiomNumeral(kanji)) return [];
+    if (namesThing(text, match.index + written.length, words)) return [];
+    if (kanji !== undefined && (isIdiomNumeral(kanji) || words.nativeCounts.includes(written) || isInsideWord(written, base + match.index, tokens))) return [];
     if (isBeforeLongerWord(digits ?? kanji ?? "", written, base + match.index, tokens)) return [];
     return [{ kind: "count", style: digits === undefined ? "kanji" : "digits", written, offset: base + match.index }];
   });
@@ -101,12 +124,20 @@ const isHexCode = (written: string, after: string): boolean => {
   return /^\d+$/u.test(written) && LETTER_THEN_DIGIT.test(tail) && written.length + tail.length >= HEX_CODE_MIN;
 };
 
+/** A word that says a quantity is about so much (約1500): a number right after it is a quantity, not part of a code. */
+const APPROXIMATELY = "約";
+
+const isOpenBefore = (text: string, index: number): boolean => {
+  const before = text.charAt(index - 1);
+  return before === APPROXIMATELY || !NOT_BEFORE.test(before);
+};
+
 /** Each number of four digits or more standing alone, grouped (1,000) or not (1000). */
 const bigNumbers = (text: string): DigitRun[] =>
   [...text.matchAll(DIGITS_AND_COMMAS)].flatMap((match): DigitRun[] => {
     const written = match[0];
     const after = text.slice(match.index + written.length);
-    const standsAlone = !NOT_BEFORE.test(text.charAt(match.index - 1)) && !NOT_AFTER.test(after.charAt(0)) && !isHexCode(written, after);
+    const standsAlone = isOpenBefore(text, match.index) && !NOT_AFTER.test(after.charAt(0)) && !isHexCode(written, after);
     return standsAlone && (GROUPED.test(written) || PLAIN_BIG.test(written)) ? [{ written, index: match.index }] : [];
   });
 
@@ -135,6 +166,17 @@ const countedAfter = (after: string, words: NumberWords): boolean => {
 /** What follows a quantity: a Japanese counter, or a word in lower case (10000 users). */
 const quantityAfter = (after: string, words: NumberWords): boolean => /^\s?[a-z]/u.test(after) || countedAfter(after, words);
 
+/** The numbers after this one in a list that shares one unit (約1500、3,000、9,000m): each item takes the unit written after the last. */
+const LIST_TAIL = /^(?:[、，]\s?約?[0-9０-９]+(?:[,，][0-9０-９]{3})*)+/u;
+
+const GROUPED_ITEM = /[0-9０-９][,，][0-9０-９]{3}/u;
+
+/** What follows a number, past the rest of the list it heads or stands in, and whether that list groups its digits (years never do). */
+const afterList = (after: string): { readonly rest: string; readonly beforeGrouped: boolean } => {
+  const tail = LIST_TAIL.exec(after)?.[0] ?? "";
+  return { rest: after.slice(tail.length), beforeGrouped: GROUPED_ITEM.test(tail) };
+};
+
 /** How far back to look for a currency sign or a label word. The sentence may start right after one (H.R. ends a sentence). */
 const BEFORE_REACH = 16;
 
@@ -142,11 +184,11 @@ const groupingMarks = (text: string, base: number, words: NumberWords, source: s
   bigNumbers(text).flatMap(({ written, index }): NumberMark[] => {
     const grouped = GROUPED.test(written);
     const before = source.slice(Math.max(0, base + index - BEFORE_REACH), base + index);
-    const after = text.slice(index + written.length);
+    const { rest: after, beforeGrouped } = afterList(text.slice(index + written.length));
     const currency = CURRENCY_BEFORE.test(before);
     if (!currency && !quantityAfter(after, words)) return [];
     if (!grouped && isLabelBefore(before)) return [];
-    if (!grouped && !currency && isYearLike(written) && !countedAfter(after, words)) return [];
+    if (!grouped && !currency && !beforeGrouped && isYearLike(written) && !countedAfter(after, words)) return [];
     return [{ kind: "grouping", style: grouped ? "grouped" : "plain", written, offset: base + index }];
   });
 
@@ -238,6 +280,8 @@ const wordsOf = (doc: ProseDocument): NumberWords => {
     countWords: patterns("count-number"),
     figureNouns: patterns("figure-noun"),
     nameWords: patterns("number-name-word"),
+    nativeCounts: patterns("numeral-native-count"),
+    nameSuffixes: patterns("numeral-name-suffix"),
   };
 };
 
@@ -253,12 +297,38 @@ const findingOf = (mark: NumberMark, usual: NumberMark, count: number, of: numbe
   variant: mark.kind,
 });
 
+const isInArticle = (mark: NumberMark, articles: readonly Span[]): boolean =>
+  isWithinAny(articles, { start: mark.offset, end: mark.offset + mark.written.length });
+
+/**
+ * The marks of the document's own text. A document that is not a statute and sets out articles where most of its numbers are
+ * outside them (a manual quoting the order its fees rest on) quotes the law there, and the law keeps its own numerals
+ * (二千四百円). A document whose numbers are mostly inside its articles (work rules) is written in articles itself.
+ */
+export const ownMarks = (marks: readonly NumberMark[], articles: readonly Span[]): readonly NumberMark[] => {
+  const outside = marks.filter((mark) => !isInArticle(mark, articles));
+  return outside.length > marks.length - outside.length ? outside : marks;
+};
+
+/** A numbered heading of the document's own outline (2.1 Corpus) is read as an article too; a law's article names its unit (第5条, Article 5). */
+const OUTLINE_NUMBER = /^[\d.]+$/u;
+
+const isLawArticle = (node: StructureNode): boolean => node.kind === "article" && !OUTLINE_NUMBER.test(String(node.attrs["label"] ?? ""));
+
+const lawArticleSpans = (doc: ProseDocument): Span[] =>
+  doc.structure === undefined ? [] : inDocumentOrder(doc.structure).flatMap((node) => (isLawArticle(node) ? [node.span] : []));
+
+const isMixed = (marks: readonly NumberMark[]): boolean => new Set(marks.map((mark) => mark.style)).size > 1;
+
 /** For each kind of number, the marks written in the document's less common style. */
 export const numberStyleConsistency: Detector = (doc, options): Finding[] => {
   const words = wordsOf(doc);
-  const marks = doc.sentences
+  const written = doc.sentences
     .filter((sentence) => sentence.embeddedLanguage === undefined && !isCitation(sentence, doc.source))
     .flatMap((sentence) => numberMarksIn(sentence, words, doc.language, doc.source));
+  // doc.structure builds the tree when first read: a document with one style in every kind has nothing to report either way.
+  if (!KINDS.some((kind) => isMixed(written.filter((mark) => mark.kind === kind)))) return [];
+  const marks = ownMarks(written, lawArticleSpans(doc));
   return KINDS.flatMap((kind) => {
     const ofKind = marks.filter((mark) => mark.kind === kind);
     const { odd, usual } = minorityStyles(ofKind, options.limit);

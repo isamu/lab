@@ -2,7 +2,8 @@ import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { citationLead, isCitationSentence } from "../packages/chaff/src/detectors/citation-sentence.ts";
+import { authorListSaving, citationLead, isCitationSentence, withoutEarlierReference } from "../packages/chaff/src/detectors/citation-sentence.ts";
+import { wordsAroundCitation } from "../packages/chaff/src/detectors/citation-string.ts";
 
 // max-sentence-length and a footnote that is a bibliographic citation (authors, year, title, publisher). The citation is a
 // reference, not the writer's sentence, so its length is not measured. Every citation here is self-written.
@@ -89,5 +90,84 @@ describe("max-sentence-length and citations in footnotes", () => {
       "A recent paper by Rivers and others discusses the cost of land, the wages of builders, the price of timber, and the time a permit takes in each of the towns";
     assert.deepEqual(findingsOf(`1. ${lead}; ${QUOTED_TITLE}`), ["This sentence runs 31 words (limit 25)"]);
     assert.deepEqual(findingsOf(`1. For example, ${QUOTED_TITLE}`), []);
+  });
+});
+
+// A footnote that opens with a signal and names what it cites: an Act, a quoted title, an agency's declarations, a code
+// section. The names are the cited documents', not the writer's; the signal and the writer's words around them are measured.
+const NAMED_ACT = "See Rural Lending Fairness and Small Town Housing Improvement Act of 2009 (RLF Act), Pub.";
+const QUOTED_LETTER =
+  "See also Letter 07-3, “Questions and Answers about the Rules for Small Lenders in Rural Counties and Towns,” for guidance on common questions about the rules.";
+const DECLARATIONS =
+  "See the State Emergency Housing Office’s (SEHO) relevant storm declarations: Northern Plains Winter Storm Clara (DR 1201), and Coastal Counties Spring Flood Event (DR 1202), Return to text.";
+const CODE_PART = 'See "Interagency Guidelines on Small Lender Standards for Rural Housing Loans," 12 CFR part 99, Appendix B-1, sections II.C and D.';
+const OWN_WORDS =
+  "See the attached form for the steps you must take before the end of the month if you want your claim to be paid in full and on time this year.";
+const EMAIL = "business/email";
+const emailFindings = (source: string): readonly string[] => namedRuleRun(RULE, `${source}\n`, en, "a.md", EMAIL).findings;
+
+describe("a footnote that opens with a signal and names what it cites", () => {
+  const SIGNALS = ["see", "see also", "cf."];
+
+  it("keeps the signal and the writer's words, without the cited names, titles and parentheses of codes", () => {
+    assert.equal(wordsAroundCitation(NAMED_ACT, SIGNALS)?.split(/\s+/u).filter(Boolean).join(" "), "See , Pub.");
+    assert.equal(
+      wordsAroundCitation(QUOTED_LETTER, SIGNALS)?.split(/\s+/u).filter(Boolean).join(" "),
+      "See also Letter 07-3, for guidance on common questions about the rules.",
+    );
+    assert.equal(wordsAroundCitation(OWN_WORDS, SIGNALS)?.replace(/\s+/gu, " ").trim(), OWN_WORDS);
+  });
+
+  it("is undefined when the text does not open with a signal", () => {
+    assert.equal(wordsAroundCitation("The Rural Lending Fairness Act of 2009 applies.", SIGNALS), undefined);
+    assert.equal(wordsAroundCitation("Seeing the Rural Lending Fairness Act of 2009 applies.", SIGNALS), undefined);
+    assert.equal(wordsAroundCitation(NAMED_ACT, []), undefined);
+  });
+
+  it("does not report such a footnote", () => {
+    const footnotes = [NAMED_ACT.replace(/, Pub\.$/u, "."), QUOTED_LETTER, DECLARATIONS, CODE_PART].map((text, at) => `${at + 1}. ${text}`).join("\n\n");
+    assert.deepEqual(emailFindings(`# Notes\n\n${footnotes}`), []);
+  });
+
+  it("still reports a footnote whose own words run long after the signal", () => {
+    assert.deepEqual(emailFindings(`# Notes\n\n1. ${OWN_WORDS}`), ["This sentence runs 31 words (limit 18)"]);
+    const longAround = `See also Letter 07-3, “Questions and Answers,” which the office sent to every lender last spring and which explains what a lender must do before it closes a loan in a small town.`;
+    assert.equal(emailFindings(`# Notes\n\n1. ${longAround}`).length, 1);
+  });
+});
+
+describe("max-sentence-length: the authors of a reference and the tail of an earlier one", () => {
+  const blogFindings = (source: string): readonly string[] => namedRuleRun(RULE, `${source}\n`, en, "a.md", "blog/owned-media").findings;
+
+  it("counts a list of authors written as surname and initials (Vancouver style) as one word", () => {
+    const authors =
+      "Rivers AB, Okafor B, Mendes C, Hale D, Sato E, Lund F, Moreno G, Ito H, Park J, Quinn K, Webb L, Nash M, Ortiz N, Price P, Reyes R, Stone S, Tate T, Vance V, Wells W, Young Y, Zhou Z. Rural Health Rep. 2024 Mar 3;12(4):101-109.";
+    assert.equal(authorListSaving(authors), 41);
+    assert.deepEqual(blogFindings(`## References\n\nSmall Clinics in Rural Counties. ${authors}`), []);
+  });
+
+  it("does not read a sentence that names two or three people, or prose with capitals, as an author list", () => {
+    assert.equal(authorListSaving("Rivers AB and Okafor B wrote it."), 0);
+    assert.equal(authorListSaving("We met Ann Rivers, Ben Okafor, Carla Mendes and the mayor in the town hall."), 0);
+    assert.equal(authorListSaving("Ask IT, HR, QA and PR to sign the form before the end of the month."), 0);
+    assert.equal(authorListSaving(""), 0);
+  });
+
+  it("measures only the authors of a reference when the sentence begins inside the reference before it", () => {
+    const tail =
+      'Working Paper Series 2024-07 (Springfield: Prairie Housing Institute, March); and Dan Hale, Eve Sato, and Fay Lund (2021), "Lending in Small Towns," Regional Review, vol. 9 (May), pp. 11–26.';
+    assert.equal(
+      citationLead(tail, ["see"]),
+      "Working Paper Series 2024-07 (Springfield: Prairie Housing Institute, March); and Dan Hale, Eve Sato, and Fay Lund",
+    );
+    assert.equal(withoutEarlierReference(citationLead(tail, ["see"]) ?? ""), "Dan Hale, Eve Sato, and Fay Lund");
+    assert.deepEqual(findingsOf(`# Notes\n\n1. ${tail}`), []);
+  });
+
+  it("keeps the writer's words that follow an earlier reference", () => {
+    const lead = "As the institute (Springfield: Prairie Housing Institute) found in its survey of every county, building costs rose faster than wages";
+    assert.equal(withoutEarlierReference(lead), "found in its survey of every county, building costs rose faster than wages");
+    assert.equal(withoutEarlierReference("For example, see"), "For example, see");
+    assert.equal(withoutEarlierReference(""), "");
   });
 });

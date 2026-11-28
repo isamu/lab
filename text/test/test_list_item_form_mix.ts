@@ -1,12 +1,14 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { formOf, itemOwnEnd, itemSentences, NO_HEAD_CONTEXT } from "../packages/chaff/src/detectors/list-parallel.ts";
+import { formOf, NO_HEAD_CONTEXT } from "../packages/chaff/src/detectors/list-parallel.ts";
+import { itemOwnEnd, itemSentences } from "../packages/chaff/src/detectors/list-item-own.ts";
+import { itemLayout } from "../packages/chaff/src/detectors/list-layout.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import type { Finding, LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import type { Finding, LanguageAdapter, Span } from "../packages/chaff/src/plugin.ts";
 
 // list-item-form-mix: one list whose items do not share a form. Every example is self-written, or shortened from 政府広報オンライン
 // (https://www.gov-online.go.jp/, PDL-1.0) where noted.
@@ -53,7 +55,8 @@ describe("formOf: how an item ends (Japanese)", () => {
     ["大丈夫", "phrase"],
     ["書類を出すこと。期限を守ること。", "sentence"],
     ["手数料の支払い", "phrase"],
-    ["健康診断書（3か月以内に受診したものに限る）", "phrase"],
+    ["健康診断書（3か月以内に受診したものに限る）", "name"],
+    ["健康診断書の写し（3か月以内に受診したものに限る）", "phrase"],
     ["書類を出す（郵送でもよい）", "sentence"],
     ["東京や大阪など", undefined],
   ];
@@ -71,6 +74,17 @@ describe("formOf: how an item ends and opens (English)", () => {
     ["Smaller downloads", "phrase"],
     ["Running tests is easy", undefined],
     ["Fast startup.", undefined],
+    ["Text that is at least 11pt", "phrase"],
+    ["Text that the user types", "phrase"],
+    ["A base layer that wicks moisture", "phrase"],
+    ["Black text on a white background to ensure contrast", "phrase"],
+    ["Bulleted or numbered lists using the list tools", "phrase"],
+    ["The server is down", undefined],
+    ["Fixed the broken link", undefined],
+    ["Authoring tools (e.g. Captivate, Go Animate, etc.)", undefined],
+    ["Staff who are assessed as ready are eligible", undefined],
+    ["Shelter – a charity who offer advice.", undefined],
+    ["The Law Society – to find a lawyer.", undefined],
   ];
   endings.forEach(([item, form]) => {
     it(`ending: ${item} → ${String(form)}`, () => assert.equal(formOfItem(en, "ending", item), form));
@@ -108,8 +122,48 @@ describe("list-item-form-mix: the minority form in one list", () => {
   it("reports a sentence among noun phrases (ja)", () =>
     assert.deepEqual(flagged(ja, list("申込書の記入", "本人確認書類の用意", "手数料を払う")), ["ending-sentence:手数料を払う"]));
 
+  it("does not compare a ※ note set as an item with the items it notes (ja)", () =>
+    assert.deepEqual(
+      flagged(ja, list("（１）郵送　東京都千代田区の受付窓口", "（２）電子メールの受付窓口", "※電話によるご意見はお受けできませんので、ご了承ください。")),
+      [],
+    ));
+
+  it("still compares items that all open with ※ among themselves (ja)", () =>
+    assert.deepEqual(flagged(ja, list("※申込書の記入", "※本人確認書類の用意", "※手数料を払う")), ["ending-sentence:※手数料を払う"]));
+
+  it("does not judge the titles of a dated list of notices, cited as they were published (ja)", () =>
+    assert.deepEqual(
+      flagged(
+        ja,
+        list(
+          "令和6年8月23日説明会の日程の公表",
+          "令和6年8月2日講演会『暮らしを守るために』を開催します",
+          "令和6年7月31日募集の基準の改定",
+          "令和6年5月31日改正規則の公布",
+        ),
+      ),
+      [],
+    ));
+
+  it("still judges dated items that are sentences of the writer's own (ja)", () =>
+    assert.deepEqual(flagged(ja, list("令和6年8月23日に申込書を記入する", "令和6年8月24日に本人確認書類を用意する", "令和6年8月25日に手数料の支払い")), [
+      "ending-phrase:令和6年8月25日に手数料の支払い",
+    ]));
+
   it("reports a noun phrase among sentences (ja)", () =>
     assert.deepEqual(flagged(ja, list("毎朝ログを確認する", "週に一度バックアップを取る", "月末の請求書の発行")), ["ending-phrase:月末の請求書の発行"]));
+
+  it("reads a sentence followed by 等 or など, saying the list goes on, by its predicate (ja)", () => {
+    assert.deepEqual(flagged(ja, list("金品を隠される", "仲間外れにされる", "持ち物に落書きをされる", "携帯電話で嫌なことをされる 等")), []);
+    assert.deepEqual(flagged(ja, list("金品を隠される", "仲間外れにされる", "持ち物に落書きをされる", "携帯電話で嫌なことをされるなど")), []);
+  });
+
+  it("still reads a noun, or a verb's stem used as a noun, followed by 等 as a phrase (ja)", () => {
+    assert.deepEqual(flagged(ja, list("金品を隠される", "仲間外れにされる", "持ち物に落書きをされる", "携帯電話での誹謗中傷 等")), [
+      "ending-phrase:携帯電話での誹謗中傷 等",
+    ]);
+    assert.deepEqual(flagged(ja, list("協定に基づく復旧工事の実施", "物資の備蓄状況の公表", "復旧のための土地の立入り等")), []);
+  });
 
   it("reports a noun-first item among verb-first ones (en)", () =>
     assert.deepEqual(flagged(en, list("Install the command-line tool", "Create an account on the website", "The configuration file in your home folder")), [
@@ -120,6 +174,12 @@ describe("list-item-form-mix: the minority form in one list", () => {
     assert.deepEqual(flagged(en, list("Faster downloads", "Smaller files", "The settings page has been redesigned.")), [
       "ending-sentence:The settings page has been redesigned.",
     ]));
+
+  it("reports a sentence among phrases when it opens in lower case with its subject and has no full stop (en)", () => {
+    const items = ["a packed lunch", "a bottle of water", "a warm hat", "you will also need a change of clothes, because the kayaks are wet"];
+    assert.deepEqual(flagged(en, list(...items)), ["ending-sentence:you will also need a change of clothes, because the kayaks are wet"]);
+    assert.deepEqual(flagged(en, list("a packed lunch", "a bottle of water", "a warm hat", "your swimming costume")), []);
+  });
 
   it("says how many items are in the minority, of how many", () => {
     const finding = findingsOf(ja, list("申込書の記入", "本人確認書類の用意", "手数料を払う"))[0];
@@ -272,6 +332,17 @@ describe("list-item-form-mix: words whose part of speech the tagger gets wrong a
       [],
     ));
 
+  it("reads a series that an object follows as verbs (Dry and lube the chain), and one a noun follows as a noun phrase", () => {
+    const steps = ["Rinse your bike with plain water.", "Check your brake pads regularly.", "Wipe the frame after each ride."];
+    assert.deepEqual(flagged(en, list(...steps, "Dry and lube the chain at least once a week.")), []);
+    assert.deepEqual(flagged(en, list(...steps, "Dry and dusty roads wear the chain.")), ["head-noun:Dry and dusty roads wear the chain."]);
+  });
+
+  it("does not read a series that ends in a preposition as verbs (text, email, or from an app)", () => {
+    const items = ["something you know, like a passcode", "something you have, like a code you get by text, email, or from an app", "something you are"];
+    assert.deepEqual(flagged(en, list(...items)), []);
+  });
+
   it("still reads a series of nouns as a noun phrase among imperatives", () =>
     assert.deepEqual(
       flagged(en, list("Write clear design notes", "Review the changes other people send", "Keep the build fast", "Apples, oranges and pears")),
@@ -422,8 +493,174 @@ describe("list-item-form-mix: a title split by its own mark, and items that are 
       [],
     ));
 
+  it("does not read the noun opening of a numbered step that says what happens and then gives the order (en)", () => {
+    const steps = ["Open the lid by pressing the button.", "Remove the empty core.", "Put the new roll in with the shiny side up."];
+    const numbered = (last: string): string => ["# 題", "", ...[...steps, last].map((item, index) => `${String(index + 1)}. ${item}`), ""].join("\n");
+    assert.deepEqual(flagged(en, numbered("The printer will feed one blank label. Throw that label away.")), []);
+    assert.deepEqual(flagged(en, numbered("The printer will feed one blank label. It lines itself up.")), ["head-noun:The printer will feed one blank label."]);
+    const tips = ["Ask questions rather than make statements.", "Avoid selective ownership of code.", "Be humble about what you know."];
+    assert.deepEqual(flagged(en, list(...tips, "There is often more than one way to a solution. Discuss tradeoffs.")), [
+      "head-noun:There is often more than one way to a solution.",
+    ]);
+  });
+
   it("still reads the opening word when one item is a single sentence", () =>
     assert.deepEqual(flagged(en, list("Install the command-line tool", "Create an account on the website", "The configuration file in your home folder")), [
       "head-noun:The configuration file in your home folder",
     ]));
+});
+
+describe("list-item-form-mix: names, glossed terms and flattened groups (ja)", () => {
+  it("counts a name (a page or a form, nouns alone) with the phrases but never reports it", () => {
+    const steps = ["申請書を窓口で受け取る", "必要事項を書き込んで提出する", "控えを大切に保管する"];
+    assert.deepEqual(flagged(ja, list(...steps.slice(0, 2), "申請書様式（市ホームページ）", ...steps.slice(2))), []);
+    assert.deepEqual(flagged(ja, list(...steps, "市民課の窓口案内")), ["ending-phrase:市民課の窓口案内"]);
+  });
+
+  it("still reports a compound that ends in a verbal noun (各種ライブラリ更新): an act, not a name", () =>
+    assert.deepEqual(flagged(ja, list("画面の表示を速くした", "設定を保存できるようにした", "検索の結果を並べ替えられるようにした", "各種ライブラリ更新")), [
+      "ending-phrase:各種ライブラリ更新",
+    ]));
+
+  it("does not read a term followed by its gloss as a sentence", () => {
+    const parts = ["使う言葉の取り決め。", "送り手の名前。", "受け手の名前。"];
+    assert.deepEqual(flagged(ja, list(...parts, "本文長。本文が何文字あるかを示します。")), []);
+    assert.deepEqual(flagged(ja, list(...parts, "本文が何文字あるかを示します。")), ["ending-sentence:本文が何文字あるかを示します。"]);
+  });
+
+  it("compares the steps under each label of a flattened nested list, and not the labels", () => {
+    const grouped = [
+      "# 題",
+      "",
+      "- 台所での注意",
+      "",
+      "- 火を使うときはそばを離れない",
+      "- 鍋の取っ手を内側に向けておく",
+      "- 包丁は使ったらすぐにしまう",
+      "",
+      "- 浴室での注意",
+      "",
+      "- 入浴の前に浴室を暖めておく",
+      "- 湯の温度を手で確かめる",
+      "- 床が濡れていたら拭いておく",
+      "",
+    ].join("\n");
+    assert.deepEqual(flagged(ja, grouped), []);
+    assert.deepEqual(flagged(ja, grouped.replace("- 湯の温度を手で確かめる", "- 湯の温度の確認")), ["ending-phrase:湯の温度の確認"]);
+  });
+
+  it("still compares the whole list when only one lone item leads into a run", () => {
+    const leadIn = [
+      "# 題",
+      "",
+      "- 荷物は必ず手元に置くこと。機内での決まりは次のとおりです。",
+      "",
+      "- 座席での充電は禁止",
+      "- 通路に荷物を置かない",
+      "",
+      "- 離着陸の間は電源を切ってください。",
+      "- 非常口の前には荷物を置かないでください。",
+      "- 棚に入れる荷物は一人一つまでです。",
+      "",
+    ].join("\n");
+    assert.deepEqual(flagged(ja, leadIn), ["ending-phrase:座席での充電は禁止"]);
+  });
+});
+
+describe("itemLayout: groups and heads from the blank lines between items", () => {
+  const spansOf = (source: string): Span[] => buildDocument("t.md", source, en).lists[0]?.itemSpans.slice() ?? [];
+  const texts = (source: string, spans: readonly Span[]): string[] => spans.map((span) => source.slice(span.start, span.end).trim());
+
+  it("splits at two or more lone items before a run", () => {
+    const source = "- Kitchen\n\n- one\n- two\n\n- Bathroom\n\n- three\n- four\n";
+    const layout = itemLayout(source, spansOf(source));
+    assert.deepEqual(
+      layout.groups.map((group) => texts(source, group)),
+      [
+        ["- one", "- two"],
+        ["- three", "- four"],
+      ],
+    );
+    assert.deepEqual(texts(source, layout.heads), ["- Kitchen", "- Bathroom"]);
+  });
+
+  it("keeps a tight list, a loose list and a list with one lead-in whole", () => {
+    ["- a\n- b\n- c\n", "- a\n\n- b\n\n- c\n", "- lead\n\n- a\n- b\n\n- c\n"].forEach((source) => {
+      const spans = spansOf(source);
+      assert.deepEqual(itemLayout(source, spans).groups, [spans]);
+    });
+  });
+});
+
+describe("list-item-form-mix: openings that are neither form (en)", () => {
+  const rules = ["Buy something every couple of hours.", "Give up the big table.", "Leave during the lunch rush."];
+
+  it("does not read a prohibition (No calls.) as a noun phrase", () => {
+    assert.deepEqual(flagged(en, list(...rules, "No calls.")), []);
+    assert.deepEqual(flagged(en, list(...rules, "The calls go outside.")), ["head-noun:The calls go outside."]);
+  });
+
+  it("reads an instruction after an opening clause with its own subject (Next time you …, let …)", () => {
+    const steps = ["Pick one app and install it.", "Choose a strong master password.", "Start with your email account."];
+    assert.deepEqual(flagged(en, list(...steps, "Next time you sign in, let the app save the password.")), []);
+    assert.deepEqual(flagged(en, list(...steps, "Next time you sign in, the app will offer to save it.")), [
+      "head-noun:Next time you sign in, the app will offer to save it.",
+    ]);
+  });
+
+  it("does not take a clause after the main verb for an opener (We show X when we …, get …)", () =>
+    assert.deepEqual(
+      flagged(
+        en,
+        list(
+          "We show care when we listen first.",
+          "We show trust when we share our plans.",
+          "We show speed when we ship the smallest useful thing, get feedback and improve it.",
+        ),
+      ),
+      [],
+    ));
+
+  it("does not read the opening word of a question", () => {
+    assert.deepEqual(flagged(en, list("What training do crews need?", "Which records are kept today?", "Do you have any other comments?")), []);
+    assert.deepEqual(flagged(en, list("Faster downloads", "Smaller files", "Review the settings page")), ["head-verb:Review the settings page"]);
+  });
+
+  it("reads a hyphenated head before a noun as a compound adjective, and before an object as a verb", () => {
+    const avoid = ["Passive voice", "Technical jargon and unfamiliar terms", "References to shape or color"];
+    assert.deepEqual(flagged(en, list(...avoid, "Run-on sentences and long paragraphs")), []);
+    assert.deepEqual(flagged(en, list(...avoid, "Double-click the icon to open it")), ["head-verb:Double-click the icon to open it"]);
+  });
+
+  it("reads a noun phrase with a relative clause, an infinitive or a participle as a phrase, so the odd sentence is the one reported", () => {
+    const fonts = ["Standard sans-serif fonts such as Arial or Helvetica", "Text that is at least 11pt", "Black text on a white background to ensure contrast"];
+    assert.deepEqual(flagged(en, list(...fonts, "Bulleted lists using the list tools", "Text that is left aligned. Full justification should be avoided.")), [
+      "ending-sentence:Text that is left aligned.",
+    ]);
+  });
+
+  it("reads the verb of a relative clause as the noun phrase's when a word the tagger misreads comes before it", () => {
+    const clothes = ["A **windproof outer layer**. A light rain jacket often works well.", "**Gloves** are a must. Cold hands are no fun."];
+    assert.deepEqual(flagged(en, list("A **base layer** that wicks moisture", ...clothes, "A thin **hat or headband** that fits under your helmet")), []);
+  });
+
+  it("does not judge an item whose words go on into a link after its last sentence", () => {
+    const fields = ["Names of travellers\n  [What if this changes?](#changes)", "Start and end dates\n  [What if I am extending travel?](#extending)"];
+    assert.deepEqual(flagged(en, list(...fields, "Dates I am away\n  [What if I am staying longer?](#longer)", "A brief description of work to be done")), []);
+  });
+
+  it("does not judge an item wholly in bold, the label of the items after it", () =>
+    assert.deepEqual(
+      flagged(en, list("Ships the release on time.", "Writes the tests first.", "Reviews each change.", "**Nice to have**", "Knows the build tools well.")),
+      [],
+    ));
+
+  it("compares the items after one ending in a colon among themselves, as a nested list flattened into the outer one", () => {
+    const rules = [
+      "Staff on probation may not apply. A manager can make an exception.",
+      "Staff with a warning cannot apply.",
+      "Leave lasts six months. Exceptions to this:",
+    ];
+    assert.deepEqual(flagged(en, list(...rules, "Business needs (a new team)", "Transfers driven by the business", "Twelve months in the role")), []);
+  });
 });

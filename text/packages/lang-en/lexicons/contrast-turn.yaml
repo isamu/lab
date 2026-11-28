@@ -1,4 +1,7 @@
 # What answers a denial (contrast-lead): later in the same sentence, or opening the next one.
+# Group across: a subject that answers only by opening the next sentence ("They come for the table."), never inside one.
+# Group echo: a subject that answers a denial it opened only by opening the next sentence with the denied verb again
+# ("We didn't build it for speed. We built it for teams."); with another verb the story goes on ("We lost the data.").
 id: contrast-turn
 language: en
 entries:
@@ -9,3 +12,11 @@ entries:
   - pattern: they're
   - pattern: they are
   - pattern: but
+  - pattern: it
+    group: across
+  - pattern: they
+    group: across
+  - pattern: we
+    group: echo
+  - pattern: you
+    group: echo

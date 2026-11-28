@@ -75,9 +75,26 @@ npx chaffjs explain katakana-long-vowel     this rule's settings, and where each
   Options (set under options in chaff.yaml):
     ending: drop   (from style: ieice)
       Which way the final ー goes
-        consistent No side taken; only checks that the document is consistent
-      → drop       Drop the final ー on words of min_morae morae or more (IEICE; JIS Z 8301 up to 2011)
+        consistent  No side taken; only checks that the document is consistent
+      → drop        Drop the final ー on words of min_morae morae or more (IEICE; JIS Z 8301 up to 2011)
 ```
+
+### Require one sentence-ending register (Japanese)
+
+`no-mixed-desumasu` normally takes no side: it only points at the minority when polite (desumasu) and plain (dearu) endings mix.
+A team that has chosen a register can write it for the body (`body`), lists (`list`, runs of numbered paragraphs too) and headings (`heading`).
+
+```yaml
+options:
+  no-mixed-desumasu:
+    body: desumasu    # polite body text
+    list: dearu       # plain list items
+```
+
+In a region written there, a sentence in the other register is reported even with no mix (and that region is no longer checked for consistency).
+A region left out is checked for consistency as before. With nothing written, nothing changes.
+Headings are read only when they end in a predicate (料金が変わります).
+English has no counterpart, so this option applies to Japanese documents only.
 
 ## Add a rule of your own
 

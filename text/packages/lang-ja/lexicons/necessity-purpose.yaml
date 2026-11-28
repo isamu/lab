@@ -1,6 +1,7 @@
 # 「不可欠です」「欠かせません」が何のために要るのかを言う語。文の中でその前にあれば、強調ではなく条件を言っている
 # （「店を続けるためには、人手が不可欠です」）。position: before の語は、言い回しのすぐ前にあるときだけ効く
 # （「配送に欠かせません」の「に」。「本当に」の「に」は助詞ではないので当たらない）。
+# 読点の前の「には」は、何をするのに要るのかを言う（「心の回復には、大人の支えが不可欠です」）。
 id: necessity-purpose
 language: ja
 entries:
@@ -9,5 +10,7 @@ entries:
   - pattern: 上で
   - pattern: うえで
   - pattern: にとって
+  - pattern: には、
+  - pattern: には，
   - pattern: に
     position: before

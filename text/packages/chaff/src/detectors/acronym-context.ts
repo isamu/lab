@@ -1,18 +1,25 @@
 import { ROMAN_NUMERAL, romanRangeOf } from "./roman-numeral.ts";
 import { citationKeySpans } from "./citation-key.ts";
 import { dottedNameSpans } from "./dotted-name.ts";
-import { letterJoinedNameSpans } from "./letter-joined-name.ts";
+import { capitalJoinedNameSpans, letterJoinedNameSpans } from "./letter-joined-name.ts";
 import { loneNumeralSpans, nameNumeralSpans } from "./name-numeral.ts";
 import { placeholderSpans } from "./placeholder.ts";
 import { numeralWordSpans } from "./numeral-word.ts";
 import { seriesLabelSpans } from "./series-label.ts";
-import { nameSpansOf, oneOf } from "./acronym-name.ts";
+import { nameSpansOf, oneOf, postalAddressSpans } from "./acronym-name.ts";
 import { grammarSpans } from "./abnf-grammar.ts";
 import { outlineLabelSpans } from "./outline-label.ts";
 import { referenceListSpans } from "../reference-lists.ts";
 import { linkTitleSpans } from "./acronym-link.ts";
 import { citationNoteSpans } from "./citation-note.ts";
 import { documentCitationSpans } from "./case-citation.ts";
+import { referenceEntrySpans } from "./reference-entry.ts";
+import { chatLogSpans } from "./chat-log-line.ts";
+import { quotedLabelSpans } from "./quoted-label.ts";
+import { eventTitleSpans } from "./event-title-item.ts";
+import { priceListSpans } from "./price-list.ts";
+import { codePrefixSpans } from "./code-prefix.ts";
+import { spacedNameSpans } from "./spaced-name.ts";
 
 /**
  * 大文字の語が略語ではなく、決まった書き方の一部として読める所（3:30 PM、1pm ET、USD 1,000、Kansas City, MO 64108、Fort Lauderdale FL 33304）。
@@ -39,6 +46,14 @@ export type NotationWords = {
   readonly titles: readonly string[];
   /** 日付・時刻の数字の後ろに書く単位（年、月、日、時、分）。その前の同じ大文字の繰り返し（YY年）は書式の置き場所。 */
   readonly dateTimeUnits: readonly string[];
+  /** ショートメッセージでキーワードを送る動詞（text GNPCGS to 333111 の text）。 */
+  readonly textMessageVerbs?: readonly string[];
+  /** 行の頭に大文字で書く接続詞（OR, Skip to …）。略語でもある語（OR は Oregon）なので、行の頭で読点と名前の形か行の終わりが続くときだけ。 */
+  readonly openingConjunctions?: readonly string[];
+  /** 電話番号の前に置く語（TEL、FAX）。大文字で書いた形だけを、番号のすぐ前でだけ外す。 */
+  readonly phoneLabels?: readonly string[];
+  /** 登記や届出の番号の前に置く札（ACN、EIN）。番号のすぐ前でだけ外す。 */
+  readonly registryLabels?: readonly string[];
 };
 
 const MINUTES = String.raw`:[0-5]\d`;
@@ -96,8 +111,51 @@ const titledName = (titles: string): readonly RegExp[] => [
 const placeAndState = (states: string): RegExp =>
   new RegExp(String.raw`(?<=\p{Lu}\p{Ll}[\p{L}'’.-]*,\s+)${states}(?=[ \t]*(?:\r?\n|$)|[,.;:)\]!?]|\s+\p{Ll})`, "gu");
 
+/**
+ * ショートメッセージで送るキーワード（texting GNPCGS to 333111）。動詞と短い番号の間の大文字は、そのまま打ち込む文字列。
+ * 番号は短縮番号の桁（4 から 6 桁）で、動詞の無い「GDP to 3000」は略語のまま数える。
+ */
+const textMessageKeyword = (verbs: readonly string[]): RegExp =>
+  new RegExp(String.raw`(?<![\p{L}\p{N}_])${oneOf(verbs)}\s+["“']?[A-Z][A-Z0-9]+["”']?\s+to\s+\d{4,6}(?!\d)`, "giu");
+
+/**
+ * 行の頭に大文字で書いた接続詞（OR, Skip to the topics …、選択肢の間に一行で置いた OR）。読点の後ろに頭だけ大文字の語が続くか、
+ * その行がそこで終わるときだけ。州の並び（OR, WA and ID）や文の途中の OR（the OR staff）は略語のまま数える。
+ */
+const openingConjunction = (words: readonly string[]): RegExp =>
+  new RegExp(String.raw`(?<=(?:^|\n)[ \t]*)${oneOf(words)}(?=,[ \t]+\p{Lu}\p{Ll}|[ \t]*(?:\r?\n|$))`, "gu");
+
 /** メールアドレス（OASH-RFI@hhs.gov）。@ の前の大文字は宛先の名前で、略語ではない。 */
 const EMAIL_ADDRESS = /(?<![\p{L}\p{N}._%+-])[\p{L}\p{N}._%+-]+@[\p{L}\p{N}-]+(?:\.[\p{L}\p{N}-]+)+/gu;
+
+/** SNS のアカウント名（follow us at @USGSA）。@ のすぐ後ろの大文字はアカウントの綴りで、略語ではない。 */
+const SOCIAL_HANDLE = /(?<![\p{L}\p{N}_.%+-])[@＠]\w+/gu;
+
+/** 『』で囲んだ大文字だけの名前（中期計画『SHIFT』）。日本語の文が計画や作品の名前に付ける括弧で、中身は名前。 */
+const HOOKED_NAME = /『[A-Z][A-Z0-9&.・ -]*』/gu;
+
+/** 電話番号の桁。全角の数字と区切り、雛形の伏せ字（03-〇〇〇〇-〇〇〇〇）も数える。 */
+const PHONE_DIGIT = String.raw`[\d０-９〇○]`;
+const PHONE_CHARACTER = String.raw`[\d０-９〇○()（）+＋\-‐－ー.\s]`;
+const MIN_PHONE_DIGITS = 7;
+const DIGIT = new RegExp(PHONE_DIGIT, "gu");
+
+/**
+ * 番号の前の大文字の札（TEL  03-3222-1061、FAX: (202) 555-0100、ACN 106 702 416）。札は語彙表 phone-label と registry-label の語を
+ * 大文字にした形で、すぐ後ろに 7 桁以上の番号が続くときだけ外す。番号の無い TEL や ACN（the FAX machine）は略語のまま数える。
+ */
+const labelledNumberSpans = (labels: readonly string[]): ((text: string) => Span[]) => {
+  const capitals = [...new Set(labels.filter((label) => /^[A-Za-z]{2,6}$/u.test(label)).map((label) => label.toUpperCase()))];
+  if (capitals.length === 0) return () => [];
+  const pattern = new RegExp(
+    String.raw`(?<![\p{L}\p{N}_])${oneOf(capitals)}[ \t]*[.:：]?[ \t\u3000]*(?<number>[(（+＋]?${PHONE_DIGIT}${PHONE_CHARACTER}*${PHONE_DIGIT})`,
+    "gu",
+  );
+  return (text) =>
+    [...text.matchAll(pattern)]
+      .filter((match) => ((match.groups?.["number"] ?? "").match(DIGIT) ?? []).length >= MIN_PHONE_DIGITS)
+      .map((match) => ({ start: match.index, end: match.index + match[0].length }));
+};
 
 // 強調の記号は空白に置き換えてある（**3:30** PM）ので、部品の間の空白は数を問わない。
 const patternsOf = (words: NotationWords): readonly RegExp[] => [
@@ -112,7 +170,11 @@ const patternsOf = (words: NotationWords): readonly RegExp[] => [
   new RegExp(String.raw`(?<![\p{L}\p{N}_])${oneOf(words.honorifics)}\s+${SURNAME_IN_CAPITALS}`, "gu"),
   capitalHonorific(words.honorifics),
   ...titledName(oneOf(words.titles)),
+  textMessageKeyword(words.textMessageVerbs ?? []),
+  openingConjunction(words.openingConjunctions ?? []),
   EMAIL_ADDRESS,
+  SOCIAL_HANDLE,
+  HOOKED_NAME,
 ];
 
 export type NotAcronymSpans = (text: string) => Span[];
@@ -123,11 +185,14 @@ export type NotAcronymSpans = (text: string) => Span[];
  */
 export const notAcronymSpansOf = (words: NotationWords): NotAcronymSpans => {
   const patterns = patternsOf(words);
+  const numberLabels = labelledNumberSpans([...(words.phoneLabels ?? []), ...(words.registryLabels ?? [])]);
   return (text) => [
+    ...numberLabels(text),
     ...patterns.flatMap((pattern) => [...text.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }))),
     ...citationKeySpans(text),
     ...dottedNameSpans(text),
     ...letterJoinedNameSpans(text),
+    ...capitalJoinedNameSpans(text),
     ...nameNumeralSpans(text),
     ...loneNumeralSpans(text),
     ...seriesLabelSpans(text),
@@ -151,6 +216,10 @@ export const lexiconNotationOf = (wordsOf: (id: string) => string[]): NotAcronym
     honorifics: wordsOf("honorific"),
     titles: wordsOf("name-title"),
     dateTimeUnits: wordsOf("date-time-unit"),
+    textMessageVerbs: wordsOf("text-message-verb"),
+    openingConjunctions: wordsOf("opening-conjunction"),
+    phoneLabels: wordsOf("phone-label"),
+    registryLabels: wordsOf("registry-label"),
   });
   const names = nameSpansOf({
     legalForms: wordsOf("legal-form"),
@@ -161,19 +230,38 @@ export const lexiconNotationOf = (wordsOf: (id: string) => string[]): NotAcronym
     namePrefixes: wordsOf("name-prefix"),
     streetSuffixes: wordsOf("street-suffix"),
     capitalPhrases: wordsOf("capital-phrase"),
+    productNames: wordsOf("product-name"),
   });
   return (text) => [...notation(text), ...names(text)];
 };
 
-/** 文書全体で読む、略語として数えない範囲。文献一覧の誌名や会議名、番号の付いた区切りの見出し、ABNF の文法。 */
+/**
+ * 午前・午後の点の後ろで文が切れた時刻と時間帯（between 8 a.m. and 8 p.m. ET, Monday …）。文分けは p.m. の点で文を切るので、
+ * 時間帯は次の文の頭に来る。文の中で見る組み立てと同じものを、文書の上で見る。強調の記号（**8 p.m.** ET）も挟んでよい。
+ */
+const clockZoneSpans = (source: string, timeZones: readonly string[]): Span[] => {
+  if (timeZones.length === 0) return [];
+  const pattern = new RegExp(String.raw`${CLOCK_12}\s*${ANY_MERIDIEM}[\s*_]*${oneOf(timeZones)}(?![\p{L}\p{N}_&])`, "gu");
+  return [...source.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
+};
+
+/** 文書全体で読む、略語として数えない範囲。文献一覧の誌名や会議名、番号の付いた区切りの見出し、ABNF の文法、文に切れ目の入る所在地（Rd. NE）、値段表の品名、
+ * 文書が一語でも書く名前を空けて書いたときの頭の大文字（JSConf と書く文書の JS Conf）。 */
 export const sourceNotAcronymSpans = (source: string, wordsOf: (id: string) => string[]): Span[] => [
+  ...postalAddressSpans(source, wordsOf("street-suffix"), wordsOf("us-state-code")),
   ...referenceListSpans(source, wordsOf("reference-list-heading")),
   ...outlineLabelSpans(source, wordsOf("numbered-division")),
   ...grammarSpans(source),
+  ...clockZoneSpans(source, wordsOf("time-zone")),
+  ...priceListSpans(source),
+  ...spacedNameSpans(source),
 ];
 
 /**
- * 数には入れるが指さない略語の範囲。リンク先の題名、文献を引いて始まる注、判例の引用の当事者・裁判所・事件番号は、書き手が直せない。
+ * 数には入れるが指さない略語の範囲。リンク先の題名、文献を引いて始まる注、判例の引用の当事者・裁判所・事件番号、
+ * 角括弧の見出しで始まる文献の項目（[FETCH]    WHATWG, "Fetch"）、貼り付けたチャットの発言（<jinxer-wm> FIRING: …）、
+ * 書式の部品の名前の前に括弧で引いた表示（the “VOID” box）、過去の講演や催しの一覧の題名（- 「…の改善」、- …の進め方～（2014/1/9））、
+ * 番号の頭に付く文字（starts with XI）は、書き手が直せない。
  */
 export const unreportedAcronymSpans = (
   source: string,
@@ -184,4 +272,9 @@ export const unreportedAcronymSpans = (
   ...linkTitleSpans(source, links),
   ...citationNoteSpans(source, sentences, wordsOf("citation-author-joiner")),
   ...documentCitationSpans(sentences, source, wordsOf("case-party-joiner")),
+  ...referenceEntrySpans(source),
+  ...chatLogSpans(source),
+  ...quotedLabelSpans(source, wordsOf("control-noun")),
+  ...eventTitleSpans(source, wordsOf("talk-kind")),
+  ...codePrefixSpans(source, wordsOf("code-prefix-phrase")),
 ];

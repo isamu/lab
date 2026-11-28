@@ -1,7 +1,11 @@
 import type { Detector, DetectorOptions, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence } from "../plugin.ts";
-import { entryEnds, entryIn } from "./lexicon-match.ts";
-import { mentionCuesOf, onlyMentioned } from "./mentioned-phrase.ts";
+import { entryEnds, entryIn, entryOpens, entryRanges, entryWrittenIn } from "./lexicon-match.ts";
+import { externalLinkTitleSpans } from "../link-title.ts";
+import { referenceListSpans } from "../reference-lists.ts";
+import { mentionCuesOf, onlyInTitles, onlyMentioned } from "./mentioned-phrase.ts";
+import { inFigurativeContext, phraseContextsOf } from "./phrase-context.ts";
 import { closingSentences } from "../closing-paragraph.ts";
+import { quotedPattern } from "./quoted-pattern.ts";
 
 /** 冒頭は先頭 2 段落ぶん。「どの記事にも当てはまる書き出し」は冒頭にあるときだけ問題。 */
 const OPENING_SENTENCES = 4;
@@ -21,10 +25,29 @@ type Hit = { readonly sentence: Sentence; readonly matched: string };
 /** Whether the entry's words in the sentence count as a use. phrase-match counts every one. */
 type IsUsed = (sentence: Sentence, entry: LexiconEntry) => boolean;
 
+/** Some place of the entry in the sentence is not followed by a word of a part of speech the entry names in not_before_pos. Without tokens every place counts. */
+const freeOfNextWord = (sentence: Sentence, entry: LexiconEntry): boolean => {
+  const blocked = entry.not_before_pos;
+  const tokens = sentence.tokens;
+  const ranges = entryRanges(sentence, entry);
+  if (blocked === undefined || tokens === undefined || ranges.length === 0) return true;
+  return ranges.some((range) => !blocked.includes(tokens[range.end]?.pos ?? ""));
+};
+
+/** An entry marked opens counts only at the head of the sentence: 「近年、」 opens a stock opening, 「その後、近年の」 is a plain word. */
+const writtenIn = (sentence: Sentence, entry: LexiconEntry): boolean =>
+  (entry.opens === true ? entryOpens(sentence, entry) : entryIn(sentence, entry)) && freeOfNextWord(sentence, entry);
+
+/** The entry the sentence holds; one written in the very form (reverted back) wins over one met through its base form (revert back). */
+const entryHeldBy = (sentence: Sentence, lexicon: Lexicon, isUsed: IsUsed): LexiconEntry | undefined => {
+  const held = lexicon.filter((entry) => writtenIn(sentence, entry) && isUsed(sentence, entry));
+  return held.find((entry) => entryWrittenIn(sentence, entry)) ?? held[0];
+};
+
 const hitsIn = (sentences: readonly Sentence[], lexicon: Lexicon, isUsed: IsUsed = () => true): Hit[] =>
   sentences.flatMap((sentence) => {
-    const matched = lexicon.find((entry) => entryIn(sentence, entry) && isUsed(sentence, entry));
-    return matched === undefined ? [] : [{ sentence, matched: matched.pattern }];
+    const matched = entryHeldBy(sentence, lexicon, isUsed);
+    return matched === undefined ? [] : [{ sentence, matched: quotedPattern(matched.pattern) }];
   });
 
 const findingsOf = (hits: readonly Hit[], limit: number, count = hits.length): Finding[] =>
@@ -57,10 +80,21 @@ export const phraseMatchWhere = (doc: ProseDocument, options: DetectorOptions, i
   return hits.length < options.limit ? [] : findingsOf(hits, options.limit);
 };
 
-/** phrase-match の、言葉として名指しただけの言い回し（the phrase "…", 「…」という言い方）を数えない版（mentioned-phrase.ts）。 */
+/**
+ * phrase-match の、言葉として名指しただけの言い回し（the phrase "…", 「…」という言い方）を数えない版（mentioned-phrase.ts）。
+ * 参考文献のリンクに写した外のページの題名（[文章の極意は…](https://…)）と、文献一覧に写した著作の題の言い回しも、書き手の言葉ではないので数えない。
+ * 字どおりの意味にも読める言い回し（at the end of the day）は、cliche-figurative が言う比喩の文脈の文だけで数える（phrase-context.ts）。
+ */
 export const phraseInUse: Detector = (doc, options): Finding[] => {
   const cues = mentionCuesOf(doc.lexicons["mention-cue"] ?? []);
-  const hits = phraseHits(doc, options, (sentence, entry) => !onlyMentioned(sentence, entry, cues));
+  const headings = (doc.lexicons["reference-list-heading"] ?? []).map((entry) => entry.pattern);
+  const titles = [...externalLinkTitleSpans(doc.source, doc.links), ...referenceListSpans(doc.source, headings)];
+  const figurative = phraseContextsOf(doc.lexicons["cliche-figurative"] ?? []);
+  const hits = phraseHits(
+    doc,
+    options,
+    (sentence, entry) => !onlyMentioned(sentence, entry, cues) && !onlyInTitles(sentence, entry, titles) && inFigurativeContext(sentence, entry, figurative),
+  );
   return hits.length < options.limit ? [] : findingsOf(hits, options.limit);
 };
 
@@ -74,7 +108,7 @@ const usesIn = (sentence: Sentence, lexicon: Lexicon): Uses | undefined => {
   const found = lexicon.map((entry) => ({ entry, ends: entryEnds(sentence, entry) })).filter(({ ends }) => ends.length > 0);
   const first = found.toSorted((a, b) => Math.min(...a.ends) - Math.min(...b.ends))[0];
   if (first === undefined) return undefined;
-  return { sentence, matched: first.entry.pattern, count: new Set(found.flatMap(({ ends }) => ends)).size };
+  return { sentence, matched: quotedPattern(first.entry.pattern), count: new Set(found.flatMap(({ ends }) => ends)).size };
 };
 
 /**

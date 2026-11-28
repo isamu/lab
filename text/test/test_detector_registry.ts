@@ -47,7 +47,7 @@ describe("DETECTORS", () => {
     const used = readdirSync(RULES_DIR).flatMap((name) => /^how_to_find: (\S+)$/mu.exec(readFileSync(join(RULES_DIR, name), "utf8"))?.[1] ?? []);
     const missing = used.filter((key) => DETECTORS[key] === undefined && CROSS_DETECTORS[key] === undefined).toSorted(byName);
     // 合成・AI 判定の rule は検出器を持たない。ここに増えたなら registry/ のファイルが足りていない。
-    assert.deepEqual([...new Set(missing)], ["composite", "empty-conclusion", "risk-disclosure", "unsourced-number"]);
+    assert.deepEqual([...new Set(missing)], ["composite", "empty-conclusion", "generic-opening", "risk-disclosure", "unsourced-number"]);
   });
 
   it("文書どうしを比べる検出器は cross-registry/ のファイル 1 つにつき 1 つ（フォルダが無ければ 0）で、値はどれも関数", () => {

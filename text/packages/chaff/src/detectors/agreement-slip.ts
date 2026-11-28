@@ -24,6 +24,10 @@ export type AgreementLists = {
   readonly misnumbered: Lexicon;
   /** 冠詞の後ろに立たない限定詞（some / the）。 */
   readonly afterArticle: ReadonlySet<string>;
+  /** 名詞句を目的語に取る前置詞（on / of）。この後ろの this / these は主語にならない。 */
+  readonly prepositions?: ReadonlySet<string>;
+  /** homophone-slip が言う組（their are）。その規則が正しい語まで言うので、ここでは数えない。 */
+  readonly homophones?: ReadonlySet<string>;
 };
 
 export type Slip = { readonly variant: "number" | "possessive" | "determiner"; readonly first: Token; readonly last: Token; readonly word: string };
@@ -40,6 +44,8 @@ const CLOSING_MARK = new Set([".", ";", ":", "?", "!", ")"]);
  */
 const PHRASE_END = new Set(["AUX", "ADP", "SCONJ", "PRON", "DET", "ADV"]);
 const PREDICATE_TAIL = new Set(["DET", "ADJ", "PRON", "NUM"]);
+/** 所有の印（'s / '）。不変化詞のうち、これだけが名詞を重ねた語の途中（a children's book）。to や not は名詞句の外。 */
+const POSSESSIVE_MARK = /^['’]/u;
 
 const lower = (token: Token): string => token.surface.toLowerCase();
 
@@ -52,6 +58,7 @@ const isPlural = (token: Token): boolean => token.features?.["Number"] === "Plur
 /** 名詞の後ろの語で、名詞句が終わるか。分詞（a data driven approach）も名詞を重ねた語の途中。 */
 export const endsNounPhrase = (next: Token | undefined, finite: ReadonlySet<string>): boolean => {
   if (next === undefined || finite.has(lower(next))) return true;
+  if (next.pos === "PART") return !POSSESSIVE_MARK.test(next.surface);
   return next.pos === "PUNCT" ? CLOSING_MARK.has(next.surface) : PHRASE_END.has(next.pos);
 };
 
@@ -75,9 +82,15 @@ const isNamePart = (tokens: readonly Token[], at: number): boolean => UPPER_STAR
 
 const isModifier = (token: Token): boolean => token.pos === "ADJ" || token.pos === "ADV" || (token.pos === "VERB" && isParticiple(token));
 
-/** 限定詞の後ろの修飾語。数の形容詞（a few days）が挟まれば、単数の限定詞でも複数を数えるので undefined。 */
-const modifiersAfter = (tokens: readonly Token[], from: number, count: ReadonlySet<string>): readonly Token[] | undefined => {
-  const end = tokens.findIndex((token, index) => index >= from && !isModifier(token));
+/** 活用した動詞の形（flagged）。限定詞が主語になれない所では、名詞の前の分詞としか読めない。 */
+const isInflectedVerb = (token: Token): boolean => token.pos === "VERB" && token.lemma !== undefined && token.lemma.toLowerCase() !== lower(token);
+
+/**
+ * 限定詞の後ろの修飾語。数の形容詞（a few days）が挟まれば、単数の限定詞でも複数を数えるので undefined。
+ * bound は限定詞が前置詞の目的語の頭にあること。そこでは活用した動詞の形も修飾語（on these flagged post）。
+ */
+const modifiersAfter = (tokens: readonly Token[], from: number, count: ReadonlySet<string>, bound: boolean): readonly Token[] | undefined => {
+  const end = tokens.findIndex((token, index) => index >= from && !isModifier(token) && !(bound && isInflectedVerb(token)));
   const modifiers = tokens.slice(from, end === -1 ? tokens.length : end);
   return modifiers.some((token) => count.has(lower(token))) ? undefined : modifiers;
 };
@@ -106,18 +119,34 @@ const determinerAt = (tokens: readonly Token[], at: number, lists: AgreementList
  */
 const standsAlone = (determiner: Determiner): boolean => determiner.length === 1 && !isArticle(determiner.head);
 
-const readsAsDeterminer = (determiner: Determiner, modifiers: readonly Token[]): boolean =>
-  !standsAlone(determiner) || modifiers.some((token) => token.pos === "ADJ");
+const readsAsDeterminer = (determiner: Determiner, modifiers: readonly Token[], bound: boolean): boolean =>
+  !standsAlone(determiner) || (bound && modifiers.length > 0) || modifiers.some((token) => token.pos === "ADJ");
+
+/** 限定詞が前置詞のすぐ後ろにあるか（on these）。前置詞の目的語の頭は主語にならないので、後ろの語は動詞ではない。 */
+const followsPreposition = (tokens: readonly Token[], at: number, prepositions: ReadonlySet<string> | undefined): boolean => {
+  const before = tokens[at - 1];
+  return before !== undefined && (prepositions?.has(lower(before)) ?? false);
+};
 
 const mayBeNoun = (token: Token): boolean => token.features?.["AlsoNoun"] === "Yes" || isGuessed(token);
 
 /**
  * 名詞が動詞にも読め（works）、その前に名詞句の頭になれる語があれば、限定詞と名詞ではなく主語と動詞かもしれない。
  * an individual works（individual は名詞にもなる）/ Those responsible report to the board（those は代名詞にもなる）。
- * 後ろが is / has なら、名詞は動詞ではない（these key result is）。
+ * 後ろが is / has なら、名詞は動詞ではない（these key result is）。後ろが to なら、解析器が動詞と知らない語も動詞かもしれない
+ * （every key maps to an array の maps）。
  */
-const mayBeVerb = (determiner: Determiner, modifiers: readonly Token[], noun: Token, next: Token | undefined, finite: ReadonlySet<string>): boolean =>
-  noun.features?.["AlsoVerb"] === "Yes" && !(next !== undefined && finite.has(lower(next))) && (standsAlone(determiner) || modifiers.some(mayBeNoun));
+const mayBeVerb = (
+  determiner: Determiner,
+  modifiers: readonly Token[],
+  noun: Token,
+  next: Token | undefined,
+  finite: ReadonlySet<string>,
+  bound: boolean,
+): boolean =>
+  (noun.features?.["AlsoVerb"] === "Yes" || next?.pos === "PART") &&
+  !(next !== undefined && finite.has(lower(next))) &&
+  ((standsAlone(determiner) && !bound) || modifiers.some(mayBeNoun));
 
 /** 冠詞は名詞句の頭に立つ。形容詞や数の後ろの a は、記号の名前（the eight 3-hourly a indices）。 */
 const AFTER_MODIFIER = new Set(["ADJ", "NUM"]);
@@ -128,14 +157,15 @@ const isLetterName = (tokens: readonly Token[], at: number, determiner: Determin
 const numberSlipAt = (source: string, tokens: readonly Token[], at: number, lists: AgreementLists): Slip | undefined => {
   const determiner = determinerAt(tokens, at, lists);
   if (determiner === undefined || isNamePart(tokens, at) || isLetterName(tokens, at, determiner)) return undefined;
-  const modifiers = modifiersAfter(tokens, at + determiner.length, lists.count);
-  if (modifiers === undefined || !readsAsDeterminer(determiner, modifiers)) return undefined;
+  const bound = standsAlone(determiner) && followsPreposition(tokens, at, lists.prepositions);
+  const modifiers = modifiersAfter(tokens, at + determiner.length, lists.count, bound);
+  if (modifiers === undefined || !readsAsDeterminer(determiner, modifiers, bound)) return undefined;
   const nounAt = at + determiner.length + modifiers.length;
   const noun = tokens[nounAt];
   if (!isCommonNoun(noun) || !hasOneNumber(noun, lists.invariant) || isPlural(noun) === determiner.plural) return undefined;
   // A file name or a path (a quotes.json, a docs/ folder) is spelled as it must be, not counted.
   if (isPartOfAddress(source, noun.span.start, noun.span.end)) return undefined;
-  if (mayBeVerb(determiner, modifiers, noun, tokens[nounAt + 1], lists.finite)) return undefined;
+  if (mayBeVerb(determiner, modifiers, noun, tokens[nounAt + 1], lists.finite, bound)) return undefined;
   const span = tokens.slice(at, nounAt + 1);
   if (!endsNounPhrase(tokens[nounAt + 1], lists.finite) || !joinedBySpace(source, span) || isPartOfLongerWord(source, determiner.head, noun)) return undefined;
   return slipOf("number", source, determiner.head, noun);
@@ -164,7 +194,8 @@ const possessiveSlipAt = (source: string, tokens: readonly Token[], at: number, 
   const auxiliary = verb.pos === "AUX" && isBaseVerb(tokens[at + 2]) && !isNounAfterPreposition(tokens, at);
   const verbal = LOWER.test(verb.surface) && (lists.finite.has(lower(verb)) || auxiliary);
   if (!verbal || !joinedBySpace(source, [possessive, verb]) || isPartOfLongerWord(source, possessive, verb)) return undefined;
-  return slipOf("possessive", source, possessive, verb);
+  const slip = slipOf("possessive", source, possessive, verb);
+  return lists.homophones?.has(slip.word.toLowerCase()) === true ? undefined : slip;
 };
 
 /** ones of the most。前に限定詞・形容詞・代名詞があれば、ones は代名詞（the ones of the most use）。 */
@@ -211,6 +242,8 @@ const listsOf = (lexicons: Readonly<Record<string, Lexicon>>): AgreementLists =>
   finite: setOf(lexicons["finite-auxiliary"]),
   misnumbered: lexicons["misnumbered-phrase"] ?? [],
   afterArticle: setOf(lexicons["determiner-after-article"]),
+  prepositions: setOf(lexicons["object-preposition"]),
+  homophones: setOf(lexicons["homophone-slip"]),
 });
 
 export const agreementSlip: Detector = (doc): Finding[] => {

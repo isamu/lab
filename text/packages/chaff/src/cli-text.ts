@@ -30,6 +30,7 @@ const USAGE_JA = `chaff — 文章の読みにくいところを見つけます�
   chaff .                        この場所の Markdown を全部
   chaff test <file|dir>...       意味を読む検査も動かす（API key が要ります）
                                  判定役は chaff.yaml の ai_backend で選びます
+                                 --checks <ファイル|ai-tells> は checks.yaml の代わりにその検査を聞く（ai-tells は同梱の AI らしさの問い）
   chaff init                     chaff.yaml を作る（端末ならジャンルを尋ねる。--genre <ジャンル> でも選べる）
   chaff init --plugin <名前>     YAML だけのルールの束（chaff-plugin-<名前>/）を作る
   chaff plugin-test [フォルダ]   プラグインの各ルールを、そのルールの例にかけて確かめる
@@ -57,6 +58,7 @@ const USAGE_JA = `chaff — 文章の読みにくいところを見つけます�
                                  --variant-key は variant の欄の代わりにその欄で出力を分けて並べる。--json は --format json と同じ。markdown は PR のコメント向け
   chaff fix-plan <file> [--depth light|structure|register] [--json]
                                  指摘をルールごとにまとめ、直す方向と確かめのコマンドを、書き直す人や AI 向けの計画にする（何も送らない）
+                                 --all-ai-signs は AI らしさのルールを全部動かし、点と止めるときを足す。--before <元の文書> は元より増えた指摘を出す
   chaff rules                    ルールの一覧を、グループごとに表で出す（いまの段階つき）
   chaff rules --json             いまの設定とルールの説明を JSON で出す（AI に渡す用）
   chaff baseline <dir>           いまある指摘を棚上げする（既存の repo に入れるとき）
@@ -90,6 +92,7 @@ const USAGE_EN = `chaff — finds what makes writing hard to read. It never rewr
   chaff .                        every Markdown file here
   chaff test <file|dir>...       also run the checks that read meaning (needs an API key)
                                  the judge is chosen by ai_backend in chaff.yaml
+                                 --checks <file|ai-tells> asks those checks instead of checks.yaml (ai-tells: the AI-likeness questions chaff ships)
   chaff init                     create chaff.yaml (asks for the genre at a terminal; --genre <genre> chooses it)
   chaff init --plugin <name>     create a YAML rule pack, chaff-plugin-<name>/
   chaff plugin-test [folder]     run each rule of a plugin on the rule's own example
@@ -117,6 +120,7 @@ const USAGE_EN = `chaff — finds what makes writing hard to read. It never rewr
                                  --variant-key splits the outputs by that field instead of variant; --json is --format json; markdown is for a PR comment
   chaff fix-plan <file> [--depth light|structure|register] [--json]
                                  a plan for whoever rewrites the file, a person or an AI: findings by rule, how to rewrite each, the checks to run after (sends nothing)
+                                 --all-ai-signs runs every AI-likeness rule and adds the score and when to stop; --before <original> lists the findings the rewrite raised
   chaff rules                    the rules as a table, by group, with the level each runs at now
   chaff rules --json             the current settings and what each rule is, as JSON (to give to an AI)
   chaff baseline <dir>           shelve today's findings (when adding chaff to an existing repository)
@@ -144,13 +148,16 @@ Silence one spot:  <!-- stet: rule-id — reason -->
 A rule's level is one of strict / normal / relaxed / off.
 `;
 
+/** What the file's header line counts: findings shelved by the baseline, silenced by stet, silenced by chaff.yaml's allow. */
+export type HeaderCounts = { readonly shelved: number; readonly hushed: number; readonly allowed?: number | undefined };
+
 export type CliText = {
   readonly usage: string;
   /** Under one command's lines of the usage, for `chaff <command> --help`. */
   readonly moreHelp: string;
   readonly languageName: (language: string) => string;
   readonly genreSource: Readonly<Record<GenreSource, string>>;
-  readonly header: (path: string, genre: string, language: string, from: string, shelved: number, hushed: number) => string;
+  readonly header: (path: string, genre: string, language: string, from: string, counts: HeaderCounts) => string;
   readonly suggested: (name: string, genre: string) => string;
   readonly suggestedNote: (name: string, genre: string, used: string) => string;
   /** Nothing to check among targets; include: the globs looked for besides Markdown. Says how to look for more. */
@@ -187,11 +194,12 @@ export const CLI_TEXT: Texts<CliText> = {
       path: "パス",
       content: "内容",
     },
-    header: (path, genre, language, from, shelved, hushed) =>
+    header: (path, genre, language, from, { shelved, hushed, allowed = 0 }) =>
       [
         `${path}   ${genre} · ${language}   ジャンルは${spacedInJapanese(from)}から`,
         shelved > 0 ? `   棚上げ ${shelved} 件` : "",
         hushed > 0 ? `   stet ${hushed} 件` : "",
+        allowed > 0 ? `   allow ${allowed} 件` : "",
       ].join(""),
     suggested: (name, genre) => `   ${name}のようです。--genre ${genre} を試せます`,
     suggestedNote: (name, genre, used) =>
@@ -242,8 +250,13 @@ export const CLI_TEXT: Texts<CliText> = {
       path: "the path",
       content: "the content",
     },
-    header: (path, genre, language, from, shelved, hushed) =>
-      [`${path}   ${genre} · ${language}   genre from ${from}`, shelved > 0 ? `   ${shelved} shelved` : "", hushed > 0 ? `   ${hushed} stet` : ""].join(""),
+    header: (path, genre, language, from, { shelved, hushed, allowed = 0 }) =>
+      [
+        `${path}   ${genre} · ${language}   genre from ${from}`,
+        shelved > 0 ? `   ${shelved} shelved` : "",
+        hushed > 0 ? `   ${hushed} stet` : "",
+        allowed > 0 ? `   ${allowed} allowed` : "",
+      ].join(""),
     suggested: (name, genre) => `   Looks like: ${name}. Try --genre ${genre}`,
     suggestedNote: (name, genre, used) =>
       `  No genre was set, so this was checked as ${used}. If it is ${name}, --genre ${genre} checks it the way that kind is written (npx chaffjs genres lists them).`,

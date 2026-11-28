@@ -665,13 +665,16 @@ genres:
 | `undefined-acronym` ✅ | 略語の初出時の展開 | business | warning |
 | `emoji-density` ✅ | 絵文字・装飾記号の密度 | blog | info |
 | `heading-level-skip` ✅ | 見出しの深さの飛び（`##` の次の `####`） | 両方 | warning |
+| `heading-marker-no-space` ✅ | 「#」の後ろに空白が無く見出しにならない行（MD018・MD020）。「#」一つの行はタグと区別できるときだけ | 両方 | warning |
 | `heading-numbering-mix` | 兄弟の見出しで番号の有無・書き方（1. / 1） / 第1章）が混ざる。少ないほうを指す。語彙表 heading-number-label と unnumbered-heading | 両方 | warning |
+| `enumeration-marker-mix` ✅ | 一つのリストの同じ深さか、続けて番号を振った段落の並びで、項目の番号の書き方（1. / 1) / (1) / ① / 一、 / a.）が混ざる。少ないほうの書き方で、ほかの番号の続きを数えている項目だけを指す。1 から数え直す書き方は一段下の並び | 両方 | info |
 | `image-alt-text` ✅ | 代替テキストの無い画像 | 両方 | warning |
 | `vague-link-text` | 言葉全体が「こちら」「click here」のリンク（WCAG 2.4.4）。語彙表 vague-link-text、インラインのリンクだけ | 両方 | warning |
 | `broken-link` ✅ | 行き先の無いリンク（空・無い見出し・定義の無い参照） | 両方 | warning |
 | `cross-doc-broken-link` ✅ | 一緒に見たほかのファイルへの相対リンクで、行き先のファイルか見出しが無いもの（ファイルが二つ以上のときだけ） | 両方 | warning |
 | `url-run-on` ✅ | URL の直後に空白なしで続く ASCII でない字 | 両方 | warning |
 | `duplicate-heading` ✅ | 同じ親の下の同じ言葉の見出し（MD024 siblings_only） | 両方 | warning |
+| `pseudo-heading` ✅ | 見出しで節を分けた文書の中で、見出しの代わりに置いた太字の一行（MD036。句読点・コロンで終わるもの、題の下で最初の見出しより前のもの、後ろに本文の無いものは除く） | 両方 | info |
 | `empty-section` ✅ | 中身の無い節（すぐ後ろに同じ深さか浅い見出し） | 両方 | warning |
 | `unbalanced-bracket` ✅ | 節の中で組にならない括弧・引用符、全角と半角の組み違い | 両方 | warning |
 | `doubled-punctuation` ✅ | 二つ並んだ句読点（三つ以上は伸ばした書き方として数えない） | 両方 | warning |
@@ -856,7 +859,7 @@ detector は core が持ち、語彙表を adapter から取る。新しい言�
 | `cross-doc-term-variant` ✅ | ファイルによって違う書き方の語（語末の「ー」、英米の綴り、ハイフンの有無）。使うファイルの少ないほうを指摘（ファイルが二つ以上のときだけ） | 両方 | warning |
 | `repeated-conjunction` ✅ | 段落先頭の語彙照合 | 両方 | warning |
 | `ai-tell` ✅ | weighted phrase-match | blog | info |
-| `contrast-framing` ✅ | 対比の枠（frame の語、または打ち消しとそれを返す語）の密度 | blog | info |
+| `contrast-framing` ✅ | 対比の枠（frame の語、または打ち消しとそれを返す語）で書いた文の割合 | blog | info |
 | `stock-transition` ✅ | 文頭の決まった接ぎの密度 | blog | info |
 | `assistant-residue` ✅ | weighted phrase-match（会話の返事の名残。重み 1 は 1 つで、0.5 は 2 つで届く） | 両方 | warning |
 | `unfilled-placeholder` ✅ | 括弧の中が雛形の語（[Your Name]、【会社名】）の空欄 | 両方 | warning |
@@ -968,6 +971,7 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `list-item-form-mix` ✅ | 一つの箇条書きの項目の形（名詞止めと文、en は動詞始まりと名詞始まり）。品詞で判定し、少ないほうを指摘 | - |
 | `fullwidth-alnum-consistency` ✅ | 英数字の全角と半角の混在。英字一字・語・数字一字・並びごとに少ないほうを指摘 | - |
 | `ra-nuki` ✅ | ら抜き言葉。lang-ja が一段・カ変動詞の未然形＋「れる」に `PotentialRa=Dropped` を付ける | pos |
+| `sa-ire` ✅ | さ入れ言葉。lang-ja が五段動詞の未然形＋「させる」に `CausativeSa=Inserted` を付ける | pos |
 | `katakana-long-vowel` ✅ | カタカナ語の語末の「ー」。既定は同じ語の混在だけ。options で省く・付けるを決める | pos |
 | `hankaku-kana` ✅ | 半角の片仮名と半角の句読点。コード・リンク・引いた名前の中は除く | - |
 | `translationese-density` | 翻訳調（を可能にする、重要な役割を果たす、されることができる、あなたは）の密度。語彙表 translationese を共通の phrase-density で数える。上限は人の書いた Qiita の記事で決めた | pos |
@@ -1247,12 +1251,6 @@ detector はそれだけを見る。動作主の語（によって / by）は L2
 `lang-ja` の SudachiPy、`lang-en` の spaCy は、いずれも Python 依存で npx 単体では成立しない。
 eval と calibration の専用経路としてなら価値があるが、lint の常用パスには入れない。
 
----
-
-## 17. npx で動かすための設計
-
-最終目標は `npx chaffjs lint article.md` の一発で動くことである。
-
 ### 16.4 判定役は差し替えられる
 
 L4 の判定役は provider ごとに違うが、**違うのは要求の包みかただけ**である。
@@ -1284,6 +1282,10 @@ Claude Code は自前の system prompt とツール定義を毎回積むため�
 その全部が乗る。API 経由の 1 件およそ 500 トークンに対して 100 倍近い。採らない。
 
 ---
+
+## 17. npx で動かすための設計
+
+最終目標は `npx chaffjs lint article.md` の一発で動くことである。
 
 ### 17.1 予算
 

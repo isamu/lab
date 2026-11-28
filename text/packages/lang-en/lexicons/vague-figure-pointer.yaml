@@ -1,6 +1,7 @@
 # Pointing at a figure or a table by where it is instead of by its number (JIS Z 8301:2019 10.6 avoids "the figure
 # above"). instead_of names the kind it points at, as figure-label names it (Figure, Table). Only a document that
-# numbers that kind is checked. Matched in any case.
+# numbers that kind is checked. Matched in any case. A chart, a graph or a diagram is captioned as a figure (Figure 1:),
+# so "the chart below" points at a Figure.
 id: vague-figure-pointer
 language: en
 entries:
@@ -8,6 +9,18 @@ entries:
   - { pattern: the figure above, instead_of: Figure }
   - { pattern: the below figure, instead_of: Figure }
   - { pattern: the figure below, instead_of: Figure }
+  - { pattern: the above chart, instead_of: Figure }
+  - { pattern: the chart above, instead_of: Figure }
+  - { pattern: the below chart, instead_of: Figure }
+  - { pattern: the chart below, instead_of: Figure }
+  - { pattern: the above graph, instead_of: Figure }
+  - { pattern: the graph above, instead_of: Figure }
+  - { pattern: the below graph, instead_of: Figure }
+  - { pattern: the graph below, instead_of: Figure }
+  - { pattern: the above diagram, instead_of: Figure }
+  - { pattern: the diagram above, instead_of: Figure }
+  - { pattern: the below diagram, instead_of: Figure }
+  - { pattern: the diagram below, instead_of: Figure }
   - { pattern: the above table, instead_of: Table }
   - { pattern: the table above, instead_of: Table }
   - { pattern: the below table, instead_of: Table }

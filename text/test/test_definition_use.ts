@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { namedRuleRun } from "./rule-run.ts";
+import { firedRules, namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { usesBeforeDefinition, unusedDefinitions, usesOf, type DefinedTerm } from "../packages/chaff/src/structure/definition-use.ts";
@@ -28,6 +28,24 @@ describe("unused-definition: 定義したのに使っていない語", () => {
     assert.deepEqual(unused('"Seller" means Harbour Ltd. Both Sellers agree.\n'), []);
     assert.deepEqual(unused('"Policy" means an internal rule. Policies apply to staff.\n'), []);
     assert.deepEqual(unused('"Seller" means Harbour Ltd. The Seller\'s address is below.\n'), []);
+  });
+
+  it("a glossary, which defines terms for other documents, is not checked", () => {
+    const glossary = "# 用語\n\n「積雪なし」とは、地面に雪が全くない状態をいう。\n";
+    assert.ok(firedRules(ja, glossary, "docs/manual").includes("unused-definition"));
+    assert.ok(!firedRules(ja, glossary, "docs/glossary").includes("unused-definition"));
+  });
+
+  it("a quoted meaning after means glosses a word, and defines no term", () => {
+    assert.deepEqual(unused('Here, somehow "local control" means "whatever the vendor allows". Nobody asked.\n'), []);
+    assert.deepEqual(unused('Here, "local control" means whatever the vendor allows. Nobody asked.\n'), ['"local control" is defined but never used']);
+  });
+
+  it("a use whose words are split by a run of spaces or a line break counts", () => {
+    const defined = '"Support Hours" means 9:00 to 17:00 on weekdays.';
+    assert.deepEqual(unused(`${defined} We answer calls during Support      Hours.\n`), []);
+    assert.deepEqual(unused(`${defined} We answer calls during Support\nHours.\n`), []);
+    assert.deepEqual(unused(`${defined} We answer calls during SupportHours.\n`), ['"Support Hours" is defined but never used']);
   });
 
   it("a phrase led by a gerund is used when its verb is written in another form", () => {
@@ -276,6 +294,15 @@ describe("use-before-definition: 定義より前で使っている語", () => {
 
   it("一字の漢字の語は前の使用を探さない（令和の令、方法の法）", () => {
     assert.deepEqual(early("令和8年に改める。施行令（以下「令」という。）による。\n", ja), []);
+    assert.deepEqual(early("なお、法の規定は次のとおり。個人情報の保護に関する法律（以下「法」という。）による。\n", ja), []);
+  });
+
+  it("当事者の呼び名の一字の漢字（甲・乙）は、前の使用を探す", () => {
+    const contract =
+      "この契約は、乙が甲の店舗で行う清掃の業務について定める。株式会社やまと（以下「甲」という。）と株式会社みなと（以下「乙」という。）は、次のとおり契約する。\n";
+    assert.deepEqual(early(contract, ja), ["「乙」を、1 行目の定義より前で使っています", "「甲」を、1 行目の定義より前で使っています"]);
+    assert.deepEqual(early("株式会社やまと（以下「甲」という。）と株式会社みなと（以下「乙」という。）は契約する。乙は甲の店舗を清掃する。\n", ja), []);
+    assert.deepEqual(early("甲板を清掃する。株式会社やまと（以下「甲」という。）は、船を持つ。\n", ja), []);
   });
 });
 
@@ -353,14 +380,35 @@ describe("use-before-definition: contents, captions and longer names", () => {
 
   it("valid: the document naming itself, and a use that gives the long name in brackets", () => {
     assert.deepEqual(early('Read this Agreement first. Harbour Ltd and Hill Ltd sign this sales agreement (this "Agreement").\n'), []);
+    // github-terms-of-service の形。文書を this document と書き、括弧の中は the。
+    assert.deepEqual(early('Please read this Terms of Service agreement. The rules are set out in this document (the "Terms of Service").\n'), []);
     assert.deepEqual(early("この規則は、会社と社員の約束である。\n\n第1条　この就業規則（以下「規則」という。）は、社員の働き方を定める。\n", ja), []);
     const law = "港の利用に関する法律（令和6年法律第1号。以下「みなと法」という。）を守る。\n";
     assert.deepEqual(early(`# 心得\n\nみなと法（港の利用に関する法律）を毎朝よく読む。\n\n${law}`, ja), []);
   });
 
+  it("valid: a word in a GitHub alert, the publisher's note beside the text", () => {
+    // github-educational-use-agreement の形。掲載元の注記が、当事者の条より上にある。
+    const parties = 'This agreement is between you and Harbour, Inc. ("Harbour").\n';
+    assert.deepEqual(early(`> [!NOTE]\n> This agreement belongs to the Harbour School Program.\n\n## Agreement\n\n${parties}`), []);
+  });
+
+  it("invalid: the same use outside the alert", () => {
+    const parties = 'This agreement is between you and Harbour, Inc. ("Harbour").\n';
+    assert.deepEqual(early(`This agreement belongs to the Harbour School Program.\n\n## Agreement\n\n${parties}`), [
+      '"Harbour" is used here, before it is defined on line 5',
+    ]);
+  });
+
   it("invalid: the same words without the self-reference or the gloss", () => {
     assert.deepEqual(early('The Agreement binds both. Harbour Ltd and Hill Ltd sign this sales agreement (this "Agreement").\n'), [
       '"Agreement" is used here, before it is defined on line 1',
+    ]);
+    assert.deepEqual(early('Please read the Terms of Service. The rules are set out in this document (the "Terms of Service").\n'), [
+      '"Terms of Service" is used here, before it is defined on line 1',
+    ]);
+    assert.deepEqual(early('Please read this Fee table. In this case the buyer pays the fee (the "Fee").\n'), [
+      '"Fee" is used here, before it is defined on line 1',
     ]);
     assert.deepEqual(early("規則は、会社と社員の約束である。\n\n第1条　この就業規則（以下「規則」という。）は、社員の働き方を定める。\n", ja), [
       "「規則」を、3 行目の定義より前で使っています",
@@ -384,7 +432,7 @@ describe("use-before-definition: contents, captions and longer names", () => {
   it("valid: entries of a contents list under a contents heading", () => {
     const source = "## 目次\n\n- 利用目的の特定と変更\n- 安全管理\n\n## 決めること\n\n事業者は、使う目的（以下「利用目的」という。）を決める。\n";
     assert.deepEqual(early(source, ja), []);
-    assert.deepEqual(early(source.replace("## 目次", "## はじめに"), ja), ["「利用目的」を、8 行目の定義より前で使っています"]);
+    assert.deepEqual(early(source.replace("## 目次", "## 経緯"), ja), ["「利用目的」を、8 行目の定義より前で使っています"]);
   });
 });
 

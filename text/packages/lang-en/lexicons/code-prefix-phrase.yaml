@@ -1,0 +1,15 @@
+# Phrases that give the letters an identifier starts with (an EORI number that starts with XI). {code} stands where the letters
+# are. The letters are the code printed at the head of the identifier, which the writer cannot change: undefined-acronym counts
+# them but does not ask to spell them out.
+id: code-prefix-phrase
+language: en
+entries:
+  - pattern: "starts with {code}"
+  - pattern: "start with {code}"
+  - pattern: "started with {code}"
+  - pattern: "starting with {code}"
+  - pattern: "begins with {code}"
+  - pattern: "begin with {code}"
+  - pattern: "beginning with {code}"
+  - pattern: "prefixed with {code}"
+  - pattern: "prefixed by {code}"

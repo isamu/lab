@@ -1,5 +1,6 @@
 # 文の中で、すぐ後ろに合計の金額が来る語（「合計100,000円」「合計で100,000円」）。total-mismatch が、その前に並べた内訳の金額の和と比べる。
-# 表や箇条書きの行頭の合計の語は total-label。
+# 表や箇条書きの行頭の合計の語は total-label。合計の語は「合計」のほかにもある（全部で、総数は、合わせて、トータルで）。
+# 「計」は一字では語の中（設計5,000円）にも当たるので、読点のすぐ後ろ（「、計48件」）だけ。
 id: total-phrase
 language: ja
 entries:
@@ -16,3 +17,13 @@ entries:
   - pattern: 総計
   - pattern: 合計金
   - pattern: 総額金
+  - pattern: 総計は
+  - pattern: 総計で
+  - pattern: 総数
+  - pattern: 総数は
+  - pattern: 全部で
+  - pattern: 合わせて
+  - pattern: あわせて
+  - pattern: トータルで
+  - pattern: 、計
+  - pattern: ，計

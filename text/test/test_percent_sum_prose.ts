@@ -35,6 +35,17 @@ describe("percent-sum-mismatch: a breakdown in one sentence", () => {
     assert.deepEqual(found(doc("The breakdown is 40% retail, 35% manufacturing and 20% logistics."), en), ["3 95%"]);
   });
 
+  it("a sentence with two percentages joined into a range or a change is not added: which value is the part is unknown", () => {
+    assert.deepEqual(
+      found(doc("Dropping the late replies moves the share of posts judged true from 51.4% to 53.2% and changes no other result by more than 2%."), en),
+      [],
+    );
+    assert.deepEqual(found(doc("By product, software made up 40% to 45% of sales, maintenance 30% and training 20%."), en), []);
+    assert.deepEqual(found(doc("By product, software made up 50% of sales, maintenance 30% and training 25% to 30% at most."), en), []);
+    assert.deepEqual(found(doc("By product, software made up 50% of sales, maintenance 30%, training 20% and support 5%."), en), ["3 105%"]);
+    assert.deepEqual(found(doc("製品別の構成比は、業務用ソフトが50%〜55%、保守が30%、研修が20%だった。"), ja), []);
+  });
+
   it("adds a sentence with no share word when one of its parts is the rest of the whole (その他, other)", () => {
     assert.deepEqual(found(doc("数字の誤りが 45%、欄の抜けが 30%、欄の入れ違いが 20%、その他が 8% である。"), ja), ["3 103%"]);
     assert.deepEqual(found(doc("数字の誤りが 45%、欄の抜けが 30%、欄の入れ違いが 20%、その他が 5% である。"), ja), []);

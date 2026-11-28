@@ -101,6 +101,45 @@ describe("code-fence-language-mix: a block without a language among blocks with 
     assert.deepEqual(findingsOf(en, "code-fence-language-mix", doc(...tagged, fence("", "{year}-{month}-{day}"))), []);
   });
 
+  it("does not report a block of output after a lead-in that says so", () => {
+    const tagged = [fence("sql", "SELECT 1;"), fence("sql", "SELECT 2;")];
+    const expected = ["On day 3 we'd expect to see:", "", fence("", "visitors per day: 161 (adjusted from 171)")].join("\n");
+    assert.deepEqual(findingsOf(en, "code-fence-language-mix", doc(...tagged, expected)), []);
+    const japanese = ["次のように表示されます：", "", fence("", "合計: 161")].join("\n");
+    assert.deepEqual(findingsOf(ja, "code-fence-language-mix", doc(...tagged, japanese)), []);
+    const code = ["Run this to see the outputs:", "", fence("", "SELECT 3;")].join("\n");
+    assert.equal(findingsOf(en, "code-fence-language-mix", doc(...tagged, code)).length, 1);
+    const outputs = [1, 2, 3].map((index) => ["The output is:", "", fence("", `row ${String(index)}`)].join("\n"));
+    const message = ["If you see this message, try again:", "", fence("", "error: not available")].join("\n");
+    assert.deepEqual(findingsOf(en, "code-fence-language-mix", doc(...tagged, ...outputs, message)), []);
+    const noColon = ["The output follows.", "", fence("", "SELECT 3;")].join("\n");
+    assert.equal(findingsOf(en, "code-fence-language-mix", doc(...tagged, noColon)).length, 1);
+  });
+
+  it("does not report a block of an error a lead-in quotes", () => {
+    const tagged = [fence("ts", "let a = 1;"), fence("ts", "let b = 2;")];
+    const error = ["This code now fails with an error like the following:", "", fence("", "Cannot redeclare 'a'.")].join("\n");
+    assert.deepEqual(findingsOf(en, "code-fence-language-mix", doc(...tagged, error)), []);
+    const japanese = ["次のようなエラーが出ます：", "", fence("", "Cannot redeclare 'a'.")].join("\n");
+    assert.deepEqual(findingsOf(ja, "code-fence-language-mix", doc(...tagged, japanese)), []);
+    const fix = ["To clear the errors, run:", "", fence("", "yarn lint --fix")].join("\n");
+    assert.equal(findingsOf(en, "code-fence-language-mix", doc(...tagged, fix)).length, 1);
+  });
+
+  it("does not report a block of output whose lines open with a status mark", () => {
+    const tagged = [fence("bash", "npx tidy init"), fence("json", '{ "strict": true }')];
+    const report = fence("", "✖ Missing keys in config:", "  - port", "", "Found 1 problem.");
+    assert.deepEqual(findingsOf(en, "code-fence-language-mix", doc(report, ...tagged)), []);
+    const typed = fence("", "$ npx tidy", "✖ Missing keys in config:", "  - port");
+    assert.equal(findingsOf(en, "code-fence-language-mix", doc(typed, ...tagged)).length, 1);
+    const warning = ["足りない枠を一覧で表示します。", "", fence("", "⚠ 必要人数を満たせない枠があります", "  1月9日 夜: 必要 4人 / 割り当て 3人")].join("\n");
+    assert.deepEqual(findingsOf(ja, "code-fence-language-mix", doc(...tagged, warning)), []);
+    const session = fence("", "$ npx tidy", "Found 1 problem.");
+    assert.equal(findingsOf(en, "code-fence-language-mix", doc(session, ...tagged)).length, 1);
+    const marked = fence("", 'echo "✖ failed"');
+    assert.equal(findingsOf(en, "code-fence-language-mix", doc(marked, ...tagged)).length, 1);
+  });
+
   it("still reports an untagged block of code beside a template", () => {
     const tagged = [fence("json", '{ "version": "1.2.0" }'), fence("json", '{ "version": "2.0.0" }')];
     assert.equal(findingsOf(en, "code-fence-language-mix", doc(...tagged, fence("", "release <MAJOR>.<MINOR>"))).length, 1);
@@ -137,6 +176,19 @@ describe("shell-prompt-mix: commands with and without a prompt", () => {
     assert.equal(promptStyleOf(block("npm install"), prompts), "bare");
     assert.equal(promptStyleOf(block("$ node -v", "v24.0.0"), prompts), undefined);
     assert.equal(promptStyleOf(block("$PATH=/bin run"), prompts), "bare");
+    assert.equal(promptStyleOf(block("  0x1081 <+33>:  lea 0xd9(%rip),%rdi"), prompts), undefined);
+  });
+
+  it("does not take a debugger session or a block of output for bare commands", () => {
+    const prompted = [fence("sh", "$ cc -c main.c", "$ cc -c add.c"), fence("sh", "$ gdb ./a.out")];
+    const sessions = [fence("sh", "(gdb) b _start", "Breakpoint 1 at 0x1060"), fence("sh", "(gdb) r", "Breakpoint 1, 0x5060 in _start ()")];
+    const output = [fence("sh", "   0x1081 <+33>:    lea    0xd9(%rip),%rdi")];
+    assert.deepEqual(findingsOf(en, "shell-prompt-mix", doc(...prompted, ...sessions, ...output, fence("sh", "(gdb) disas", "End of dump."))), []);
+    assert.deepEqual(
+      findingsOf(ja, "shell-prompt-mix", ["# 使い方", "", ...[...prompted, ...sessions, ...output].flatMap((text) => [text, ""])].join("\n")),
+      [],
+    );
+    assert.equal(findingsOf(en, "shell-prompt-mix", doc(...prompted, fence("sh", "make"), fence("sh", "make test"), fence("sh", "make install"))).length, 2);
   });
 
   it("reports the block in the minority style, in both languages", () => {
@@ -247,6 +299,36 @@ describe("step-statement-mix: a statement among numbered instructions", () => {
       "Restart the computer.",
     );
     assert.equal(findingsOf(en, "step-statement-mix", source).length, 1);
+  });
+
+  it("does not report a step that says what the machine does and then gives the order", () => {
+    const source = steps(
+      "Open the lid by pressing the button.",
+      "Remove the empty core.",
+      "Put the new roll in.",
+      "The printer will feed one blank label. Throw that label away.",
+    );
+    assert.deepEqual(findingsOf(en, "step-statement-mix", source), []);
+    const statementOnly = steps(
+      "Open the lid.",
+      "Remove the empty core.",
+      "Put the new roll in.",
+      "The printer will feed one blank label. It lines itself up.",
+    );
+    assert.equal(findingsOf(en, "step-statement-mix", statementOnly).length, 1);
+    const paragraphs = steps(
+      "There is more than one user type. Data is central to the admin section.",
+      "The application grows into sections. Sectioned off functionality makes a good line.",
+      "There are small functions to extract. Data is central to applications.",
+    );
+    assert.deepEqual(findingsOf(en, "step-statement-mix", paragraphs), []);
+  });
+
+  it("does not read an item whose verb follows a preposition and a relative word as a statement", () => {
+    const fields = steps("Name the field.", "Describe the field.", "Give its status.", "The document in which the field is published.");
+    assert.deepEqual(findingsOf(en, "step-statement-mix", fields), []);
+    const inThat = steps("Name the field.", "Describe the field.", "Give its status.", "The file in that folder holds the list.");
+    assert.equal(findingsOf(en, "step-statement-mix", inThat).length, 1);
   });
 
   it("does not read a bulleted list, a list of terms, or a list of statements", () => {

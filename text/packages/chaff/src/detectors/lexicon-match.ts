@@ -9,12 +9,15 @@ const INFLECTING = new Set(["VERB", "AUX"]);
  * 語彙表が原形で書いた語（いただく）だけが、活用した形（いただきます・いただいた）に当たる。
  * 活用した形で書いた語（could・かもしれません）はその形だけ。"could" は "can" と言っていることが違う。
  */
-const sameWord = (written: Token, entry: Token): boolean => {
+const sameWord = (written: Token, entry: Token, headsPhrase: boolean): boolean => {
   const surface = entry.surface.toLowerCase();
   if (written.surface.toLowerCase() === surface) return true;
-  const inflects = INFLECTING.has(written.pos) && INFLECTING.has(entry.pos);
+  const inflects = INFLECTING.has(written.pos) && (INFLECTING.has(entry.pos) || (headsPhrase && entry.pos === "NOUN"));
   return inflects && entry.lemma?.toLowerCase() === surface && written.lemma?.toLowerCase() === surface;
 };
+
+/** A phrase read on its own has no subject, so its head verb is often tagged a noun ("move the needle", "conduct an analysis"). */
+const headsPhrase = (entry: readonly Token[], offset: number): boolean => offset === 0 && entry.length > 1;
 
 /** 品詞が無いときに照らす形。大文字小文字と、アポストロフィの形（it’s と it's）は語を変えない。 */
 export const comparableWords = (text: string): string => straightApostrophes(text).toLowerCase();
@@ -25,7 +28,7 @@ export const comparableText = (sentence: Sentence): string => comparableWords(pr
 const runsAt = (tokens: readonly Token[], entry: readonly Token[], start: number): boolean =>
   entry.every((word, offset) => {
     const written = tokens[start + offset];
-    return written !== undefined && sameWord(written, word);
+    return written !== undefined && sameWord(written, word, headsPhrase(entry, offset));
   });
 
 /**
@@ -37,6 +40,17 @@ export const entryIn = (sentence: Sentence, entry: LexiconEntry): boolean => {
   const words = entry.tokens;
   if (tokens === undefined || words === undefined || words.length === 0) return comparableText(sentence).includes(comparableWords(entry.pattern));
   return tokens.some((_token, start) => runsAt(tokens, words, start));
+};
+
+const writtenAsIs = (tokens: readonly Token[], entry: readonly Token[], start: number): boolean =>
+  entry.every((word, offset) => tokens[start + offset]?.surface.toLowerCase() === word.surface.toLowerCase());
+
+/** Whether the lexicon's words stand in the sentence in the very form the lexicon writes them ("reverted back", not "revert back"). */
+export const entryWrittenIn = (sentence: Sentence, entry: LexiconEntry): boolean => {
+  const tokens = sentence.tokens;
+  const words = entry.tokens;
+  if (tokens === undefined || words === undefined || words.length === 0) return entryIn(sentence, entry);
+  return tokens.some((_token, start) => writtenAsIs(tokens, words, start));
 };
 
 export type TokenRange = { readonly start: number; readonly end: number };

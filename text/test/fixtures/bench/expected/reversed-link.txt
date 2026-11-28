@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  reversed-link-ja  found
+ja/design  reversed-link-ja  found
+ja/email  reversed-link-ja  found
+ja/figures  reversed-link-ja  found
+ja/itinerary  reversed-link-ja  found
+ja/minutes  reversed-link-ja  found
+ja/note  reversed-link-ja  found
+ja/policy  reversed-link-ja  found
+ja/press  reversed-link-ja  found
+ja/proposal  reversed-link-ja  found
+ja/quote  reversed-link-ja  found
+ja/readme  reversed-link-ja  found
+ja/requirements  reversed-link-ja  found
+en/blog  reversed-link-en  found
+en/design  reversed-link-en  found
+en/email  reversed-link-en  found
+en/figures  reversed-link-en  found
+en/itinerary  reversed-link-en  found
+en/minutes  reversed-link-en  found
+en/note  reversed-link-en  found
+en/policy  reversed-link-en  found
+en/press  reversed-link-en  found
+en/proposal  reversed-link-en  found
+en/quote  reversed-link-en  found
+en/readme  reversed-link-en  found
+en/requirements  reversed-link-en  found

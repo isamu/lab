@@ -14,6 +14,22 @@ const pairsOf = (entries: readonly LexiconEntry[]): Pair[] =>
     entry.instead_of === undefined || entry.pattern === "" ? [] : [{ entry, wrong: entry.pattern, edit: editBetween(entry.pattern, entry.instead_of) }],
   );
 
+/** 語彙表 period-spelling の古い綴り（publick、shew）がこれだけ出れば、文書はその時代の綴りのまま。一語だけなら引用や名前のこともある。 */
+const MIN_PERIOD_MARKS = 2;
+
+const PERIOD_GROUP = "period-spelling";
+
+/** 文書が 1800 年ごろより前の綴りで書かれているか。そうなら、その時代の綴りだった組（maintainance）は誤りではない。 */
+const writesPeriodSpelling = (doc: ProseDocument): boolean => {
+  const marks = new Set((doc.lexicons[PERIOD_GROUP] ?? []).map((entry) => entry.pattern.toLowerCase()));
+  if (marks.size === 0) return false;
+  const words = (doc.prose ?? doc.source).toLowerCase().match(/\p{L}+/gu) ?? [];
+  return words.filter((word) => marks.has(word)).length >= MIN_PERIOD_MARKS;
+};
+
+const entriesFor = (doc: ProseDocument, entries: readonly LexiconEntry[]): readonly LexiconEntry[] =>
+  entries.some((entry) => entry.group === PERIOD_GROUP) && writesPeriodSpelling(doc) ? entries.filter((entry) => entry.group !== PERIOD_GROUP) : entries;
+
 const LATIN_EDGE = /[A-Za-z0-9]/u;
 
 /** 英字の語は語の途中に当てない（"teh" は "Tehran" の中に無い）。かなと漢字は字で語の切れ目を決められないので、品詞が無ければ字の並びで照らす。 */
@@ -45,16 +61,23 @@ const tokenHits = (sentence: Sentence, pair: Pair, source: string): Hit[] => {
 };
 
 /** 字の並びで当たった所のうち、両端が文の語の切れ目にあるもの。語彙表の語を解析器が文の中と違う切り方にした（「ますす」）ときの拾い直し。 */
-const alignedTextHits = (sentence: Sentence, pair: Pair): Hit[] => {
+const alignedTextHits = (sentence: Sentence, pair: Pair, edges: WordEdges): Hit[] =>
+  textHits(sentence, pair).filter((hit) => edges.starts.has(hit.offset) && edges.ends.has(hit.offset + pair.wrong.length));
+
+/** 文の語の始まりと終わり。組ごとに作り直すと、組の数と文の長さの積になる。 */
+type WordEdges = { readonly starts: ReadonlySet<number>; readonly ends: ReadonlySet<number> };
+
+const edgesOf = (sentence: Sentence): WordEdges => {
   const tokens = sentence.tokens ?? [];
-  const starts = new Set(tokens.map((token) => token.span.start));
-  const ends = new Set(tokens.map((token) => token.span.end));
-  return textHits(sentence, pair).filter((hit) => starts.has(hit.offset) && ends.has(hit.offset + pair.wrong.length));
+  return { starts: new Set(tokens.map((token) => token.span.start)), ends: new Set(tokens.map((token) => token.span.end)) };
 };
 
-const hitsIn = (sentence: Sentence, pair: Pair, source: string): Hit[] => {
-  if (sentence.tokens === undefined || (pair.entry.tokens?.length ?? 0) === 0) return textHits(sentence, pair);
-  return [...tokenHits(sentence, pair, source), ...alignedTextHits(sentence, pair)];
+const hitsIn = (sentence: Sentence, pairs: readonly Pair[], source: string): Hit[] => {
+  const edges = edgesOf(sentence);
+  return pairs.flatMap((pair) => {
+    if (sentence.tokens === undefined || (pair.entry.tokens?.length ?? 0) === 0) return textHits(sentence, pair);
+    return [...tokenHits(sentence, pair, source), ...alignedTextHits(sentence, pair, edges)];
+  });
 };
 
 /** チームが names に並べた名前の中の字（「黒ひげ危機一発」の「危機一発」）は、その字のまま正しい。 */
@@ -74,8 +97,8 @@ const firstAtEachOffset = (hits: readonly Hit[]): Hit[] => hits.filter((hit, at)
  * どの組を誤りとするかは語彙表が決め、detector は語の切れ目と大文字と、組のどこが違うかだけを扱う。
  */
 export const knownCorrection: Detector = (doc, options): Finding[] => {
-  const pairs = pairsOf(options.lexicon ?? []);
-  const hits = doc.sentences.flatMap((sentence) => pairs.flatMap((pair) => hitsIn(sentence, pair, doc.source)));
+  const pairs = pairsOf(entriesFor(doc, options.lexicon ?? []));
+  const hits = doc.sentences.flatMap((sentence) => hitsIn(sentence, pairs, doc.source));
   return firstAtEachOffset(hits.toSorted((left, right) => left.offset - right.offset))
     .filter((hit) => !isInTeamName(doc, hit))
     .map((hit) => ({

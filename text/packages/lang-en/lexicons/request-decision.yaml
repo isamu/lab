@@ -1,0 +1,12 @@
+# Words for the decision step. In a deadline section ("Schedule", "Timeline") beside a date, they say when the decision
+# is made, so the document's "please consider" has that date. Not read as deadline words in the request itself
+# ("Please approve the budget" is the request).
+id: request-decision
+language: en
+entries:
+  - pattern: approval
+  - pattern: approved
+  - pattern: approves
+  - pattern: decision
+  - pattern: decides
+  - pattern: sign-off

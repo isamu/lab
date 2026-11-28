@@ -20,13 +20,15 @@ const DIGITS = /^\d+$/u;
 /** 前の文の終わりを探す字数。見出しの行と、終わりの語が入れば足りる。 */
 const LOOKBACK = 300;
 const PLAIN_WORD = /^\p{L}{2,}$/u;
+/** A worked sum (182 hours + 154 hours = 336 hours.): an operator, then an equals sign, each between spaces; Markdown may escape both. */
+const WORKED_SUM = /\s\\?[+\-−–×÷*/]\s.*\s\\?=\s/u;
 
-/** 文の頭の数字。年、数字の後ろが小文字の語でないもの、言い終えていない行（見出しのような）は無い。 */
+/** 文の頭の数字。年、数字の後ろが小文字の語でないもの、言い終えていない行（見出しのような）、計算の式の行は無い。 */
 export const openingNumeral = (text: string): string | undefined => {
   const trimmed = text.trim();
   const match = OPENING_NUMERAL.exec(trimmed);
   const numeral = match?.groups?.["numeral"];
-  if (match === null || numeral === undefined || YEAR.test(numeral) || !SENTENCE_END.test(trimmed)) return undefined;
+  if (match === null || numeral === undefined || YEAR.test(numeral) || !SENTENCE_END.test(trimmed) || WORKED_SUM.test(trimmed)) return undefined;
   return match[0];
 };
 

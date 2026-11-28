@@ -1,38 +1,33 @@
-# chaff（text/）を Windows で広く回す。PR の chaff-ci.yml は Windows ではテストだけを部分に分けて走らせるので、
-# ここで lint・typecheck・build と、分けないテストを毎日と main への push ごとに走らせる。
-# 毎日の実行で落ちたら issue を立てる。落ちたまま誰も見ない job にしないため。
+# chaff（text/）を Windows で広く回す。PR の chaff-ci.yml は Windows ではテストだけを部分に分け、OS に依らない遅いファイル
+# （scripts/test-skips.json）を除いて走らせるので、ここで lint・typecheck・build と、何も除かないテスト（rule の見本も含む）を毎日走らせる。
+# 部分の数は chaff-ci.yml と同じ。PR より時間の上限を長くとる。
+# 毎日の実行で落ちたら issue を立てる（既に開いていればコメントを足す）。落ちたまま誰も見ない job にしないため。
 name: chaff windows daily
 
 on:
   schedule:
     - cron: "0 18 * * *" # 03:00 JST
-  push:
-    branches: [main]
-    paths: ["text/**", ".github/workflows/chaff-windows-daily.yml"]
   workflow_dispatch:
 
 permissions:
   contents: read
 
-# main への merge が続くと、push ごとの実行が Windows の runner を取り合い、PR の job を待たせる。新しい push が来たら古い実行は止める。
 concurrency:
   group: chaff-windows-daily
-  cancel-in-progress: ${{ github.event_name == 'push' }}
+  cancel-in-progress: false
+
+env:
+  TEST_SHARD_COUNT: "4"
 
 defaults:
   run:
     working-directory: text
 
 jobs:
-  windows:
+  checks:
     runs-on: windows-latest
-    timeout-minutes: 45
-    strategy:
-      fail-fast: false
-      matrix:
-        # package.json の engines（node >=24）の下限。
-        node: ["24"]
-    name: windows (node ${{ matrix.node }})
+    timeout-minutes: 30
+    name: windows checks
     steps:
       - uses: actions/checkout@v7
         with:
@@ -40,7 +35,8 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: ${{ matrix.node }}
+          # package.json の engines（node >=24）の下限。
+          node-version: "24"
 
       - run: yarn install --frozen-lockfile
 
@@ -56,16 +52,68 @@ jobs:
       - name: build
         run: yarn build
 
-      - name: test
-        run: yarn test
-
       - name: chaff on its own spec
         run: node packages/chaff/bin/chaff.js chaff-spec.md --show-baseline
 
-  # issue を立てる権限は、リポジトリのコードを動かさないこの job にだけ渡す。
+  # --run full: PR で除くファイルも走らせる。時間の reporter は、yarn test:times が Windows の時間を読むためのもの。
+  test:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [1, 2, 3, 4]
+    name: windows test (part ${{ matrix.part }}/4)
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - run: yarn install --frozen-lockfile
+
+      - run: yarn build
+
+      - name: test
+        run: yarn test --run full --part ${{ matrix.part }}/${{ env.TEST_SHARD_COUNT }} --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./scripts/test-times-reporter.ts --test-reporter-destination=stdout
+        env:
+          NODE_COMPILE_CACHE: ${{ runner.temp }}/node-compile-cache
+
+  # 分けた実行は rule の見本（scripts/test-parts.ts の OWN_JOB_FILES）を除くので、chaff-ci.yml と同じく部分に分けて別に回す。
+  samples:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [1, 2, 3]
+    name: windows rule samples (part ${{ matrix.part }}/3)
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - run: yarn install --frozen-lockfile
+
+      - run: yarn build
+
+      - name: rule samples
+        env:
+          CHAFF_SAMPLE_PART: ${{ matrix.part }}/3
+        run: node --test test/test_rule_samples.ts
+
+  # issue を書く権限は、リポジトリのコードを動かさないこの job にだけ渡す。
+  # テストの乱数は固定の seed から作り、落ちた assert の文に seed が出るので、seed は run のログで読む。
   report:
-    needs: windows
-    if: failure() && github.event_name == 'schedule'
+    needs: [checks, test, samples]
+    if: failure()
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -74,10 +122,20 @@ jobs:
       run:
         working-directory: .
     steps:
-      - name: File an issue on failure
+      - name: open or update an issue
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: gh issue create --repo "$REPO" --title "chaff Windows daily failed (${GITHUB_SHA::7})" --body "$RUN_URL"
+        run: |
+          set -euo pipefail
+          title="chaff Windows daily: the full Windows run failed"
+          body=$(printf 'Run: %s\nCommit: %s\nTrigger: %s\n\nA failing generated-input test prints its seed in the assertion message; search the failed job log for "seed".\n' "$RUN_URL" "$GITHUB_SHA" "$EVENT")
+          existing=$(gh issue list --repo "$REPO" --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$REPO" --body "$body"
+          else
+            gh issue create --repo "$REPO" --title "$title" --body "$body"
+          fi

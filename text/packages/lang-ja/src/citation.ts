@@ -102,6 +102,23 @@ export const citedDocument = (text: string, reference: number, vocabulary: Citat
   return spacedName(text, reference, vocabulary);
 };
 
+/**
+ * reference の直前の他の文書の名前。名前がこの文書の名前（本契約）の頭と種類の語のあいだに語を足した形（本共同研究開発契約）なら、
+ * ownName に頭と種類の語だけの形を添える。文書が短い形で自分を呼ぶときだけ、長い形は別の文書の名前（木を組んだあとに決める）。
+ */
+export type CitedName = { readonly document: string; readonly ownName?: string };
+
+export const citedName = (text: string, reference: number, vocabulary: CitationVocabulary): CitedName | undefined => {
+  const cited = citedDocument(text, reference, vocabulary);
+  if (cited !== undefined) return { document: cited };
+  const named = namedDocument(text, reference, vocabulary);
+  if (named === undefined || !named.self) return undefined;
+  const prefix = vocabulary.selfPrefixes.find((candidate) => named.name.startsWith(candidate));
+  const kind = vocabulary.kinds.find((candidate) => named.name.endsWith(candidate));
+  if (prefix === undefined || kind === undefined || named.name.length <= prefix.length + kind.length) return undefined;
+  return { document: named.name, ownName: `${prefix}${kind}` };
+};
+
 /** 自分を指す頭の語の長さの上限（この・本・当）。後ろ向きに読む長さを抑える。 */
 const MAX_PREFIX_LENGTH = 4;
 

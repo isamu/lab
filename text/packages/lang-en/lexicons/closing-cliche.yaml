@@ -1,3 +1,4 @@
+# A stock closing that leaves the reader nothing. The groups are explained at the top of detectors/closing-cliche.ts.
 id: closing-cliche
 language: en
 entries:
@@ -6,3 +7,47 @@ entries:
   - pattern: hope this helps
   - pattern: thanks for reading
   - pattern: happy coding
+  - pattern: future self will thank you
+  - pattern: future you will thank you
+  # Ordinary in the body; as the last line it is the stock send-off.
+  - pattern: and go from there
+    group: last
+  - pattern: give it a try
+    group: last
+  # A business's stock last line offering itself ("We're here to help you spend less time on paperwork").
+  - pattern: here to help
+    group: last
+  # A short line such as "Happy brewing!" or "Happy baking!" as the last paragraph.
+  - pattern: Happy
+    group: signoff
+  # The stock last line of a letter or a proposal: it thanks or invites without saying anything. "Feel free to",
+  # "happy to discuss" and "apologize for any inconvenience" are email-stock-courtesy's, which counts them stacked.
+  - pattern: prompt attention to this matter
+  - pattern: would welcome any feedback
+  # A proposal's last line offering to talk it over. In an email it is email-stock-courtesy's, which counts it stacked.
+  - pattern: happy to discuss any
+    genres: [business/proposal]
+  - pattern: happy to answer any
+    genres: [business/proposal]
+  # A chirpy last wish in an email (Wishing you all a restful holiday season!, Thanks, and enjoy the long weekend!).
+  # Only in emails: a blog's "enjoy the wilderness!" is its subject, not a send-off.
+  - pattern: Wishing
+    group: open:wish
+    genres: [business/email]
+  - pattern: enjoy
+    group: lead:wish
+    genres: [business/email]
+  - pattern: "!"
+    group: end:wish
+    genres: [business/email]
+  # A courtesy in an email's closing ("feel free to reach out") is ordinary politeness alone; beside another stock
+  # closing (a chirpy wish) the closing is a stack of stock lines, and it counts too.
+  - pattern: feel free to
+    group: stacked
+    genres: [business/email]
+  - pattern: don't hesitate to
+    group: stacked
+    genres: [business/email]
+  - pattern: do not hesitate to
+    group: stacked
+    genres: [business/email]

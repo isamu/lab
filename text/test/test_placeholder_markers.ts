@@ -102,10 +102,33 @@ describe("placeholderSpans: a note to the writer in parentheses", () => {
     assert.deepEqual(matched("Send it to us (your name and date) by Friday.", enWords), []);
   });
 
+  it("finds a capitalised bracket a closing word ends ([Candidate Name], [Start Date])", () => {
+    assert.deepEqual(matched("Dear [Candidate Name], thank you.", enWords), ["[Candidate Name]"]);
+    assert.deepEqual(matched("[First Name] starts on [Start Date].", enWords), ["[First Name]", "[Start Date]"]);
+    assert.deepEqual(matched("Send it to [Billing Address].", enWords), ["[Billing Address]"]);
+  });
+
+  it("leaves an editor's bracket, a note and a citation alone", () => {
+    assert.deepEqual(matched("He said that [the defendant's name] was false.", enWords), []);
+    assert.deepEqual(matched("The text says [sic] here, as in [12] and [Smith 2020].", enWords), []);
+    assert.deepEqual(matched("See [Release Date](https://example.com) for it.", enWords), []);
+    assert.deepEqual(matched("It was [His Excellency the Ambassador and his Name].", enWords), []);
+  });
+
   it("keeps the bracket forms as they were", () => {
     assert.deepEqual(matched("Dear [Your Name],", enWords), ["[Your Name]"]);
     assert.deepEqual(matched("【会社名】の田中です。", jaWords), ["【会社名】"]);
     assert.deepEqual(matched("【氏名】山田", jaWords), []);
+  });
+
+  it("finds a blank glued into a mail or web address", () => {
+    assert.deepEqual(matched("Contact us at hello@[yourcoworkingspace].com today.", enWords), ["[yourcoworkingspace]"]);
+    assert.deepEqual(matched("See example.com/[yourname]/settings.", enWords), ["[yourname]"]);
+  });
+
+  it("leaves a bracket outside an address, or one not opening with a bracket word", () => {
+    assert.deepEqual(matched("It is [yours] to keep.", enWords), []);
+    assert.deepEqual(matched("Write to hello@[example].com today.", enWords), []);
   });
 });
 
@@ -223,6 +246,48 @@ describe("templateSections: where a template heading reaches", () => {
   });
 });
 
+describe("unfilled-placeholder in a web address", () => {
+  const clone = (url: string, note = ""): string =>
+    ["# pdfmerge", "", "ソースからインストールする場合：", "", "```bash", `git clone ${url}`, "cd pdfmerge", "```", "", note].join("\n");
+
+  it("reports a template's user name left in a clone address, in a code block", () => {
+    assert.deepEqual(
+      findings(clone("https://example.com/yourname/pdfmerge.git"), ja).map((finding) => finding.line),
+      [6],
+    );
+    assert.deepEqual(
+      findings(clone("https://example.com/YOUR_USERNAME/pdfmerge"), en).map((finding) => finding.line),
+      [6],
+    );
+  });
+
+  it("leaves a real account, a longer word, and a blank the text explains", () => {
+    assert.deepEqual(findings(clone("https://example.com/kana/pdfmerge.git"), ja), []);
+    assert.deepEqual(findings(clone("https://example.com/yournamespace/pdfmerge.git"), en), []);
+    assert.deepEqual(findings(clone("https://example.com/yourname/pdfmerge.git", "`yourname` は自分のアカウント名に置き換えてください。\n"), ja), []);
+  });
+});
+
+describe("unfilled-placeholder in a table", () => {
+  const table = ["# Status", "", "| Issue | Owner |", "| --- | --- |", "| Docs are late | [Name] |", "| Tests are slow | Dana |", ""].join("\n");
+
+  it("reports a blank left in a cell", () => {
+    assert.deepEqual(
+      findings(table, en).map((finding) => finding.line),
+      [5],
+    );
+  });
+
+  it("leaves a cell whose text only looks like a blank alone", () => {
+    assert.deepEqual(findings(table.replace("[Name]", "[the docs](https://example.com/docs)"), en), []);
+    assert.deepEqual(findings(table.replace("[Name]", "a todo app"), en), []);
+  });
+
+  it("leaves a blank in a table under a template heading alone", () => {
+    assert.deepEqual(findings(table.replace("# Status", "# Status template"), en), []);
+  });
+});
+
 describe("unfilled-placeholder in a template", () => {
   it("leaves the blanks under a Template heading alone", () => {
     const source = [
@@ -315,11 +380,27 @@ describe("placeholderSpans: blank marks (〇〇) where a letter needs a name, a 
     ["営業部　〇〇", ["〇〇"], "a signature after the department"],
     ["〇〇", ["〇〇"], "a signature line holding only the blank"],
     ["月額〇万円程度を想定しています。", ["〇万円"], "a sum"],
-    ["実施期間：2026年〇月〇日〜〇月〇日", ["〇月", "〇日", "〇月", "〇日"], "a date"],
+    ["実施期間：2026年〇月〇日〜〇月〇日", ["〇月〇日", "〇月〇日"], "two dates, each one blank"],
     ["回収には〇か月程度かかります。", ["〇か月"], "a period"],
     ["株式会社△△の山田です。", ["△△"], "a triangle blank"],
     ["〇万円程度を想定しています。", ["〇万円"], "a sum at the head of a line"],
-    ["〇月〇日に開きます。", ["〇月", "〇日"], "a date at the head of a line"],
+    ["〇月〇日に開きます。", ["〇月〇日"], "a date at the head of a line"],
+    ["所属：営業部　氏名：〇〇", ["〇〇"], "a field whose value is the blank"],
+    ["報告者：〇〇", ["〇〇"], "a field at the head of a line"],
+    ["総務部長 〇〇", ["〇〇"], "a name after a title and a space"],
+    ["代表取締役 〇〇 〇〇", ["〇〇 〇〇"], "a family and a given name after a title, as one blank"],
+    ["これに対し、取締役〇〇より、実績を示すよう求めがあった。", ["〇〇"], "a name glued to a title mid-sentence"],
+    ["製造部長〇〇が説明した。", ["〇〇"], "a name glued to a department head's title"],
+    ["新電話番号：03-〇〇〇〇-〇〇〇〇", ["〇〇〇〇-〇〇〇〇"], "the groups of a phone number, as one blank"],
+    ["〒〇〇〇-〇〇〇〇　東京都〇〇区", ["〇〇〇-〇〇〇〇", "〇〇区"], "a postcode and a ward, a filled word between them"],
+    ["〇丁目〇番〇号 〇〇ビル5階", ["〇丁目〇番〇号 〇〇ビル"], "a street number and a building, as one blank"],
+    ["東京都〇〇区〇〇 〇丁目〇番〇号", ["〇〇区〇〇 〇丁目〇番〇号"], "a whole address, as one blank"],
+    ["TEL：〇〇-〇〇〇〇-〇〇〇〇", ["〇〇-〇〇〇〇-〇〇〇〇"], "a phone number of blanks only, as one blank"],
+    ["株式会社〇〇の〇〇様", ["〇〇", "〇〇様"], "two blanks a filled word separates"],
+    ["株式会社〇〇\n〇〇部　〇〇", ["〇〇", "〇〇部　〇〇"], "blanks on two lines stay two"],
+    ["〇〇大学 経営学部", ["〇〇大学"], "a university"],
+    ["本社のある〇〇市で開く大会です。", ["〇〇市"], "a city"],
+    ["所在地：東京都品川区〇〇", ["〇〇"], "a blank after the ward, where the town and number belong"],
   ];
   blanks.forEach(([text, expected, label]) => {
     it(`finds ${label}`, () => {
@@ -335,6 +416,9 @@ describe("placeholderSpans: blank marks (〇〇) where a letter needs a name, a 
     ["二〇二六年一〇月一日に開きます。", "a kanji numeral zero"],
     ["○　注意事項", "a bullet before a heading word"],
     ["○様式は別紙のとおり", "one mark is a bullet, not a name"],
+    ["名前は〇〇で、あとで決めます。", "a blank mid-sentence with no field before it"],
+    ["〇〇 の後ろに説明を書きます。", "a blank before more text on its line"],
+    ["期限：〇〇までに決める", "a field whose value goes on after the blank"],
   ];
   examples.forEach(([text, label]) => {
     it(`does not find ${label}`, () => {
@@ -366,8 +450,57 @@ describe("unfilled-placeholder: a blank mark in a letter, and the same mark as a
     assert.deepEqual(findingsIn("申請書には「○○株式会社」のように正式な名前を書きます。\n", "docs/manual"), []);
   });
 
+  it("reports a blank left in a table cell, and leaves a filled table alone", () => {
+    const table = ["# 出張報告", "", "| 作業 | 担当 |", "| --- | --- |", "| 見積もりの確認 | 〇〇 |", "| 回答 | 山田 |", ""].join("\n");
+    assert.deepEqual(
+      findingsIn(table, "business/report").map((finding) => finding.line),
+      [5],
+    );
+    assert.deepEqual(findingsIn(table.replace("〇〇", "佐藤"), "business/report"), []);
+    assert.deepEqual(findingsIn(table, "blog/tech"), []);
+  });
+
   it("leaves a business document whose blanks are filled alone", () => {
     const filled = ["株式会社山田商事", "佐藤様", "", "いつもお世話になっております。営業部の田中です。", "", "営業部　田中", ""].join("\n");
     assert.deepEqual(findingsIn(filled, "business/email"), []);
+  });
+});
+
+describe("unfilled-placeholder: a bracket that names a field or shows what to write", () => {
+  it("leaves a filing form's field label alone where the document fills it in, and the same label named in prose", () => {
+    const source = [
+      "# 願書の書き方",
+      "",
+      "願書の【氏名】に旧氏を併記した氏名を書いてください。",
+      "",
+      "【住所又は居所】　東京都千代田区一丁目",
+      "【氏名】　山田（佐藤）　花子",
+      "",
+    ].join("\n");
+    assert.deepEqual(findings(source, ja), []);
+  });
+
+  it("still reports a label the document never fills, and one left with a blank mark after it", () => {
+    assert.equal(findings("# ご案内\n\n【氏名】の田中です。\n", ja).length, 1);
+    const linesOf = (source: string): number[] => findings(source, ja).map((finding) => finding.line);
+    assert.ok(linesOf("# ご案内\n\n【氏名】の田中です。\n\n【氏名】　〇〇\n").includes(3));
+  });
+
+  it("leaves the caption of a form's fill line alone", () => {
+    const source = "# Certificate\n\nI will be employed by ______________  **[Name of New Employer]** and will work on new projects.\n";
+    assert.deepEqual(findings(source, en), []);
+    assert.deepEqual(findings("# Form\n\n[Your Name] ____________\n", en), []);
+  });
+
+  it("leaves a blank inside a quoted example alone", () => {
+    assert.deepEqual(findings('# Alt text\n\n- Helpful for larger charts: "See the link [insert link name] below the image."\n', en), []);
+    assert.deepEqual(findings("# Alt text\n\n- Example: “Write to [Your Name] for a copy.”\n", en), []);
+    assert.deepEqual(findings("# 書き方\n\n- 例：「【会社名】の田中です。」\n", ja), []);
+  });
+
+  it("still reports a blank in a quotation that is not offered as an example", () => {
+    assert.equal(findings('# News\n\n"[Insert quote]," said the chair.\n', en).length, 1);
+    assert.equal(findings('# News\n\nThe chair said: "[Insert quote]."\n', en).length, 1);
+    assert.equal(findings('# News\n\nExampleCorp said: "[Insert quote]."\n', en).length, 1);
   });
 });

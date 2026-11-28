@@ -1,13 +1,20 @@
-import type { Lexicon, LexiconEntry, Sentence } from "../plugin.ts";
+import type { Lexicon, LexiconEntry, Sentence, Token } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
-import { comparableText, comparableWords, entryIn, entryOpens, entryRanges } from "./lexicon-match.ts";
+import { comparableText, comparableWords, entryCloses, entryIn, entryOpens, entryRanges } from "./lexicon-match.ts";
 
 /**
  * 対比の枠の語。frames は 1 つで枠になる語（not only、だけでなく）。
  * leads は打ち消し（it's not、単なる）で、turns（it's、but、ではなく）が後ろに来たときだけ枠になる。同じ文の後ろか、次の文の頭。
  * 打ち消しの頭に立つ返しの語（It's not ready. It's not tested. の 2 つ目の It's）は返しではなく、次の打ち消し。
+ * 語の組（group）で返し方を絞る。across の打ち消し（don't、wasn't）は次の文の頭でしか返らず、その文に打ち消しがあれば返っていない。
+ * across の打ち消しを返すのは、次の文の頭の across の主語（It、They）だけ。But（I don't always. But …）は譲歩、That's は前の文全体への言葉で、
+ * 打ち消した X の代わりを言っていない。closing の打ち消し（はなく、）は、同じ文が closing の返し（です、だ）で閉じたときだけ枠。
+ * amounts は、枠の語の隣（position の側）で量を言う語（not just one、一杯だけでなく）。「一つより多い」で、X を打ち消していない。
  */
-export type ContrastWords = { readonly frames: Lexicon; readonly leads: Lexicon; readonly turns: Lexicon };
+export type ContrastWords = { readonly frames: Lexicon; readonly leads: Lexicon; readonly turns: Lexicon; readonly amounts?: Lexicon };
+
+const ACROSS = "across";
+const CLOSING = "closing";
 
 const lowered = (entry: LexiconEntry): string => comparableWords(entry.pattern);
 
@@ -23,11 +30,15 @@ const answersAfter = (leadRange: Range, turns: readonly Range[], leads: readonly
 const rangesOf = (text: string, word: string): Range[] =>
   [...text.matchAll(new RegExp(escapeRegExp(word), "gu"))].map((match) => ({ start: match.index, end: match.index + word.length }));
 
+/** 組の無い語。同じ文の中でも、次の文の頭でも返す。 */
+const plainOf = (lexicon: Lexicon): Lexicon => lexicon.filter((entry) => entry.group === undefined);
+const groupOf = (lexicon: Lexicon, group: string): Lexicon => lexicon.filter((entry) => entry.group === group);
+
 /** 品詞が無ければ位置を語で言えないので、空白をまとめた文字列の位置で比べる。 */
 const textTurnAfter = (sentence: Sentence, lead: LexiconEntry, words: ContrastWords): boolean => {
   const text = comparableText(sentence);
   const leads = words.leads.flatMap((entry) => rangesOf(text, lowered(entry)));
-  const turns = words.turns.flatMap((entry) => rangesOf(text, lowered(entry)));
+  const turns = plainOf(words.turns).flatMap((entry) => rangesOf(text, lowered(entry)));
   return rangesOf(text, lowered(lead)).some((range) => answersAfter(range, turns, leads));
 };
 
@@ -35,20 +46,102 @@ const textTurnAfter = (sentence: Sentence, lead: LexiconEntry, words: ContrastWo
 const turnAfter = (sentence: Sentence, lead: LexiconEntry, words: ContrastWords): boolean => {
   if (sentence.tokens === undefined || lead.tokens === undefined) return textTurnAfter(sentence, lead, words);
   const leads = words.leads.flatMap((entry) => entryRanges(sentence, entry));
-  const turns = words.turns.flatMap((entry) => entryRanges(sentence, entry));
+  const turns = plainOf(words.turns).flatMap((entry) => entryRanges(sentence, entry));
   return entryRanges(sentence, lead).some((range) => answersAfter(range, turns, leads));
 };
 
 /** 次の文が返しの語で始まり、それ自体が打ち消しで始まっていないか。 */
 const nextTurns = (next: Sentence | undefined, words: ContrastWords): boolean =>
-  next !== undefined && words.turns.some((turn) => entryOpens(next, turn)) && !words.leads.some((lead) => entryOpens(next, lead));
+  next !== undefined && plainOf(words.turns).some((turn) => entryOpens(next, turn)) && !words.leads.some((lead) => entryOpens(next, lead));
+
+const LETTER = /\p{L}/u;
+
+/** 品詞が無いと前方一致になるので、語の途中（It と Items）では文の頭の語と見ない。 */
+const opensWithWord = (sentence: Sentence, entry: LexiconEntry): boolean => {
+  if (!entryOpens(sentence, entry)) return false;
+  if (sentence.tokens !== undefined && entry.tokens !== undefined) return true;
+  return !LETTER.test(comparableText(sentence).charAt(comparableWords(entry.pattern).length));
+};
+
+/** 次の文が across の主語（It、They）で始まり、どこにも打ち消しが無いか（It wasn't the plan. It was luck.）。 */
+const nextAffirms = (next: Sentence | undefined, words: ContrastWords): boolean =>
+  next !== undefined && groupOf(words.turns, ACROSS).some((turn) => opensWithWord(next, turn)) && !words.leads.some((lead) => entryIn(next, lead));
+
+const ECHO = "echo";
+const VERBAL: ReadonlySet<string> = new Set(["VERB", "AUX"]);
+const SKIPPED: ReadonlySet<string> = new Set(["ADV", "PART"]);
+
+const lemmaOf = (token: Token): string => comparableWords(token.lemma ?? token.surface);
+
+/** The verb a denial denies: the verb right after it (didn't build → build), or its own (weren't → be). */
+const deniedVerb = (sentence: Sentence, lead: LexiconEntry): string | undefined => {
+  const tokens = sentence.tokens ?? [];
+  const range = entryRanges(sentence, lead)[0];
+  if (range === undefined) return undefined;
+  const next = tokens.slice(range.end).find((token) => !SKIPPED.has(token.pos));
+  const own = tokens.slice(range.start, range.end).find((token) => VERBAL.has(token.pos));
+  const verb = next?.pos === "VERB" ? next : own;
+  return verb === undefined ? undefined : lemmaOf(verb);
+};
+
+/** The verb right after the subject that opens the sentence (We built → build). */
+const affirmedVerb = (sentence: Sentence): string | undefined => {
+  const verb = (sentence.tokens ?? []).slice(1).find((token) => !SKIPPED.has(token.pos));
+  return verb !== undefined && VERBAL.has(verb.pos) ? lemmaOf(verb) : undefined;
+};
+
+/**
+ * A denial whose own subject (We, You) opens the next sentence and says the denied verb again, without a denial
+ * (We didn't build this for speed. We built it for teams.). Another verb is the story going on (We didn't have backups. We lost the data.).
+ */
+const echoAffirms = (sentence: Sentence, lead: LexiconEntry, next: Sentence | undefined, words: ContrastWords): boolean => {
+  if (next === undefined || sentence.tokens === undefined || next.tokens === undefined) return false;
+  if (words.leads.some((other) => entryIn(next, other))) return false;
+  const subject = groupOf(words.turns, ECHO).find((turn) => opensWithWord(sentence, turn) && opensWithWord(next, turn));
+  const denied = subject === undefined ? undefined : deniedVerb(sentence, lead);
+  return denied !== undefined && denied === affirmedVerb(next);
+};
+
+const AFTER = "after";
+const DIGIT_AFTER = /^\p{Nd}/u;
+/** 数字と、続く助数詞一字（1回、2つ）。 */
+const DIGIT_BEFORE = /\p{Nd}\p{L}?$/u;
+
+/** 枠の語（range）の隣で量を言っているか。position が after なら後ろ（not just one）、ほかは前（一杯だけでなく）。数字も量。 */
+const measuresAmount = (text: string, range: Range, amounts: Lexicon): boolean => {
+  const after = text.slice(range.end).trimStart();
+  const before = text.slice(0, range.start).trimEnd();
+  return amounts.some((amount) => {
+    const word = lowered(amount);
+    if (amount.position !== AFTER) return before.endsWith(word) || DIGIT_BEFORE.test(before);
+    return (after.startsWith(word) && !LETTER.test(after.charAt(word.length))) || DIGIT_AFTER.test(after);
+  });
+};
+
+/** 枠の語が、量を言っていない所に一度でもあるか。文字列の上で位置を言えないときは枠のまま。 */
+const framesIn = (sentence: Sentence, frame: LexiconEntry, amounts: Lexicon): boolean => {
+  if (!entryIn(sentence, frame)) return false;
+  const text = comparableText(sentence);
+  const ranges = rangesOf(text, lowered(frame));
+  return ranges.length === 0 || ranges.some((range) => !measuresAmount(text, range, amounts));
+};
+
+const closesWithTurn = (sentence: Sentence, words: ContrastWords): boolean => groupOf(words.turns, CLOSING).some((turn) => entryCloses(sentence, turn));
+
+const answeredBy = (lead: LexiconEntry, sentence: Sentence, next: Sentence | undefined, words: ContrastWords): boolean => {
+  if (lead.group === ACROSS) return nextAffirms(next, words) || echoAffirms(sentence, lead, next, words);
+  if (lead.group === CLOSING) return closesWithTurn(sentence, words);
+  return turnAfter(sentence, lead, words) || nextTurns(next, words);
+};
 
 const answered = (sentence: Sentence, next: Sentence | undefined, words: ContrastWords): boolean =>
-  words.leads.some((lead) => entryIn(sentence, lead) && (turnAfter(sentence, lead, words) || nextTurns(next, words)));
+  words.leads.some((lead) => entryIn(sentence, lead) && answeredBy(lead, sentence, next, words));
 
 /**
  * 対比の枠で書いた文。「X ではなく Y」「It's not X. It's Y.」の形で、打ち消した側の文を返す。
  * 2 文にまたがる枠も 1 つと数える。返しの文は数えない。
  */
 export const contrastSentences = (sentences: readonly Sentence[], words: ContrastWords): Sentence[] =>
-  sentences.filter((sentence, index) => words.frames.some((frame) => entryIn(sentence, frame)) || answered(sentence, sentences[index + 1], words));
+  sentences.filter(
+    (sentence, index) => words.frames.some((frame) => framesIn(sentence, frame, words.amounts ?? [])) || answered(sentence, sentences[index + 1], words),
+  );

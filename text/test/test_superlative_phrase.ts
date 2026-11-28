@@ -43,6 +43,14 @@ describe("unqualified-superlative: a superlative inside a set phrase", () => {
     reported(ja, ["最高裁判所が判断を示しました。", "最高経営責任者が説明しました。", "最も近い駅は北口です。"], false);
   });
 
+  it("does not report the simplest form or example a writer presents (ja)", () => {
+    reported(ja, ["要点を最もシンプルな形で読み手に示します。", "まず最も単純なサンプルコードで構文を説明します。", "最も簡単な例から始めます。"], false);
+  });
+
+  it("still reports a simplicity claim outside those phrases (ja)", () => {
+    reported(ja, ["当社の画面は最もシンプルです。", "最も単純な操作で使える製品です。"], true);
+  });
+
   it("still reports a superlative outside the phrases (ja)", () => {
     reported(ja, ["当社の製品は最も優れています。", "最高の品質をお届けします。", "最も速い回線です。"], true);
   });

@@ -43,11 +43,27 @@ export type FixPlanText = {
   readonly checksHeading: string;
   readonly saveAs: (path: string) => string;
   readonly checksNote: string;
+  /** With --all-ai-signs: the last constraint, which loops to the stop conditions instead of stopping at two passes. */
+  readonly loopConstraint: string;
+  readonly aiScoreHeading: string;
+  /** The score in one line: the level, or why there is none, then the signs that showed. */
+  readonly aiScoreLine: (level: string, signs: number, compared: number, shown: string) => string;
+  readonly notScoredLine: (reason: string) => string;
+  /** The AI-likeness rules with a finding, as a list; empty when none is left. */
+  readonly aiRulesLine: (rules: string) => string;
+  readonly sinceHeading: (path: string) => string;
+  readonly sinceScore: (before: string, after: string) => string;
+  readonly risenLead: string;
+  readonly risenLine: (before: number, after: number) => string;
+  readonly noneRisen: string;
+  readonly stopHeading: string;
+  readonly stopLines: readonly string[];
 };
 
 export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
   ja: {
-    usage: "使い方: chaff fix-plan <file> [--depth light|structure|register] [--experimental] [--genre <ジャンル>] [--no-guide] [--json]",
+    usage:
+      "使い方: chaff fix-plan <file> [--depth light|structure|register] [--all-ai-signs] [--before <元の文書>] [--experimental] [--genre <ジャンル>] [--no-guide] [--json]",
     notFound: (path) => `${path} がありません。`,
     title: (path) => `直す計画: ${path}`,
     about: (language, genre) => `言語 ${language}、ジャンル ${genre}`,
@@ -114,9 +130,28 @@ export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
     saveAs: (path) => `書き直したものを ${path} に保存して、次を実行します。`,
     checksNote:
       "1 つめは書き直した文書の指摘、2 つめは事実が落ちていないか・足されていないか、3 つめは構成の変化です。数は chaff の出力から取り、形容詞で言わないでください。",
+    loopConstraint: "下の「止めるとき」がすべて満たされるまで、書き直しと確かめを繰り返す（3 回まで）。3 回で残ったものは、残した理由と一緒に書き出す。",
+    aiScoreHeading: "AI らしさの点",
+    aiScoreLine: (level, signs, compared, shown) => `${level}（目印 ${String(signs)} / ${String(compared)}）${shown === "" ? "" : ": " + shown}`,
+    notScoredLine: (reason) => `点は付きません（${reason}）。ルールの指摘だけで判断します。`,
+    aiRulesLine: (rules) => (rules === "" ? "指摘の残る AI らしさのルール: なし" : `指摘の残る AI らしさのルール: ${rules}`),
+    sinceHeading: (path) => `元の文書 ${path} と比べて`,
+    sinceScore: (before, after) => `AI らしさの点: ${before} → ${after}`,
+    risenLead: "書き直しで指摘が増えたルール（AI らしさ以外も含む）:",
+    risenLine: (before, after) => `${String(before)} → ${String(after)} 件`,
+    noneRisen: "指摘が増えたルールはありません。",
+    stopHeading: "止めるとき",
+    stopLines: [
+      "AI らしさのルールの指摘が一つも残っていない（この計画の「ルールごとの直し方」に AI らしさのルールが無い）。",
+      "AI らしさの点が low、または文書が短くて点が付かない。",
+      "元の文書より指摘が増えたルールが無い（--before で比べた「元の文書と比べて」が空）。",
+      "chaff compare が通る。除いた種類には理由がある。",
+      "chaff test --checks ai-tells が送る（--dry-run では送るはずの）箇所を読み、どの問いにも当てはまらない。",
+    ],
   },
   en: {
-    usage: "usage: chaff fix-plan <file> [--depth light|structure|register] [--experimental] [--genre <genre>] [--no-guide] [--json]",
+    usage:
+      "usage: chaff fix-plan <file> [--depth light|structure|register] [--all-ai-signs] [--before <original>] [--experimental] [--genre <genre>] [--no-guide] [--json]",
     notFound: (path) => `${path} does not exist.`,
     title: (path) => `Fix plan: ${path}`,
     about: (language, genre) => `language ${language}, genre ${genre}`,
@@ -179,5 +214,24 @@ export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
     saveAs: (path) => `Save the rewrite as ${path} and run:`,
     checksNote:
       "The first lists the rewrite's findings, the second checks that no fact was dropped or added, the third shows how the outline moved. Take the numbers from chaff's output, not adjectives.",
+    loopConstraint:
+      'Rewrite and check again until every line of "When to stop" below holds, at most three passes. List what is left after the third, with the reason it stays.',
+    aiScoreHeading: "AI-likeness score",
+    aiScoreLine: (level, signs, compared, shown) => `${level} (${String(signs)} of ${String(compared)} signs)${shown === "" ? "" : ": " + shown}`,
+    notScoredLine: (reason) => `Not scored (${reason}). The rules' findings decide alone.`,
+    aiRulesLine: (rules) => (rules === "" ? "AI-likeness rules with findings left: none" : `AI-likeness rules with findings left: ${rules}`),
+    sinceHeading: (path) => `Against the original, ${path}`,
+    sinceScore: (before, after) => `AI-likeness score: ${before} → ${after}`,
+    risenLead: "Rules with more findings after the rewrite (any rule, not only AI-likeness):",
+    risenLine: (before, after) => `${String(before)} → ${String(after)}`,
+    noneRisen: "No rule has more findings than in the original.",
+    stopHeading: "When to stop",
+    stopLines: [
+      'No AI-likeness rule has a finding left ("How to rewrite, rule by rule" lists none of them).',
+      "The AI-likeness score is low, or the document is too short to score.",
+      'No rule has more findings than in the original ("Against the original", from --before, lists none).',
+      "chaff compare passes, and every kind left out has a reason.",
+      "You have read the passages chaff test --checks ai-tells sends (or would send, with --dry-run), and none of its questions fits them.",
+    ],
   },
 };

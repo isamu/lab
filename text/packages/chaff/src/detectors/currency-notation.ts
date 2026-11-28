@@ -2,7 +2,7 @@ import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { formMinority } from "./form-minority.ts";
 import { proseAndTablesOf } from "../table-text.ts";
-import { quoteAround } from "./quote-around.ts";
+import { quoteAround, sentenceQuoteAt } from "./quote-around.ts";
 
 // 一つの文書で、同じ通貨の金額を二通りに書いた所（1,000円 と ¥1,000、$20 と 20 dollars）。どちらが正しいかは決めず、少ないほうを指す。
 // 通貨の書き方、それを金額のどちら側に書くか、どの通貨か（group）は語彙表 currency-notation、桁の語は amount-multiplier が言う。
@@ -34,6 +34,15 @@ const amountPattern = (form: CurrencyForm, multipliers: readonly string[]): RegE
     : new RegExp(`(?<![\\w.,，０-９])${AMOUNT}${multiplier}\\s?${mark}${latinEdge(form.pattern, "end")}`, "gu");
 };
 
+// 前の読点を探す幅。改行と空行（段落の切れ目）をまたいでも届く長さ。
+const APPOSITIVE_LOOKBEHIND_CHARS = 8;
+
+/** 通貨コードに一桁だけを続けて読点のあとに置いた語（a coin, USD1.）は、ステーブルコインのような名前で、金額ではない。 */
+const isCodeName = (text: string, offset: number, written: string): boolean =>
+  /^[A-Za-z]+\d$/u.test(written) &&
+  /,\s*$/u.test(text.slice(Math.max(0, offset - APPOSITIVE_LOOKBEHIND_CHARS), offset)) &&
+  /^(?:[.,;:!?)]|$)/u.test(text.charAt(offset + written.length));
+
 const overlaps = (left: WrittenAmount, right: WrittenAmount): boolean =>
   left.offset < right.offset + right.written.length && right.offset < left.offset + left.written.length;
 
@@ -42,12 +51,14 @@ export const amountsIn = (text: string, forms: readonly CurrencyForm[], multipli
   forms
     .toSorted((left, right) => right.pattern.length - left.pattern.length)
     .flatMap((form) =>
-      [...text.matchAll(amountPattern(form, multipliers))].map((match) => ({
-        offset: match.index,
-        written: match[0],
-        form: `${form.position}:${form.pattern}`,
-        currency: form.currency,
-      })),
+      [...text.matchAll(amountPattern(form, multipliers))]
+        .filter((match) => !isCodeName(text, match.index, match[0]))
+        .map((match) => ({
+          offset: match.index,
+          written: match[0],
+          form: `${form.position}:${form.pattern}`,
+          currency: form.currency,
+        })),
     )
     .reduce<WrittenAmount[]>((kept, amount) => (kept.some((other) => overlaps(other, amount)) ? kept : [...kept, amount]), [])
     .toSorted((left, right) => left.offset - right.offset);
@@ -85,7 +96,7 @@ export const currencyNotation: Detector = (doc, options): Finding[] => {
     severity: "info",
     line: 0,
     column: 0,
-    quote: quoteAround(text, odd.offset, odd.offset + odd.written.length),
+    quote: sentenceQuoteAt(doc.sentences, odd.offset) ?? quoteAround(text, odd.offset, odd.offset + odd.written.length),
     values: { written: odd.written.trim(), usual: usual.trim(), count, of, offset: odd.offset },
   }));
 };

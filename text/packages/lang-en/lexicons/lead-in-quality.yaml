@@ -1,0 +1,8 @@
+# A duty that ends in a copula ("The guide should be:") hands over qualities (located somewhere easy to find, written
+# plainly), not the steps or parts of a procedure, so colon-lead-in counts it as a lead-in. Matched at the lead-in's end.
+id: lead-in-quality
+language: en
+entries:
+  - pattern: should be
+  - pattern: must be
+  - pattern: shall be

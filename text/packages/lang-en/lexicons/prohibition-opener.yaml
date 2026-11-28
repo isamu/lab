@@ -1,0 +1,6 @@
+# Words that open a prohibition before a noun (No calls, No food in the lab). list-item-form-mix reads a list item opening
+# with one as neither a verb nor a noun phrase: it is a rule, as "Never feed animals" is. Matched in lower case.
+id: prohibition-opener
+language: en
+entries:
+  - pattern: "no"

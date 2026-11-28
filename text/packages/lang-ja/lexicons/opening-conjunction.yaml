@@ -1,0 +1,7 @@
+# 行の頭に大文字で書く英語の接続詞（OR, Skip to the topics …、二つの選択肢の間に一行で置いた OR）。略語でもある語（OR は
+# Oregon）なので、undefined-acronym は行の頭で、読点と頭だけ大文字の語が続くときか、その行がそこで終わるときだけ外す。
+# 英文の案内をそのまま載せた文書のために置く。字面どおりに照らす。
+id: opening-conjunction
+language: ja
+entries:
+  - pattern: "OR"

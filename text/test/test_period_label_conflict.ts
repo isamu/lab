@@ -204,6 +204,14 @@ describe("period-label-conflict: Japanese releases", () => {
     );
   });
 
+  it("a year-earlier column naming the same quarter does not excuse another quarter next to it", () => {
+    const head = ["# 2027年3月期 第2四半期決算短信", ""];
+    assert.deepEqual(foundJa(...head, "| 項目 | 2026年3月期 第2四半期 | 2027年3月期 第3四半期 |", "| --- | --- | --- |", "| 売上高 | 2,400 | 2,640 |"), [
+      "第3四半期/第2四半期",
+    ]);
+    assert.deepEqual(foundJa(...head, "| 項目 | 2026年3月期 第2四半期 | 2027年3月期 第2四半期 |", "| --- | --- | --- |", "| 売上高 | 2,400 | 2,640 |"), []);
+  });
+
   it("stays silent on an earlier quarter inside the cumulative period and on a document that is not a results release", () => {
     assert.deepEqual(foundJa(...title, "第1四半期の業績は堅調でした。"), []);
     assert.deepEqual(foundJa("# 2027年3月期 第2四半期 事業計画", "", "当第3四半期累計の業績は次のとおりです。"), []);
@@ -217,6 +225,20 @@ describe("period-label-conflict: English releases", () => {
       "Q3/Second Quarter",
     ]);
     assert.deepEqual(foundEn("# Consolidated Financial Results for FY2026", "", "Consolidated results for FY2025 are shown below."), ["FY2025/FY2026"]);
+  });
+
+  it("a year-earlier column naming the same quarter does not excuse another quarter next to it", () => {
+    const head = ["# Northwind Tools: Second Quarter Results, FY2027", ""];
+    const table = (...cells: string[]): string[] => [
+      `| Item | ${cells.join(" | ")} |`,
+      `|${" --- |".repeat(cells.length + 1)}`,
+      `| Revenue |${" 1 |".repeat(cells.length)}`,
+    ];
+    assert.deepEqual(foundEn(...head, ...table("Q2 FY2026", "Q3 FY2027")), ["Q3/Second Quarter"]);
+    assert.deepEqual(foundEn(...head, ...table("Q3 FY2027")), ["Q3/Second Quarter"]);
+    assert.deepEqual(foundEn(...head, ...table("A year earlier", "Q3 FY2027")), ["Q3/Second Quarter"]);
+    assert.deepEqual(foundEn(...head, ...table("Q2 FY2026", "Q2 FY2027")), []);
+    assert.deepEqual(foundEn(...head, ...table("Q1 FY2027", "Q2 FY2027")), []);
   });
 
   it("a title naming the year by its end and as FY keeps both, and FY names compare with FY only", () => {

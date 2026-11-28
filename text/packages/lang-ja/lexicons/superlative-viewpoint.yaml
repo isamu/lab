@@ -1,0 +1,6 @@
+# 誰にとっての最もなのかを言う語。同じ節（読点を挟まない）で最上級より前にあれば、範囲が書かれている
+# （俺にとって今日は最高のクリスマスだ）。
+id: superlative-viewpoint
+language: ja
+entries:
+  - pattern: にとって

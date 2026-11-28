@@ -1,0 +1,9 @@
+# 同じ条のほかの項を指す語。group: previous は一つ前の項（前項）、… を含む形は … が項の番号（本条1項、本条第1項）。
+# 第1項で何を払うかを、第3項でいつまでに払うかを書く条では、第3項の「本条1項に定める対価」が第1項の義務の時を決める（obligation-without-deadline）。
+id: paragraph-pointer
+language: ja
+entries:
+  - pattern: 前項
+    group: previous
+  - pattern: 本条…項
+  - pattern: 本条第…項

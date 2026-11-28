@@ -1,10 +1,11 @@
 import { lengthOf } from "../measure.ts";
 import type { Lexicon, ProseDocument, Section, Sentence } from "../plugin.ts";
 import { coefficientOfVariation } from "../detectors/structure.ts";
-import { boldLabelItems } from "../detectors/bold-label.ts";
+import { boldLabelItems, isQuotedAt, standingBoldLabelOf } from "../detectors/bold-label.ts";
 import { MIN_DOCUMENT_LENGTH } from "../detectors/signals.ts";
 import { bookendOf, headingFormOf, headingWords, proConPairs } from "./heading-words.ts";
 import { restatementPercent } from "./restatement.ts";
+import { underFaq } from "./faq-sections.ts";
 
 /** The structure measures, in the order they are shown. */
 export const FEATURE_IDS = [
@@ -116,9 +117,10 @@ const mostCommon = (forms: readonly string[]): string | undefined => {
   return [...counts.entries()].toSorted((left, right) => right[1] - left[1])[0]?.[0];
 };
 
-const headingForms = (doc: ProseDocument, words: readonly string[]): FeatureValue => {
+const headingForms = (doc: ProseDocument, headed: readonly Section[], words: readonly string[]): FeatureValue => {
   const bookends = lexiconOf(doc, "bookend-heading");
-  const body = words.filter((heading) => bookendOf(heading, bookends) === undefined);
+  const asked = underFaq(headed, lexiconOf(doc, "faq-heading"));
+  const body = words.filter((heading, index) => asked[index] !== true && bookendOf(heading, bookends) === undefined);
   if (body.length < MIN_HEADINGS) return notMeasured("heading-forms", "too-few-headings");
   const forms = body.flatMap((heading) => headingFormOf(heading, lexiconOf(doc, "heading-form"))?.pattern ?? []);
   return measured("heading-forms", percentOf(forms.length, body.length), mostCommon(forms));
@@ -163,9 +165,25 @@ const threeItemLists = (doc: ProseDocument): FeatureValue => {
 const emojiHeadings = (doc: ProseDocument): FeatureValue =>
   measured("emoji-headings", doc.sections.filter((section) => section.depth > 0 && EMOJI.test(section.heading)).length);
 
+/** The paragraphs and list items, as written, that are not quoted: where a bold label can stand in place of a heading. */
+const blocksOf = (doc: ProseDocument): string[] =>
+  [...doc.paragraphs.map((paragraph) => paragraph.span), ...doc.lists.flatMap((list) => list.itemSpans)]
+    .filter((span) => !isQuotedAt(doc.source, span.start))
+    .map((span) => doc.source.slice(span.start, span.end));
+
+/** Bold labels that are a side of a pair and nothing more (`**Pros:**`, `**デメリット：**`): a heading set in bold. */
+const proConLabels = (doc: ProseDocument, lexicon: Lexicon): string[] => {
+  const sides = new Set(lexicon.flatMap((entry) => [entry.pattern, entry.instead_of ?? ""]).map((side) => side.toLowerCase()));
+  return blocksOf(doc).flatMap((block) => {
+    const label = standingBoldLabelOf(block);
+    return label !== undefined && sides.has(headingWords(label)) ? [headingWords(label)] : [];
+  });
+};
+
 const proCon = (doc: ProseDocument, words: readonly string[]): FeatureValue => {
   if (words.length < MIN_BOOKEND_HEADINGS) return notMeasured("pro-con", "too-few-headings");
-  const pairs = proConPairs(words, lexiconOf(doc, "pro-con-heading"));
+  const lexicon = lexiconOf(doc, "pro-con-heading");
+  const pairs = proConPairs([...words, ...proConLabels(doc, lexicon)], lexicon);
   return measured("pro-con", pairs.length, pairs.join(", "));
 };
 
@@ -177,7 +195,7 @@ export const structureFeaturesOf = (doc: ProseDocument): FeatureValue[] => {
     headingDensity(doc, headed),
     shortSections(doc, headed),
     sectionUniformity(doc),
-    headingForms(doc, words),
+    headingForms(doc, headed, words),
     threeSubsections(headed),
     bookends(doc, words),
     closingRestatement(doc, headed),

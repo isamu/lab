@@ -1,8 +1,26 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
-import { isKnownWord, isSplitWord, suggestionFor, wordsToCheck, type CheckedWord, type Speller } from "../spelling.ts";
+import { hasTwoEndings, isKnownWord, isSplitWord, suggestionFor, wordsToCheck, type Speller } from "../spelling.ts";
 import { parse } from "../markdown-read.ts";
 import { eachPreOrder } from "../tree-walk.ts";
 import { quoteAt } from "./structure-tree.ts";
+import {
+  addressWordsOf,
+  beforeVersion,
+  versionedWordsOf,
+  beforeVolume,
+  besideForeignWord,
+  hasDrugStem,
+  hasSiblingName,
+  innerCapitalWordsOf,
+  inSearchTermList,
+  isClosedCompound,
+  isMention,
+  isQuotedAt,
+  isNceSpelling,
+  usedOnce,
+  writtenApart,
+} from "./unknown-word-context.ts";
+import { capitalisedTwin, capitalisedWordsOf, followedWordsOf } from "./unknown-word-capital.ts";
 
 /** これより短い語は見ない。短い語は一字違いの語が多すぎて言い直しが決まらず（tost は test か toast か）、略した語（impl）も多い。 */
 const MIN_LENGTH = 5;
@@ -15,16 +33,14 @@ const patternsOf = (doc: ProseDocument, name: string): string[] => (doc.lexicons
 /** 辞書と、語彙表 extra-word の語と、チームの names と、別の rule が言う誤り（known-misspelling）を足した語。 */
 export const spellerOf = (doc: ProseDocument, dictionary: ReadonlySet<string>): Speller => ({
   words: [dictionary, new Set([...patternsOf(doc, "extra-word"), ...(doc.names ?? []).map((name) => name.toLowerCase())])],
-  suffixes: (doc.lexicons["word-suffix"] ?? []).map((entry) => ({ suffix: entry.pattern, replacement: entry.instead_of ?? "" })),
+  suffixes: (doc.lexicons["word-suffix"] ?? []).map((entry) => ({
+    suffix: entry.pattern,
+    replacement: entry.instead_of ?? "",
+    inflection: entry.group === "inflection",
+  })),
   prefixes: patternsOf(doc, "word-prefix"),
+  uninflected: new Set(patternsOf(doc, "uninflected-word")),
 });
-
-/** 文書で一度だけ使った語。二度以上使う語は、打ち間違いより、その文書の用語であることが多い。 */
-const usedOnce = (words: readonly CheckedWord[]): CheckedWord[] => {
-  const counts = new Map<string, number>();
-  words.forEach(({ word }) => counts.set(word, (counts.get(word) ?? 0) + 1));
-  return words.filter(({ word }) => counts.get(word) === 1);
-};
 
 const LETTERS = /\p{L}+/gu;
 
@@ -41,30 +57,83 @@ export const codeWordsOf = (source: string): Set<string> => {
   return words;
 };
 
+/** 辞書の語か、派生した語に活用の語尾を付けた語（operationalises、rightsized）か、四字以上の辞書の語二つを続けた語（crowdwork。文書が別の所で分けて書いていれば続けた打ち間違い）か、-nse の語の -nce の綴り（recompence）。 */
+const isFormedWord = (word: string, speller: Speller): boolean =>
+  isKnownWord(word, speller) || hasTwoEndings(word, speller) || isClosedCompound(word, speller) || isNceSpelling(word, speller);
+
 /**
- * A search stem with a wildcard in a list of terms (ukrain*, vaccin*): the word ends in a * that closes no emphasis
- * (nothing opens one before the word), and a separator or the line's end follows it, not a word as after a footnote's *.
+ * 置かれた場所から、名前や用語と分かる語。名指した語（"mailto"、(jchaplin)）、検索語の並び（vaccin*）、外国語の句（bête noire）、
+ * 版の番号の前（golang 1.21.5）、誌の巻と号の前（Biochemia medica 22 (3)）。
  */
-export const isSearchStem = (source: string, offset: number, word: string): boolean => {
-  const end = offset + word.length;
-  return source[end] === "*" && source[offset - 1] !== "*" && /^[ \t]*(?:[,;|)\]]|\r?\n|$)/u.test(source.slice(end + 1));
-};
+const isTermByPlace = (source: string, offset: number, word: string): boolean =>
+  isMention(source, offset, word) ||
+  inSearchTermList(source, offset) ||
+  besideForeignWord(source, offset, word) ||
+  beforeVersion(source, offset, word) ||
+  beforeVolume(source, offset, word);
 
 /**
  * 辞書に無い英語の語で、一字違いの辞書の語があるもの（recieve → receive）。辞書は adapter が持ち、無い言語では動かない。
  * 大文字を含む語（固有名詞・略語）、コード・URL の中、頭の字を分けた語の残り、二度以上使う語、言い直しの無い語、
  * 文書がコードにも書いた語は言わない。
  */
+const findingAt = (source: string, offset: number, word: string, suggestion: string): Finding => ({
+  rule: "",
+  severity: "warning",
+  line: 0,
+  column: 0,
+  quote: quoteAt(source, offset),
+  values: { word, suggestion, offset },
+});
+
+/**
+ * 頭だけ大文字の辞書に無い語（Sechedule）で、内側の一字を抜くか隣の二字を入れ替えた辞書の語を、文書が同じ語の後に同じ大文字で
+ * 書き（Release Schedule）、小文字でも書いているもの。同じ図の題を二度打ち、一度だけ誤った形。何度使っても言う。
+ */
+const capitalisedSlips = (doc: ProseDocument, speller: Speller, known: ReadonlySet<string>, lowerCaseWords: ReadonlySet<string>): Finding[] => {
+  const text = doc.prose ?? doc.source;
+  const words = capitalisedWordsOf(text, MIN_LENGTH, MAX_LENGTH).filter(({ offset }) => !isSplitWord(doc.source, offset));
+  const written = { capitalised: followedWordsOf(words), lowerCase: lowerCaseWords };
+  return words.flatMap((found) => {
+    const { offset, word } = found;
+    const lower = word.toLowerCase();
+    if (known.has(lower) || isFormedWord(lower, speller) || isTermByPlace(doc.source, offset, word)) return [];
+    const twin = capitalisedTwin(found, written, speller, MIN_LENGTH);
+    return twin === undefined ? [] : [findingAt(doc.source, offset, word, twin)];
+  });
+};
+
 export const unknownWord: Detector = (doc): Finding[] => {
   if (doc.dictionary === undefined) return [];
   const speller = spellerOf(doc, doc.dictionary());
-  const known = new Set([...patternsOf(doc, "known-misspelling"), ...codeWordsOf(doc.source)]);
+  const known = new Set([
+    ...patternsOf(doc, "known-misspelling"),
+    ...codeWordsOf(doc.source),
+    ...addressWordsOf(doc.source),
+    ...innerCapitalWordsOf(doc.source),
+    ...versionedWordsOf(doc.source),
+  ]);
+  const drugStems = patternsOf(doc, "drug-stem");
   const words = wordsToCheck(doc.prose ?? doc.source, MIN_LENGTH, MAX_LENGTH).filter(({ offset }) => !isSplitWord(doc.source, offset));
   const used = new Set(words.map(({ word }) => word).filter((word) => isKnownWord(word, speller)));
-  return usedOnce(words).flatMap(({ offset, word }) => {
-    if (known.has(word) || isKnownWord(word, speller) || isSearchStem(doc.source, offset, word)) return [];
-    const suggestion = suggestionFor(word, speller, used);
-    if (suggestion === undefined) return [];
-    return [{ rule: "", severity: "warning", line: 0, column: 0, quote: quoteAt(doc.source, offset), values: { word, suggestion, offset } }];
+  const unformed = new Set(words.map(({ word }) => word).filter((word) => !known.has(word) && !isFormedWord(word, speller)));
+  const apartAt = (word: string, offset: number): string | undefined =>
+    known.has(word) || isKnownWord(word, speller) || !isClosedCompound(word, speller) || isQuotedAt(doc.source, offset, offset + word.length)
+      ? undefined
+      : writtenApart(word, speller, doc.prose ?? doc.source, offset);
+  const lowerCase = usedOnce(words, speller).flatMap(({ offset, word }) => {
+    const apart = apartAt(word, offset);
+    if (
+      !(unformed.has(word) || apart !== undefined) ||
+      hasDrugStem(word, drugStems) ||
+      hasSiblingName(word, unformed) ||
+      isTermByPlace(doc.source, offset, word)
+    )
+      return [];
+    const suggestion = apart ?? suggestionFor(word, speller, used);
+    return suggestion === undefined ? [] : [findingAt(doc.source, offset, word, suggestion)];
   });
+  return [...lowerCase, ...capitalisedSlips(doc, speller, known, new Set(words.map(({ word }) => word)))].toSorted(
+    (left, right) => Number(left.values["offset"]) - Number(right.values["offset"]),
+  );
 };

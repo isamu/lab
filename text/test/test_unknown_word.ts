@@ -28,6 +28,7 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
   it("the rest of a word split by emphasis or a bracketed letter is not a word", () => {
     assert.deepEqual(unknown("Your avatar is a **G**lobally **R**ecognized image."), []);
     assert.deepEqual(unknown('The court said that "[e]xpressions in the opinion" were dicta.'), []);
+    assert.deepEqual(unknown("It stands for e<strong>X</strong>press <strong>E</strong>dition <strong>D</strong>ata<strong>B</strong>ase."), []);
     assert.deepEqual(unknown("The **report** is attched to this email."), ['"attched" is not in the dictionary; did you mean "attached"?']);
     assert.deepEqual(unknown("See [the notes] attched below."), ['"attched" is not in the dictionary; did you mean "attached"?']);
   });
@@ -41,6 +42,13 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
     assert.deepEqual(unknown("A botnet hit the servers, the requestors waited, and burnout rose across the team."), []);
     assert.deepEqual(unknown("A botnet hit the servers and the requestors waited for the burnuot survey."), [
       '"burnuot" is not in the dictionary; did you mean "burnout"?',
+    ]);
+  });
+
+  it("comms, the clipping of communications in operations writing, is known, but a typo of it is still reported", () => {
+    assert.deepEqual(unknown("The incident lead sends comms approvals before release to the customer."), []);
+    assert.deepEqual(unknown("The incident lead sends comms approvals, and the cmoms lead signs them."), [
+      '"cmoms" is not in the dictionary; did you mean "comms"?',
     ]);
   });
 
@@ -71,6 +79,15 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
   it("partway, combinators and const are known, but a typo among them is still reported", () => {
     assert.deepEqual(unknown("The upload stopped partway, so the parser combinators marked the item const."), []);
     assert.deepEqual(unknown("The upload stopped partwya through."), ['"partwya" is not in the dictionary; did you mean "partway"?']);
+  });
+
+  it("systemd and sudo, the lower-case names of Linux tools, are known, but a typo of them is still reported", () => {
+    assert.deepEqual(unknown("For a permanent install there is a systemd unit file, and the installer runs with sudo."), []);
+    assert.deepEqual(unknown("For a permanent install there is a systemdd unit file."), ['"systemdd" is not in the dictionary; did you mean "systemd"?']);
+  });
+
+  it("cmake and rustc, the lower-case names of build tools, and the clipping collab are known", () => {
+    assert.deepEqual(unknown("We moved the build to cmake, and the closure is lowered inside rustc before the collab summit."), []);
   });
 
   it("the legal words of contracts are known, but a typo among them is still reported", () => {
@@ -115,6 +132,50 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
 
   it("does not run on Japanese", () => {
     assert.deepEqual(namedRuleRun("unknown-word", "We will attched it.\n", ja).findings, []);
+  });
+});
+
+describe("unknown-word: a name the document also writes with an inner capital", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+  });
+
+  it("valid: a name in lower case that the document writes as a name elsewhere", () => {
+    assert.deepEqual(unknown("Drop the polyfills for systemjs.\n\nDo not ship SystemJS to modern browsers."), []);
+  });
+
+  it("invalid: the same letters nowhere written as a name", () => {
+    assert.deepEqual(unknown("Drop the polyfills for systemjs.\n\nDo not ship Systemjs to modern browsers."), [
+      '"systemjs" is not in the dictionary; did you mean "systems"?',
+    ]);
+  });
+});
+
+describe("unknown-word: a capitalised slip of a word the document writes capitalised", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+  });
+
+  it("invalid: a caption typed twice, once with a letter too many or two letters swapped", () => {
+    const captions = "*Release Sechedule 2021*\n\nThe schedule moved.\n\n*Release Schedule 2022*\n\n*Release Sechedule 2023*";
+    assert.deepEqual(unknown(captions), [
+      '"Sechedule" is not in the dictionary; did you mean "Schedule"?',
+      '"Sechedule" is not in the dictionary; did you mean "Schedule"?',
+    ]);
+    assert.deepEqual(unknown("Late Paymnet fees apply.\n\nLate Payment notices follow the payment run."), [
+      '"Paymnet" is not in the dictionary; did you mean "Payment"?',
+    ]);
+  });
+
+  it("valid: no capitalised twin, one after another word, or one the document never writes in lower case", () => {
+    assert.deepEqual(unknown("*Release Sechedule 2021*\n\nThe release schedule moved."), []);
+    assert.deepEqual(unknown("*Release Sechedule 2021*\n\n*Release Schedule 2022*"), []);
+    assert.deepEqual(unknown("Hurricane Greta was a great storm.\n\nThe Great Lakes froze."), []);
+  });
+
+  it("valid: a name made from another by a changed, first or last letter", () => {
+    assert.deepEqual(unknown("Run Kustomize first. Run Customize next to customize the theme."), []);
+    assert.deepEqual(unknown("Visit Grande Prairie. Visit Grand Forks for a grand view."), []);
   });
 });
 
@@ -194,6 +255,9 @@ describe("spelling: the pieces", () => {
     assert.equal(at("a **G**lobally b", "lobally"), true);
     assert.equal(at("a _G_lobally b", "lobally"), true);
     assert.equal(at('said "[e]xpressions"', "xpressions"), true);
+    assert.equal(at("<strong>E</strong>dition", "dition"), true);
+    assert.equal(at("<b>E</b>dition", "dition"), true);
+    assert.equal(at("<strong>Edition</strong> report", "report"), false);
     assert.equal(at("a **globally** b", "globally"), false);
     assert.equal(at("see [1] report", "report"), false);
     assert.equal(at("see [note]report", "report"), false);

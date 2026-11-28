@@ -1,0 +1,12 @@
+# The writer asking to be told how to do something ("Could you let me know how to send the boots back?"). The reader's answer
+# is the writer's next step, not a task to finish by a date. "whether" and "what" are left out: "let me know whether you can
+# attend" asks for a decision.
+id: request-instruction
+language: en
+entries:
+  - pattern: how to
+  - pattern: where to
+  - pattern: how i can
+  - pattern: how i should
+  - pattern: how we can
+  - pattern: how we should

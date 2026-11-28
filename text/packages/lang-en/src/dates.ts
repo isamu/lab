@@ -117,6 +117,17 @@ const YEAR_OR_NUMBER_BEFORE = /\d,?\s*$/u;
 
 const isDay = (day: string): boolean => Number(day) >= 1 && Number(day) <= LAST_DAY;
 
+/**
+ * "Jan 23/58", "Dec 1/1857": the old short form with the year after a slash. Figures that cannot be a day are a year,
+ * so the date has one, though its century is not written; "March 5/6", a night across two days, stays yearless.
+ */
+const SLASHED_YEAR_REACH = 6;
+const SLASHED_YEAR = /^\/(?<y>\d{4}|\d{2})(?![\d/])/u;
+const slashedYear = (rest: string): boolean => {
+  const year = SLASHED_YEAR.exec(rest)?.groups?.["y"];
+  return year !== undefined && (year.length === 4 || !isDay(year));
+};
+
 /** "March 5" or "5 March" with no year → 03-05. */
 const monthDay = (text: string, at: number, end: number, month: number): Mention | undefined => {
   const after = DAY_AFTER.exec(text.slice(end, end + 8));
@@ -126,7 +137,7 @@ const monthDay = (text: string, at: number, end: number, month: number): Mention
   const start = before?.start ?? at;
   if (day === undefined || !isDay(day) || YEAR_OR_NUMBER_BEFORE.test(text.slice(Math.max(0, start - 6), start))) return undefined;
   const dateEnd = after === null ? end : end + after[0].length;
-  if (yearLater(text.slice(dateEnd, dateEnd + YEAR_LATER_REACH))) return undefined;
+  if (slashedYear(text.slice(dateEnd, dateEnd + SLASHED_YEAR_REACH)) || yearLater(text.slice(dateEnd, dateEnd + YEAR_LATER_REACH))) return undefined;
   return { start, end: dateEnd, attrs: { value: `${pad(String(month))}-${pad(day)}` } };
 };
 
@@ -169,6 +180,9 @@ const WEEKDAYS: readonly RegExp[] = [
 ];
 const DAY_WORD = "[A-Z][a-z]{2,8}";
 const WEEKDAY_BEFORE = new RegExp(`(?<day>${DAY_WORD})\\.?,?\\s+$`, "u");
+/** A weekday before parentheses that hold only the date: "Monday (November 25, 2026)". */
+const WEEKDAY_BEFORE_PAREN = new RegExp(`(?<day>${DAY_WORD})\\.?,?\\s*\\($`, "u");
+const CLOSES_PAREN = /^\s*\)/u;
 /** After the date, only a weekday in parentheses: "(Thursday)". A bare word there may start the next sentence ("Sat down"). */
 const WEEKDAY_AFTER = new RegExp(`^,?\\s*\\((?<day>${DAY_WORD})\\)`, "u");
 /**
@@ -187,7 +201,10 @@ const weekdayOf = (word: string | undefined): number | undefined => {
 const withWeekday = (text: string, date: Mention): Mention => {
   if (RANGE_BEFORE.test(text.slice(Math.max(0, date.start - 14), date.start))) return date;
   const before = weekdayOf(WEEKDAY_BEFORE.exec(text.slice(Math.max(0, date.start - 16), date.start))?.groups?.["day"]);
-  const weekday = before ?? weekdayOf(WEEKDAY_AFTER.exec(text.slice(date.end, date.end + 16))?.groups?.["day"]);
+  const beforeParen = CLOSES_PAREN.test(text.slice(date.end, date.end + 16))
+    ? weekdayOf(WEEKDAY_BEFORE_PAREN.exec(text.slice(Math.max(0, date.start - 16), date.start))?.groups?.["day"])
+    : undefined;
+  const weekday = before ?? beforeParen ?? weekdayOf(WEEKDAY_AFTER.exec(text.slice(date.end, date.end + 16))?.groups?.["day"]);
   return weekday === undefined ? date : { ...date, attrs: { ...date.attrs, weekday } };
 };
 

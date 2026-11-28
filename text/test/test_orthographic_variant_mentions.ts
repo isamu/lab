@@ -5,7 +5,7 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { measuredOffOn } from "../scripts/rules-measure-files.ts";
-import { mentionedSpellingSpans } from "../packages/chaff/src/spelling-mention.ts";
+import { markedWrongSpans, mentionedSpellingSpans } from "../packages/chaff/src/spelling-mention.ts";
 
 // orthographic-variant: かなの「たつ」は、時が経つにも、立つ・建つ・発つにも読める。別の書き方を言う文（（曇）とも書く。）の
 // 括弧の中は、書き方そのものが話題。例文は自作。
@@ -68,5 +68,28 @@ describe("orthographic-variant: 別の書き方を言う文", () => {
   it("invalid: 言い方の語句の無い文の括弧の中は、本文の書き方と比べる", () => {
     const glossary = "曇りの日が多い。曇りのところが多い。晴れか曇りか分からない。曇りや雨が続く。\n\n明日は（曇）の予報。\n";
     assert.deepEqual(variants(glossary, "docs/glossary"), ["曇/曇り"]);
+  });
+});
+
+describe("orthographic-variant: バツ印で示した誤った書き方", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  it("valid: × の後の語は比べない", () => {
+    assert.deepEqual(variants("RSpecで書きます。RSpecを使います。RSpecは便利です。\n\n- × Rspec / ○ RSpec\n- × JAVA / ○ Java\n", "blog/tech"), []);
+  });
+
+  it("invalid: 印の無い所の書き方のゆれは比べる", () => {
+    assert.deepEqual(variants("RSpecで書きます。RSpecを使います。RSpecは便利です。Rspecも使います。\n", "blog/tech"), ["Rspec/RSpec"]);
+  });
+
+  it("markedWrongSpans: 正しい書き方の印がある文の、行の頭か空白の後の印から区切りの前まで", () => {
+    assert.deepEqual(markedWrongSpans("× Rspec / ○ RSpec"), [{ start: 0, end: 7 }]);
+    assert.deepEqual(markedWrongSpans("✕JAVA、○Java"), [{ start: 0, end: 5 }]);
+    assert.deepEqual(markedWrongSpans("3×4は12、○"), []);
+    assert.deepEqual(markedWrongSpans("「法令」×「デジタル」の取組"), []);
+    assert.deepEqual(markedWrongSpans("× Rspec と書きます"), []);
+    assert.deepEqual(markedWrongSpans("印はありません"), []);
   });
 });

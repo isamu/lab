@@ -13,7 +13,7 @@ export const NEGATED = "¬";
 export const negationWords = (lexicon: Lexicon | undefined): ReadonlySet<string> =>
   new Set((lexicon ?? []).filter((entry) => entry.group === undefined).map((entry) => entry.pattern.toLowerCase()));
 
-const isNegation = (token: Token, words: ReadonlySet<string>): boolean =>
+export const isNegation = (token: Token, words: ReadonlySet<string>): boolean =>
   words.has(token.surface.toLowerCase()) || (token.lemma !== undefined && words.has(token.lemma.toLowerCase()));
 
 export const isMarkedNegation = (token: Token): boolean => token.features?.[NEGATION_FEATURE] !== undefined;

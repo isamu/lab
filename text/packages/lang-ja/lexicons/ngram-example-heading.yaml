@@ -1,0 +1,10 @@
+# 文書が例に番号を振るときの名前（事例1、例2 …）。例はひな形に沿って書かれ、同じ形で結ぶ。ngram-repetition は、番号を振った例が
+# それぞれ一度か二度ずつ持つ語句を数えない。番号を振った手順や施策（手順1、施策2）は書き手が一つずつ書く本文なので挙げない。
+id: ngram-example-heading
+language: ja
+entries:
+  - pattern: 例
+  - pattern: 事例
+  - pattern: 例題
+  - pattern: 記載例
+  - pattern: ケース

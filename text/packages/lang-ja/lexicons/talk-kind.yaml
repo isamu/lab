@@ -1,0 +1,19 @@
+# 講演や発表の種類を指す語。過去の催しを日付で並べた一覧で、この語のすぐ後ろの括弧に入れたもの（- 講演（…EBPM研修への取り組み））は
+# 講演の題名で、話した人の言葉なので書き手が直せない。undefined-acronym は数に入れるが、展開を求めない。英文をそのまま載せた文書の
+# ために英語の形も置く。
+id: talk-kind
+language: ja
+entries:
+  - pattern: "講演"
+  - pattern: "基調講演"
+  - pattern: "特別講演"
+  - pattern: "招待講演"
+  - pattern: "記念講演"
+  - pattern: "発表"
+  - pattern: "研究発表"
+  - pattern: "事例発表"
+  - pattern: "報告"
+  - pattern: "研究報告"
+  - pattern: "事例報告"
+  - pattern: "Talk"
+  - pattern: "Keynote"

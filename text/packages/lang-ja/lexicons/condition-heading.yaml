@@ -1,0 +1,14 @@
+# 条件を並べる節の見出し（応募に要るもの、職務の中身、申し込める人）。「〜の経験」「〜の管理」は条件で、欠けた数字は無い。
+# concrete-evidence-density はこの見出しの節を見ない。見出し全体と、末尾のコロンを除いて比べる。
+id: condition-heading
+language: ja
+entries:
+  - pattern: 応募資格
+  - pattern: 応募条件
+  - pattern: 必須条件
+  - pattern: 歓迎条件
+  - pattern: 資格要件
+  - pattern: 受験資格
+  - pattern: 職務内容
+  - pattern: 業務内容
+  - pattern: 求める人物像

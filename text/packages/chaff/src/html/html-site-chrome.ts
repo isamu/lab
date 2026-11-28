@@ -2,7 +2,8 @@
 // any site's wording. A landmark role (banner, search, contentinfo), a <search> element, a <header> that belongs to the
 // page rather than to a section, and a block named by a convention CMSs share: a breadcrumb trail (breadcrumb, pankuzu,
 // topicpath), a search box, the header or footer block (id or class exactly "header" or "footer"), and the U.S.
-// government's ".gov" banner (usa-banner). A block holding the page's <h1> is never chrome, nor a header holding a
+// government's ".gov" banner (usa-banner), and a help box the page shows on hover (with-hover, tooltip) when it is not
+// prose. A block holding the page's <h1> is never chrome, nor a header holding a
 // heading followed by prose, nor a search block holding prose (a results page). Pure; a regular-expression reading,
 // not a parser.
 import {
@@ -28,6 +29,9 @@ const SEARCH_NAME = /(?:^|[-_])search(?:[-_\d]|$)/iu;
 const REGION_NAME = /^(?:footer|usa-banner)$/iu;
 
 const HEADER_NAME = /^header$/iu;
+
+// Whole tokens only: "has-tooltip" marks the word a tooltip explains, which is the document's own text.
+const HOVER_HELP_NAME = /^(?:with-hover|tooltip)$/iu;
 
 // A form's own controls, also when the form element itself is gone and only its labels remain.
 const FORM_CONTROL = /<(?:input|select|textarea|button|label|fieldset)\b/iu;
@@ -80,9 +84,12 @@ const isSearchBlock = (range: ElementRange): boolean =>
 
 const isHeaderBlock = (range: ElementRange): boolean => names(range.openTag).some((name) => HEADER_NAME.test(name)) && !holdsHeadedProse(range);
 
+/** Help text the page shows only on hover, such as what a "Document Headings" box contains; a card holding prose is kept. */
+const isHoverHelp = (range: ElementRange): boolean => names(range.openTag).some((name) => HOVER_HELP_NAME.test(name)) && !isProse(range.inner);
+
 /** A block the markup names or marks as the site's chrome, unless it holds the page's title. */
 export const isSiteChrome = (range: ElementRange): boolean =>
-  !holdsTitle(range) && (hasChromeRole(range.openTag) || hasChromeName(range.openTag) || isSearchBlock(range) || isHeaderBlock(range));
+  !holdsTitle(range) && (hasChromeRole(range.openTag) || hasChromeName(range.openTag) || isSearchBlock(range) || isHeaderBlock(range) || isHoverHelp(range));
 
 const SECTIONING = ["article", "section", "main", "aside", "nav"];
 

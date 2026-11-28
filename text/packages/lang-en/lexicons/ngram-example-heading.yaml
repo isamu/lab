@@ -1,0 +1,10 @@
+# The name a document numbers its worked examples under (Example 1, Example 2, …). Each example is written to one template
+# and closes the same way (The digital link requirement starts from …); ngram-repetition does not count a phrase that each
+# numbered example carries once or twice. Numbered steps and measures are the writer's own text and are not listed.
+id: ngram-example-heading
+language: en
+entries:
+  - pattern: example
+  - pattern: worked example
+  - pattern: case study
+  - pattern: scenario

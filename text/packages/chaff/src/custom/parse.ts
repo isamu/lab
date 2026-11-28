@@ -1,4 +1,6 @@
-import type { CustomSpec, Localized, RuleDefinition, TokenCondition } from "../plugin.ts";
+import type { CustomSpec, Localized, RuleDefinition, ScopeSelector, TokenCondition } from "../plugin.ts";
+import type { ScopeProblem } from "../text-scope.ts";
+import { scopedSpec, scopeOf } from "./scope-field.ts";
 import { regexRefusal, type RegexRefusal } from "./regex-safety.ts";
 import { posTags } from "./token-pattern.ts";
 import { modulePathOf, type ModulePathRefusal } from "./module-path.ts";
@@ -33,6 +35,8 @@ export type CustomProblem =
   | { readonly kind: "unknown-pos"; readonly at: string; readonly written: string }
   | { readonly kind: "level-and-levels"; readonly at: string }
   | { readonly kind: "bad-levels"; readonly at: string; readonly written: string }
+  | { readonly kind: "bad-scope"; readonly at: string; readonly written: string; readonly problem: ScopeProblem["kind"] }
+  | { readonly kind: "module-scope"; readonly at: string }
   | (FieldProblem & { readonly at: string });
 
 export type CustomRules = { readonly rules: readonly RuleDefinition[]; readonly problems: readonly CustomProblem[] };
@@ -313,6 +317,7 @@ type Checks = {
   readonly texts: Checked<Texts>;
   readonly languages: Checked<readonly string[] | undefined>;
   readonly described: Checked<Described>;
+  readonly scope: Checked<ScopeSelector | undefined>;
 };
 
 /** The rule's parts once every check passed; undefined when one has no value. */
@@ -320,7 +325,14 @@ const partsOf = (checks: Checks, examples: Readonly<Record<string, Example>>): {
   const { id, spec, needs, levels, texts, described } = checks;
   if (id.value === undefined || spec.value === undefined || needs.value === undefined) return undefined;
   if (levels.value === undefined || texts.value === undefined || described.value === undefined) return undefined;
-  const parts = { spec: spec.value, needs: needs.value, levels: levels.value, texts: texts.value, languages: checks.languages.value, examples };
+  const parts = {
+    spec: scopedSpec(spec.value, checks.scope.value),
+    needs: needs.value,
+    levels: levels.value,
+    texts: texts.value,
+    languages: checks.languages.value,
+    examples,
+  };
   return { id: id.value, parts: { ...parts, described: described.value } };
 };
 
@@ -337,11 +349,12 @@ const ruleOf = (raw: unknown, index: number, seen: ReadonlySet<string>, context:
     texts: textsOf(raw, at),
     languages: languagesOf(raw["languages"], at),
     described: describedOf(raw, at, context.genres),
+    scope: scopeOf(raw["scope"], type.value ?? "", at),
   };
   const { texts, languages } = checks;
   const examples = texts.value === undefined ? {} : examplesOf(texts.value, languages.value);
   const unpaired: CustomProblem[] = texts.value !== undefined && Object.keys(examples).length === 0 ? [{ kind: "unpaired-example", at }] : [];
-  const ordered: Checked<unknown>[] = [id, type, checks.spec, checks.needs, checks.levels, texts, languages, checks.described];
+  const ordered: Checked<unknown>[] = [id, type, checks.spec, checks.needs, checks.levels, texts, languages, checks.described, checks.scope];
   const problems = [...ordered.flatMap((checked) => checked.problems), ...unpaired];
   const ready = problems.length > 0 ? undefined : partsOf(checks, examples);
   return ready === undefined ? failed(...problems) : ok(definitionOf(ready.id, raw, ready.parts, context.useFor));

@@ -26,6 +26,8 @@ export type NameWords = {
   readonly streetSuffixes: readonly string[];
   /** 大文字で書く決まり文句（NOW, THEREFORE、AND/OR）。句のままでだけ外す。OR だけなら Oregon でもある。 */
   readonly capitalPhrases: readonly string[];
+  /** 大文字で終わる製品の名前（Acrobat Reader DC）。名前のまま書いたときだけ外す。DC だけなら略語。 */
+  readonly productNames?: readonly string[];
 };
 
 const EDGE_BEFORE = String.raw`(?<![\p{L}\p{N}_&])`;
@@ -93,14 +95,28 @@ const CURRENCY_PREFIX = new RegExp(String.raw`${EDGE_BEFORE}\p{Lu}{1,3}(?=[$€�
 
 export const currencySymbolSpans = (text: string): Span[] => spansOf(text, CURRENCY_PREFIX);
 
+/** 登録商標や商標の印のすぐ前の大文字（Acrobat DC®、XYZ™）。製品の名前の部品で、略語ではない。 */
+const TRADEMARKED = new RegExp(String.raw`${EDGE_BEFORE}\p{Lu}{2,}(?=[®™])`, "gu");
+
+export const trademarkSpans = (text: string): Span[] => spansOf(text, TRADEMARKED);
+
 /**
- * 引用の形の中の、法令の名前（45 CFR Parts 160、CFR §164.524、21 USC §301、22 CCR §§ 12701、94/820/EC）。後ろに条（§、Part、
- * 番号）があるか、/ で繋いだ番号の後ろのときだけ。法令集そのものを言う所（the CFR title、the 2 CFR export）は略語のまま数える。
+ * 引用の形の中の、法令の名前（45 CFR Parts 160、CFR §164.524、21 USC §301、44 USC. 3502、22 CCR §§ 12701、94/820/EC、FAR section 12.212）。
+ * 後ろに条（§、Part、section、番号）があるか、/ で繋いだ番号の後ろのときだけ。名前の後ろの点（USC.）は略しの印で、条の前に書いてもよい。§ の前には大文字で始まる
+ * 1 語を挟んでもよい（15 USCA Appendix § 12）。巻の番号の後ろで点で終わる名前（See 44 USC. 3502）も引用で、文を分ける読み手は
+ * 点の後ろの条を次の文に送る。法令集そのものを言う所（the CFR title、the 2 CFR export）は略語のまま数える。
  */
 export const citationSpans = (text: string, series: readonly string[]): Span[] => {
   if (series.length === 0) return [];
   const name = oneOf(series);
-  return spansOf(text, new RegExp(String.raw`(?<=\d/)${name}${EDGE_AFTER}|${EDGE_BEFORE}${name}(?=[ \t]*(?:§|[Pp]arts?[ \t]+\d|\d))`, "gu"));
+  const section = String.raw`(?:\p{Lu}\p{L}*\.?[ \t]+)?§`;
+  return spansOf(
+    text,
+    new RegExp(
+      String.raw`(?<=\d/)${name}${EDGE_AFTER}|${EDGE_BEFORE}${name}(?=\.?[ \t]*(?:${section}|(?:[Pp]arts?|[Ss]ections?)[ \t]+\d|\d))|(?<=\d[ \t]+)${name}(?=\.)`,
+      "gu",
+    ),
+  );
 };
 
 /** 運送会社の名前。同じ文に 2 社以上を並べた所（Federal Express, UPS, DHL）だけ、どれも名前と読む。1 社だけの UPS は電源装置でもある。 */
@@ -121,9 +137,31 @@ export const streetSuffixSpans = (text: string, suffixes: readonly string[]): Sp
     ? []
     : spansOf(text, new RegExp(String.raw`(?<=${EDGE_BEFORE}\d+[A-Z]?[ \t]+(?:\p{Lu}\p{Ll}[\p{L}'’.-]*[ \t]+){1,3})${oneOf(suffixes)}${EDGE_AFTER}`, "gu"));
 
+/** 通りの種類は、語彙表の大文字の書き方と頭だけ大文字の書き方（DR と Dr）、略さずに書いた語（Road）。 */
+const streetTypesOf = (suffixes: readonly string[]): string[] =>
+  suffixes.flatMap((suffix) => [suffix, `${suffix.slice(0, 1)}${suffix.slice(1).toLowerCase()}`]);
+
+/** 番地から州と郵便番号までの、一行の所在地の長さの上限。 */
+const MAX_ADDRESS_TAIL = 80;
+
+/**
+ * 番地・通り・市・州と郵便番号まで揃った一行の所在地（1600 Clifton Rd. NE, MS H21-8, Atlanta, GA 30329）。その中の大文字
+ * （通りの方角 NE、局内の宛先 MS）は所在地の部品で、略語ではない。州と郵便番号で終わらないもの（3 AI CT）は所在地と読まない。
+ */
+export const postalAddressSpans = (text: string, suffixes: readonly string[], states: readonly string[]): Span[] => {
+  if (suffixes.length === 0 || states.length === 0) return [];
+  const street = String.raw`${EDGE_BEFORE}\d+[A-Z]?[ \t]+(?:\p{Lu}\p{Ll}[\p{L}'’.-]*[ \t]+){1,3}(?:${oneOf(streetTypesOf(suffixes))}\.?|\p{Lu}\p{Ll}+)(?=[ \t,])`;
+  const city = String.raw`,[ \t]+\p{Lu}[\p{L}'’.-]*(?:[ \t]+\p{Lu}[\p{L}'’.-]*){0,2},[ \t]+${oneOf(states)}[ \t]+\d{5}(?:-\d{4})?(?!\d)`;
+  return spansOf(text, new RegExp(`${street}[^\n]{0,${MAX_ADDRESS_TAIL}}?${city}`, "gu"));
+};
+
 /** 大文字で書く決まり文句（NOW, THEREFORE、AND/OR）。 */
 export const capitalPhraseSpans = (text: string, phrases: readonly string[]): Span[] =>
   phrases.length === 0 ? [] : spansOf(text, new RegExp(`${EDGE_BEFORE}${oneOf(phrases)}${EDGE_AFTER}`, "gu"));
+
+/** 大文字で終わる製品の名前（Adobe Acrobat Reader DC）。日本語の文では仮名が続く（Reader DCのダウンロード）ので、英字と数字だけを語の続きと見る。 */
+export const productNameSpans = (text: string, names: readonly string[]): Span[] =>
+  names.length === 0 ? [] : spansOf(text, new RegExp(String.raw`(?<![A-Za-z0-9_&])${oneOf(names)}(?![A-Za-z0-9_&])`, "gu"));
 
 /** 文の中で、名前の部品と決まり文句として略語から外す大文字を含む範囲。語彙表から一度だけ組み立てて、文ごとに呼ぶ。 */
 export const nameSpansOf =
@@ -132,9 +170,11 @@ export const nameSpansOf =
     ...companyNameSpans(text, words.legalForms, words.determiners),
     ...japaneseCompanyNameSpans(text, words.companyForms),
     ...currencySymbolSpans(text),
+    ...trademarkSpans(text),
     ...citationSpans(text, words.citationSeries),
     ...carrierListSpans(text, words.carriers),
     ...namePrefixSpans(text, words.namePrefixes),
     ...streetSuffixSpans(text, words.streetSuffixes),
     ...capitalPhraseSpans(text, words.capitalPhrases),
+    ...productNameSpans(text, words.productNames ?? []),
   ];

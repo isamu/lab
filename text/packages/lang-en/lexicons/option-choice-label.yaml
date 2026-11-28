@@ -1,0 +1,8 @@
+# A word that names one of numbered choices (duplicate-definition). A model contract sets out ways to write the same clause,
+# "1. Confidential Information (Option A)" then "(Option B)", for one to be chosen. The word followed by one number or letter
+# names a choice ("Options A and B" names clauses that stay whichever is chosen).
+id: option-choice-label
+language: en
+entries:
+  - pattern: Option
+  - pattern: Alternative

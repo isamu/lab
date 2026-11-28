@@ -54,6 +54,20 @@ describe("bracketDepth: 括弧の重なり", () => {
     assert.equal(bracketDepth("「a）"), 1);
   });
 
+  it("詩の引用が行の頭で開き直す引用符は、引用を深くしない", () => {
+    // Walt Whitman, "Going Somewhere", Leaves of Grass (1891-92)（パブリックドメイン）。
+    const verse = [
+      "Ended our talk--“The sum, concluding all we know of old or modern",
+      "  “Of all Geologies--Histories--of all Astronomy--of Evolution,",
+      "  “Life, life an endless march, an endless army, (no halt, but it is",
+      "      duly over,)",
+      "  “All bound as is befitting each--all surely going somewhere.”",
+    ].join("\n");
+    assert.equal(bracketDepth(verse), 2);
+    assert.equal(bracketDepth("He said “one “two “three”"), 3);
+    assert.equal(bracketDepth("He said\n“one (a [b])”"), 3);
+  });
+
   it("開きの無い閉じ括弧、閉じない開き括弧、数式、波括弧", () => {
     assert.equal(bracketDepth("1) 準備 2) 実行"), 0);
     assert.equal(bracketDepth("（閉じない（まま"), 2);
@@ -75,6 +89,29 @@ describe("clauseCount: 節のつながり", () => {
   it("補助動詞へのつなぎは一つの述語", () => {
     assert.equal(clauseCount(tokensOf("資料を調べている。")), 1);
     assert.equal(clauseCount(tokensOf("課長に読んでもらった。")), 1);
+  });
+
+  // 例文はすべて自作。
+  it("読点で並べた名前の一覧（晴れ、曇り）は、動詞と読める語があっても節をつながない", () => {
+    assert.equal(clauseCount(tokensOf("快晴、晴れ、曇り、霧、雨、雪、あられ、雷。")), 1);
+    assert.equal(clauseCount(tokensOf("天気は、霧、晴れ、雪、雨、曇りのどれかで書きます。")), 1);
+  });
+
+  it("助詞の無い語が二つだけ、または名詞が半ばに届かない並びは、節として数える", () => {
+    assert.equal(clauseCount(tokensOf("資料を調べて、まとめ、報告した。")), 3);
+    assert.equal(clauseCount(tokensOf("会場で走り、跳び、泳ぎ、休んだ。")), 3);
+  });
+
+  it("同じ動詞を読点で続けた手順（著者を調べ、所属を調べ、）は一つの節", () => {
+    assert.equal(clauseCount(tokensOf("著者を調べ、所属を調べ、住所を調べ、手紙を送った。")), 2);
+    assert.equal(clauseCount(tokensOf("著者を調べ、所属を確かめ、住所を調べ、手紙を送った。")), 4);
+    // 名詞に付けた「し」は、名詞ごとに別の動詞（計画を作成し、事業を継続し）。
+    assert.equal(clauseCount(tokensOf("計画を作成し、事業を継続し、準備を行った。")), 3);
+    assert.equal(clauseCount(tokensOf("倉庫を点検し、工場を点検し、報告した。")), 2);
+    // 助動詞（ない）が同じでも、その前の動詞が違えば別の節。
+    assert.equal(clauseCount(tokensOf("雨が降らない、風も吹かない、静かな日だった。")), 3);
+    // 同じ動詞でも、打ち消し（とせず）と打ち消さない形（とし）は別の節。
+    assert.equal(clauseCount(tokensOf("面接は必須とせず、筆記のみを必須とし、結果を伝えた。")), 3);
   });
 });
 

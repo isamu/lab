@@ -15,6 +15,18 @@ entries:
   - pattern: describe
   - pattern: specific
   - pattern: add
+  # group: closing — a word that ends a template's blank ("[Candidate Name]", "[Start Date]"). It counts only when the
+  # bracket holds two to four words, each opening with a capital: "[the defendant's name]" is an editor's insertion.
+  - pattern: name
+    group: closing
+  - pattern: date
+    group: closing
+  - pattern: address
+    group: closing
+  - pattern: title
+    group: closing
+  - pattern: number
+    group: closing
   # group: marker — a value left as a note to fill it in later. It counts when it is the whole value ("TBD") or opens it
   # before a colon ("TODO: add expected output pattern"), in any case. Only the start of a value counts: "a todo app" is not one.
   - pattern: TODO
@@ -42,3 +54,43 @@ entries:
     group: template
   - pattern: model form
     group: template
+  # group: example-lead — a word that opens a line offering an example to copy, before a colon and a quotation
+  # ('Helpful: "See the link [insert link name] below the image"'). A blank inside that quotation shows what to write.
+  - pattern: example
+    group: example-lead
+  - pattern: examples
+    group: example-lead
+  - pattern: for example
+    group: example-lead
+  - pattern: e.g.
+    group: example-lead
+  - pattern: helpful
+    group: example-lead
+  - pattern: unhelpful
+    group: example-lead
+  - pattern: good
+    group: example-lead
+  - pattern: bad
+    group: example-lead
+  - pattern: correct
+    group: example-lead
+  - pattern: incorrect
+    group: example-lead
+  # group: address-blank — a path segment of a web address left as the template wrote it (example.com/yourname/tool).
+  # Matched whole and in any case (YOUR_USERNAME). A word the text also names outside an address (replace yourname with …) is meant.
+  - pattern: yourname
+    group: address-blank
+  - pattern: your-name
+    group: address-blank
+  - pattern: your_name
+    group: address-blank
+  - pattern: yourusername
+    group: address-blank
+  - pattern: your-username
+    group: address-blank
+  - pattern: your_username
+    group: address-blank
+  - pattern: your-org
+    group: address-blank
+  - pattern: yourorg
+    group: address-blank

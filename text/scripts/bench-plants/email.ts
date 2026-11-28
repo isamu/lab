@@ -1,5 +1,5 @@
 // Seeded mistakes of a work email for `yarn bench`: the greeting or the closing dropped, a subject grown long, and an
-// attachment mentioned with none listed. Pure and deterministic, like scripts/bench-mutations.ts.
+// attachment mentioned with none listed in a sent message. Pure and deterministic, like scripts/bench-mutations.ts.
 import { isJapanese, isListItem, isProse, rewriteFirst, type Mutation, type Plant } from "../bench-text.ts";
 
 type Sentences = Readonly<Record<string, string>>;
@@ -12,6 +12,8 @@ const LONG_SUBJECT: Sentences = {
   en: "Following up on our conversation last week about the meeting room booking service, the visit and the trial panels",
 };
 const ATTACHED: Sentences = { ja: "建物の平面図の例を添付しました。", en: "I have attached an example floor plan." };
+/** The sender's field over the subject: the rule reads only a message as sent, since a draft's files are attached when sending. */
+const SENDER: Sentences = { ja: "差出人: 佐藤 一郎 <sato@example.com>", en: "From: Ichiro Sato <ichiro@example.com>" };
 
 /** The greeting taken out of its line: a Japanese greeting sentence, or an English "Dear …," line emptied. */
 const dropGreeting =
@@ -44,12 +46,14 @@ const lengthenSubject =
 /** A sentence that mentions an attachment, at the end of the first paragraph of prose in the sample's language. */
 const mentionAttachment =
   (language: string) =>
-  (source: string): Plant | undefined =>
-    rewriteFirst(
+  (source: string): Plant | undefined => {
+    const plant = rewriteFirst(
       source,
       (line) => isProse(line) && !isListItem(line) && (language === "ja") === isJapanese(line) && /[。.]$/u.test(line.trimEnd()),
       (line) => `${line.trimEnd()}${language === "ja" ? "" : " "}${ATTACHED[language] ?? ""}`,
     );
+    return plant === undefined ? undefined : { source: `${SENDER[language] ?? ""}\n${plant.source}`, line: plant.line + 1 };
+  };
 
 const both = (id: string, rule: string, plant: (language: string) => Mutation["plant"], reportsOn?: "document"): Mutation[] =>
   ["ja", "en"].map((language) => ({

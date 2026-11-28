@@ -1,0 +1,8 @@
+# ファイルを指す名詞。文書がこの語のすぐ前でだけ書く大文字（MAPファイル、the MAP files）は、拡張子で呼ぶファイルの種類の
+# 名前なので、undefined-acronym は展開を求めない。英文をそのまま載せた文書のために英語の形も置く。大文字小文字を問わず照らす。
+id: file-noun
+language: ja
+entries:
+  - pattern: "ファイル"
+  - pattern: "file"
+  - pattern: "files"

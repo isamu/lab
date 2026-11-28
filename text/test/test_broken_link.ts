@@ -50,6 +50,13 @@ describe("broken-link: 行き先の無いリンク", () => {
     assert.deepEqual(findingsOf(source, en), ['The link "[b](#setup-2)" points to "#setup-2", which is not a heading on this page']);
   });
 
+  it("MDN の {{Compat}} と {{Specifications}} の節は、訳した見出しでも決まった名前で指せる", () => {
+    const source =
+      "## 仕様書\n\n{{Specifications}}\n\n## ブラウザーの互換性\n\n{{Compat}}\n\n（[互換性](#browser_compatibility)と[仕様](#specifications)を参照）\n";
+    assert.deepEqual(findingsOf(source), []);
+    assert.deepEqual(findingsOf("## ブラウザーの互換性\n\n（[互換性](#browser_compatibility)を参照）\n").length, 1);
+  });
+
   it("MDN の書き方の _2、_3 は、二つ目、三つ目の同じ見出し。その数だけあるときだけ行き先がある", () => {
     const source = "#### `max-age`\n\n#### `max-age`\n\n| [`max-age`](#max-age) | [`max-age`](#max-age_2) | [a](#max-age_3) | [b](#max-age_1) |\n";
     assert.deepEqual(findingsOf(source), [
@@ -125,6 +132,27 @@ describe("broken-link: 行き先の無いリンク", () => {
 
   it("数だけの括弧は文献の番号、英数字に続く括弧は添字", () => {
     assert.deepEqual(findingsOf("Earlier work [1][2] used A[i][j] and B[0][1].\n", en), []);
+  });
+
+  it("ファイルの種類と大きさの札（[Excel:28KB][PDF:47KB]）は参照の記法ではない", () => {
+    assert.deepEqual(findingsOf("別紙様式[Excel:28KB][PDF:47KB]により提出してください。\n"), []);
+    assert.deepEqual(findingsOf("募集要項[PDFファイル／269KB][Word形式:1.2 MB]をご覧ください。\n"), []);
+    assert.deepEqual(findingsOf("The form [PDF 47 KB][] is attached.\n", en), []);
+    assert.deepEqual(findingsOf("詳しくは[報告書][PDF2026]を見てください。\n").length, 1);
+    assert.deepEqual(findingsOf("詳しくは[報告書 47KB版][report]を見てください。\n").length, 1);
+  });
+
+  it("正規表現の文字クラスは参照の記法ではない", () => {
+    assert.deepEqual(findingsOf("A name matches [A-Za-z0-9][A-Za-z0-9\\-\\+\\./]* in the check.\n", en), []);
+    assert.deepEqual(findingsOf("Digits [0-9][^a-z] follow.\n", en), []);
+    assert.deepEqual(findingsOf("See [e-mail][contact-us].\n", en).length, 1);
+  });
+
+  it("mdBook の規則の印のある本で、印の形の名前は本が定義を足す", () => {
+    const book = "r[glossary.ast]\n### Tree\n\nSee [trait objects][type.trait-object].\n";
+    assert.deepEqual(findingsOf(book, en), []);
+    assert.deepEqual(findingsOf("### Tree\n\nSee [trait objects][type.trait-object].\n", en).length, 1);
+    assert.deepEqual(findingsOf("r[glossary.ast]\n### Tree\n\nSee [trait objects][trait-object].\n", en).length, 1);
   });
 
   it("逃がした括弧とコードの中は読まない", () => {

@@ -1,0 +1,23 @@
+# 英字で書いた法律や機関の題の最後の語（National Industrial Recovery Act の Act、Federal Trade Commission の Commission）。
+# この語で終わる、大文字で始まる三語以上を題と読み、二度以上書いた題と一語だけ一字違う、一度だけ書いた題を指す（name-variant）。
+# 漢字の題（民法 と 商法）は一字違いでも別の法律なので、英字の題だけを見る。書いたまま照らす。
+id: name-title-head
+language: ja
+entries:
+  - pattern: Act
+  - pattern: Code
+  - pattern: Statute
+  - pattern: Treaty
+  - pattern: Convention
+  - pattern: Regulation
+  - pattern: Directive
+  - pattern: Commission
+  - pattern: Administration
+  - pattern: Agency
+  - pattern: Authority
+  - pattern: Board
+  - pattern: Bureau
+  - pattern: Committee
+  - pattern: Council
+  - pattern: Department
+  - pattern: Office

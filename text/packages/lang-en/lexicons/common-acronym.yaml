@@ -17,6 +17,8 @@ entries:
   - pattern: GPU
   - pattern: RAM
   - pattern: USB
+  # The connector printed on every television and its cable, named by these letters alone, as USB is.
+  - pattern: HDMI
   - pattern: AI
   - pattern: ID
   - pattern: FAQ
@@ -58,10 +60,16 @@ entries:
   - pattern: WAV
   - pattern: MOV
   - pattern: SVG
+  # Office file formats, written without explanation in download lists (DOCX, 44 KB) as PDF and CSV are. DOC and PPT are other acronyms too, so they are left out.
+  - pattern: DOCX
+  - pattern: XLSX
+  - pattern: PPTX
+  - pattern: XLS
   - pattern: QR
   - pattern: GPS
   - pattern: SNS
   - pattern: TV
+  - pattern: BB # the gun and its shot (BB guns), an everyday word
   - pattern: KB
   - pattern: MB
   - pattern: GB
@@ -70,11 +78,14 @@ entries:
   - pattern: CEO
   - pattern: CTO
   - pattern: CFO
+  - pattern: HR # the office every workplace has (call HR), an everyday word
   - pattern: US
   - pattern: USA
   - pattern: UK
   - pattern: EU
   - pattern: UN
+  # A place a general reader names by its letters, as USA (New York City).
+  - pattern: NYC
   - pattern: WHO
   - pattern: ASEAN
   - pattern: DNA
@@ -99,10 +110,20 @@ entries:
   - pattern: HIV
   - pattern: UV
   - pattern: FYI
+  - pattern: NB # nota bene, a Latin abbreviation read like i.e. and e.g.
   - pattern: LGBTQ
+  - pattern: CD
+  - pattern: ROM
+  - pattern: LED
+  - pattern: WIFI
+  - pattern: VIP
+  - pattern: RV
+  - pattern: TBA
+  - pattern: PTA
   # Names a reader knows as names, not as acronyms to spell out: the file every repository opens with, and a licence.
   - pattern: README
   - pattern: MIT
+  - pattern: BSD
   # & で繋いだ、仕事の文書で説明なしで通じる語。
   - pattern: Q&A
   - pattern: R&D

@@ -33,6 +33,13 @@ describe("redundant-expression: 重言", () => {
     assert.deepEqual(redundant("Each and every user gets a key.", en), ['"each and every" says the same thing twice']);
   });
 
+  it("a pair whose last word starts a hyphenated compound is not the pair", () => {
+    assert.deepEqual(redundant("We count every true fact-check in the sample.", en), []);
+    assert.deepEqual(redundant("The end result-oriented plan was dropped.", en), []);
+    assert.deepEqual(redundant("It is a true fact - check it.", en), ['"true fact" says the same thing twice']);
+    assert.deepEqual(redundant("It is a true fact-", en), ['"true fact" says the same thing twice']);
+  });
+
   it("English idioms that are sometimes needed are left alone", () => {
     assert.deepEqual(redundant("Tell us whether or not you can attend.", en), []);
     assert.deepEqual(redundant("The result is a shorter build.", en), []);

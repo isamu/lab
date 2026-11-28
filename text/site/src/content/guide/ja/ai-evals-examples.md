@@ -122,7 +122,7 @@ prompt B の答え（`prompt-b.md`）です。
 ```markdown file=prompt-b.md
 # デプロイが止まった理由
 
-近年、ソフトウェアの世界でデプロイは重要な役割を果たすと言えるでしょう。
+近年、ソフトウェアの世界でデプロイは重要な役割を担うと言えるでしょう。
 本記事では、火曜日に何が起きたのかを深く掘り下げます。
 
 **原因はコードではありません。データベースです。**
@@ -150,11 +150,11 @@ $ npx chaffjs prompt-b.md --compact
 
 prompt-b.md   blog/tech · 日本語   ジャンルは既定から
 
-  3:1     info    「重要な役割を果たす、と言えるでしょう、深く掘り下げる、本記事では、地味に効く」が揃っています（点 29、18 まで）
+  3:1     info    「と言えるでしょう、深く掘り下げる、重要な役割を担う、本記事では、地味に効く」が揃っています（点 22、4 まで）
                   ai-tell
   3:1     warning 「近年」は、どの記事にも当てはまる書き出しです
                   padded-intro
-  3:1     warning 「ai-tell、padded-intro、closing-cliche」が同じ文書にそろっています（3 種、3 種から）
+  3:1     warning 生成文の特徴が 3 種、同じ文書にそろっています（2 種から）。生成文にありがちな言い回し、水増しの導入、定型の結び
                   ai-generated-composite
   12:1    warning 「いかがでしたか」で締めています
                   closing-cliche
@@ -226,7 +226,7 @@ $ npx chaffjs answer.md --compact
 
 answer.md   blog/tech · 日本語   ジャンルは既定から
 
-  7:8     error   合計「150,000円」が、内訳の金額の和（160,000円）と合いません
+  7:8     error   合計「150,000円」が、内訳の和（160,000円）と合いません
                   total-mismatch
   9:5     error   「2026年10月6日」は火曜日です（月曜日と書いてあります）
                   date-weekday-mismatch

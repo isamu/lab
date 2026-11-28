@@ -1,7 +1,8 @@
 # Words in everyday technical and business writing that WordNet does not list. unknown-word reads them as known, with
 # their endings: function words WordNet leaves out (cannot, wherein, albeit, whilst), Latin phrases in English text
 # (a priori, in forma pauperis, de minimis), the legal words of contracts (thereunder, herefrom, monies, pendency,
-# cedent, telecopy) and newer coinages (onboard, roadmap, phishing, vishing, ransomware). A team adds its own words
+# cedent, telecopy), newer coinages (onboard, roadmap, phishing, vishing, ransomware, agentic, toolbar), clippings of operations writing (comms, admin, config, collab), the lower-case names of standard tools (systemd, sudo, cmake, rustc) and everyday
+# words WordNet missed (amidst, ahold, barista, grift). A team adds its own words
 # under names in chaff.yaml; this list is only for words any document may use.
 id: extra-word
 language: en
@@ -10,9 +11,12 @@ entries:
   - pattern: accessibility
   - pattern: admin
   - pattern: adware
+  - pattern: agentic
+  - pattern: ahold
   - pattern: albeit
   - pattern: alia
   - pattern: alterius
+  - pattern: amidst
   - pattern: amotion
   - pattern: api
   - pattern: app
@@ -23,6 +27,7 @@ entries:
   - pattern: backend
   - pattern: backlog
   - pattern: backslash
+  - pattern: barista
   - pattern: biometric
   - pattern: blog
   - pattern: bona
@@ -39,9 +44,12 @@ entries:
   - pattern: checkout
   - pattern: checksum
   - pattern: cli
+  - pattern: cmake
   - pattern: codebase
   - pattern: codec
+  - pattern: collab
   - pattern: combinator
+  - pattern: comms
   - pattern: config
   - pattern: const
   - pattern: contractus
@@ -63,8 +71,10 @@ entries:
   - pattern: devops
   - pattern: dialog
   - pattern: distributee
+  - pattern: distro
   - pattern: dogfood
   - pattern: doozy
+  - pattern: dox
   - pattern: dropdown
   - pattern: ebook
   - pattern: ecommerce
@@ -83,6 +93,7 @@ entries:
   - pattern: fieri
   - pattern: filename
   - pattern: flatu
+  - pattern: flyout
   - pattern: forma
   - pattern: franchisee
   - pattern: franchisor
@@ -90,6 +101,7 @@ entries:
   - pattern: generis
   - pattern: geospatial
   - pattern: github
+  - pattern: grift
   - pattern: hardcode
   - pattern: hardcoded
   - pattern: hashtag
@@ -115,6 +127,7 @@ entries:
   - pattern: interoperable
   - pattern: json
   - pattern: keylogger
+  - pattern: lakehouse
   - pattern: lest
   - pattern: licensor
   - pattern: lifecycle
@@ -129,11 +142,13 @@ entries:
   - pattern: metadata
   - pattern: middleware
   - pattern: minimis
+  - pattern: mockup
   - pattern: modulo
   - pattern: monies
   - pattern: multi
   - pattern: multiplet
   - pattern: mutex
+  - pattern: mythos
   - pattern: namespace
   - pattern: npm
   - pattern: obligee
@@ -180,6 +195,7 @@ entries:
   - pattern: roadmap
   - pattern: rootkit
   - pattern: runtime
+  - pattern: rustc
   - pattern: sandbox
   - pattern: sans
   - pattern: scalability
@@ -202,8 +218,11 @@ entries:
   - pattern: sublessee
   - pattern: sublicensee
   - pattern: subproject
+  - pattern: sudo
   - pattern: sustainably
+  - pattern: synch
   - pattern: syntax
+  - pattern: systemd
   - pattern: tanto
   - pattern: telecopy
   - pattern: thenceforward
@@ -213,6 +232,7 @@ entries:
   - pattern: timeline
   - pattern: timestamp
   - pattern: timezone
+  - pattern: toolbar
   - pattern: toolchain
   - pattern: toolkit
   - pattern: tooltip
@@ -221,6 +241,7 @@ entries:
   - pattern: tuple
   - pattern: typo
   - pattern: unius
+  - pattern: upsert
   - pattern: upskill
   - pattern: upwelling
   - pattern: url

@@ -31,13 +31,13 @@ const PENDING = { en: "SRE, XYZ and CBA are pending.", ja: "SRE、XYZ、CBAは�
     });
 
     it("一般の読み手が読む略語（DOI、ISO、UTC、SMS）は載せ、分野の略語と機関の名前（RFC、IANA、NASA）は載せない", () => {
-      ["DOI", "ISBN", "ISSN", "ISO", "UTC", "GDP", "SMS", "FAX", "DVD", "DIY", "HIV", "UV"].forEach((word) => assert.ok(common.includes(word), word));
+      ["DOI", "ISBN", "ISSN", "ISO", "UTC", "GDP", "SMS", "FAX", "DVD", "DIY", "HIV", "UV", "HDMI"].forEach((word) => assert.ok(common.includes(word), word));
       ["RFC", "IANA", "NIST", "GSA", "NASA"].forEach((word) => assert.ok(!common.includes(word), word));
     });
 
-    it("日常の略語（FYI、LGBTQ）は載せる。日本語の日常の語 WEB は日本語だけ", () => {
+    it("日常の略語（FYI、LGBTQ）は載せる。日本語の日常の語 WEB と CM（テレビCM）は日本語だけ", () => {
       ["FYI", "LGBTQ"].forEach((word) => assert.ok(common.includes(word), word));
-      assert.equal(common.includes("WEB"), adapter.id === "ja");
+      ["WEB", "CM"].forEach((word) => assert.equal(common.includes(word), adapter.id === "ja", word));
     });
 
     it("ブラウザの名前 IE は、版の番号が付いても並べて書いても指摘しない。IE で始まる別の略語（IEEE）は指摘する", () => {
@@ -58,6 +58,14 @@ const PENDING = { en: "SRE, XYZ and CBA are pending.", ja: "SRE、XYZ、CBAは�
         assert.ok(found.includes("SRE"), `${word} の文書でも SRE は指摘する`);
       });
     });
+  });
+});
+
+describe("common-acronym（en）: a place named by its letters", () => {
+  it("NYC, like USA, is not asked for; an organisation's letters beside it still are", () => {
+    const found = reported(en, `# Guides\n\n${PENDING.en} See the NYC Accessible Virtual Meetings Guide. The GSA guide is free.\n`);
+    assert.ok(!found.includes("NYC"), found.join(","));
+    assert.ok(found.includes("GSA"), found.join(","));
   });
 });
 

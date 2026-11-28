@@ -199,7 +199,7 @@ describe("house styles", () => {
     });
 
     it("style: koyobun reports です・ます mixed with である, and コンピュータ without its ー", async () => {
-      const source = "# 報告\n\n新しいコンピュータを買いました。古い機械は来月捨てる。\n";
+      const source = "# 報告\n\n新しいコンピュータを買いました。明日届きます。古い機械は来月捨てる。\n";
       const run = await runCli({ "chaff.yaml": "language: ja\nstyle: koyobun\n", "a.md": source }, ["a.md", "--compact"]);
       assert.match(run.out, /no-mixed-desumasu/u);
       assert.match(run.out, /「コンピュータ」は語末の「ー」を付けて「コンピューター」と書きます/u);
@@ -253,8 +253,8 @@ describe("house styles", () => {
     it("explain and rules --json say the setting came from the style", async () => {
       const files = { "chaff.yaml": "language: ja\nstyle: ieice\noptions:\n  katakana-long-vowel:\n    min_morae: 4\n" };
       const explained = await runCli(files, ["explain", RULE]);
-      assert.match(explained.out, /ending: drop {3}\(style: ieice から\)/u);
-      assert.match(explained.out, /min_morae: 4 {3}\(chaff\.yaml から\)/u);
+      assert.match(explained.out, /ending: drop {3}（style: ieice から）/u);
+      assert.match(explained.out, /min_morae: 4 {3}（chaff\.yaml から）/u);
       const json = await runCli(files, ["rules", "--json"]);
       assert.match(json.out, /"style": \{\s*"id": "ieice"/u);
       assert.match(json.out, /"your_setting": \{\s*"level": "normal",\s*"from": "style: ieice"\s*\}/u);

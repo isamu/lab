@@ -1,13 +1,13 @@
 import type { Detector, Finding, ProseDocument, StructureNode } from "../plugin.ts";
-import { danglingReferences, duplicateDefinitions, inDocumentOrder, type StructureIssue } from "../structure/issues.ts";
+import { danglingReferences, inDocumentOrder, type StructureIssue } from "../structure/issues.ts";
 import { numberingBreaks } from "../structure/numbering.ts";
-import { attachedPartStarts } from "../structure/attached-parts.ts";
 import { numberingReadings } from "./numbering-readings.ts";
 import { listsNumberBreaks } from "../structure/list-numbering.ts";
 import { weekdayMismatches } from "../structure/weekday.ts";
 import { revisionAnchors } from "./revision-date.ts";
 import { documentDateOf } from "./document-date.ts";
 import { dateOrderBreaks } from "../structure/date-order.ts";
+import { scheduledPoints } from "../structure/due-column.ts";
 import { totalMismatches, type Amount } from "../structure/total.ts";
 import { isListedTotal, isPeriodTotalLine, isTotalLikeLine, isTotalLine } from "../structure/total-line.ts";
 import { proseTotalMismatches } from "../structure/prose-total.ts";
@@ -38,7 +38,7 @@ export const quoteAt = (source: string, offset: number): string => {
     .trim();
 };
 
-const findingsOf =
+export const findingsOf =
   (rule: string, issuesOf: (tree: NonNullable<ProseDocument["structure"]>, source: string) => StructureIssue[]): Detector =>
   (doc): Finding[] =>
     doc.structure === undefined
@@ -53,7 +53,9 @@ const findingsOf =
         }));
 
 export const danglingReference: Detector = (doc, options) =>
-  findingsOf("dangling-reference", (tree, source) => danglingReferences(tree, source, patternsOf(doc, "section-name-noun")))(doc, options);
+  findingsOf("dangling-reference", (tree, source) =>
+    danglingReferences(tree, source, patternsOf(doc, "section-name-noun"), patternsOf(doc, "reference-list-heading")),
+  )(doc, options);
 /** Markdown の HTML ブロックの中の条は木に入らない。そこを挟んだ抜けは、見えなかった番号かもしれない。 */
 const structureNumberingGap: Detector = (doc, options) =>
   findingsOf("numbering-gap", (tree, source) => numberingBreaks(tree, ...numberingReadings(doc, source)))(doc, options);
@@ -93,11 +95,6 @@ export const numberingGap: Detector = (doc, options): Finding[] => {
     (left, right) => Number(left.values["offset"]) - Number(right.values["offset"]),
   );
 };
-export const duplicateDefinition: Detector = (doc, options) => {
-  const labels = patternsOf(doc, "attached-instrument-label");
-  return findingsOf("duplicate-definition", (tree, source) => duplicateDefinitions(tree, attachedPartStarts(source, labels), source))(doc, options);
-};
-
 /** 曜日の名前は言語パッケージの語彙表（weekday、日曜日から順）から取る。無ければ番号のまま。 */
 const dayName = (doc: ProseDocument, day: unknown): string => {
   const index = Number(day);
@@ -178,15 +175,17 @@ export const datedPoints = (tree: NonNullable<ProseDocument["structure"]>): { of
 export const dateOrder: Detector = (doc): Finding[] =>
   doc.structure === undefined
     ? []
-    : dateOrderBreaks(doc.source, datedPoints(doc.structure), doc.markup?.headings ?? []).map((issue) => ({
-        rule: "date-order",
-        severity: "warning",
-        line: 0,
-        column: 0,
-        quote: quoteAt(doc.source, issue.offset),
-        values: { ...withReadableDates(issue.values, ["date", "previous", "next"], readableDates(doc)), offset: issue.offset },
-        ...("next" in issue.values ? { variant: "first" } : {}),
-      }));
+    : dateOrderBreaks(doc.source, scheduledPoints(doc.source, datedPoints(doc.structure), patternsOf(doc, "action-due-label")), doc.markup?.headings ?? []).map(
+        (issue) => ({
+          rule: "date-order",
+          severity: "warning",
+          line: 0,
+          column: 0,
+          quote: quoteAt(doc.source, issue.offset),
+          values: { ...withReadableDates(issue.values, ["date", "previous", "next"], readableDates(doc)), offset: issue.offset },
+          ...("next" in issue.values ? { variant: "first" } : {}),
+        }),
+      );
 
 /** 木の数量を、原文の位置と一緒に並べる。 */
 export const amountsOf = (tree: NonNullable<ProseDocument["structure"]>): Amount[] =>
@@ -340,6 +339,7 @@ const shareWordsOf = (doc: ProseDocument): ShareWords => ({
   exceptions: (doc.lexicons["share-exception"] ?? []).map((entry) => entry.pattern),
   rests: (doc.lexicons["share-rest"] ?? []).map((entry) => entry.pattern),
   changes: (doc.lexicons["change-direction"] ?? []).map((entry) => entry.pattern),
+  joiners: [...(doc.lexicons["range-connector"] ?? []), ...(doc.lexicons["quantity-range-word"] ?? [])].map((entry) => entry.pattern),
   units: (doc.lexicons["percent-unit"] ?? []).map((entry) => entry.pattern),
   totalLabels: (doc.lexicons["total-label"] ?? []).map((entry) => entry.pattern),
 });

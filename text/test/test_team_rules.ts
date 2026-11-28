@@ -32,7 +32,7 @@ describe("チームが決める rule", () => {
     it("活用していても原形で当たる", () => {
       // 利用者は辞書形で書く（握る）が、本文は活用している（握った）。
       const found = runRules(buildDocument("t.md", PROPOSAL, ja, { jargon: ["握る"], requiredSections: [] }), RULES, {}, true, "business/proposal").findings;
-      assert.ok(found.some((finding) => finding.rule === "internal-jargon" && finding.values["matched"] === "握る"));
+      assert.ok(found.some((finding) => finding.rule === "internal-jargon" && finding.values["matched"] === "握った"));
     });
 
     it("複合動詞は語幹で書けば当たる", () => {
@@ -174,6 +174,31 @@ describe("internal-jargon: a verb listed in its dictionary form matches its conj
 
   it("an English noun entry is matched as written, not as a verb", () => {
     assert.deepEqual(quotesFor(en, "# Note\n\nWe met the vendor.\n", ["meeting"]), []);
+  });
+
+  const matchedFor = (adapter: typeof ja, source: string, jargon: readonly string[]): unknown[] =>
+    runRules(buildDocument("t.md", source, adapter, { jargon, requiredSections: [] }), adapter === ja ? RULES_JA : RULES_EN, {}, true, "business/proposal")
+      .findings.filter((finding) => finding.rule === "internal-jargon")
+      .map((finding) => [finding.values["matched"], finding.values["count"]]);
+
+  it("every listed word in one sentence is reported, and the count counts words", () => {
+    assert.deepEqual(matchedFor(ja, "# 連絡\n\n先方と握った内容は、こちらで巻き取ります。\n", ["握る", "巻き取る"]), [
+      ["握った", 2],
+      ["巻き取ります", 2],
+    ]);
+    assert.deepEqual(matchedFor(en, "# Note\n\nWe will circle back once they are on the dock.\n", ["circle back", "on the dock"]), [
+      ["circle back", 2],
+      ["on the dock", 2],
+    ]);
+  });
+
+  it("the written form is quoted, to the end of the word a stem stops inside", () => {
+    assert.deepEqual(matchedFor(ja, "# 手順\n\n在庫を巻き取ります。\n", ["巻き取"]), [["巻き取ります", 1]]);
+    assert.deepEqual(matchedFor(en, "# Note\n\nI pinged the vendor.\n", ["ping"]), [["pinged", 1]]);
+  });
+
+  it("two listed words over the same place count once, as the longer", () => {
+    assert.deepEqual(matchedFor(ja, "# 手順\n\n先方と握っておきます。\n", ["握る", "握っておく"]), [["握っておきます", 1]]);
   });
 });
 

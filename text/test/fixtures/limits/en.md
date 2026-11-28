@@ -2,7 +2,9 @@
 
 Alice met Bob in London with Carol from Paris and Dave from Berlin.
 
-They agreed on the plan below.
+They agreed on the plan below. Easier said than done. I hope this email finds you well. I apologize for any inconvenience.
+
+This isn't about tooling. That's not the point of the review. It's not a question of budget.
 
 ## Summary
 
@@ -10,6 +12,7 @@ There is a need to review the budget. There is a plan to hire two people. There 
 It is clear that the team needs more time. It is obvious that the release will slip.
 In today's fast-paced world, we must delve into the tapestry of our processes; it's not just a tool, it plays a crucial role.
 This is not only a report but also a plan. As of my last knowledge update, the venue was fixed.
+The delay wasn't the budget. It was the vendor.
 The team quickly and quietly reviewed the plan — then happily and eagerly approved it — and finally, rapidly and carefully, shipped it.
 Arguably, it seems the plan works. It may possibly be late. It could be fine, to some extent, in some cases.
 Sorry to bother you, but if you don't mind, I just wanted to ask. I was wondering if you could check it 😀.
@@ -50,6 +53,11 @@ A third list follows.
 
 The next meeting is on the tenth. The agenda will follow by email. The slides are due the day before. The owners are named in the tracker. The budget line is in the shared sheet. The review closes on Friday at noon. The venue is the main office on the third floor. Questions go to the program manager, who will answer within a day. Late items move to the following week without discussion. Each owner reports status in one line. Blockers are raised first, then risks, then decisions. Notes are posted within an hour of the meeting ending.
 
+The agenda covers these items:
+
+- Budget
+- Hiring
+
 ## On the day
 
 The key point is the key. Here's the thing: the map matters. Honestly, time is short.
@@ -60,12 +68,34 @@ The plan was very good and very clear, and the team was very busy.
 
 So, the plan holds. So, we ship.
 
+Most people skip the check. Nobody reads the log. Everyone pays for it later.
+Is the plan perfect? No. The result? Faster builds.
+
+## Roles
+
+- **Chair**: Tanaka.
+- **Notes**: Suzuki.
+
+## Packing
+
+Bring these things:
+
+- A key
+- A map
+
+## Schedule
+
+The day goes like this:
+
+- Meet
+- Leave
+
 ## 🚀 Before
 
 Bring the key.
 
 ## ✅ After
 
-Return the key.
+Return the key. You've got this.
 
 Subject: The weekly report on the budget, the hiring plan and the schedule

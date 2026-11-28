@@ -195,8 +195,9 @@ describe("L3 日本語", () => {
       assert.ok(!idsFor(source).includes("no-mixed-desumasu"));
     });
 
-    it("invalid: 「の」で終わる問いかけ（「〜のかな？」）は、手前の述語の調子で数える", () => {
-      assert.ok(idsFor("運用を始めます。手順を作ります。効果を測定します。どうやって納めているのかな？").includes("no-mixed-desumasu"));
+    // 「〜のかな？」は読み手への呼びかけ（address-particle）として指さないので、「の」で終わる問いかけそのもので確かめる。
+    it("invalid: 「の」で終わる問いかけ（「〜の？」）は、手前の述語の調子で数える", () => {
+      assert.ok(idsFor("運用を始めます。手順を作ります。効果を測定します。どうやって納めているの？").includes("no-mixed-desumasu"));
     });
 
     it("invalid: 「こと」の後ろに述語が続けば調子を持つ（「〜することだ。」）", () => {
@@ -218,7 +219,7 @@ describe("L3 日本語", () => {
 
     it("invalid: 「！」「？」の後が助詞で始まらなければ、そこで文は終わる", () => {
       assert.ok(idsFor("運用を始める。日報を導入しませんか？ 手順を作る。効果を測る。").includes("no-mixed-desumasu"));
-      assert.ok(idsFor("運用を始めます。徹夜で作っていた！手順を作ります。効果を測ります。").includes("no-mixed-desumasu"));
+      assert.ok(idsFor("運用を始める。準備が整いました！手順を作る。効果を測る。").includes("no-mixed-desumasu"));
     });
 
     it("invalid: 述語で終わる文は、名詞が挟まっても調子を持つ（〜である・〜だ）", () => {

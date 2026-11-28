@@ -45,6 +45,197 @@ const leadsIntoList = (section: Pick<Section, "depth" | "sentences">, source: st
   return LIST_OR_TABLE_NEXT.test(source.slice(first.span.end, first.span.end + LOOKAHEAD)) ? [first] : [];
 };
 
+/**
+ * 識別子だけの見出し（`max-age`、【dict1】、[draft]）。参照の項目の名前で、節は一つの項目の説明。
+ * 括弧の中が言葉の札（【アドバイス等】）なら、相談事例ごとに繰り返す欄の名前で、項目の名前ではない。
+ */
+const IDENTIFIER_HEADING = /^(?:`[^`]+`|【[\w.:/-]+】|\[[\w.:/-]+\])$/u;
+
+/** 定義の並びの説明（「- : …」「: …」）。Markdown の定義の書き方で、項目の名前の下の行が「: 」で始まる。 */
+const DEFINITION_LINE = /(?:^|\n)[ \t]*(?:[-*+][ \t]+)?:[ \t]*$/u;
+const DEFINITION_REACH = 12;
+
+/** 平文の仕様書の定義の並び（「   qu:  The OPTIONAL "qu" parameter …」）。行の頭の短い名前とコロンのあとに空白が 2 つ以上続く。 */
+const PLAIN_DEFINITION = /^\s*[\p{L}\p{N}_.-]{1,24}:[ \t]{2,}\S/u;
+
+const opensDefinition = (sentence: Sentence, source: string): boolean =>
+  /^\s*:\s/u.test(sentence.text) ||
+  PLAIN_DEFINITION.test(sentence.text) ||
+  DEFINITION_LINE.test(source.slice(Math.max(0, sentence.span.start - DEFINITION_REACH), sentence.span.start));
+
+const BLANK_LINE = /\n[ \t]*\n/u;
+
+/** first から始まる段落（空行まで）の文。 */
+const paragraphFrom = (sentences: readonly Sentence[], first: Sentence, source: string): Sentence[] => {
+  const blank = source.slice(first.span.start).search(BLANK_LINE);
+  const end = blank === -1 ? source.length : first.span.start + blank;
+  return sentences.filter((sentence) => sentence.span.start >= first.span.start && sentence.span.start < end);
+};
+
+/**
+ * 参照の項目の説明の段落: 識別子だけの見出しの節の最初の段落と、定義の並びの説明の段落。参照の項目は同じ枠で書く
+ * （…ことを示します、…の有効なソースを指定します、…は冗長な表現です。…を省き簡潔な表現にすると…）。並んだ項目のどれも同じ書き方なのは
+ * 書式で、読み手は項目を一つずつ引く。
+ */
+export const entryOpeners = (sections: readonly Pick<Section, "heading" | "sentences">[], source: string): Sentence[] =>
+  sections.flatMap((section) => {
+    const first = section.sentences[0];
+    const starts = [
+      ...(first !== undefined && IDENTIFIER_HEADING.test(section.heading.trim()) ? [first] : []),
+      ...section.sentences.filter((sentence) => opensDefinition(sentence, source)),
+    ];
+    return starts.flatMap((start) => paragraphFrom(section.sentences, start, source));
+  });
+
+const FRAGMENT_END = /[\p{P}\p{S}]\s*$/u;
+const NOUN_END = new Set(["NOUN", "PROPN", "NUM"]);
+const LINE_END_NEXT = /^[ \t]*(?:\n|$)/u;
+
+/**
+ * 句点の無い、名詞で終わる一行（「e-Govアカウント仮登録入力画面で入力されたメールアドレス」）。文ではなく、表の欄や項目の名前。
+ * 変換が表を段落に崩しても、欄の値は行ごとに同じ言い回しを持つ。品詞が無ければ見分けない。
+ */
+export const nounFragments = (sentences: readonly Sentence[], source: string): Sentence[] =>
+  sentences.filter((sentence) => {
+    const last = sentence.tokens?.filter((token) => token.pos !== "PUNCT" && token.pos !== "SYM").at(-1);
+    return (
+      last !== undefined &&
+      NOUN_END.has(last.pos) &&
+      !FRAGMENT_END.test(sentence.text) &&
+      LINE_END_NEXT.test(source.slice(sentence.span.end, sentence.span.end + LOOKAHEAD))
+    );
+  });
+
 /** 節のひな形の文: 一覧を導く節の最初の文と、項目ごとの見出し（itemTitles）。 */
 export const sectionOpeners = (sections: readonly Pick<Section, "depth" | "sentences">[], source: string): Set<Sentence> =>
   new Set(sections.flatMap((section) => [...leadsIntoList(section, source), ...itemTitles(section.sentences, source)]));
+
+/** 表の一行の前の欄の数。2 つ続けば欄の並び（件名、送信先）で、名前の一行に本文が続く小見出しの形とは違う。 */
+const CELLS_BEFORE = 2;
+
+/**
+ * 句点の無い名詞の一行（nounFragments）が 2 つ続いた直後の、一行の文（「…が完了した旨を通知する。」）。表を段落に崩すと、
+ * 行の最後の欄（目的、説明）は文になっても、行ごとに同じ枠で書く欄の値。
+ */
+export const rowEndCells = (sentences: readonly Sentence[], fragments: ReadonlySet<Sentence>, source: string): Sentence[] =>
+  sentences.filter(
+    (sentence, index) =>
+      index >= CELLS_BEFORE &&
+      sentences.slice(index - CELLS_BEFORE, index).every((cell) => fragments.has(cell)) &&
+      LINE_END_NEXT.test(source.slice(sentence.span.end, sentence.span.end + LOOKAHEAD)),
+  );
+
+const LABEL_END = /[:：]\s*$/u;
+const LINE_START_BEFORE = /(?:^|\n)[ \t]*$/u;
+
+/**
+ * 一行を占め、コロンで終わり、文書の中にまったく同じ形で 2 度以上出る文（The following rule has the force of law:）。後ろの枠や
+ * 一覧に付ける札で、項目ごとに同じ札を付けるのは書式。言い回しを変えた導入（When you join a meeting, follow these guidelines:）は札ではない。
+ */
+export const labelLines = (sentences: readonly Sentence[], source: string): Sentence[] => {
+  const lines = sentences.filter(
+    (sentence) =>
+      LABEL_END.test(sentence.text) &&
+      LINE_START_BEFORE.test(source.slice(Math.max(0, sentence.span.start - LINE_START_REACH), sentence.span.start)) &&
+      LINE_END_NEXT.test(source.slice(sentence.span.end, sentence.span.end + LOOKAHEAD)),
+  );
+  const counts = new Map<string, number>();
+  lines.forEach((line) => counts.set(line.text.trim(), (counts.get(line.text.trim()) ?? 0) + 1));
+  return lines.filter((line) => (counts.get(line.text.trim()) ?? 0) > 1);
+};
+
+/** 数字を伏せた形。数字だけが違う文は、同じ書式に数を入れたもの。 */
+const DIGITS = /[\d０-９]+/gu;
+const HAS_DIGIT = /[\d０-９]/u;
+
+/** 文の中の行（変換が報告の欄を一つの文につないでも、欄は行ごとに分かれている）。 */
+const linesOf = (sentence: Sentence): string[] =>
+  sentence.text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => HAS_DIGIT.test(line));
+
+/** 文が行を独り占めしているか（行の頭か箇条書きの印の後ろから始まり、行の終わりで終わる）。段落の中の文は欄ではない。 */
+const ownsLines = (sentence: Sentence, source: string): boolean =>
+  LINE_START.test(source.slice(Math.max(0, sentence.span.start - LINE_START_REACH), sentence.span.start)) &&
+  LINE_END_NEXT.test(source.slice(sentence.span.end, sentence.span.end + LOOKAHEAD));
+
+/**
+ * 行を独り占めし、数字だけが違う行が 2 度以上あって入った数が違うもの（There are currently 17 committers and 17 PMC members in this
+ * project.）。報告の書式を機械が埋めた欄で、書き手の言い回しではない。まったく同じ文の繰り返し（同じ説明を項目ごとに写したもの）と、
+ * 段落の中で数だけ替えて言い直す文（In case 3, we will look into it again.）は書式ではない。
+ */
+export const filledForms = (sentences: readonly Sentence[], source: string): Sentence[] => {
+  const formOf = (line: string): string => line.replace(DIGITS, "0");
+  const fillings = new Map<string, Set<string>>();
+  const owning = sentences.filter((sentence) => ownsLines(sentence, source));
+  owning.flatMap(linesOf).forEach((line) => fillings.set(formOf(line), (fillings.get(formOf(line)) ?? new Set()).add(line)));
+  return owning.filter((sentence) => linesOf(sentence).some((line) => (fillings.get(formOf(line))?.size ?? 0) > 1));
+};
+
+/** 文の頭の、大文字で始まる語に大文字か数字で始まる語が続く並び（Apache Trinidad、Maven JXR 3.6.0、GO-18.0.0）と、その後ろの小文字で始まる述部。 */
+const NAME_LED = /^(\p{Lu}[\p{L}\p{N}.'’-]*(?:[ \t]+[\p{Lu}\p{N}][\p{L}\p{N}.'’-]*)*)[ \t]+(\p{Ll}.*)$/su;
+/** 一語だけの頭は、識別子（GO-18.0.0、ExtVal）なら名前。文頭の大文字の普通の語（Customers、Our）は名前と見分けられない。 */
+const PLAIN_WORD = /^\p{Lu}\p{Ll}*$/u;
+
+const nameLedParts = (sentence: Sentence): { name: string; form: string } | undefined => {
+  const match = NAME_LED.exec(sentence.text.trim());
+  const name = match?.[1];
+  const rest = match?.[2];
+  if (name === undefined || rest === undefined || (!/\s/u.test(name) && PLAIN_WORD.test(name))) return undefined;
+  return { name, form: rest.replace(/\s+/gu, " ").replace(DIGITS, "0").toLowerCase() };
+};
+
+/**
+ * 行を独り占めし、頭の名前だけが違って述部が同じ形の文（数字は伏せる）が 2 度以上あり、名前が違うもの（Apache Trinidad is in maintenance
+ * mode. と Myfaces Tomahawk is in maintenance mode.、Maven JXR 3.6.0 was released on 2024-10-22.）。項目ごとに状態を一行で書く一覧の書式で、
+ * 書き手の言い直しではない。同じ名前の文の繰り返しと、頭が名前でない文（Our team is …）と、段落の中の文は書式ではない。
+ */
+export const nameLedLines = (sentences: readonly Sentence[], source: string): Sentence[] => {
+  const lines = sentences.flatMap((sentence) => {
+    const parts = ownsLines(sentence, source) ? nameLedParts(sentence) : undefined;
+    return parts === undefined ? [] : [{ sentence, ...parts }];
+  });
+  const names = new Map<string, Set<string>>();
+  lines.forEach(({ name, form }) => names.set(form, (names.get(form) ?? new Set()).add(name)));
+  return lines.filter(({ form }) => (names.get(form)?.size ?? 0) > 1).map(({ sentence }) => sentence);
+};
+
+/** 大文字だけの語と読点で始まる頭（RESOLVED,、WHEREAS,、NOW, THEREFORE, BE IT RESOLVED,）。 */
+const ENACTING_HEAD = /^(?:\p{Lu}{2,}[ ,]+)*\p{Lu}{3,},/u;
+
+/**
+ * 議決の条項（RESOLVED, that the office of … be and hereby is created; and be it further）。条項ごとに同じ頭と同じ言い回しで書くのは
+ * 議決の書式で、書き手の言い直しではない。大文字だけの語で始めるのは条項の書き方で、地の文にはない。
+ */
+export const enactingClauses = (sentences: readonly Sentence[]): Sentence[] => sentences.filter((sentence) => ENACTING_HEAD.test(sentence.text.trimStart()));
+
+const PARAGRAPH_REACH = 40;
+/** 議決は条項が 2 つ以上続き、最後の条項は句点で終わる。大文字だけの名前の行が並ぶ名簿（ELIOT L. ENGEL, New York）は議決ではない。 */
+const CLAUSES_BEFORE = 2;
+const CAPITALS_HEAD = /^\p{Lu}{2,}\b/u;
+const isBlank = (line: string | undefined): boolean => line !== undefined && line.trim() === "";
+
+/** 文が段落を独り占めしているか（前が空行、後ろが空行か文書の終わり）。 */
+const ownsParagraph = (sentence: Sentence, source: string): boolean => {
+  const before = source.slice(Math.max(0, sentence.span.start - PARAGRAPH_REACH), sentence.span.start).split("\n");
+  const after = source.slice(sentence.span.end, sentence.span.end + PARAGRAPH_REACH).split("\n");
+  return isBlank(before.at(-1)) && isBlank(before.at(-2)) && isBlank(after[0]) && (after.length === 1 || isBlank(after[1]));
+};
+
+/**
+ * 議決の最後の条項の直後の、一文だけの段落（Special Order 7A, Terminate the Apache Any23 Project, was approved by Unanimous Vote of the
+ * directors present.）。議決ごとに同じ言い方で結果を記す議事録の書式。条項の後ろに続く地の文の段落は、二文以上なら入れない。
+ */
+export const resolutionOutcomes = (sentences: readonly Sentence[], source: string): Sentence[] =>
+  sentences.filter((sentence, index) => {
+    const clauses = sentences.slice(Math.max(0, index - CLAUSES_BEFORE), index);
+    return (
+      clauses.length === CLAUSES_BEFORE &&
+      clauses.every((clause) => ENACTING_HEAD.test(clause.text.trimStart())) &&
+      SENTENCE_END.test(clauses.at(-1)?.text ?? "") &&
+      SENTENCE_END.test(sentence.text) &&
+      !CAPITALS_HEAD.test(sentence.text.trimStart()) &&
+      ownsParagraph(sentence, source)
+    );
+  });

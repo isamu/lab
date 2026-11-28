@@ -1,0 +1,13 @@
+genre: blog/tech
+
+rules:
+  max-sentence-length: strict
+
+by_path:
+  - files: ["legal/**/*.md"]
+    genre: legal/contract
+    rules:
+      max-sentence-length: 60
+  - files: ["legal/archive/**/*.md"]
+    rules:
+      max-sentence-length: off

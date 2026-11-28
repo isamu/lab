@@ -6,10 +6,11 @@ import { isWithinAny, quotedIn, QUOTATION_MARKS } from "../quoted-span.ts";
 const STACKED_AT = 2;
 
 /**
- * 語彙表 3 つ。hedges は逃げの表現そのもの、frames はそれだけでは逃げていない包む言い方（「という状況です」、may）、
- * scope は hedges のうち、どれだけ確かかではなくどこで成り立つかを言うもの（「場合がある」、in some cases）。
+ * 語彙表 4 つ。hedges は逃げの表現そのもの、frames はそれだけでは逃げていない包む言い方（「という状況です」、may）、
+ * scope は hedges のうち、書き手の確かさを下げないもの（「場合がある」、「と思われている」）、
+ * complements は動詞の後ろで中身の節を始める語（knowing that の that）。
  */
-export type HedgeWords = { readonly hedges: Lexicon; readonly frames: Lexicon; readonly scope: Lexicon };
+export type HedgeWords = { readonly hedges: Lexicon; readonly frames: Lexicon; readonly scope: Lexicon; readonly complements: Lexicon };
 
 type Device = { readonly range: TokenRange; readonly hedge: boolean };
 
@@ -41,10 +42,25 @@ const spanOf = (tokens: readonly Token[], range: TokenRange): Span | undefined =
 /** 句読点と等位接続詞（and、but、及び）は節を切る。別の節の逃げは、同じ主張を二重にぼかしていない。 */
 const CLAUSE_BREAK = new Set(["PUNCT", "CCONJ"]);
 
+/**
+ * 動詞の後ろで中身の節を始める語の位置（knowing that の that）。その節の may は知っていることの中身で、
+ * 前の perhaps と同じ主張をぼかしていない。逃げの表現の動詞（it seems that）の後ろは、その逃げが包む節なので切らない。
+ */
+const complementOpens = (sentence: Sentence, complements: Lexicon, devices: readonly Device[]): Set<number> => {
+  const tokens = sentence.tokens ?? [];
+  const inDevice = (at: number): boolean => devices.some((device) => device.range.start <= at && at < device.range.end);
+  const opensAfterVerb = (range: TokenRange): boolean => tokens[range.start - 1]?.pos === "VERB" && !inDevice(range.start - 1);
+  return new Set(
+    rangesOf(sentence, complements)
+      .filter(opensAfterVerb)
+      .map((range) => range.start),
+  );
+};
+
 /** 語ごとの、文の頭から数えた節の番号。 */
-const clauseOf = (tokens: readonly Token[]): number[] =>
-  tokens.reduce<number[]>((clauses, token) => {
-    clauses.push((clauses.at(-1) ?? 0) + (CLAUSE_BREAK.has(token.pos) ? 1 : 0));
+const clauseOf = (tokens: readonly Token[], opens: ReadonlySet<number>): number[] =>
+  tokens.reduce<number[]>((clauses, token, at) => {
+    clauses.push((clauses.at(-1) ?? 0) + (CLAUSE_BREAK.has(token.pos) || opens.has(at) ? 1 : 0));
     return clauses;
   }, []);
 
@@ -84,7 +100,8 @@ const stackedClause = (devices: readonly Device[], clauses: readonly number[]): 
  */
 const stackedHedgeIn = (sentence: Sentence, words: HedgeWords): Span[] => {
   const tokens = sentence.tokens ?? [];
-  return stackedClause(devicesIn(sentence, words), clauseOf(tokens))
+  const devices = devicesIn(sentence, words);
+  return stackedClause(devices, clauseOf(tokens, complementOpens(sentence, words.complements, devices)))
     .toSorted((left, right) => left.range.start - right.range.start)
     .flatMap((device) => spanOf(tokens, { start: device.range.start, end: shownEnd(tokens, device.range) }) ?? []);
 };

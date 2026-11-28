@@ -1,0 +1,11 @@
+# Labels a plain-language summary paragraph opens with, beside the binding text it sums up ("**Short version:** _You may
+# close your Account at any time._"). contraction-consistency does not point at a form in such a summary, or in the
+# introduction before the first heading: a document that writes both chose a plain register beside its clauses.
+id: summary-label
+language: en
+entries:
+  - pattern: short version
+  - pattern: in short
+  - pattern: in plain english
+  - pattern: plain english
+  - pattern: tl;dr

@@ -3,6 +3,7 @@ import { escapeRegExp } from "../orthography.ts";
 import { inDocumentOrder } from "./issues.ts";
 import { isTitleWords } from "./contents-lines.ts";
 import { verbFormsOf } from "./gerund-phrase.ts";
+import { pointsAhead, type ForwardReference } from "./forward-reference.ts";
 import {
   definingNameOf,
   echoesName,
@@ -61,13 +62,16 @@ const SINGLE_KANJI = /^\p{Script=Han}$/u;
 /** loose は最初の一字の大小を問わない（文頭の "Personal data"）。exact は書いたとおりだけ（"Access" は "early access" に当たらない）。 */
 type CaseMatch = "loose" | "exact";
 
+/** 語の間の空白は、続いた空白や改行でもよい（Normal Business\nHours、桁を揃えた写しの Normal Business      Hours）。 */
+const spacedLoosely = (escaped: string): string => escaped.replace(/ +/gu, String.raw`\s+`);
+
 /**
  * 語の現れを探す形。英字で始まる・終わる語は語の途中に当たらない（"Term" は "Terms" には当たり、"Termination" には当たらない）。
  * 複数形と所有の形（Services、Policies、Seller's）は同じ語の使用。
  */
 const termPattern = (term: string, caseMatch: CaseMatch): RegExp => {
   const first = term.charAt(0);
-  const rest = /\p{Ll}y$/u.test(term) ? `${escapeRegExp(term.slice(1, -1))}(?:y|ie)` : escapeRegExp(term.slice(1));
+  const rest = spacedLoosely(/\p{Ll}y$/u.test(term) ? `${escapeRegExp(term.slice(1, -1))}(?:y|ie)` : escapeRegExp(term.slice(1)));
   const caseless = caseMatch === "exact" || first.toUpperCase() === first.toLowerCase();
   const head = caseless ? escapeRegExp(first) : `[${escapeRegExp(first.toUpperCase())}${escapeRegExp(first.toLowerCase())}]`;
   if (SINGLE_KANJI.test(term)) return new RegExp(String.raw`(?<!\p{Script=Han})${head}`, "gu");
@@ -149,6 +153,20 @@ const sentenceAt = (texts: readonly BodyText[], offset: number): BodyText | unde
     else return body;
   }
   return undefined;
+};
+
+/** 見出しの長さの上限。句点の無い長い行（箇条の項目）は見出しと読まない。 */
+const RUN_IN_HEADING_MAX = 40;
+const ENDS_OPEN = /[^。．.!?！？]$/u;
+
+/**
+ * 句点で終わらない短い文で、間を空けずに定義の文が続く: 本文に流し込んだ節の見出し（一行の報告書の「(1)経営成績等の概要」の
+ * すぐ後ろに「…（以下「経営成績等」という。）」が続く）。見出しは本文の語を先取りして名づけるので、定義より前の使い方ではない。
+ * 行を改めた項目（(2) 本件仮換地の指定等）は、定義の文と離れているので使い方に数える。
+ */
+const headsDefiningSentence = (body: BodyText | undefined, defining: number): boolean => {
+  const text = body?.text.trim() ?? "";
+  return body !== undefined && text.length <= RUN_IN_HEADING_MAX && ENDS_OPEN.test(text) && body.start + body.text.length === defining;
 };
 
 const LETTER = /\p{L}/gu;
@@ -286,9 +304,10 @@ const CAPITAL_OR_NON_LATIN = /\p{Lu}|[^\p{Script=Latin}\p{N}\s\p{P}]/u;
 
 /**
  * 前で使ったと言える語。小文字の英語（("vendors")）はふつうの語としても使うので、前の現れが定義した語の使用とは限らない。
- * 一字の漢字（「法」「令」）は、令和や方法の一部にも当たる。
+ * 一字の漢字（「法」「令」）は、ふつうの語としても書くので、当事者の呼び名（甲・乙）だけ。
  */
-const isDistinctive = (term: string): boolean => CAPITAL_OR_NON_LATIN.test(term) && !SINGLE_KANJI.test(term);
+const isDistinctive = (term: string, singleKanjiNames: ReadonlySet<string>): boolean =>
+  CAPITAL_OR_NON_LATIN.test(term) && (!SINGLE_KANJI.test(term) || singleKanjiNames.has(term));
 
 /** 文の途中の定義ごとの、括弧の前の名前。 */
 const definingNames = (terms: readonly DefinedTerm[], texts: readonly BodyText[]): Map<DefinedTerm, DefiningName> =>
@@ -343,6 +362,12 @@ const insideLongerNameIn = (texts: readonly BodyText[], terms: readonly DefinedT
   };
 };
 
+/** 英語の語が、前の大文字の語から続く長い名前の終わりにあるか（The National Security Act of 1947 の Act）。 */
+const endsNameAt = (texts: readonly BodyText[], term: string, offset: number): boolean => {
+  const sentence = sentenceAt(texts, offset);
+  return sentence !== undefined && endsLatinName(sentence, offset - sentence.start, term);
+};
+
 /**
  * 前で書いても読み手が分かる所。文書自身の名前と定義した語（この就業規則（以下「規則」））を同じ頭を付けて書いた所（この規則は、…）と、
  * すぐ後ろの括弧に定義の長い名前を書き添えた所（こども性暴力防止法（…に関する法律））。
@@ -371,11 +396,29 @@ const citesSource = (texts: readonly BodyText[], markers: readonly string[], off
   return markers.some((marker) => before.endsWith(marker) && SOURCE_END.test(before.slice(0, -marker.length)));
 };
 
+/** 語に、後ろで定義することを先に断る言葉（下記パブリック・ライセンス）が付いているか。 */
+const pointsAheadAt = (texts: readonly BodyText[], words: readonly ForwardReference[], term: string, offset: number): boolean => {
+  const sentence = sentenceAt(texts, offset);
+  return sentence !== undefined && pointsAhead(sentence.text, offset - sentence.start, term, words);
+};
+
+/**
+ * 言語の語の一覧。selfPrefixes は文書自身の名前の頭（この、本、this）、sourceMarkers は語の意味の出どころを言う言葉（所定の）、
+ * forwardReferences は読み手を後ろの本文へ向ける言葉（下記、below）、singleKanjiNames は前の使用を探す一字の漢字の語（当事者の呼び名の甲・乙）。
+ */
+export type EarlyUseWords = {
+  readonly selfPrefixes?: readonly string[];
+  readonly sourceMarkers?: readonly string[];
+  readonly forwardReferences?: readonly ForwardReference[];
+  readonly singleKanjiNames?: ReadonlySet<string>;
+};
+
 /**
  * 文の途中で括弧に入れて定義した語（(the "Seller")、以下「甲」という）を、その定義の文より前で使っている所。最初の一つだけ。
  * 定義の文の中の現れ（株式会社GovTech東京（以下「GovTech東京」という。））は、定義する名前そのものなので数えない。札の文も、
  * isTitle が言う題・見出し・目次の行も、漢字で終わる語にさらに漢字が続く長い語の一部も、定義の括弧の前の長い名前を写した所も、
- * 語を含むもっと長い名前の中も、語の前に意味の出どころを書いた所（69条の3所定の小規模宅地等）も数えない。文書自身の名前を定義した語は、selfPrefixes（この、本、this）を付けて前で書いても数えない。
+ * 語を含むもっと長い名前の中も、語の前に意味の出どころを書いた所（69条の3所定の小規模宅地等）も、後ろで定義することを先に断った所（下記パブリック・ライセンス）とそれより後ろも数えない。
+ * 英語の語を長い名前の終わりに書いた所（The National Security Act of 1947）より後ろの現れ（the Act）は、その名前を指すので数えない。文書自身の名前を定義した語は、selfPrefixes（この、本、this）を付けて前で書いても数えない。
  * 定義の条（"Seller" means、「甲」とは）は条の並びの頭にも終わりにも置く書き方があるので、前で使っても言わない。
  * 定義の語の無い括弧の引用（("The key point is")）は例の引用と同じ形なので、その語を引用符で挙げただけの現れ
  * （Its sentences open with "The key point is"）は使用ではない。定義の語のある定義（(the "Seller")、以下「買主」という）は、
@@ -386,20 +429,24 @@ export const usesBeforeDefinition = (
   texts: readonly BodyText[],
   mentioned: Mentioned = NEVER_MENTIONED,
   isTitle: IsTitle = NEVER_TITLE,
-  selfPrefixes: readonly string[] = [],
-  sourceMarkers: readonly string[] = [],
+  { selfPrefixes = [], sourceMarkers = [], forwardReferences = [], singleKanjiNames = new Set() }: EarlyUseWords = {},
 ): TermUse[] => {
   const inline = terms.filter((term) => term.inline);
   const names = definingNames(terms, texts);
   const insideLongerName = insideLongerNameIn(texts, terms, names);
   return groupsOf(terms)
-    .filter((group) => group.first.inline && isDistinctive(group.first.term))
+    .filter((group) => group.first.inline && isDistinctive(group.first.term, singleKanjiNames))
     .flatMap(({ first: defined, spans }) => {
       const defining = sentenceAt(texts, defined.span.start)?.start ?? defined.span.start;
       const uses = usesOf(defined.term, texts, spans, "exact", defined.bare === true ? mentioned : NEVER_MENTIONED).filter((offset) => offset < defining);
+      const namedFirst = uses.find((offset) => endsNameAt(texts, defined.term, offset));
+      const announced = uses.find((offset) => pointsAheadAt(texts, forwardReferences, defined.term, offset));
       const first = uses.find(
         (offset) =>
+          !(namedFirst !== undefined && namedFirst < offset) &&
+          !(announced !== undefined && announced <= offset) &&
           !isLabel(sentenceAt(texts, offset), defined.term) &&
+          !headsDefiningSentence(sentenceAt(texts, offset), defining) &&
           !insideCaption(sentenceAt(texts, offset), offset) &&
           !isTitle(offset, defined.span.start) &&
           !continuesInHan(texts, defined.term, offset) &&

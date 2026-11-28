@@ -96,11 +96,9 @@ keiyaku.md   blog/tech · 日本語   ジャンルは既定から
 
   1:18    info    節の長さのばらつきが 22% しかありません（35% 以上ほしい）
                   section-length-uniformity
-  3:1     info    段落の長さのばらつきが 29% しかありません（30% 以上ほしい）
-                  paragraph-length-variance
   11:7    warning 期間「2026年11月1日から2026年10月31日」の終わりが始まりより前です
                   date-range-reversed
-  21:8    error   合計「80,000円」が、内訳の金額の和（70,000円）と合いません
+  21:8    error   合計「80,000円」が、内訳の和（70,000円）と合いません
                   total-mismatch
   23:31   error   「第9条」（番地 9）はこの文書にありません
                   dangling-reference
@@ -124,7 +122,7 @@ keiyaku.md   legal/contract · 日本語   ジャンルは --genre から
 
   11:7    warning 期間「2026年11月1日から2026年10月31日」の終わりが始まりより前です
                   date-range-reversed
-  21:8    error   合計「80,000円」が、内訳の金額の和（70,000円）と合いません
+  21:8    error   合計「80,000円」が、内訳の和（70,000円）と合いません
                   total-mismatch
   23:31   error   「第9条」（番地 9）はこの文書にありません
                   dangling-reference

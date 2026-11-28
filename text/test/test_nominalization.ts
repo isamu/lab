@@ -49,6 +49,29 @@ describe("nominalization (ja): a verbal noun carried by を行う / を実施す
     assert.deepEqual(hidden("新人の研修を実施した。期末の試験を行う。来週、会議を行う。", ja), []);
   });
 
+  it("a noun whose する form says something else is not a hidden verb (授業を行う, 施策を実施する, 支援措置を実施する)", () => {
+    assert.deepEqual(hidden("昼夜開講制により授業を行う。", ja), []);
+    assert.deepEqual(hidden("動物取扱業の適正化等の施策を実施した。福祉タクシーの導入等に対する支援措置を実施している。", ja), []);
+  });
+
+  it("a compound whose する form is not written (計画運休を実施する is not 計画運休する) is not a hidden verb", () => {
+    assert.deepEqual(hidden("台風の接近に備えて計画運休を実施する場合がある。", ja), []);
+    assert.deepEqual(hidden("台風の接近に備えて運休を実施する場合がある。", ja), ["運休を実施する→運休する"]);
+  });
+
+  it("the same carrying verbs after another verbal noun are still counted (指導を行う, 調査を実施する)", () => {
+    assert.deepEqual(hidden("夜間に学生の指導を行う。将来の野生復帰を想定した生息状況の調査を実施する。", ja), [
+      "指導を行う→指導する",
+      "調査を実施する→調査する",
+    ]);
+  });
+
+  it("a verbal noun that ends a compound is read with the whole compound (塗り直し, not 直し)", () => {
+    assert.deepEqual(hidden("壁の塗り直しを実施しました。", ja), ["塗り直しを実施する→塗り直しする"]);
+    assert.deepEqual(hidden("品質調査を実施した。", ja), ["品質調査を実施する→品質調査する"]);
+    assert.deepEqual(hidden("満足度の調査を実施した。", ja), ["調査を実施する→調査する"]);
+  });
+
   it("〜をする is ordinary and not counted", () => {
     assert.deepEqual(hidden("毎日、勉強をする。", ja), []);
   });
@@ -65,6 +88,14 @@ describe("nominalization (ja): a verbal noun carried by を行う / を実施す
 describe("nominalization (en): a phrase hiding a verb", () => {
   it("matches the phrase in any form of its verb, and names the verb", () => {
     assert.deepEqual(hidden("We made a decision. They will conduct an analysis of the data.", en), ["made a decision→decide", "conduct an analysis→analyze"]);
+  });
+
+  it("matches the past tense of a verb the phrase alone reads as a noun (conduct)", () => {
+    assert.deepEqual(hidden("They conducted an analysis. She conducted a review. We are conducting an investigation.", en), [
+      "conducted an analysis→analyze",
+      "conducted a review→review",
+      "conducting an investigation→investigate",
+    ]);
   });
 
   it("the verb itself, and a phrase not on the list, are not counted", () => {

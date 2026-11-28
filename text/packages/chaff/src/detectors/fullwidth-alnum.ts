@@ -3,6 +3,7 @@ import { minorityWithin } from "../orthography.ts";
 import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { isCitation } from "./kutoten-consistency.ts";
 import { ALNUM_RUN, FULLWIDTH, HALFWIDTH } from "./alnum-number.ts";
+import { gluedNumberSpans } from "./sentence-parts.ts";
 
 const LETTER = /[A-Za-zＡ-Ｚａ-ｚ]/u;
 
@@ -18,9 +19,9 @@ const kindOf = (run: string): AlnumKind => {
   return single ? "digit" : "digits";
 };
 
-/** 項目の番号の並び（行の頭や括弧の後ろの「１．」「（１）」「1)」）。項目の印で、本文の数ではない。 */
+/** 項目の番号の並び（行の頭や括弧の後ろの「１．」「（１）」「1)」、有価証券報告書の項目「４【経営者による…】」）。項目の印で、本文の数ではない。 */
 const LABEL_BEFORE = /(?:^|[\s、，,（(［[])$/u;
-const LABEL_AFTER = /^[．.）)］\]]/u;
+const LABEL_AFTER = /^[．.）)］\]【]/u;
 const LABEL_REACH = 1;
 
 /** 注の印（「※１」「（※３）」）。注どうしで決まった書き方をする。 */
@@ -77,33 +78,104 @@ const continuesVersion = (text: string, start: number, run: string): boolean =>
   FULLWIDTH.test(run) === FULLWIDTH.test(text.charAt(start - 2)) &&
   VERSION_SO_FAR.test(text.slice(Math.max(0, start - 1 - VERSION_REACH), start - 1));
 
+/** 電話番号（03-3581-1101、０５７０ - ０６４ - ５５６）。0 で始まり、ハイフンで三つの組につなぐ。三つの組を一つの幅で書いた一つの番号。 */
+const PHONE_NUMBER = /(?<![0-9０-９])[0０][0-9０-９]{1,4}(?:\s?[-－‐−ー]\s?[0-9０-９]{1,4}){2}(?![0-9０-９])/gu;
+
+const phoneSpans = (text: string): Span[] => [...text.matchAll(PHONE_NUMBER)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
+
 const isListItemNumber = (source: string, offset: number): boolean => LIST_ITEM_HEAD.test(source.slice(source.lastIndexOf("\n", offset - 1) + 1, offset));
 
-export type AlnumRun = { readonly kind: AlnumKind; readonly fullwidth: boolean; readonly written: string; readonly offset: number };
+/** 書き方の名前（全角英数字、半角カナ）の後ろの括弧（全角英数字（Ａ、１等））。中の字はその書き方の例で、文書の書き方の票ではない。 */
+const WIDTH_EXAMPLES = /[全半]角[^\s\p{Script=Hiragana}（(、。]{0,8}[（(][^）)]*[）)]/gu;
+
+const widthExampleSpans = (text: string): Span[] =>
+  [...text.matchAll(WIDTH_EXAMPLES)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
 
 /**
- * 文の中の英字・数字の並び。全角と半角が混ざった並び、鉤括弧で引いたものの中、項目と注の番号、箇条書きの頭の番号、版の番号の続き（TLS1.2 の 2）は数えない。
- * offset は文書の中の位置。
+ * 日付で始まり、句点の無い箇条書きの項目（- 平成25年8月23日命を守るために…～８月３０日運用開始～）。報道発表やお知らせの一覧で、
+ * 日付に続けた題は出したときのまま引いたもの。書き手の書き方の票ではない。日付は一覧の書き手のもので、票に入れる。
+ */
+const LIST_ITEM_DATE = /^[ \t]*[-*+][ \t]+(?:(?:令和|平成|昭和)[\d０-９元]{1,2}|\d{4})年[\d０-９]{1,2}月[\d０-９]{1,2}日/u;
+const TITLE_AFTER_DATE = /^[^\s。][^。]*$/u;
+
+const isInDatedTitle = (source: string, offset: number): boolean => {
+  const lineStart = source.lastIndexOf("\n", offset - 1) + 1;
+  const lineEnd = source.indexOf("\n", offset);
+  const line = source.slice(lineStart, lineEnd < 0 ? source.length : lineEnd);
+  const date = LIST_ITEM_DATE.exec(line)?.[0];
+  return date !== undefined && TITLE_AFTER_DATE.test(line.slice(date.length)) && offset >= lineStart + date.length;
+};
+
+export type AlnumRun = {
+  readonly kind: AlnumKind;
+  readonly fullwidth: boolean;
+  readonly written: string;
+  readonly offset: number;
+  /** 表のセルを続けてしまった数字（8,457 と 95.7 の 8,45795.7）の中。幅は書き手のものだが、セルの切れ目が分からず桁の数は当てにならない。 */
+  readonly glued: boolean;
+  /** 一つの書き物として書いたまとまりの位置。電話番号の組はその番号の頭、ほかは並び自身の位置。 */
+  readonly unit: number;
+  /** 英字一字と数字を違う幅で書いた並び（Q５）を分けた片方。 */
+  readonly split: boolean;
+};
+
+type Piece = { readonly 0: string; readonly index: number; readonly split?: boolean };
+
+/** 一つの幅で書いた部分。 */
+const SAME_WIDTH = /[A-Za-z0-9]+|[Ａ-Ｚａ-ｚ０-９]+/gu;
+const ONE_LETTER = /^[A-Za-zＡ-Ｚａ-ｚ]$/u;
+const DIGITS = /^[0-9０-９]+$/u;
+
+/** 英字一字と数字の、幅の違う組（Q５、Ｈ30、６００w）か。 */
+const isLetterAndNumber = (parts: readonly Piece[]): boolean =>
+  parts.length === 2 && parts.some((part) => ONE_LETTER.test(part[0])) && parts.some((part) => DIGITS.test(part[0]));
+
+/**
+ * 並びを、一つの幅で書いた部分に分ける。英字一字と数字を違う幅で書いた並び（Q５、Ｈ30）は、英字と数字に分けてそれぞれの組で数える。
+ * 「一字の英字は全角、２桁以上は半角」の Ｈ30 は、Ｈ も 30 もその組の中でそろう。ほかの混ざった並び（ＩoＴ）は数えない。
+ */
+const widthPieces = (match: RegExpExecArray): Piece[] => {
+  if (FULLWIDTH.test(match[0]) || HALFWIDTH.test(match[0])) return [match];
+  const parts = [...match[0].matchAll(SAME_WIDTH)].map((part) => ({ 0: part[0], index: match.index + part.index, split: true }));
+  return isLetterAndNumber(parts) ? parts : [];
+};
+
+/**
+ * 文の中の英字・数字の並び。鉤括弧で引いたものの中、項目と注の番号、箇条書きの頭の番号、版の番号の続き（TLS1.2 の 2）は数えない。
+ * 英字一字と数字を違う幅で書いた並びは分ける。offset は文書の中の位置。
  */
 export const alnumRunsIn = (sentence: Sentence, source: string): AlnumRun[] => {
   const quoted: readonly Span[] = quotedSpans(sentence.text, QUOTATION_MARKS);
+  const glued = gluedNumberSpans(sentence.text);
+  const phones = phoneSpans(sentence.text);
+  const examples = widthExampleSpans(sentence.text);
   return [...sentence.text.matchAll(ALNUM_RUN)]
-    .filter((match) => FULLWIDTH.test(match[0]) || HALFWIDTH.test(match[0]))
+    .flatMap(widthPieces)
     .filter((match) => !isWithinAny(quoted, { start: match.index, end: match.index + match[0].length }))
+    .filter((match) => !isWithinAny(examples, { start: match.index, end: match.index + match[0].length }))
+    .filter((match) => !isInDatedTitle(source, sentence.span.start + match.index))
     .filter((match) => !isLabel(sentence.text, match.index, match.index + match[0].length))
     .filter((match) => !isListItemNumber(source, sentence.span.start + match.index))
     .filter((match) => !isInAddress(sentence.text, match.index, match.index + match[0].length))
     .filter((match) => !isInApostropheWord(sentence.text, match.index, match.index + match[0].length))
     .filter((match) => !isNumberLabel(sentence.text, match.index + match[0].length, match[0]))
     .filter((match) => !continuesVersion(sentence.text, match.index, match[0]))
-    .map((match) => ({ kind: kindOf(match[0]), fullwidth: FULLWIDTH.test(match[0]), written: match[0], offset: sentence.span.start + match.index }));
+    .map((match) => ({
+      kind: kindOf(match[0]),
+      fullwidth: FULLWIDTH.test(match[0]),
+      written: match[0],
+      offset: sentence.span.start + match.index,
+      glued: isWithinAny(glued, { start: match.index, end: match.index + match[0].length }),
+      unit: sentence.span.start + (phones.find((phone) => phone.start <= match.index && match.index < phone.end)?.start ?? match.index),
+      split: "split" in match && match.split === true,
+    }));
 };
 
 const KINDS: readonly AlnumKind[] = ["letter", "letters", "digit", "digits"];
 
 /** 半角の英数字を全角に（NFKC の逆）。 */
 const FULLWIDTH_OFFSET = 0xfee0;
-const toFullwidth = (text: string): string => text.replace(/[A-Za-z0-9./]/gu, (char) => String.fromCodePoint((char.codePointAt(0) ?? 0) + FULLWIDTH_OFFSET));
+const toFullwidth = (text: string): string => text.replace(/[A-Za-z0-9./,]/gu, (char) => String.fromCodePoint((char.codePointAt(0) ?? 0) + FULLWIDTH_OFFSET));
 
 /** 同じ並びの、もう一方の幅の書き方。 */
 const otherWidth = (run: AlnumRun): string => (run.fullwidth ? run.written.normalize("NFKC") : toFullwidth(run.written));
@@ -127,6 +199,37 @@ const datelineOf = (doc: ProseDocument): Span | undefined => {
   return first !== undefined && DATELINE.test(doc.source.slice(first.span.start, first.span.end).trim()) ? first.span : undefined;
 };
 
+/**
+ * 見出しの文字（### Q５：…の Q５：…）を、文と同じに読む一続き。文書の頭の題（# ノロウイルスに関するＱ＆Ａ）は載せたページの名前なので読まない。
+ * 見出しから数えるのは、英字一字と数字を違う幅で書いた並び（Q５）だけ。見出しはほかの数を本文と別の幅で書くことが多いが（## １ 概要）、
+ * 一つの並びの中で幅が変わるのは書き損じ。
+ */
+const headingSentences = (doc: ProseDocument): Sentence[] =>
+  (doc.markup?.headings ?? []).flatMap((heading, index) => {
+    if (index === 0 && heading.depth === 1) return [];
+    const start = doc.source.indexOf(heading.text, heading.start);
+    return start < 0 || start >= heading.end || heading.text === "" ? [] : [{ span: { start, end: start + heading.text.length }, text: heading.text }];
+  });
+
+/** 多いほうの英字の語が何種類あれば、文書の書き方と見るか。ＢＡＲ を二度書いただけなら、それはその語の書き方。 */
+const HABIT_WORDS = 2;
+
+const wordOf = (run: AlnumRun): string => run.written.normalize("NFKC").toUpperCase();
+
+/**
+ * 少ないほうを、文書の書き方からはずれたと言えるか。英字の語は、多いほうが二種類以上の語か、少ないほうと同じ語（URL と ＵＲＬ）のとき。
+ * 全角の ＢＡＲ だけの文書の DELICATE は、別の語を別の書き方で書いただけ。ほかの組は、多いほうが二つ以上のまとまりにわたるとき。
+ * 多いほうが電話番号一つの組（０５７０ - ０６４ - ５５６）だけなら、それはその番号の書き方で、文書の書き方ではない。
+ */
+const departsFromHabit =
+  (ofKind: readonly Located[], odd: readonly Located[]) =>
+  ({ run }: Located): boolean => {
+    const usualRuns = ofKind.filter((entry) => !odd.includes(entry)).map((entry) => entry.run);
+    if (run.kind !== "letters") return new Set(usualRuns.map((usual) => usual.unit)).size >= HABIT_WORDS;
+    const usual = new Set(usualRuns.map(wordOf));
+    return usual.size >= HABIT_WORDS || usual.has(wordOf(run));
+  };
+
 const findingOf = ({ sentence, run }: Located, count: number, of: number, limit: number): Finding => ({
   rule: "",
   severity: "warning",
@@ -140,17 +243,24 @@ const findingOf = ({ sentence, run }: Located, count: number, of: number, limit:
 /**
  * 英字・数字を全角で書くか半角で書くか。組（英字一字・英字の語・数字一字・数字の並び）ごとに、文書の中で少ないほうを指摘する。
  * 少ないほうが組の limit パーセントを超えるほど多いなら、文書が使い分けている（数え方の語や見出しの書き方）と見て言わない。
+ * 表のセルを続けてしまった数字の中の並びは、書き方の票には入れるが、少ないほうとしては指摘しない（8,45795.7 の 8 は一桁の数ではない）。
  * どちらが正しいかは決めない。
  */
 export const fullwidthAlnum: Detector = (doc, options): Finding[] => {
   const dateline = datelineOf(doc);
-  const located: Located[] = doc.sentences
-    .filter((sentence) => sentence.embeddedLanguage === undefined && !isCitation(sentence, doc.source))
-    .filter((sentence) => dateline === undefined || !isWithinAny([dateline], sentence.span))
-    .flatMap((sentence) => alnumRunsIn(sentence, doc.source).map((run) => ({ sentence, run })));
+  const located: Located[] = [
+    ...doc.sentences
+      .filter((sentence) => sentence.embeddedLanguage === undefined && !isCitation(sentence, doc.source))
+      .filter((sentence) => dateline === undefined || !isWithinAny([dateline], sentence.span))
+      .flatMap((sentence) => alnumRunsIn(sentence, doc.source).map((run) => ({ sentence, run }))),
+    ...headingSentences(doc).flatMap((sentence) => alnumRunsIn(sentence, doc.source).flatMap((run) => (run.split ? [{ sentence, run }] : []))),
+  ];
   return KINDS.flatMap((kind) => {
     const ofKind = located.filter(({ run }) => run.kind === kind);
     const odd = minorityWithin(ofKind, ({ run }) => run.fullwidth, options.limit);
-    return odd.filter(({ run }) => !isHalfwidthEnglishWord(run)).map((entry) => findingOf(entry, odd.length, ofKind.length, options.limit));
+    return odd
+      .filter(({ run }) => !isHalfwidthEnglishWord(run) && !run.glued)
+      .filter(departsFromHabit(ofKind, odd))
+      .map((entry) => findingOf(entry, odd.length, ofKind.length, options.limit));
   });
 };

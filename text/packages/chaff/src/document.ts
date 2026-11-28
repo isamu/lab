@@ -2,13 +2,11 @@ import { headingReadersOf, sectionsOf } from "./document-sections.ts";
 import { atxHeadingText, headingText } from "./heading-text.ts";
 import { hasTitle } from "./heading-title.ts";
 import { maskSpans } from "./mask.ts";
-import { spansWithin, unmaskedSoftBreaks } from "./soft-break.ts";
-import { segmentJoined } from "./joined-view.ts";
+import { unmaskedSoftBreaks } from "./soft-break.ts";
 import { paragraphsOf } from "./document-paragraphs.ts";
 import { closingRun, standaloneLines, subheadingPieces, type StandsAlone } from "./subheading-line.ts";
 import { stageDirectionPieces, type BracketPair } from "./stage-directions.ts";
 import { isLinkLine } from "./link-line.ts";
-import { speakerLabels } from "./speaker-labels.ts";
 import type { Outline } from "./structure/build.ts";
 import { lazyTree } from "./structure/lazy-tree.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
@@ -25,9 +23,11 @@ import { emailParts, emailVocabulary } from "./email-parts.ts";
 import { cutTextSpans } from "./span-cut.ts";
 import { markdownFigures } from "./text-figures.ts";
 import { documentMarkup } from "./markup.ts";
-import { BARE_URL } from "./bare-url.ts";
+import { bareUrls } from "./bare-url.ts";
 import { lazyCells, tableCellsOf } from "./table-cells.ts";
-import type { BulletList, LanguageAdapter, Markup, ProseDocument, Sentence, Span, StructureNode, DocumentProfile } from "./plugin.ts";
+import { KEPT_FOR_SCOPE, scopedReadingOf } from "./document-scope.ts";
+import { proseOf, sentencesOf, shift, startsInside } from "./document-prose.ts";
+import type { BulletList, LanguageAdapter, Markup, ProseDocument, ScopeSelector, Span, StructureNode, DocumentProfile } from "./plugin.ts";
 
 /**
  * 本文として数えないもの。
@@ -81,9 +81,12 @@ const DIRECTIVE = /^[ \t]*:::[^\n]*/gmu;
 const matchSpans = (source: string, pattern: RegExp): Span[] =>
   [...source.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
 
-const directiveSpans = (source: string): Span[] => [...matchSpans(source, DIRECTIVE), ...matchSpans(source, BARE_URL)];
+const directiveSpans = (source: string): Span[] => [...matchSpans(source, DIRECTIVE), ...bareUrls(source)];
 
-const collectMasks = (root: Node, source: string, anchors: InPageAnchors, syntax: readonly Span[]): Span[] => {
+const NOTHING_KEPT: ReadonlySet<string> = new Set();
+
+/** keep: the node types read this time although they are not body text (headings and quotations, for a rule with a scope). */
+const collectMasks = (root: Node, source: string, anchors: InPageAnchors, syntax: readonly Span[], keep = NOTHING_KEPT): Span[] => {
   const spans: Span[] = [...directiveSpans(source), ...syntax];
   const alertOf = alertReader(source);
   eachPreOrder(root, (node) => {
@@ -96,7 +99,7 @@ const collectMasks = (root: Node, source: string, anchors: InPageAnchors, syntax
       spans.push(...alert);
       return;
     }
-    if (!NOT_PROSE.has(node.type) && node.type !== "heading" && !isInPageNavigation(node, anchors)) return;
+    if (keep.has(node.type) || (!NOT_PROSE.has(node.type) && node.type !== "heading" && !isInPageNavigation(node, anchors))) return;
     const span = spanOf(node);
     if (span !== undefined) spans.push(span);
   });
@@ -146,8 +149,6 @@ const headingsOf = (root: Node, source: string, neutral: string, outside: readon
   return found;
 };
 
-const startsInside = (span: Span, regions: readonly Span[]): boolean => regions.some((region) => span.start >= region.start && span.start < region.end);
-
 /**
  * 本文の強調だけを数える。
  *
@@ -164,17 +165,6 @@ const strongSpans = (root: Node, masked: readonly Span[]): Span[] => {
   });
   return found;
 };
-
-/**
- * 文の分割は**段落ごと**に行う。
- *
- * 文書全体を一度に渡すと、句点で終わらない行（「条件:」のような見出し的な行）が、
- * 覆った表やコードブロックを越えて次の句点まで飲み込む。段落は文が跨がない境界なので、
- * ここで切れば構造的に起きない。
- */
-const shift = (span: Span, by: number): Span => ({ start: by + span.start, end: by + span.end });
-
-const breaksWithin = (breaks: readonly Span[], paragraph: Span): Span[] => spansWithin(breaks, paragraph).map((span) => shift(span, -paragraph.start));
 
 /** 段落の中の行（段落の中の位置）が、一つのリンクだけの行か。 */
 const linkLineIn =
@@ -235,20 +225,6 @@ const lineLayoutOf = (root: Node, source: string, prose: string, paragraphs: rea
   };
 };
 
-const sentencesOf = (prose: string, paragraphs: readonly Span[], adapter: LanguageAdapter, softBreaks: readonly Span[]): Sentence[] =>
-  paragraphs.flatMap((paragraph) =>
-    segmentJoined(prose.slice(paragraph.start, paragraph.end), breaksWithin(softBreaks, paragraph), (text) => adapter.segment(text))
-      .filter((sentence) => sentence.text.trim().length > 0)
-      .map((sentence) => ({
-        span: shift(sentence.span, paragraph.start),
-        text: sentence.text,
-        ...(sentence.tokens === undefined ? {} : { tokens: sentence.tokens.map((token) => ({ ...token, span: shift(token.span, paragraph.start) })) }),
-        ...(sentence.wrapBreaks === undefined ? {} : { wrapBreaks: sentence.wrapBreaks.map((span) => shift(span, paragraph.start)) }),
-        ...(sentence.embeddedLanguage === undefined ? {} : { embeddedLanguage: sentence.embeddedLanguage }),
-        ...(sentence.listItem === undefined ? {} : { listItem: sentence.listItem }),
-      })),
-  );
-
 /** 箇条書きは list ノードの直下の項目を数える。入れ子の項目は内側の list のものとして数える。目次のような案内だけの箇条書きは数えない。 */
 const listsOf = (root: Node, source: string, anchors: InPageAnchors): BulletList[] => {
   const found: BulletList[] = [];
@@ -272,8 +248,14 @@ export type TeamRules = {
   readonly requiredSections: readonly string[];
   /** { 使わない書き方: 使う書き方 }。preferred-term が語彙表として読む。 */
   readonly prefer?: Readonly<Record<string, string>>;
+  /** prefer の項目のうち scope を持つもの。{ 使わない書き方: 数える所 }。 */
+  readonly preferScopes?: Readonly<Record<string, ScopeSelector>>;
   /** チームの固有名詞。1 つの名前として読む rule が見る。 */
   readonly names?: readonly string[];
+  /** The team's terms, each to be written exactly as listed. term-form reads them as its word list. */
+  readonly terms?: readonly string[];
+  /** The team's groups of words that are each right but not to be mixed. term-consistency reads them as its word list. */
+  readonly consistent?: readonly (readonly string[])[];
   /** The word lists the plugins ship for the document's language, by name. */
   readonly lexicons?: LanguageAdapter["lexicons"];
 };
@@ -286,34 +268,45 @@ export const teamRules = (
     readonly jargon: readonly string[];
     readonly requiredSections: readonly string[];
     readonly prefer?: Readonly<Record<string, string>>;
+    readonly preferScopes?: Readonly<Record<string, ScopeSelector>>;
     readonly names?: readonly string[];
+    readonly terms?: readonly string[];
+    readonly consistent?: readonly (readonly string[])[];
     readonly extensions?: { readonly lexicons: Readonly<Record<string, LanguageAdapter["lexicons"]>> };
   },
   language?: string,
 ): TeamRules => ({
   jargon: config.jargon,
   prefer: config.prefer ?? {},
+  preferScopes: config.preferScopes ?? {},
   requiredSections: config.requiredSections,
   names: config.names ?? [],
+  terms: config.terms ?? [],
+  consistent: config.consistent ?? [],
   lexicons: language === undefined ? {} : (config.extensions?.lexicons[language] ?? {}),
 });
-
-/**
- * masked を覆った本文から、話し手の名前（戯曲・議事録）も覆う。名前は誰が話すかの印で、文でも本文でもない。
- * 名前は覆った後の本文で探す。コードや表の中の行頭を話し手と数えない。
- */
-const proseOf = (source: string, masked: readonly Span[]): string => {
-  const unlabelled = maskSpans(source, masked);
-  return maskSpans(unlabelled, speakerLabels(unlabelled));
-};
 
 const teamLexicons = (adapter: LanguageAdapter, team: TeamRules): LanguageAdapter["lexicons"] => ({
   ...adapter.lexicons,
   ...team.lexicons,
   "internal-jargon": team.jargon.map((pattern) => ({ pattern })),
   // 使わない書き方を pattern に、使う書き方を instead_of に置く。語彙表の「同じことの別の書き方」と同じ向き。
-  "preferred-term": Object.entries(team.prefer ?? {}).map(([pattern, use]) => ({ pattern, instead_of: use })),
+  "preferred-term": Object.entries(team.prefer ?? {}).map(([pattern, use]) => {
+    const scope = team.preferScopes?.[pattern];
+    return { pattern, instead_of: use, ...(scope === undefined ? {} : { scope }) };
+  }),
+  "term-form": (team.terms ?? []).map((pattern) => ({ pattern })),
+  // Each member of a group, the group's position in chaff.yaml in group: term-consistency compares members of one group only.
+  "term-consistency": (team.consistent ?? []).flatMap((members, at) => members.map((pattern) => ({ pattern, group: String(at) }))),
 });
+
+/** ページの案内は段落としても数えない。数えると、目次の行が「本題までの段落」に入る。メールのヘッダーや署名の行は段落から切り取る。 */
+const bodyParagraphs = (root: Node, anchors: InPageAnchors, furniture: readonly Span[], source: string): Span[] =>
+  cutTextSpans(
+    spansOfType(root, "paragraph", (node) => !isInPageNavigation(node, anchors)),
+    furniture,
+    source,
+  );
 
 const documentOf = (path: string, source: string, adapter: LanguageAdapter, team: TeamRules, profile: DocumentProfile | undefined): ProseDocument => {
   const markdown = isMarkdownPath(path);
@@ -323,14 +316,10 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
   // 強調の記号は「本文でないもの」だが、太字の数を数えるときの「覆われた場所」ではない。
   // 同じ集合にすると、太字が自分の記号のせいで覆われた場所にあることになり、1 つも数えられなくなる。
   // ページのヘッダーとフッター（テキストの文書）と、線で描いた図も本文ではない。
-  const blocks = [...collectMasks(root, source, anchors, syntax), ...layoutMasks(root, text, markdown), ...emailLayout.furniture, ...extra];
+  const furniture = [...layoutMasks(root, text, markdown), ...emailLayout.furniture, ...extra];
+  const blocks = [...collectMasks(root, source, anchors, syntax), ...furniture];
   const prose = proseOf(source, [...blocks, ...emphasisSpans(root, source)]);
-  // ページの案内は段落としても数えない。数えると、目次の行が「本題までの段落」に入る。メールのヘッダーや署名の行は段落から切り取る。
-  const paragraphSpans = cutTextSpans(
-    spansOfType(root, "paragraph", (node) => !isInPageNavigation(node, anchors)),
-    emailLayout.furniture,
-    source,
-  );
+  const paragraphSpans = bodyParagraphs(root, anchors, emailLayout.furniture, source);
   const headings = headingsOf(root, source, maskSpans(source, syntax), emailLayout.replyQuotes);
   // Markdown は段落を流し込んで表示するので、段落の中の改行は読み手に見えない。テキストの文書は行をそのまま見せる（法令は 1 行 1 号）。
   const softBreaks = markdown ? unmaskedSoftBreaks(source, prose) : [];
@@ -370,10 +359,15 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
     namedDocument: adapter.structure?.namedDocument,
     dictionary: adapter.dictionary,
     replyQuotes: emailLayout.replyQuotes,
+    sentMessage: emailLayout.sent,
     get markup(): Markup {
       return documentMarkup(root, source, markdown, [...emailLayout.replyQuotes, ...syntax]);
     },
     tableCells: lazyCells(() => tableCellsOf(doc, (text) => adapter.segment(text))),
+    scopedSentences: lazyCells(() => {
+      const masks = [...collectMasks(root, source, anchors, syntax, KEPT_FOR_SCOPE), ...furniture, ...emphasisSpans(root, source)];
+      return scopedReadingOf({ root, source, markdown, masks, adapter, doc: () => doc });
+    }),
   };
   return doc;
 };

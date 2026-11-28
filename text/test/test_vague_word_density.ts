@@ -7,6 +7,7 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { entriesForGenre } from "../packages/chaff/src/lexicon-genres.ts";
 import { vagueWordsIn } from "../packages/chaff/src/detectors/vague-density.ts";
 import { specifiedByBracket } from "../packages/chaff/src/detectors/bracket-specified.ts";
+import { governedByLaw, lawReferenceOf, NO_LAW_REFERENCE } from "../packages/chaff/src/detectors/law-governed.ts";
 
 // あいまいな語の密度（vague-word-density）。例文はすべて自作。
 
@@ -53,6 +54,42 @@ describe("vague-word-density: あいまいな語が文書の長さに対して�
     assert.deepEqual(findingsOf(plainEn, en), []);
   });
 
+  it("目次の行は節の名前で、文として数えない", () => {
+    const body = `${PLAIN_JA.repeat(15)}障害は適宜報告し、必要に応じて連絡します。記録は適切に残し、なるべく早めにまとめます。\n`;
+    const toc = "# 方策\n\n## 目次\n\n- 1 学生が事情に応じて柔軟に履修する仕組み\n\n## 本文\n\n";
+    assert.equal(findingsOf(`${toc}${body}`).length, 2, findingsOf(`${toc}${body}`).join("\n"));
+    const asProse = `# 方策\n\n## 概要\n\n- 1 学生が事情に応じて柔軟に履修する仕組み\n\n## 本文\n\n`;
+    assert.equal(findingsOf(`${asProse}${body}`).length, 3);
+  });
+
+  it("a fixed wording (keep data for as long as necessary, the most appropriate template) counts but is not reported", () => {
+    const vague = "Report incidents as needed and notify the appropriate people in a timely manner. Keep adequate records where possible.";
+    const fixed = `${PLAIN_EN.repeat(13)}${vague} Keep data for as long as necessary. Use the most appropriate issue template.\n`;
+    const findings = findingsOf(fixed, en, "docs/manual");
+    assert.equal(findings.length, 2, findings.join("\n"));
+    // The same words outside the fixed wording, in sentences of the same length: reported, and the density is the same.
+    const loose = `${PLAIN_EN.repeat(13)}${vague} Keep records and delete them as necessary. Use the appropriate issue template now.\n`;
+    const looseFindings = findingsOf(loose, en, "docs/manual");
+    assert.equal(looseFindings.length, 4);
+    const densityOf = (finding: string): string => finding.replace(/^.*: /u, "");
+    assert.equal(densityOf(findings[0] ?? ""), densityOf(looseFindings[0] ?? ""));
+  });
+
+  it("a document whose vague words are all fixed wordings reports nothing, and a sentence with another vague word is still reported", () => {
+    const fixedOnly = `${PLAIN_EN.repeat(13)}Keep data for as long as necessary. Use the most appropriate issue template.\n`;
+    assert.deepEqual(findingsOf(fixedOnly, en, "docs/manual"), []);
+    const mixed = `${PLAIN_EN.repeat(13)}Report as needed, notify the appropriate people, keep adequate records, and keep data for as long as necessary.\n`;
+    assert.equal(findingsOf(mixed, en, "docs/manual").length, 1);
+  });
+
+  it("reasonable accommodation is the name of a legal duty in any genre, and a bare reasonable is still counted", () => {
+    const vague = "Report incidents as needed and notify the appropriate people in a timely manner. Keep adequate records where possible.";
+    const named = `${PLAIN_EN.repeat(13)}${vague} Requests for reasonable accommodation go to the disability office.\n`;
+    assert.equal(findingsOf(named, en, "docs/manual").length, 2, findingsOf(named, en, "docs/manual").join("\n"));
+    const bare = `${PLAIN_EN.repeat(13)}${vague} Requests get a reasonable answer from the office.\n`;
+    assert.equal(findingsOf(bare, en, "docs/manual").length, 3);
+  });
+
   it("あいまいな語が無ければ何も言わない", () => {
     assert.deepEqual(findingsOf(`${PLAIN_JA.repeat(10)}\n`), []);
   });
@@ -65,6 +102,23 @@ describe("vague-word-density: あいまいな語が文書の長さに対して�
     assert.deepEqual(findingsOf(source, en, "legal/contract"), []);
     const elsewhere = findingsOf(source, en, "business/report");
     assert.equal(elsewhere.length, 4, elsewhere.join("\n"));
+  });
+
+  it("the safeguards and measures a data-protection law names are not counted in a contract, and are elsewhere", () => {
+    const duties =
+      "The Provider will implement appropriate administrative, physical, and technical safeguards to protect the data. " +
+      "The Provider will maintain appropriate technical and organizational safeguards against misuse. " +
+      "The Processor shall apply appropriate technical and organisational measures. Transfers rely on appropriate safeguards. ";
+    const source = `${PLAIN_EN.repeat(13)}${duties}\n`;
+    assert.deepEqual(findingsOf(source, en, "legal/contract"), []);
+    const elsewhere = findingsOf(source, en, "business/report");
+    assert.equal(elsewhere.length, 4, elsewhere.join("\n"));
+  });
+
+  it("契約でも、法律の名指さない appropriate measures は数える", () => {
+    const source = `${PLAIN_EN.repeat(13)}The Supplier shall take appropriate measures. It shall notify the appropriate people. It shall keep adequate records.\n`;
+    const findings = findingsOf(source, en, "legal/contract");
+    assert.equal(findings.length, 3, findings.join("\n"));
   });
 
   it("契約でも、基準の無いあいまいな語は数える", () => {
@@ -134,6 +188,62 @@ describe("vague-word-density: すぐ後ろの括弧で中身を決めた語", ()
     assert.deepEqual(wordsWithMarkers("一定の事項を、記録（紙）に残します。"), ["一定の"]);
     assert.deepEqual(wordsWithMarkers("適切な措置（以下「本措置」という。）を講じます。"), ["適切な"]);
     assert.deepEqual(wordsWithMarkers('A reasonable fee (hereinafter the "Fee") applies.', en), ["reasonable"]);
+  });
+});
+
+/** The vague words of each sentence, as the rule reads them, with the language's law references. */
+const wordsUnderLaw = (text: string): string[] => {
+  const doc = buildDocument("a.md", `${text}\n`, en);
+  const law = lawReferenceOf(doc.lexicons["vague-word-law-reference"] ?? []);
+  return doc.sentences.flatMap((sentence) => vagueWordsIn(sentence, doc.lexicons["vague-word"] ?? [], [], [], law));
+};
+
+describe("vague-word-density: a vague word a law or a section governs", () => {
+  it("a law, a statute's section or a named law right after by / under fixes the requirement", () => {
+    assert.deepEqual(wordsUnderLaw("The Provider will not disclose it except as required by applicable law."), []);
+    assert.deepEqual(wordsUnderLaw("It keeps an accounting of disclosures as required under 45 CFR §164.528(a)."), []);
+    assert.deepEqual(wordsUnderLaw("It reports breaches as required by §164.410 of HIPAA and any incident."), []);
+    assert.deepEqual(wordsUnderLaw("It appoints officials as required under HIPAA."), []);
+    assert.deepEqual(wordsUnderLaw("It adopts the notice as required by the Privacy Rule."), []);
+    assert.deepEqual(wordsUnderLaw("It labels the food as required under the Food Safety Modernization Act."), []);
+    assert.deepEqual(wordsUnderLaw("It files the report as necessary pursuant to Section 4.1."), []);
+  });
+
+  it("a party, no governing word, a law past the clause or the next governor, and a bare word are still counted", () => {
+    assert.deepEqual(wordsUnderLaw("It sends the files as required by Licensor."), ["as required"]);
+    assert.deepEqual(wordsUnderLaw("It sends the files as required and keeps a log."), ["as required"]);
+    assert.deepEqual(wordsUnderLaw("It sends the files as required, and the law decides the rest."), ["as required"]);
+    assert.deepEqual(wordsUnderLaw("It sends the files as required by the customer under the law."), ["as required"]);
+    assert.deepEqual(wordsUnderLaw("It takes appropriate steps under applicable law."), ["appropriate"]);
+    assert.deepEqual(wordsUnderLaw("It sends the files as required by the lawyer."), ["as required"]);
+  });
+
+  it("a document full of law-governed words is not dense, and the bare ones still are", () => {
+    const governed = "The Provider discloses data as required by applicable law. It keeps records as required under 45 CFR §164.528. ";
+    const contract = findingsOf(`${PLAIN_EN.repeat(13)}${governed.repeat(2)}\n`, en, "legal/contract");
+    assert.deepEqual(contract, []);
+    const bare = "The Provider discloses data as required. It keeps records as needed. It reports as necessary. ";
+    assert.equal(findingsOf(`${PLAIN_EN.repeat(13)}${governed}${bare}\n`, en, "legal/contract").length, 3);
+  });
+});
+
+describe("governedByLaw", () => {
+  const law = { governors: ["by", "under", "pursuant to"], references: ["law", "§", "hipaa"] };
+
+  it("a governing word right after the end, then a law within the clause", () => {
+    assert.equal(governedByLaw("as required by law.", 11, law), true);
+    assert.equal(governedByLaw("as required pursuant to §164.410", 11, law), true);
+    assert.equal(governedByLaw("as required  Under HIPAA", 11, law), true);
+  });
+
+  it("no governing word, a governing word glued to another, a law after punctuation, or nothing to read", () => {
+    assert.equal(governedByLaw("as required for law", 11, law), false);
+    assert.equal(governedByLaw("as required bylaw", 11, law), false);
+    assert.equal(governedByLaw("as required by Company, law", 11, law), false);
+    assert.equal(governedByLaw("as required by lawyers", 11, law), false);
+    assert.equal(governedByLaw("as required", 11, law), false);
+    assert.equal(governedByLaw("", 0, law), false);
+    assert.equal(governedByLaw("as required by law", 11, NO_LAW_REFERENCE), false);
   });
 });
 

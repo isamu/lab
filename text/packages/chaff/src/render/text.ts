@@ -22,16 +22,29 @@ export const templateForReading = (template: string, readings: Readonly<Record<s
 /** A rule's text for one finding, with the finding's values in it. */
 export const filledText = (field: Localized, finding: Finding, language: string): string => fill(localized(field, language), finding.values);
 
+/** An English reading that opens with a determiner (the word found) describes the value; one that does not (always, N) is a sample of it. */
+const DESCRIBING = /^(?:the|a|an|another|one|how)\s/iu;
+/** A stand-in for the value itself (〇〇), which reads as the word in quotation marks. */
+const STAND_IN = /^〇+$/u;
+const QUOTED_PLACEHOLDER = /([「『“"])\{(\w+)\}([」』”"])/gu;
+const CLOSER: Readonly<Record<string, string>> = { "「": "」", "『": "』", "“": "”", '"': '"' };
+
+/** A description in quotation marks reads as if it were the word itself (Change it to 「直した書き方」), so its marks go. */
+const unquoteDescriptions = (template: string, describing: ReadonlySet<string>): string =>
+  template.replace(QUOTED_PLACEHOLDER, (whole, open: string, key: string, close: string) =>
+    CLOSER[open] === close && describing.has(key) ? `{${key}}` : whole,
+  );
+
 /** A rule's text where no finding fills it (explain, rules --json, the rule reference): each value as the rule's words for it. */
 export const readableText = (rule: Pick<RuleDefinition, "placeholders">, field: Localized, language: string): string => {
   // The same fallback as the text itself: an English-only rule read in Japanese still gets its English words.
-  const readings = Object.fromEntries(
-    Object.entries(rule.placeholders ?? {}).flatMap(([key, reading]) => {
-      const words = localized(reading, language);
-      return words === "" ? [] : [[key, words]];
-    }),
-  );
-  return templateForReading(localized(field, language), readings);
+  const entries = Object.entries(rule.placeholders ?? {}).flatMap(([key, reading]) => {
+    const words = localized(reading, language);
+    return words === "" ? [] : [{ key, words, describing: DESCRIBING.test(reading["en"] ?? "") && !STAND_IN.test(words) }];
+  });
+  const readings = Object.fromEntries(entries.map(({ key, words }) => [key, words]));
+  const describing = new Set(entries.filter((entry) => entry.describing).map(({ key }) => key));
+  return templateForReading(unquoteDescriptions(localized(field, language), describing), readings);
 };
 
 const templateOf = (rule: RuleDefinition, finding: Finding): Localized =>

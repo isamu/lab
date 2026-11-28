@@ -1,0 +1,8 @@
+# Headings of an introduction at the head of a document (use-before-definition). It names ahead what the body defines and
+# discusses, so a term defined outside it is not first used there. Like summary-heading, the whole heading must match.
+id: introduction-heading
+language: en
+entries:
+  - pattern: introduction
+  - pattern: preface
+  - pattern: foreword

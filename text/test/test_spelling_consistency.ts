@@ -42,6 +42,26 @@ describe("spelling-consistency: イギリスとアメリカの綴りが混ざっ
     assert.deepEqual(findingsOf(`${BRITISH}Color matters here.\n`), ['"Color" here, where the document usually spells it "colour" (1 of 4)']);
   });
 
+  it("文献一覧の中の綴りは引いた文献のもので、数えない", () => {
+    const references = "## References\n\n- [1] A. Writer (2020) The color of print. Journal of Print 3, pp. 1–9.\n";
+    assert.deepEqual(findingsOf(`${BRITISH}${references}`), []);
+  });
+
+  it("文献一覧の外の、本文の混ざりはそのまま指摘する", () => {
+    const references = "## References\n\n- [1] A. Writer (2020) The colour of print. Journal of Print 3, pp. 1–9.\n";
+    assert.deepEqual(findingsOf(`${BRITISH}The color of the link is red.\n\n${references}`), [
+      '"color" here, where the document usually spells it "colour" (1 of 4)',
+    ]);
+  });
+
+  it("斜線で並べた二つの綴り（colour/color）は語を名指ししているので数えない", () => {
+    assert.deepEqual(findingsOf(`${BRITISH}Search finds both spellings (colour/color). Use color/colour in tags.\n`), []);
+  });
+
+  it("斜線の向こうが別の語なら、ふつうに数える", () => {
+    assert.deepEqual(findingsOf(`${BRITISH}Pick a size/color for the link.\n`), ['"color" here, where the document usually spells it "colour" (1 of 4)']);
+  });
+
   it("少ないほうが三分の一を超えれば、使い分けと見て言わない", () => {
     assert.deepEqual(findingsOf("The colour is blue. The color is red.\n"), []);
   });

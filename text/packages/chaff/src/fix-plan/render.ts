@@ -2,7 +2,7 @@ import type { RewritePair } from "../rule-guide.ts";
 import { shapeMeasures } from "../outline/render.ts";
 import { OUTLINE_TEXT } from "../outline/text.ts";
 import { uiLanguageOf } from "../ui.ts";
-import type { FixPlan, PhraseHint, PlanSpot, RulePlan } from "./plan.ts";
+import type { AiScoreSummary, FixPlan, PhraseHint, PlanSpot, RulePlan } from "./plan.ts";
 import { FIX_PLAN_TEXT, type FixPlanText } from "./text.ts";
 import { STRUCTURE_TARGET_TEXT } from "./structure-target-text.ts";
 import { DEFAULT_DEPTH, depthMeaning } from "../rewrite-depth.ts";
@@ -137,6 +137,40 @@ const guideLines = (plan: FixPlan, text: FixPlanText): string[] => {
   return [`## ${text.guideHeading(guide.name, guide.genre)}`, "", text.guideLead, "", ...bullets(guide.lines), ...rules, ""];
 };
 
+const scoreText = (score: AiScoreSummary, text: FixPlanText): string =>
+  score.level === null ? text.notScoredLine(score.notScored ?? "") : text.aiScoreLine(score.level, score.signs, score.compared, score.shown.join(", "));
+
+/** The score's level, or the reason it has none, for the before → after line. */
+const levelText = (score: AiScoreSummary | null): string => score?.level ?? score?.notScored ?? "-";
+
+const aiScoreLines = (plan: FixPlan, text: FixPlanText): string[] =>
+  plan.aiScore === null
+    ? []
+    : [
+        "",
+        `## ${text.aiScoreHeading}`,
+        "",
+        ...bullets([scoreText(plan.aiScore, text), text.aiRulesLine(plan.aiRules.map((rule) => `\`${rule}\``).join(", "))]),
+      ];
+
+/** What the rewrite changed against --before's original: the score before and after, and every rule whose findings rose. */
+const sinceLines = (plan: FixPlan, text: FixPlanText): string[] => {
+  const { since } = plan;
+  if (since === null) return [];
+  const score = plan.aiScore === null ? [] : [text.sinceScore(levelText(since.aiScore), levelText(plan.aiScore)), ""];
+  const risen =
+    since.risen.length === 0
+      ? [text.noneRisen]
+      : [text.risenLead, "", ...bullets(since.risen.map((rule) => `\`${rule.rule}\`: ${text.risenLine(rule.before, rule.after)}`))];
+  return ["", `## ${text.sinceHeading(since.path)}`, "", ...score, ...risen];
+};
+
+const stopLines = (plan: FixPlan, text: FixPlanText): string[] => (plan.allSigns ? ["", `## ${text.stopHeading}`, "", ...bullets(text.stopLines)] : []);
+
+/** The constraints; with --all-ai-signs the last one loops to the stop conditions instead of stopping at two passes. */
+const constraintsOf = (plan: FixPlan, text: FixPlanText): readonly string[] =>
+  plan.allSigns ? [...text.constraints.slice(0, -1), text.loopConstraint] : text.constraints;
+
 const textOf = (plan: FixPlan): FixPlanText => FIX_PLAN_TEXT[uiLanguageOf(plan.language)];
 
 /** The plan as Markdown, in the document's language: what an agent reads before rewriting. */
@@ -152,15 +186,18 @@ export const renderFixPlanMarkdown = (plan: FixPlan): string => {
     ...guideLines(plan, text),
     `## ${text.constraintsHeading}`,
     "",
-    ...text.constraints.map((constraint, index) => `${String(index + 1)}. ${constraint}`),
+    ...constraintsOf(plan, text).map((constraint, index) => `${String(index + 1)}. ${constraint}`),
     ...modeLines(plan, text),
     ...signalLines(plan, text),
+    ...aiScoreLines(plan, text),
+    ...sinceLines(plan, text),
     ...structureLines(plan),
     ...(plan.rules.length === 0 ? [] : ["", `## ${text.rulesHeading}`]),
     ...plan.rules.flatMap((rule) => rulePlanLines(rule, text, plan.language)),
     ...deeperLines(plan, text),
     ...notRunLines(plan, text),
     ...checkLines(plan, text),
+    ...stopLines(plan, text),
   ].join("\n");
 };
 
@@ -170,8 +207,9 @@ export const renderFixPlanJson = (plan: FixPlan): string => {
   return JSON.stringify(
     {
       ...plan,
-      constraints: text.constraints,
+      constraints: constraintsOf(plan, text),
       mode: { ...plan.mode, name: text.modeName[plan.mode.mode], why: text.modeReason[plan.mode.reason] },
+      ...(plan.allSigns ? { stop: text.stopLines } : {}),
     },
     null,
     2,

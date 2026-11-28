@@ -8,6 +8,7 @@ import { namesAbsentUnit, withinAbsentUnit } from "./unit-word.ts";
 import { isListedParagraph, listedParagraphsByArticle } from "./listed-paragraph.ts";
 import { referencesInCitedDocuments } from "./cited-document-section.ts";
 import { citedElsewhereReader } from "./cited-elsewhere.ts";
+import { referenceListSpans } from "../reference-lists.ts";
 
 // 木だけで決まる誤り。参照先が無い、番号が飛ぶ・重なる、同じ語を二度定義する。
 // 意味の食い違いは判定しない。書いてあることから機械で決まるものだけを出す。
@@ -137,7 +138,12 @@ const ownNumberings = (nodes: readonly StructureNode[], resolvesHere: (node: Str
  * 参照の番地が木に無い。他の文書の名前が付いた参照（民法第709条、Section 9 of the Master Agreement）は引かない。
  * 条を 1 つも持たない文書も見ない。他の文書を指しているだけかもしれない。
  */
-export const danglingReferences = (tree: StructureNode, source: string, nameNouns: readonly string[] = []): StructureIssue[] => {
+export const danglingReferences = (
+  tree: StructureNode,
+  source: string,
+  nameNouns: readonly string[] = [],
+  referenceListHeadings: readonly string[] = [],
+): StructureIssue[] => {
   const nodes = inDocumentOrder(tree);
   // 参照は条を指す。条を一つも持たない文書（契約書に付ける承諾書のひな形など）の「契約書第6条」は、別の文書の条。
   if (!nodes.some((node) => node.kind === "article")) return [];
@@ -157,7 +163,7 @@ export const danglingReferences = (tree: StructureNode, source: string, nameNoun
   const quoted = referencesInCitedDocuments(tree);
   const references = nodes.filter((node) => node.kind === "reference");
   const named = namedTargets(references, source, nameNouns);
-  const citedElsewhereToo = citedElsewhereReader(references, citesOther);
+  const citedElsewhereToo = citedElsewhereReader(references, citesOther, (address) => addresses.has(address));
   const unresolved = references
     .filter((node) => !citesOther(node) && !otherNumbering(node) && !pointsToNamedSection(node, named) && !citedElsewhereToo(node))
     .filter((node) => !namesAbsentUnit(node, articleLabels) && !withinAbsentUnit(node, unitLabels) && !elsewhere.has(node))
@@ -167,7 +173,10 @@ export const danglingReferences = (tree: StructureNode, source: string, nameNoun
   // 平文の契約は見出しを「9. Indemnification.」と本文の形で書き、木はそれを番地にしない。残った参照があるときだけ読む。
   const written = unresolved.length === 0 ? undefined : writtenReading(nodes, source);
   const writtenAddresses = new Set(written?.addresses);
+  // 文献一覧の項目は他の著作を引く。そこの "pp. Article 81" は雑誌の論文番号で、この文書の条ではない。
+  const lists = unresolved.length === 0 ? [] : referenceListSpans(source, referenceListHeadings);
   return unresolved
+    .filter((node) => !lists.some((span) => span.start <= node.span.start && node.span.start < span.end))
     .filter((node) => !isListedParagraph(textOf(node, "target"), listed))
     .filter((node) => !writtenAddresses.has(textOf(node, "target")) && written?.subdivision(node) !== true)
     .map((node) => ({ offset: node.span.start, values: { label: textOf(node, "label"), target: textOf(node, "target") } }));
@@ -200,18 +209,20 @@ export const referenceResolver = (tree: StructureNode, source: string): ((refere
   };
 };
 
-type Definition = { readonly node: StructureNode; readonly article: string };
+/** choice: the division, one of several to choose from, that holds the definition (undefined when the text keeps it whatever is chosen). */
+type Definition = { readonly node: StructureNode; readonly article: string; readonly choice: StructureNode | undefined };
 
-/** 定義を文書の順に、それが置かれた条の番地と一緒に並べる。範囲を限った定義は、その条の中でだけ比べるため。 */
-const definitionsInOrder = (tree: StructureNode): Definition[] => {
+/** 定義を文書の順に、それが置かれた条の番地と、選ぶ条項の中ならその条項と一緒に並べる。範囲を限った定義は、その条の中でだけ比べるため。 */
+const definitionsInOrder = (tree: StructureNode, isChoice: (node: StructureNode) => boolean): Definition[] => {
   const found: Definition[] = [];
-  const pending: Definition[] = [{ node: tree, article: "" }];
+  const pending: Definition[] = [{ node: tree, article: "", choice: undefined }];
   while (pending.length > 0) {
     const current = pending.pop();
     if (current === undefined) break;
     if (current.node.kind === "definition") found.push(current);
     const article = current.node.kind === "article" ? current.node.address : current.article;
-    current.node.children.toReversed().forEach((child) => pending.push({ node: child, article }));
+    const choice = current.choice ?? (current.node.kind !== "definition" && isChoice(current.node) ? current.node : undefined);
+    current.node.children.toReversed().forEach((child) => pending.push({ node: child, article, choice }));
   }
   return found;
 };
@@ -222,17 +233,25 @@ const definitionsInOrder = (tree: StructureNode): Definition[] => {
  * 添付した文書（partStarts から始まる Exhibit A など）は別の文書なので、その中の定義はその中でだけ比べる。
  * 同じ名前の後ろの括弧で同じ語を定義し直したもの（件名と本文の Financial Crimes Enforcement Network ("FinCEN")）は、
  * 一つの定義を書き直しただけで食い違えないので言わない。名前は source から読む。
+ * ひな形の選ぶ条項（オプション1、オプション2）の中の定義は、選ばなければ消える。先の定義が消えうるなら、後の定義は二度目と決まらない。
+ * そこで選ぶ条項の中の定義は、どれを選んでも残る定義と、同じ条項の中の定義とだけ比べる。
  */
-export const duplicateDefinitions = (tree: StructureNode, partStarts: readonly number[] = [], source = ""): StructureIssue[] => {
+export const duplicateDefinitions = (
+  tree: StructureNode,
+  partStarts: readonly number[] = [],
+  source = "",
+  isChoice: (node: StructureNode) => boolean = () => false,
+): StructureIssue[] => {
   const first = new Map<string, StructureNode>();
-  return definitionsInOrder(tree).flatMap(({ node, article }) => {
+  return definitionsInOrder(tree, isChoice).flatMap(({ node, article, choice }) => {
     const term = textOf(node, "term");
     const within = node.attrs["within"] === undefined ? article : textOf(node, "within");
     const scoped = node.attrs["scope"] === "local" ? `${within}\u0000${term}` : term;
     const key = `${partAt(partStarts, node.span.start)}\u0000${scoped}`;
-    const earlier = first.get(key);
+    const choiceKey = choice === undefined ? undefined : `${choice.span.start}\u0000${key}`;
+    const earlier = first.get(key) ?? (choiceKey === undefined ? undefined : first.get(choiceKey));
     if (earlier === undefined) {
-      first.set(key, node);
+      first.set(choiceKey ?? key, node);
       return [];
     }
     const name = nameBeforeDefinition(source, node);

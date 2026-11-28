@@ -44,6 +44,12 @@ export const namesInOrder = (tokens: readonly Token[], joiners: ReadonlySet<stri
   return runs.flatMap((run) => memberOf(run, source) ?? []);
 };
 
+/** 語のすぐ後ろの区切り（動作環境は、Windows と macOS）は一覧の始まりの前に置いた読点で、名前の区切りではない。 */
+const afterLeadingJoiner = (tokens: readonly Token[], joiners: ReadonlySet<string>): readonly Token[] => {
+  const first = tokens[0];
+  return first !== undefined && first.pos === "PUNCT" && isJoiner(first, joiners) ? tokens.slice(1) : tokens;
+};
+
 /** 一覧の語の、一つの現れから読んだ名前。before の語は後ろの名前を、after の語は前の名前を読む。 */
 const membersAt = (
   tokens: readonly Token[],
@@ -54,10 +60,19 @@ const membersAt = (
 ): ListMember[] =>
   entry.position === "after"
     ? namesInOrder(tokens.slice(0, range.start).toReversed(), joiners, source).toReversed()
-    : namesInOrder(tokens.slice(range.end), joiners, source);
+    : namesInOrder(afterLeadingJoiner(tokens.slice(range.end), joiners), joiners, source);
 
-/** 一覧を読む言葉。frames は一覧を言う語、joiners は名前をつなぐ語、negations は打ち消しの語（小文字）。 */
-export type ListWords = { readonly frames: Lexicon; readonly joiners: ReadonlySet<string>; readonly negations: ReadonlySet<string> };
+/** 一覧を読む言葉。frames は一覧を言う語、joiners は名前をつなぐ語、negations は打ち消しの語、ordinals は序数の語（小文字）。 */
+export type ListWords = {
+  readonly frames: Lexicon;
+  readonly joiners: ReadonlySet<string>;
+  readonly negations: ReadonlySet<string>;
+  readonly ordinals?: ReadonlySet<string>;
+};
+
+/** 序数だけの名前（Fourteenth、Twenty-first）は数えた順番で、名前の一覧ではない（Fourteenth and Fifteenth Edition … Sixteenth Edition）。 */
+const isOrdinal = (member: ListMember, ordinals: ReadonlySet<string>): boolean =>
+  member.name.split(/[\s-]+/u).every((word) => ordinals.has(word.toLowerCase()));
 
 /** 打ち消した文（neither is available on Docker Hub、Linux には対応していません）は、一覧に足す名前ではなく、外す名前を言う。 */
 const isNegated = (tokens: readonly Token[], negations: ReadonlySet<string>): boolean =>
@@ -72,7 +87,7 @@ export const listStatementsIn = (sentence: Sentence, words: ListWords, source: s
     const group = entry.group;
     if (group === undefined) return [];
     return entryRanges(sentence, entry).flatMap((range) => {
-      const members = membersAt(tokens, entry, range, joiners, source);
+      const members = membersAt(tokens, entry, range, joiners, source).filter((member) => !isOrdinal(member, words.ordinals ?? new Set()));
       const offset = tokens[range.start]?.span.start ?? sentence.span.start;
       return members.length === 0 ? [] : [{ group, offset, members }];
     });

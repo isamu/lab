@@ -13,6 +13,7 @@ import {
   partialForms,
 } from "../packages/chaff/src/detectors/mark-shape.ts";
 import { captionsOf, isCaptionAt } from "../packages/chaff/src/detectors/caps-caption.ts";
+import { unclosedCodeQuoteOffsets } from "../packages/chaff/src/unclosed-code-quote.ts";
 
 // Marks and shapes: quote-style-consistency, bracket-width-consistency, exclamation-width-consistency,
 // sentence-spacing-consistency, hyphen-as-dash, latin-abbreviation-form, all-caps-shouting. Every example is self-written.
@@ -57,9 +58,39 @@ describe("quote-style-consistency", () => {
     ]);
   });
 
+  it("the quotes of a value right after a code mark left unclosed are the code's, not the prose's", () => {
+    const base = "The “draft” is ready. The “final” is due. The “review” is next.\n\n";
+    assert.deepEqual(findingsOf(RULE, `${base}If your password is \`"my-secret" (don't use it), and you see a prompt, type it.\n`), []);
+    assert.deepEqual(findingsOf(RULE, `${base}If your password is \`"my-secret"\` here, type it. The "plan" is due.\n`), [
+      'The quote mark " here, where the document usually writes “” (2 of 8)',
+      'The quote mark " here, where the document usually writes “” (2 of 8)',
+    ]);
+  });
+
   it("one form throughout, or apostrophes apart from double quotes, is not reported", () => {
     assert.deepEqual(findingsOf(RULE, "The “draft” is ready. The “final” is due. The team’s plan holds.\n"), []);
     assert.deepEqual(findingsOf(RULE, 'The "draft" is ready. The "final" is due. The team’s plan holds.\n'), []);
+  });
+});
+
+describe("unclosedCodeQuoteOffsets", () => {
+  const quotesOf = (source: string): string[] => [...unclosedCodeQuoteOffsets(source)].map((at) => `${String(at)}${source[at] ?? ""}`);
+
+  it("finds the two quotes of a value right after the last of an odd count of code marks in a paragraph", () => {
+    assert.deepEqual(quotesOf('Use `{x}` here. Set `"pw" (not this).'), ['21"', '24"']);
+    assert.deepEqual(quotesOf("First.\n\nSet `“pw” now."), ["13“", "16”"]);
+  });
+
+  it("finds nothing when the code marks pair up, no quote follows, or the quote does not close on its line", () => {
+    assert.deepEqual(quotesOf('Set `"pw"` now.'), []);
+    assert.deepEqual(quotesOf("Set `pw now."), []);
+    assert.deepEqual(quotesOf('Set `"pw now.\nNext "line".'), []);
+    assert.deepEqual(quotesOf('Set ``"pw" now.'), []);
+    assert.deepEqual(quotesOf(""), []);
+  });
+
+  it("reads each paragraph on its own", () => {
+    assert.deepEqual(quotesOf('Set `a.\n\nThen `"b"` here.'), []);
   });
 });
 
@@ -68,9 +99,14 @@ describe("bracket-width-consistency", () => {
 
   it("日本語の字に接する半角の括弧が少なければ、それを言う", () => {
     const source = "会議（定例）は月曜です。報告（月次）は金曜です。資料(最新版)を配ります。\n";
+    assert.deepEqual(findingsOf(RULE, source, ja), ["括弧を「()」と書いています（この文書はふつう「（）」。6 箇所のうち 2 箇所が違う）"]);
+  });
+
+  it("半角の括弧の一組は一つの書き違いで、一件だけ言う。数は括弧の数のまま", () => {
+    const source = "会議（定例）は月曜です。報告（月次）は金曜です。資料（第二版）を配ります。予算(案)と日程(仮)を見ます。\n";
     assert.deepEqual(findingsOf(RULE, source, ja), [
-      "括弧を「(」と書いています（この文書はふつう「（」。6 箇所のうち 2 箇所が違う）",
-      "括弧を「)」と書いています（この文書はふつう「）」。6 箇所のうち 2 箇所が違う）",
+      "括弧を「()」と書いています（この文書はふつう「（）」。10 箇所のうち 4 箇所が違う）",
+      "括弧を「()」と書いています（この文書はふつう「（）」。10 箇所のうち 4 箇所が違う）",
     ]);
   });
 
@@ -92,8 +128,7 @@ describe("bracket-width-consistency", () => {
       "会議（定例）は月曜です。報告（月次）は金曜です。\n\n- 支給額 × (1 - 欠勤時間 ÷ 所定時間)　+ 手当\n- 支給額 × (勤務時間 ÷ 所定時間)　+ 手当\n";
     assert.deepEqual(findingsOf(RULE, formula, ja), []);
     assert.deepEqual(findingsOf(RULE, `${formula}\n資料(最新版)を配ります。\n`, ja), [
-      "括弧を「(」と書いています（この文書はふつう「（」。6 箇所のうち 2 箇所が違う）",
-      "括弧を「)」と書いています（この文書はふつう「）」。6 箇所のうち 2 箇所が違う）",
+      "括弧を「()」と書いています（この文書はふつう「（）」。6 箇所のうち 2 箇所が違う）",
     ]);
   });
 
@@ -108,19 +143,17 @@ describe("bracket-width-consistency", () => {
     const numbers = `${PROSE}(1)開催趣旨の確認\n(2)設置要綱の承認\n(3)座長の選出\n(4)委員の紹介\n(5)今後の予定\n（6）その他\n`;
     assert.deepEqual(findingsOf(RULE, numbers, ja), ["括弧を「）」と書いています（この文書はふつう「)」。6 箇所のうち 1 箇所が違う）"]);
     assert.deepEqual(findingsOf(RULE, `${PROSE}資料(最新版)を配ります。\n\n(1)開催趣旨の確認\n`, ja), [
-      "括弧を「(」と書いています（この文書はふつう「（」。8 箇所のうち 2 箇所が違う）",
-      "括弧を「)」と書いています（この文書はふつう「）」。8 箇所のうち 2 箇所が違う）",
+      "括弧を「()」と書いています（この文書はふつう「（）」。8 箇所のうち 2 箇所が違う）",
     ]);
     // 文の中で番号を指す (1) は、文の括弧として数える。
-    assert.deepEqual(findingsOf(RULE, `${PROSE}(1)履歴書\n(2)職務経歴書\n\n次の(1)と(2)を送ってください。\n`, ja).length, 4);
+    assert.deepEqual(findingsOf(RULE, `${PROSE}(1)履歴書\n(2)職務経歴書\n\n次の(1)と(2)を送ってください。\n`, ja).length, 2);
   });
 
   it("二重の丸括弧（((題))）は文の括弧と別に比べる。一重の半角の括弧は文の括弧として数える", () => {
     const captions = `${PROSE}規程第3条((届出の期限))及び第4条((届出の様式))を改める。第5条((提出先))も改める。\n`;
     assert.deepEqual(findingsOf(RULE, captions, ja), []);
     assert.deepEqual(findingsOf(RULE, `${captions}資料(最新版)を配ります。\n`, ja), [
-      "括弧を「(」と書いています（この文書はふつう「（」。8 箇所のうち 2 箇所が違う）",
-      "括弧を「)」と書いています（この文書はふつう「）」。8 箇所のうち 2 箇所が違う）",
+      "括弧を「()」と書いています（この文書はふつう「（）」。8 箇所のうち 2 箇所が違う）",
     ]);
   });
 
@@ -168,6 +201,33 @@ describe("sentence-spacing-consistency", () => {
   it("a split after a number or an abbreviation, or before a citation, is not a gap between sentences", () => {
     assert.deepEqual(findingsOf(RULE, "We met.  We talked.  See Req. 1.  We agreed.  Refs. [ISO99] apply.  We left.\n"), []);
     assert.deepEqual(findingsOf(RULE, "We met.  We talked.  We sat. (Briefly.)  We agreed.\n"), []);
+  });
+
+  it("a pause inside a verse line is the stanza's layout, and prose wrapped in lower case is still read", () => {
+    const poem = [
+      "The night was cold.  The road was long,\nAnd still we walked\nUntil the dawn.\n",
+      "We passed the mill\nAnd crossed the stream\nWhere willows lean. We rest.\n",
+      "Who calls?  Not I.\nThe hills are dark\nAnd deep the vale.\n",
+      "So home at last\nWe came. We slept.\n",
+    ].join("\n");
+    assert.deepEqual(findingsOf(RULE, poem), []);
+    const prose = "We met in the hall and talked at length about the plan. Then\nwe left.  We came back the next day. We agreed on the\ncosts. We signed.\n";
+    assert.deepEqual(findingsOf(RULE, prose), ["2 spaces after this sentence, where the document usually leaves 1 (1 of 4)"]);
+  });
+
+  it("articles that open with a caption line are prose, not stanzas", () => {
+    const policy = [
+      "Article 1 Purpose\nThis policy sets out how staff use devices.\n",
+      "Article 2 Lending\nThe company lends devices. Staff use them for work.\n",
+      "Article 3 Care\nStaff look after a device.  Staff report a loss at once.\n",
+      "Article 4 Return\nStaff return every device. They leave it with IT.\n",
+    ].join("\n");
+    assert.deepEqual(findingsOf(RULE, policy), ["2 spaces after this sentence, where the document usually leaves 1 (1 of 3)"]);
+  });
+
+  it("two spaces before a field's label, as in an author block joined on one line, are not between sentences", () => {
+    const authors = "Jane Roe  Note: Both authors contributed equally.  Affiliation: Example University. We met. We talked. We left.\n";
+    assert.deepEqual(findingsOf(RULE, authors), []);
   });
 });
 

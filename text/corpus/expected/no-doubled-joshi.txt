@@ -9,9 +9,8 @@ k8s-overview-ja  1
 kantei-221-shisei-hoshin  2
 kantei-unga81-general-debate-speech  2
 kimino-mayor-2022-09  1
-mdn-using-fetch-ja  1
 mhlw-icd-committee-26-minutes  4
-mhlw-norovirus-qa  3
+mhlw-norovirus-qa  2
 mhlw-pubcomment-rodohoken  1
 mlit-press-planned-suspension  2
 moriguchi-satsuki-gakuen-ijime-houshin  1
@@ -29,5 +28,4 @@ tcu-rishu-toroku-2026-kouki  1
 vue-docs-ja-reactivity-fundamentals  1
 wikipedia-ja-talk-oden  3
 zenn-coji-ai-smell-lint  2
-zenn-coji-xstate-api-reference  1
 zenn-kaityo256-what-is-linker  1

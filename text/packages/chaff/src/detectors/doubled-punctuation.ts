@@ -42,12 +42,28 @@ const PAGE_ROMAN = /^x{0,3}(?:ix|iv|v?i{0,3})$/u;
 
 const isPageNumber = (page: string): boolean => PAGE_DIGITS.test(page) || (page !== "" && PAGE_ROMAN.test(page));
 
-/** 並びの終わりの点がページ番号の前の点線なら、その点は目次の点線で、並びの印ではない。 */
+/** 点線の後ろの、揃えのための二つ以上の空白と次の欄（配役表の「NORA..  Emma Vernon」）。 */
+const LEADER_THEN_GAP = /^[ \t]{2,}\S/u;
+/** 同じ段落の、ほかの長い点線と揃えの空白（「MAURYA......  Honor Lavelle」）。 */
+const LONG_LEADER_THEN_GAP = /\.{3}[ \t]{2,}\S/u;
+
+const paragraphAround = (text: string, offset: number): string => {
+  const before = text.lastIndexOf("\n\n", offset);
+  const after = text.indexOf("\n\n", offset);
+  return text.slice(before === -1 ? 0 : before + 2, after === -1 ? text.length : after);
+};
+
+/** 点線の後ろが揃えの空白で、同じ段落にほかの長い点線も揃えの空白に続く（点線で欄を揃えた表）。 */
+const isLeaderColumn = (text: string, leaderEnd: number): boolean =>
+  LEADER_THEN_GAP.test(text.slice(leaderEnd)) && LONG_LEADER_THEN_GAP.test(paragraphAround(text, leaderEnd));
+
+const isLeaderBefore = (text: string, leaderEnd: number): boolean =>
+  isPageNumber(LEADER_THEN_PAGE.exec(text.slice(leaderEnd))?.groups?.["page"] ?? "") || isLeaderColumn(text, leaderEnd);
+
+/** 並びの終わりの点がページ番号の前の点線か、点線で欄を揃えた表の点線なら、その点は点線で、並びの印ではない。 */
 const withoutLeader = (text: string, found: DoubledMarks): DoubledMarks => {
   const kept = found.run.slice(0, Array.from(found.run).findLastIndex((mark) => mark !== ".") + 1);
-  return kept !== found.run && isPageNumber(LEADER_THEN_PAGE.exec(text.slice(found.start + found.run.length))?.groups?.["page"] ?? "")
-    ? { start: found.start, run: kept }
-    : found;
+  return kept !== found.run && isLeaderBefore(text, found.start + found.run.length) ? { start: found.start, run: kept } : found;
 };
 
 /**
@@ -60,6 +76,30 @@ const marksInNames = ({ start, run }: DoubledMarks, names: readonly Span[]): num
   return [...run].filter((_, at) => near.some((name) => start + at >= name.start && start + at < name.end)).length;
 };
 
+/** 半角の点と空白: 書誌の要素の区切り（「佐藤翔. 」「LRG. 」「p. 136」）。 */
+const ELEMENT_SEPARATOR = /\. /gu;
+/** 書誌の行には、この数より多くの区切りの点がほかにもある（著者の後ろ、誌名の後ろ、ページの前）。 */
+const MIN_OTHER_SEPARATORS = 2;
+/** 和文の終わりの印（。？！）のすぐ後ろの区切りの点（「考えてみた。. LRG.」）。 */
+const STOP_THEN_SEPARATOR = /^[。？！]\.$/u;
+
+const lineAround = (text: string, offset: number): { readonly start: number; readonly text: string } => {
+  const start = text.lastIndexOf("\n", offset - 1) + 1;
+  const end = text.indexOf("\n", offset);
+  return { start, text: text.slice(start, end === -1 ? text.length : end) };
+};
+
+/**
+ * 「。」で終わる書名の後ろの、書誌の要素の区切りの点（佐藤翔. なぜ生まれたのか？その原因を考えてみた。. LRG. 2019, p. 1-9.）。
+ * 点の後ろが空白で、同じ行にほかの区切りの点が二つ以上あるときだけ（書誌の行）。
+ */
+const isCitationSeparator = (text: string, { start, run }: DoubledMarks): boolean => {
+  if (!STOP_THEN_SEPARATOR.test(run) || text.charAt(start + run.length) !== " ") return false;
+  const line = lineAround(text, start);
+  const dot = start + run.length - 1 - line.start;
+  return [...line.text.matchAll(ELEMENT_SEPARATOR)].filter((match) => match.index !== dot).length >= MIN_OTHER_SEPARATORS;
+};
+
 const isSlip = (text: string, found: DoubledMarks, names: readonly Span[]): boolean => {
   const { start, run } = found;
   return (
@@ -67,7 +107,8 @@ const isSlip = (text: string, found: DoubledMarks, names: readonly Span[]): bool
     !isDrawnOut(run) &&
     !isDrawnOutThenClosed(run) &&
     !AFTER_ABBREVIATION.test(run) &&
-    !isJoinedDots(text, start, run)
+    !isJoinedDots(text, start, run) &&
+    !isCitationSeparator(text, found)
   );
 };
 

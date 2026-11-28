@@ -9,6 +9,7 @@ import { join } from "node:path";
 import { BASELINE_FILE, fingerprint, fingerprints, readBaseline, splitByBaseline } from "../packages/chaff/src/baseline.ts";
 import { doubledIn } from "../packages/chaff/src/detectors/doubled-word.ts";
 import { depthsOf } from "../packages/chaff/src/detectors/list-sentence.ts";
+import { relativeUses } from "../packages/chaff/src/detectors/relative-pronoun-mix.ts";
 import { tokenize } from "../packages/lang-en/src/pos.ts";
 import { renderFriendly } from "../packages/chaff/src/render/friendly.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
@@ -130,6 +131,47 @@ describe("doubledIn: whether a pair opens the sentence is decided once per sente
   it(`finds ${String(LONG / 2)} doubled words in one sentence`, { timeout: LONG_TIMEOUT_MS }, () => {
     const words = Array.from({ length: LONG }, (): [string, string] => ["go", "VERB"]);
     assert.equal(pairs(words).length, LONG - 1);
+  });
+});
+
+describe("relativeUses: a which or that looks past the adverbs after it, not back over the sentence", () => {
+  const kinds = [
+    { pattern: "which", group: "which" },
+    { pattern: "that", group: "that" },
+  ];
+  const uses = (words: readonly (readonly [string, string])[]): string[] =>
+    relativeUses(tokensOf(words).tokens, kinds).map((use) => `${use.word.surface}:${use.kind}`);
+
+  it("still finds the verb past the adverbs, and nothing without a verb", () => {
+    assert.deepEqual(
+      uses([
+        ["file", "NOUN"],
+        ["which", "PRON"],
+        ["usually", "ADV"],
+        ["stores", "VERB"],
+      ]),
+      ["which:which"],
+    );
+    assert.deepEqual(
+      uses([
+        ["file", "NOUN"],
+        ["that", "PRON"],
+        ["usually", "ADV"],
+      ]),
+      [],
+    );
+  });
+
+  it(`reads a sentence of ${String(LONG)} words once`, { timeout: LONG_TIMEOUT_MS }, () => {
+    const words = Array.from({ length: LONG }, (): [string, string] => ["go", "VERB"]);
+    assert.deepEqual(uses(words), []);
+    const relatives = Array.from({ length: LONG / 4 }, (): [string, string][] => [
+      ["file", "NOUN"],
+      ["that", "PRON"],
+      ["usually", "ADV"],
+      ["stores", "VERB"],
+    ]).flat();
+    assert.equal(uses(relatives).length, LONG / 4);
   });
 });
 

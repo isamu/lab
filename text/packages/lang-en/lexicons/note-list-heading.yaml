@@ -1,0 +1,7 @@
+# The headings of a footnotes section, each note set as its own paragraph. The notes are entries, not prose split into
+# one-sentence paragraphs. Compared without case. Notes is left out: a section so named often holds prose.
+id: note-list-heading
+language: en
+entries:
+  - pattern: Footnotes
+  - pattern: Endnotes

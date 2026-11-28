@@ -1,0 +1,22 @@
+# 文字起こしから作った議事録やメモに残った、つなぎの言葉（フィラー）。filler-word が読む。
+# group のない語は、後ろに読点・「…」・空白が続けば、どこにあっても数える。
+# group: set-off の語は別の使い方がある（まあまあ、あの件、これなんかどうか）ので、
+# 文の頭か読点の後ろに立ち、後ろに読点か「…」が続くときだけ数える。
+id: filler-word
+language: ja
+entries:
+  - pattern: ええと
+  - pattern: えーと
+  - pattern: えっと
+  - pattern: えーっと
+  - pattern: あのー
+  - pattern: あのう
+  - pattern: あのぉ
+  - pattern: えー
+    group: set-off
+  - pattern: まあ
+    group: set-off
+  - pattern: なんか
+    group: set-off
+  - pattern: あの
+    group: set-off

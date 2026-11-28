@@ -233,8 +233,10 @@ describe("slipsOf: 本文と箇条書きごとの少数派", () => {
     assert.deepEqual(indicesOf([judged("plain"), judged("plain"), judged("plain"), judged("polite", 50), judged("plain", 50)]), [3]);
   });
 
-  it("文書全体でも同数なら丁寧体を指す", () => {
-    assert.deepEqual(indicesOf([judged("polite"), judged("plain")]), [0]);
+  it("文書全体でも同数なら、揃える先が無いのでどちらも指さない", () => {
+    assert.deepEqual(indicesOf([judged("polite"), judged("plain")]), []);
+    assert.deepEqual(indicesOf([judged("plain"), judged("polite"), judged("polite"), judged("plain")]), []);
+    assert.deepEqual(indicesOf([judged("polite", 50), judged("plain", 50)]), []);
   });
 
   it("少数派が閾値を超えれば別の文体と見て黙る。閾値ちょうどなら指す", () => {

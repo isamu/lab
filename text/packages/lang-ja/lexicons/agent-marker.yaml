@@ -1,8 +1,17 @@
 # 動作主を示す語。受動文にこれがあれば、誰がしたのかは書かれている。
+#   source  起点の語（部長から注意された）。すぐ前が時の語（来月から、4月1日から）なら、時の起点で動作主ではない。
+#           時の語は、品詞の Adverbial=Yes の名詞（来月、本日）か、数のすぐ後ろの group: time の単位（4月、10時）。
+#   time    数のすぐ後ろで時を言う単位。動作主の語ではない。
 id: agent-marker
 language: ja
 entries:
   - pattern: によって
   - pattern: により
   - pattern: による
-  - pattern: から
+  - { pattern: から, group: source }
+  - { pattern: 年, group: time }
+  - { pattern: 年度, group: time }
+  - { pattern: 月, group: time }
+  - { pattern: 日, group: time }
+  - { pattern: 時, group: time }
+  - { pattern: 分, group: time }

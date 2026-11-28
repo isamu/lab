@@ -15,8 +15,8 @@ why:
   en: '"There is" and "it is ... that" push the subject to the back and drop who does what.'
 
 message:
-  ja: '"{word} is ..." の形が文書内に {count} 回あります（{limit} 回まで）'
-  en: '"{word} is ..." appears {count} {count|time|times} (limit {limit})'
+  ja: '"{form} ..." を含め、There is か It is ... that の形で始まる文が文書内に {count} 文あります（{limit} 文まで）'
+  en: '"{form} ..." is one of {count} {count|sentence|sentences} that {count|opens|open} with "There is" or "It is ... that" (limit {limit})'
 
 how_to_fix:
   ja: 主語を前に出してください。"There is a need to review" を "The board must review" に。
@@ -45,8 +45,8 @@ example:
       The team meets on Friday to review the budget. The finance team will lead it.
 
 not_flagged:
-  ja: 「it is raining」のように that 節を伴わない It is は数えません。
-  en: '"It is" without a that-clause ("it is raining") is not counted.'
+  ja: "「it is raining」のように that 節を伴わない It is は数えません。「It is designed to give …」のように、It is の後に動詞の過去分詞と to が続く受け身も数えません。It は前に出た物を指していて、文の後ろの that は別の節のものです。誰が何を言ったかを記した議事録で、話し手の名前で始まる段落（Mara: There's some history ...）の文も数えません。話した人の言い方を書き手がそのまま残したもので、書き手が直す文ではないためです。名前と読むのは、3 人以上がそれぞれ 3 回以上、段落の頭で話しているときだけです（Status: と Comments: だけの項目は名前と読みません）。"
+  en: '"It is" without a that-clause ("it is raining") is not counted, nor is a passive of a participle and to ("It is designed to give …"): its it names the thing before it, and a that later in the sentence belongs to another clause. Nor is a sentence in a paragraph of minutes that opens with a speaker''s name ("Mara: There''s some history ..."): it is that person''s phrasing, recorded as said, not the writer''s to recast. Names are read only when three or more of them each open three or more paragraphs (two field labels such as Status: and Comments: are not names).'
 level_meaning:
   ja: この形の文 {limit} 回まで
-  en: up to {limit} such sentences
+  en: up to {limit} {limit|such sentence|such sentences}

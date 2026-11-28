@@ -1,3 +1,4 @@
+import { frontMatterValues } from "./front-matter.ts";
 import { loadGenres } from "./genre-load.ts";
 
 /** chaff が知っているジャンル。genres.yaml の並び。rule の use_for はこの頭の部分で当てる。 */
@@ -38,21 +39,6 @@ export const guessGenre = (path: string, source: string, front: string | undefin
   const byContent = BY_CONTENT.find(([pattern]) => pattern.test(source));
   if (byContent !== undefined) return { genre: byContent[1], from: "content" };
   return undefined;
-};
-
-/** YAML の 1 行の値。行末のコメントと、値を囲む引用符を外す。 */
-const scalarOf = (raw: string): string => {
-  const comment = raw.search(/\s#/u);
-  const value = (comment === -1 ? raw : raw.slice(0, comment)).trim();
-  return /^(["'])(.*)\1$/u.exec(value)?.[2] ?? value;
-};
-
-const valuesOf = (block: string, key: string): string[] => [...block.matchAll(new RegExp(`^${key}:(.*)$`, "gmu"))].map((line) => scalarOf(line[1] ?? ""));
-
-/** front matter の 1 つの欄に書かれた値。front matter が無ければ空。 */
-export const frontMatterValues = (source: string, key: string): string[] => {
-  const block = /^---\n([\s\S]*?)\n---/u.exec(source)?.[1];
-  return block === undefined ? [] : valuesOf(block, key);
 };
 
 /**

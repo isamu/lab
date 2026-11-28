@@ -1,0 +1,15 @@
+# インタビューの聞き手の発言を始める印（――製造から営業への異動は…？）。段落の頭にあるときだけ見る。
+# section-length-uniformity は、見出しの節の半分以上がこの印の問いで始まる文書をインタビューと見て、節の長さを比べない。
+# 節ごとに問い一つと答えがあり、長さが揃うのは形式のため。単独の「Q」は「QRコード」の頭にも来るので、区切りの付いた形だけ入れる。
+id: interviewer-mark
+language: ja
+entries:
+  - pattern: ――
+  - pattern: ──
+  - pattern: ——
+  - pattern: "Q."
+  - pattern: "Q:"
+  - pattern: Q：
+  - pattern: Ｑ．
+  - pattern: Ｑ：
+  - pattern: 聞き手：

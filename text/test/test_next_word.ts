@@ -50,6 +50,10 @@ describe("startsWithVowelSound: the sound a word starts with, from lexicon artic
     assert.deepEqual(["RAG", "MIR", "SEP"].map(soundOf), [false, false, false]);
   });
 
+  it("a filing's name said as a word (SAR, a suspicious activity report) takes the word's sound", () => {
+    assert.equal(soundOf("SAR"), false);
+  });
+
   it("a group's name said as a word (SIG) takes the word's sound; a stock code or a card said both ways (SKU, NIC) is left alone", () => {
     assert.deepEqual(["SIG", "SKU", "NIC"].map(soundOf), [false, undefined, undefined]);
     assert.deepEqual(["SEC", "MIT"].map(soundOf), [true, true]);
@@ -102,6 +106,15 @@ describe("article-sound", () => {
       '"an SIG" takes "a" before that sound',
       '"a MIT" takes "an" before that sound',
     ]);
+  });
+
+  it("a statement of work (SOW) is said as a word or letter by letter, so a SOW and an SOW are both left alone", () => {
+    assert.deepEqual(findingsOf(RULE, "Each service is described in a SOW. An SOW may list the deliverables.\n"), []);
+  });
+
+  it("a NAS is said as one syllable (nas), so it takes a; an NAS is the slip", () => {
+    assert.deepEqual(findingsOf(RULE, "Put the photos on a NAS at home.\n"), []);
+    assert.deepEqual(findingsOf(RULE, "Put the photos on an NAS at home.\n"), ['"an NAS" takes "a" before that sound']);
   });
 
   it("initials joined by a slash may be read as the words they stand for (a N/I level), so either article is left alone", () => {
@@ -162,8 +175,24 @@ describe("very-adjective", () => {
     assert.equal(findingsOf(RULE, source).length, 3);
   });
 
+  it("two plain uses in a document of some length are ordinary, two in a short one are not", () => {
+    const longer = Array.from({ length: 80 }, (_unused, at) => `Item ${String(at + 1)} shipped on time and the team moved on.`).join(" ");
+    assert.deepEqual(findingsOf(RULE, `Cranes lift very large loads. The job took a very long time. ${longer}\n`), []);
+    assert.equal(findingsOf(RULE, `Cranes lift very large loads. The job took a very long time. ${padding}\n`).length, 2);
+  });
+
   it('"very" before an adverb or an excepted word is not counted', () => {
     const source = `It went very well and ran very smoothly. The very first step and the very same plan took very few hours. It was very \`not\` good. It was very \`not\` important. ${padding}\n`;
+    assert.deepEqual(findingsOf(RULE, source), []);
+  });
+
+  it("an adjective the tagger reads as a noun or an adverb after very is counted (very light, very fast)", () => {
+    const source = `The frame is very light. It is a very fast parser. The bike is very light and very fast, and the grip is very firm. ${padding}\n`;
+    assert.deepEqual(findingsOf(RULE, source).length, 5);
+  });
+
+  it("an adverb after a verb, and a noun after the very, are not counted (runs very fast, the very light of day)", () => {
+    const source = `It runs very fast. It is very well documented. They met in the very light of day. ${padding}\n`;
     assert.deepEqual(findingsOf(RULE, source), []);
   });
 });

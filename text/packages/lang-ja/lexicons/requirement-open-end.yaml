@@ -22,9 +22,16 @@ entries:
   - { pattern: てはならない, group: scope-prohibition }
   - { pattern: てはなりません, group: scope-prohibition }
   - { pattern: ないものとする, group: scope-prohibition }
+  # 文を閉じる「ないこと」（使用しないこと。違反するものではないこと。）は禁止か否定。文の途中（不備がないことを確認する）は数えない。
+  - { pattern: ないこと, group: scope-prohibition, position: after }
+  # 権利が誰のものかを定める文（著作権は…に留保されるものとします、発明等をなした当事者に帰属するものとする）も、与える権利と同じ。
+  - { pattern: 帰属するものとする, group: scope-permission }
+  - { pattern: 留保されるものとする, group: scope-permission }
   - { pattern: 場合, group: scope-condition }
   - { pattern: 際, group: scope-condition }
   - { pattern: とき, group: scope-condition }
+  # 述語の後ろの「ため」（…NG となるため、…必要がある）は、義務の理由や目的の節を閉じる。その節の一覧は、果たす義務の中にない。
+  - { pattern: ため, group: scope-condition }
   # group: scope-topic は、述語で終わる節が説明する名詞のすぐ後ろの「は」（…を行う個人間融資は）。一覧はその名詞の説明の中にあって、
   # 要求が何についてかを言っているだけで、果たす義務の中にはない。「は」の後ろに読点があるときだけ。
   # group: scope-nominal は、その名詞が行い自体を名指すとき（提出することは、提出する義務は）。一覧は義務の中にある。
@@ -33,3 +40,12 @@ entries:
   - { pattern: 義務, group: scope-nominal }
   - { pattern: 責任, group: scope-nominal }
   - { pattern: 必要, group: scope-nominal }
+  # group: method-case は、動詞＋「など」のすぐ後ろの名詞に付く格助詞（分離するなどデータ構造を改める）。後ろの動詞が求める行いで、
+  # 「など」の前はそのやり方の一例。「などして」「などの措置」「氏名、住所など」は数えない。
+  - { pattern: を, group: method-case }
+  - { pattern: に, group: method-case }
+  - { pattern: が, group: method-case }
+  # group: list-anaphor は、前に挙げた一覧を指し直す語（当該改良、改善等）。一覧が開いているなら、挙げたところで指す。
+  - { pattern: 当該, group: list-anaphor }
+  - { pattern: 前記, group: list-anaphor }
+  - { pattern: 上記, group: list-anaphor }

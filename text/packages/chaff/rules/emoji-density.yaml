@@ -47,8 +47,8 @@ example:
       The new feature is live 🎉 Try it today, and tell us what you think.
 
 not_flagged:
-  ja: 短い文書（日本語 500 字、英語 200 語より短いもの）は測りません。
-  en: Documents under 200 words are not measured.
+  ja: 短い文書（日本語 500 字、英語 200 語より短いもの）は測りません。語と語の間の矢印（設定→プリンター、Settings → Printers）はメニューの道筋や流れを示す区切りなので数えません。行頭の矢印は数えます。
+  en: Documents under 200 words are not measured. An arrow between two words (Settings → Printers) marks a menu path or a flow and is not counted; an arrow opening a line is.
 level_meaning:
   ja: 1000 字あたり絵文字 {limit} 個まで
   en: up to {limit} emoji per 1000 words

@@ -688,6 +688,21 @@ describe("total-mismatch", () => {
       assert.deepEqual(found(doc("The fee consists of $6,000 for hosting and $3,000 for support, for a total of $9,000.")), []);
     });
 
+    it("reads the other Japanese total words (全部で, 総数は, 合わせて, トータルで, 、計), and 計 only after a comma", () => {
+      ["全部で48件です", "計48件です", "総数は48件です", "総計は48件です", "合わせて48件です", "トータルで48件です"].forEach((total) =>
+        assert.deepEqual(jaFound(`内訳は、新規が30件、改修が12件、調査が8件で、${total}。`), ["48件≠50件"], total),
+      );
+      assert.deepEqual(jaFound("内訳は、新規が30件、改修が12件、調査が8件で、全部で50件です。"), []);
+      assert.deepEqual(jaFound("費用は、要件定義3,000円、設計5,000円、開発6,000円とする。"), []);
+    });
+
+    it("adds English counts of the same noun (people, items, documents)", () => {
+      assert.deepEqual(found(doc("The team hired 30 people in March, 12 people in April and 8 people in May, for a total of 48 people.")), [
+        "48 people≠50 people",
+      ]);
+      assert.deepEqual(found(doc("The team hired 30 people in March, 12 people in April and 8 people in May, for a total of 50 people.")), []);
+    });
+
     it("the total, then a breakdown phrase and the items, up to the end of the brackets it is in", () => {
       assert.deepEqual(jaFound("甲は、月額150,000円（内訳：保守費90,000円、運用費50,000円）を支払う。"), ["150,000円≠140,000円"]);
       assert.deepEqual(jaFound("甲は、月額150,000円（内訳：保守費90,000円、運用費60,000円）を支払い、遅延したときは1日につき1,000円を加える。"), []);

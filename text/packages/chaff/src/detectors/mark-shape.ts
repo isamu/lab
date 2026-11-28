@@ -1,14 +1,21 @@
 import type { Detector, Finding, Lexicon, ProseDocument, Sentence } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { isConventionalPhrase } from "./caps-phrase.ts";
+import { namesScreenLabel } from "./caps-screen-label.ts";
 import { minorityReport } from "../spacing-minority.ts";
 import { externalLinkTitleSpans } from "../link-title.ts";
 import { formulaBracketSpans } from "../formula-brackets.ts";
+import { ownTitleQuoteSpans } from "../own-title-quote.ts";
 import { isWithinAny, quotedSpans } from "../quoted-span.ts";
-import { capitalLineSpans, captionsOf, isCaptionAt, isWithinSorted } from "./caps-caption.ts";
+import { bracketPlaceholderSpans, capitalLineSpans, captionsOf, isCaptionAt, isWholeQuotation, isWithinSorted } from "./caps-caption.ts";
 import { lineStarts } from "../position.ts";
 import { isTypewritten } from "./typewritten.ts";
 import { divisionLabelPattern, isDivisionSeparator } from "./division-label-separator.ts";
+import { isInCopiedText } from "./hyphen-copied-text.ts";
+import { joinsNameSuffix } from "./hyphen-name-suffix.ts";
+import { verseBlockSpans } from "./verse-block.ts";
+import { inlineItemLabelOffsets } from "./inline-item-label.ts";
+import { unclosedCodeQuoteOffsets } from "../unclosed-code-quote.ts";
 
 /** The letters a mark must touch to count as part of the document's text, by language. */
 const SCRIPT: Readonly<Record<string, RegExp>> = {
@@ -77,47 +84,75 @@ const sidedFinding = (item: Sided, values: Finding["values"], variant?: string):
   values: { ...values, offset: item.offset },
 });
 
-/** The less common way, one finding each, or one finding for a document written both ways (spacing-minority.ts). */
-const minorityFindings = <T extends Sided>(items: readonly T[], limit: number, valuesOf: (item: T) => Finding["values"]): Finding[] => {
+/** The odd items, each its own slip, or with the one before it when joins says they are one slip. */
+const slipsOf = <T>(odd: readonly T[], joins: (previous: T, item: T) => boolean): T[][] =>
+  odd.reduce<T[][]>((slips, item) => {
+    const last = slips.at(-1);
+    const previous = last?.at(-1);
+    if (last !== undefined && previous !== undefined && last.length === 1 && joins(previous, item)) last.push(item);
+    else slips.push([item]);
+    return slips;
+  }, []);
+
+/**
+ * The less common way, one finding per slip, or one finding for a document written both ways (spacing-minority.ts). The
+ * counts stay in items: a slip of two items is two of the places that differ.
+ */
+const minorityFindings = <T extends Sided>(
+  items: readonly T[],
+  limit: number,
+  valuesOf: (slip: readonly T[]) => Finding["values"],
+  joins: (previous: T, item: T) => boolean = () => false,
+): Finding[] => {
   const report = minorityReport(items, limit);
   if (report === undefined) return [];
   if (report.mode === "mixed") {
     const { first, odd, spaced, touching } = report;
-    return [sidedFinding(first, { ...valuesOf(first), spaced, touching, count: odd, of: items.length, limit }, "mixed")];
+    return [sidedFinding(first, { ...valuesOf([first]), spaced, touching, count: odd, of: items.length, limit }, "mixed")];
   }
-  return report.odd.map((item) => sidedFinding(item, { ...valuesOf(item), count: report.odd.length, of: items.length, limit }));
+  return slipsOf(report.odd, joins).flatMap((slip) => {
+    const first = slip[0];
+    return first === undefined ? [] : [sidedFinding(first, { ...valuesOf(slip), count: report.odd.length, of: items.length, limit })];
+  });
 };
 
 /** Sentences written in the document's own language; a quoted sentence in another language follows its own marks. */
 const ownSentences = (doc: ProseDocument): readonly Sentence[] => doc.sentences.filter((sentence) => sentence.embeddedLanguage === undefined);
 
 /**
- * A bracketed item number opening a line ((1)開催趣旨, （ア）, (iv), a list bullet before it), both brackets of one width.
- * It numbers the line, a style of its own: the brackets of the prose around it may be written the other width. A
- * bracketed word at a line's head ((背景), (注)) is not a number, and an item number the prose refers to (次の(1)及び(2))
- * is written in the prose; both stay with the prose's brackets.
+ * A bracketed item number opening a line ((1)開催趣旨, （ア）, (iv), a list bullet before it), both brackets of one width,
+ * or a tag in Latin letters opening a line ([Web]登録完了のお知らせ, a subject line's prefix). It labels the line, a style of
+ * its own: the brackets of the prose around it may be written the other width. A bracketed word in Japanese at a line's head
+ * ((背景), (注)) is not a label of that kind, and an item number the prose refers to (次の(1)及び(2)) is written in the prose;
+ * both stay with the prose's brackets.
  */
 const LINE_HEAD = /^\s*(?:[-*+] +)?/u;
-const BRACKETED = /^([(（[［])([^)）\]］]{1,4})([)）\]］])/u;
+const BRACKETED = /^([(（[［])([^)）\]］]{1,12})([)）\]］])/u;
 const NUMBERING = /^(?:[0-9０-９]{1,3}|[一二三四五六七八九十]{1,3}|[A-Za-zＡ-Ｚａ-ｚァ-ヶぁ-んｦ-ﾝ])$/u;
 /** Roman numerals i to x, either case. */
 const ROMAN = /^(?:i{2,3}|iv|vi{1,3}|ix|I{2,3}|IV|VI{1,3}|IX)$/u;
+/** A word in Latin letters with a capital, digits, dots or hyphens after its first letter (Web, e-Gov); not a numeral (iiii). */
+const LATIN_TAG = /^(?=.*[A-Z])[A-Za-z][A-Za-z0-9.-]+$/u;
 const CLOSER_OF: Readonly<Record<string, string>> = { "(": ")", "（": "）", "[": "]", "［": "］" };
 
-const isItemNumber = (text: string): boolean => NUMBERING.test(text) || ROMAN.test(text);
+const isLineLabel = (text: string): boolean => NUMBERING.test(text) || ROMAN.test(text) || LATIN_TAG.test(text);
 
-/** The offsets in a line of its item number's opening and closing bracket, or none. */
+/** The offsets in a line of its label's opening and closing bracket, or none. */
 const enumeratorIn = (line: string): readonly number[] => {
   const head = LINE_HEAD.exec(line)?.[0].length ?? 0;
   const found = BRACKETED.exec(line.slice(head));
-  if (found === null || CLOSER_OF[found[1] ?? ""] !== found[3] || !isItemNumber(found[2] ?? "")) return [];
+  if (found === null || CLOSER_OF[found[1] ?? ""] !== found[3] || !isLineLabel(found[2] ?? "")) return [];
   return [head, head + found[0].length - 1];
 };
 
-/** The offsets in `source` of each line's item number's opening and closing bracket. */
-export const enumeratorBracketOffsets = (source: string): ReadonlySet<number> => {
+/**
+ * The offsets in `source` of each line's label's opening and closing bracket, and of the brackets of an item number set
+ * inside a line: after a sentence on a joined line, continuing a run of items, or in an address (上記4(2)で, 第3条(a)(1)).
+ */
+export const enumeratorBracketOffsets = (source: string, conjunctions: readonly string[] = []): ReadonlySet<number> => {
   const starts = lineStarts(source);
-  return new Set(source.split("\n").flatMap((line, index) => enumeratorIn(line).map((at) => (starts[index] ?? 0) + at)));
+  const heads = source.split("\n").flatMap((line, index) => enumeratorIn(line).map((at) => (starts[index] ?? 0) + at));
+  return new Set([...heads, ...inlineItemLabelOffsets(source, isLineLabel, new Set(heads), conjunctions)]);
 };
 
 /** Appended to a mark's kind for an item number's bracket. A lexicon's group, a word from YAML, never holds a NUL. */
@@ -161,9 +196,31 @@ export const noteMarkerOffsets = (source: string): ReadonlySet<number> =>
 
 const NOTE_KIND = "\u0000note";
 
+/**
+ * A note's number cited in the prose (注(24)で示した): an author writes it as the notes' labels are, or as the prose's
+ * brackets are, and either is the document's own notation for it.
+ */
+const NOTE_ADDRESS = /(?<=[注註])(?:\([0-9０-９]{1,3}\)|（[0-9０-９]{1,3}）)/gu;
+
+/** The offsets in `source` of the brackets of every note's cited number. */
+export const noteAddressOffsets = (source: string): ReadonlySet<number> =>
+  new Set([...source.matchAll(NOTE_ADDRESS)].flatMap((match) => [match.index, match.index + match[0].length - 1]));
+
+const NOTE_ADDRESS_KIND = "\u0000noteaddress";
+
+/** A note's cited number is a kind of its own, compared only with the other cited note numbers. */
+const withNoteAddressKind = (mark: Mark, addresses: ReadonlySet<number>): Mark =>
+  addresses.has(mark.offset) ? { ...mark, form: { ...mark.form, kind: `${mark.form.kind}${NOTE_ADDRESS_KIND}` } } : mark;
+
 /** A note marker's bracket is a kind of its own, compared only with the other note markers' brackets. */
 const withNoteKind = (mark: Mark, notes: ReadonlySet<number>): Mark =>
   notes.has(mark.offset) && !mark.form.kind.endsWith(ENUMERATOR_KIND) ? { ...mark, form: { ...mark.form, kind: `${mark.form.kind}${NOTE_KIND}` } } : mark;
+
+/** A closing bracket of the same width right after its opening one, with no bracket between (資料(案)): one slip, not two. */
+const closesPair = (source: string, opening: Mark, closing: Mark): boolean =>
+  opening.sentence === closing.sentence &&
+  CLOSER_OF[opening.char] === closing.char &&
+  !/[()（）[\]［］]/u.test(source.slice(opening.offset + 1, closing.offset));
 
 /**
  * A mark written two ways in one document (（ and (, “ and "), the less common way reported. The two ways come from the
@@ -173,21 +230,30 @@ const withNoteKind = (mark: Mark, notes: ReadonlySet<number>): Mark =>
 export const markConsistency: Detector = (doc, options): Finding[] => {
   const script = SCRIPT[doc.language];
   if (script === undefined) return [];
-  // A link that quotes an outside page's title keeps that page's marks ((コンテキスト内) in a WCAG title).
-  const titles = externalLinkTitleSpans(doc.source, doc.links);
   const forms = formsOf(options.lexicon ?? []);
-  const enumerators = enumeratorBracketOffsets(doc.source);
+  // A link that quotes an outside page's title keeps that page's marks ((コンテキスト内) in a WCAG title), and a quotation
+  // of the document's own heading keeps the heading's.
+  const titles = [...externalLinkTitleSpans(doc.source, doc.links), ...ownTitleQuoteSpans(doc.source, doc.markup?.headings ?? [], new Set(forms.keys()))];
+  const enumerators = enumeratorBracketOffsets(
+    doc.source,
+    (doc.lexicons["list-conjunction"] ?? []).map((entry) => entry.pattern),
+  );
   const doubled = doubledParenOffsets(doc.source);
   const notes = noteMarkerOffsets(doc.source);
+  const noteAddresses = noteAddressOffsets(doc.source);
+  const codeQuotes = unclosedCodeQuoteOffsets(doc.source);
   const marks = ownSentences(doc).flatMap((sentence) =>
-    marksIn(doc.source, sentence, forms, script).map((mark) => withNoteKind(withDoubledKind(withEnumeratorKind(mark, enumerators), doubled), notes)),
+    marksIn(doc.source, sentence, forms, script)
+      .filter((mark) => !codeQuotes.has(mark.offset))
+      .map((mark) => withNoteAddressKind(withNoteKind(withDoubledKind(withEnumeratorKind(mark, enumerators), doubled), notes), noteAddresses)),
   );
   const kinds = [...new Set(marks.map((mark) => mark.form.kind))];
   return kinds.flatMap((kind) =>
     minorityFindings(
       marks.filter((mark) => mark.form.kind === kind && !isWithinAny(titles, { start: mark.offset, end: mark.offset + 1 })),
       options.limit,
-      (mark) => ({ mark: mark.char, usual: mark.form.other }),
+      (slip) => ({ mark: slip.map((mark) => mark.char).join(""), usual: slip.map((mark) => mark.form.other).join("") }),
+      (opening, closing) => closesPair(doc.source, opening, closing),
     ),
   );
 };
@@ -199,24 +265,31 @@ export const markConsistency: Detector = (doc, options): Finding[] => {
 const SENTENCE_END = /(?<![\p{L}\d.])\p{Ll}{2,}[.!?]["'”’)\]]?$/u;
 /** The next sentence starts with a capital, past an opening quote: not a citation ("[ISO99]") or an aside in brackets. */
 const SENTENCE_START = /^["'“‘]?\p{Lu}/u;
+/** "Affiliation: …", "Note: …": a field's label opens what follows, as in an author block joined into one line. */
+const FIELD_LABEL = /^\p{Lu}\p{Ll}+:\s/u;
 const ONE_SPACE = " ";
 const TWO_SPACES = "  ";
 
-/** The space between two sentences on one line, when the first ends with a period, question or exclamation mark. spaced is two spaces. */
-export const sentenceGaps = (doc: ProseDocument): Sided[] =>
-  ownSentences(doc).flatMap((sentence, at, sentences) => {
+/**
+ * The space between two sentences on one line, when the first ends with a period, question or exclamation mark. spaced is
+ * two spaces. A pause inside a verse line ("I'm nobody!  Who are you?") is the stanza's layout, not the prose's spacing.
+ */
+export const sentenceGaps = (doc: ProseDocument): Sided[] => {
+  const stanzas = verseBlockSpans(doc.source);
+  return ownSentences(doc).flatMap((sentence, at, sentences) => {
     const next = sentences[at + 1];
-    if (next === undefined || !SENTENCE_END.test(sentence.text) || !SENTENCE_START.test(next.text)) return [];
+    if (next === undefined || !SENTENCE_END.test(sentence.text) || !SENTENCE_START.test(next.text) || FIELD_LABEL.test(next.text)) return [];
     const gap = doc.source.slice(sentence.span.end, next.span.start);
-    if (gap !== ONE_SPACE && gap !== TWO_SPACES) return [];
+    if ((gap !== ONE_SPACE && gap !== TWO_SPACES) || isWithinSorted(stanzas, { start: sentence.span.end, end: next.span.start })) return [];
     return [{ sentence: next, spaced: gap === TWO_SPACES, offset: sentence.span.end }];
   });
+};
 
 /** One space between sentences and two, mixed in one document: the less common is reported. */
 export const sentenceSpacing: Detector = (doc, options): Finding[] =>
-  minorityFindings(sentenceGaps(doc), options.limit, (gap) => ({
-    spaces: gap.spaced ? TWO_SPACES.length : ONE_SPACE.length,
-    usual: gap.spaced ? ONE_SPACE.length : TWO_SPACES.length,
+  minorityFindings(sentenceGaps(doc), options.limit, ([gap]) => ({
+    spaces: gap?.spaced === true ? TWO_SPACES.length : ONE_SPACE.length,
+    usual: gap?.spaced === true ? ONE_SPACE.length : TWO_SPACES.length,
   }));
 
 type Hit = { readonly sentence: Sentence; readonly matched: string; readonly offset: number };
@@ -240,6 +313,20 @@ const reportFrom = (hits: readonly Hit[], limit: number): Finding[] => (hits.len
 /** A spaced hyphen or a double hyphen between words, standing for a dash ("late - very late", "late--very late"). */
 const HYPHEN_DASH = /(?<=[\p{L},;)]) -{1,2} (?=[\p{L}(])|(?<=\p{L})--(?=\p{L})/gu;
 
+/** A spaced hyphen whose side is masked out of the sentence's text: a code span may stand there ("`float` - everything"). */
+const MASKED_SIDE_HYPHEN = /(?<=\s) -{1,2} (?=[\p{L}(])|(?<=[\p{L},;)]) -{1,2} (?=\s)/gu;
+const CODE_MARK = "`";
+
+/**
+ * A spaced hyphen between a code span and a word, either way round ("`float` - everything", "two properties - `x`"). Code
+ * is masked out of the text, so the code side reads as spaces; the source shows the code mark right beside the hyphen.
+ * Code on both sides ("`query` - `form`") is a mapping, not a dash.
+ */
+const besideCode = (source: string, hit: Hit): boolean => {
+  const end = hit.offset + hit.matched.length + 2;
+  return (source[hit.offset - 1] === CODE_MARK) !== (source[end] === CODE_MARK);
+};
+
 /** A dash set as a character (an em dash, an en dash). */
 const TRUE_DASH = /[—–]/u;
 const DOUBLE_HYPHEN = "--";
@@ -256,8 +343,17 @@ export const hyphenDash: Detector = (doc, options): Finding[] => {
   const sentences = ownSentences(doc);
   const setsDashes = sentences.some((sentence) => TRUE_DASH.test(sentence.text));
   const divisionLabel = divisionLabelPattern((doc.lexicons["numbered-division"] ?? []).map((entry) => entry.pattern));
+  const codeHits = hitsOf(sentences, MASKED_SIDE_HYPHEN).filter((hit) => besideCode(doc.source, hit));
   return reportFrom(
-    hitsOf(sentences, HYPHEN_DASH).filter((hit) => !isTypedDash(hit, setsDashes) && !isDivisionSeparator(doc.source, hit.offset, divisionLabel)),
+    [...hitsOf(sentences, HYPHEN_DASH), ...codeHits]
+      .toSorted((left, right) => left.offset - right.offset)
+      .filter(
+        (hit) =>
+          !isTypedDash(hit, setsDashes) &&
+          !isDivisionSeparator(doc.source, hit.offset, divisionLabel) &&
+          !isInCopiedText(doc.source, hit.offset) &&
+          !joinsNameSuffix(doc.source, hit.offset),
+      ),
     options.limit,
   );
 };
@@ -310,17 +406,27 @@ export const isShouting = (run: string, known: ReadonlySet<string>, conventional
 
 /**
  * Runs of three or more all-capital words that are ordinary words, not acronyms ("DO NOT DELETE THIS"), and not a
- * caption, a mention of one, a paragraph of capital lines that ends no sentence (a letterhead, a heading), or a roster name.
+ * caption, a mention of one, a paragraph of capital lines that ends no sentence (a letterhead, a heading), a roster name, a
+ * placeholder in square brackets, a whole quotation, or a label a sentence names as on a screen ("in SUBMIT TO APPROVER status").
  */
 export const capsShouting: Detector = (doc, options): Finding[] => {
   const known = lowerCaseWords(doc.prose ?? doc.source);
   const conventional = new Set((options.lexicon ?? []).map((entry) => entry.pattern));
   const captions = captionsOf(doc.source);
   const capitalLines = capitalLineSpans(doc.source);
-  const isCaptionOrLetterhead = (hit: Hit): boolean =>
-    captions.has(hit.matched) ||
-    isCaptionAt(doc.source, hit.offset, hit.offset + hit.matched.length) ||
-    isWithinSorted(capitalLines, { start: hit.offset, end: hit.offset + hit.matched.length });
+  const placeholders = bracketPlaceholderSpans(doc.source);
+  const screenNouns = new Set((doc.lexicons["screen-label-noun"] ?? []).map((entry) => entry.pattern));
+  const isCaptionOrLetterhead = (hit: Hit): boolean => {
+    const span = { start: hit.offset, end: hit.offset + hit.matched.length };
+    return (
+      captions.has(hit.matched) ||
+      isCaptionAt(doc.source, span.start, span.end) ||
+      isWithinSorted(capitalLines, span) ||
+      isWithinAny(placeholders, span) ||
+      isWholeQuotation(doc.source, span.start, span.end) ||
+      namesScreenLabel(doc.source, span.start, span.end, screenNouns)
+    );
+  };
   const hits = hitsOf(ownSentences(doc), CAPS_RUN).filter((hit) => isShouting(hit.matched, known, conventional) && !isCaptionOrLetterhead(hit));
   return reportFrom(hits, options.limit);
 };

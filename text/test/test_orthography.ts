@@ -171,6 +171,15 @@ describe("preferred-term", () => {
     assert.deepEqual(found("prefer:\n  ユーザ: ユーザー\n", "# 設定\n\nユーザーが入る。\n"), []);
   });
 
+  it("reports a spelling inside a longer listed spelling once, as the longer", () => {
+    const doc = buildDocument("a.md", "# Note\n\nSend an e-mail about the mail.\n", en, teamRules(configFrom("prefer:\n  e-mail: email\n  mail: email\n")));
+    const matched = runRules(doc, loadRules("en"), { "preferred-term": "normal" }, false, "technical/readme")
+      .findings.filter((finding) => finding.rule === "preferred-term")
+      .map((finding) => finding.values["matched"]);
+    assert.deepEqual(matched, ["e-mail", "mail"]);
+    assert.deepEqual(found("prefer:\n  ユーザ: ユーザー\n  ザ: ザー\n", "# 設定\n\nユーザが入る。\n"), ["ユーザ"]);
+  });
+
   it("says nothing with no list, and ignores code", () => {
     assert.deepEqual(found("", "# 設定\n\nサーバーを起動する。\n"), []);
     assert.deepEqual(found("prefer:\n  サーバー: サーバ\n", "# 設定\n\n`サーバー` と打つ。\n"), []);

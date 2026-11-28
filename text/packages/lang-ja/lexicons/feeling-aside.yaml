@@ -1,0 +1,22 @@
+# no-mixed-desumasu が、ですます調のブログの中で書き手が気持ちや愚痴をそのまま漏らす常体の一文（ここまではまだよかった。
+# 動画は止まるし、声は途切れると言われる。）を指さないための印。数には入れる。
+# group joiner は、節を並べてこぼす接続助詞（止まるし、）。group word-class は、文末の語の品詞で、形容詞で言い切る文（気持ち悪い。
+# よかった。）は書き手の気持ちの声。どちらも genres の文書だけ。動詞で言い切る報告（技能の向上を図った。エラーとなる。）は今までどおり指す。
+id: feeling-aside
+language: ja
+entries:
+  - pattern: し
+    group: joiner
+    genres: [blog]
+  - pattern: ADJ
+    group: word-class
+    genres: [blog]
+  # 形容詞でも、有る無しを言うだけの語（制限なし。）は気持ちではなく事実の書き付けなので、word-class に数えない。
+  - pattern: なし
+    group: not-feeling
+  - pattern: 無し
+    group: not-feeling
+  - pattern: ない
+    group: not-feeling
+  - pattern: 無い
+    group: not-feeling

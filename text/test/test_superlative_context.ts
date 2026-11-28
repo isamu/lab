@@ -1,0 +1,193 @@
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
+import { firedRules, superlativeReported } from "./rule-run.ts";
+import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { adapter as en } from "../packages/lang-en/src/index.ts";
+
+// 比べて言い切ってはいない最上級（問い・求めるもの・どれかを指す述語・誰にとっての・場の名詞 + で・決まった言い方）。
+// 英文は 18F（米連邦政府、パブリックドメイン）の記事からの短い抜き書きか自作、和文は首相官邸の訓示・演説からの抜き書きか自作。
+
+await ja.prepare?.({ pos: true });
+await en.prepare?.({ pos: true });
+
+const quiet = (adapter: typeof en, sentences: readonly string[]): void =>
+  sentences.forEach((sentence) => assert.equal(superlativeReported(adapter, sentence), false, sentence));
+
+const reported = (adapter: typeof en, sentences: readonly string[]): void =>
+  sentences.forEach((sentence) => assert.equal(superlativeReported(adapter, sentence), true, sentence));
+
+describe("unqualified-superlative: a question claims nothing", () => {
+  it("does not report a superlative in a question", () => {
+    quiet(en, [
+      "What takes the longest or is the most challenging when building out websites?",
+      "What do we need to learn more about before we can determine the best path forward?",
+      "**Which of these is the best fit for your team?**",
+    ]);
+    quiet(ja, ["どの案が最も速いでしょうか？"]);
+  });
+
+  it("still reports the same superlative stated as a claim", () => {
+    reported(en, ["This is the most challenging task.", "Our product is the best fit for your team."]);
+    reported(ja, ["この案が最も速いです。"]);
+  });
+});
+
+describe("unqualified-superlative: a condition supposes, it does not claim", () => {
+  it("does not report a superlative inside a condition", () => {
+    quiet(en, [
+      "If spreadsheet formulas are the most prolific government code, and if people fear them, that cannot be good.",
+      "Suppose this is the best plan we have.",
+    ]);
+    quiet(ja, ["もし最も速い案が通るなら、来月には終わります。"]);
+  });
+
+  it("still reports a superlative past the condition's comma", () => {
+    reported(en, ["If you need help, our team is the best.", "Our tool is the best if you work alone."]);
+    reported(ja, ["もし通れば、この案が最も速いです。"]);
+  });
+});
+
+describe("unqualified-superlative: what is sought or chosen", () => {
+  it("does not report a superlative a goal or choice verb governs", () => {
+    quiet(en, [
+      "Evaluating early iterations helps the team adjust the next iterations to achieve the best results overall.",
+      "We compare several routes before deciding the best way to bring capability into the team.",
+      "We tested these fonts with designers to identify which font was the most legible.",
+      "Pick the most important sections first, see what you learn, and go from there.",
+      "Everyone fully understands the problem and has come to the best solution.",
+    ]);
+  });
+
+  it("does not report a superlative the predicate asks for (求められる・べき・なければならない)", () => {
+    quiet(ja, [
+      "同時に、自衛隊には、最高の規律が求められます。",
+      "自衛隊員には最高の栄誉が与えられるべきと考えております。",
+      "自衛隊には、最高の規律が求められると同時に、最高の栄誉が与えられなければなりません。",
+      "最高の栄誉であり、最高の規律、それが自衛隊に求められるものであります。",
+    ]);
+  });
+
+  it("still reports a superlative the verb does not govern", () => {
+    reported(en, [
+      "We will walk through the best ways to protect your photo library.",
+      "We achieved our goals, and our product is the best on offer.",
+      "The best way to scale is to focus on user needs.",
+    ]);
+    reported(ja, ["当社は最高の品質を誇ります。", "最高の規律を求める声があることは承知しています。ただ、当社の製品は最高です。"]);
+  });
+});
+
+describe("unqualified-superlative: ranking the parts of a whole, and an order of work", () => {
+  it("does not report a superlative whose noun names a part, nor one after start with", () => {
+    quiet(en, [
+      "The customer is the most important role, and demands preparation.",
+      "We can trust the body of the formula to be the most important part.",
+      "Start with the most important tasks.",
+    ]);
+  });
+
+  it("still reports a superlative whose noun is not a part", () => {
+    reported(en, ["The customer is the most important person.", "Start the day with confidence: ours is the best service."]);
+  });
+});
+
+describe("unqualified-superlative: one of a set the text already named", () => {
+  it("does not report a superlative whose noun is one or ones", () => {
+    quiet(en, [
+      "The classifier scores each post against the topic lists and assigns the best-scoring one.",
+      "We tried several shops and kept the cheapest ones.",
+    ]);
+  });
+
+  it("still reports a superlative whose noun is not one, or one used as a number before a noun", () => {
+    reported(en, ["The classifier assigns the best-scoring topic.", "Ours is the best one-stop service."]);
+  });
+});
+
+describe("unqualified-superlative: a clause of a pronoun and one word after the noun", () => {
+  it("reads the files you own as restricting the set", () => {
+    quiet(en, ["Your photos are some of the most irreplaceable files you own.", "These are the best tools we own."]);
+  });
+
+  it("does not read a pronoun that opens the next clause", () => {
+    reported(en, ["These are the best tools, we promise.", "These are the best tools. We promise."]);
+  });
+});
+
+describe("unqualified-superlative: a predicate that points at one of a set", () => {
+  it("does not report a superlative subject whose predicate says which one", () => {
+    quiet(en, ["The best backup plan is the one you will actually keep, so start simple.", "The most important divergence is the second."]);
+  });
+
+  it("does not report a superlative subject the predicate puts first in an order (CISA)", () => {
+    quiet(en, [
+      "This more aggressive tiering of vulnerabilities ensures that the most critical vulnerabilities are addressed first, and more quickly.",
+      "The most severe findings should be fixed first.",
+    ]);
+  });
+
+  it("still reports a superlative subject with a claim for its predicate", () => {
+    reported(en, [
+      "The best content is conversational.",
+      "The best way to build big is to start small.",
+      "The most critical vulnerabilities are addressed quickly.",
+      "The best tools are made by small teams.",
+    ]);
+  });
+});
+
+describe("unqualified-superlative: a set named after the noun", () => {
+  it("reads about, at, and of or for with a gerund as naming the set", () => {
+    quiet(en, [
+      "The best thing about this gathering is that it helps us clear our minds.",
+      "Growing sums will be paid for access to the best models at the frontier.",
+      "Professional fact-checking remains the most common form of debunking used at scale.",
+      "Fact-checking has become the most prominent intervention for combating online misinformation.",
+      "Recruitment is one of the most important tools for creating the culture a team needs.",
+    ]);
+  });
+
+  it("does not read for with a noun as a set: it names who gains", () => {
+    reported(en, ["We believe the most significant opportunity for government is exploring new tools."]);
+  });
+});
+
+describe("unqualified-superlative: whose view and which realm (ja)", () => {
+  it("reads にとって in the same clause and 世界で as a scope", () => {
+    quiet(ja, ["自分にとって今日は最高のクリスマスだった。", "世界で唯一の被爆国である我が国に対して、参加を求める声があります。"]);
+  });
+
+  it("does not read にとって across a comma, nor a means before で", () => {
+    reported(ja, ["顧客にとって、それは最高の製品です。", "最少の費用で最大の効果を上げる。"]);
+  });
+});
+
+describe("unqualified-superlative: set phrases", () => {
+  it("does not report idioms of effort, time and frequency, or the writer's own order", () => {
+    quiet(en, [
+      "A short guide for mentees on how to get the most out of the relationship.",
+      "Focus your limited time where it will do the most good.",
+      "Support was added for the most recent hour.",
+      "From west to east, the most common options are these.",
+    ]);
+    quiet(ja, ["最も重要なことは、両国が共存することです。"]);
+  });
+
+  it("still reports the same words outside the phrase", () => {
+    reported(en, ["Our team does the most innovative work."]);
+    reported(ja, ["最も重要な製品です。"]);
+  });
+});
+
+describe("unqualified-superlative: the limit in English tech blogs", () => {
+  const one = (sentence: string): string => `# Notes\n\nWe tried several setups this year.\n\n${sentence}\n`;
+
+  it("reports the one bare claim of an English tech blog post", () => {
+    assert.ok(firedRules(en, one("The best way to scale is to start small."), "blog/tech").includes("unqualified-superlative"));
+  });
+
+  it("needs two claims in other genres and in Japanese tech blogs", () => {
+    assert.ok(!firedRules(en, one("The best way to scale is to start small."), "business/report").includes("unqualified-superlative"));
+    assert.ok(!firedRules(ja, "# メモ\n\n今年はいくつか試しました。\n\nこの方法が最も効果的です。\n", "blog/tech").includes("unqualified-superlative"));
+  });
+});

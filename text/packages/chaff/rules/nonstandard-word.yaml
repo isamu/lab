@@ -19,8 +19,8 @@ message:
   en: '"{matched}" is nonstandard in formal writing; write "{suggestion}"'
 
 how_to_fix:
-  ja: 標準の形に直してください（違かった → 違った、すいません → すみません）。
-  en: Use the standard form ("irregardless" becomes "regardless", "is comprised of" becomes "comprises").
+  ja: 標準の形に直してください（違かった → 違った、すいません → すみません）。名前（作品名や商品名）の中でその形のまま書いているなら、その名前を chaff.yaml の names に足すと指さなくなります。
+  en: Use the standard form ("irregardless" becomes "regardless", "is comprised of" becomes "comprises"). If the form is part of a name written that way on purpose (a title, a product), add the name to names in chaff.yaml.
 
 placeholders:
   matched:

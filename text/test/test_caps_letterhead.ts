@@ -2,9 +2,11 @@ import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { capitalParagraphSpans, isWithinSorted, rosterNameSpans } from "../packages/chaff/src/detectors/caps-caption.ts";
+import { bracketPlaceholderSpans, capitalParagraphSpans, isWithinSorted, rosterNameSpans } from "../packages/chaff/src/detectors/caps-caption.ts";
 
-// all-caps-shouting, the paragraphs in capitals (a letterhead, a transcript's heading) and roster names. Every example is self-written.
+// all-caps-shouting, the paragraphs in capitals (a letterhead, a transcript's heading), roster names, bracketed placeholders and
+// quoted labels.
+// Examples are self-written, or short excerpts of US Senate hearings printed by GPO (public domain).
 
 before(async () => {
   await en.prepare?.({ pos: true });
@@ -13,6 +15,7 @@ before(async () => {
 const findingsOf = (source: string): readonly string[] => namedRuleRun("all-caps-shouting", source, en).findings;
 const textsOf = (source: string): string[] => capitalParagraphSpans(source).map((span) => source.slice(span.start, span.end));
 const rosterOf = (source: string): string[] => rosterNameSpans(source).map((span) => source.slice(span.start, span.end));
+const placeholdersOf = (source: string): string[] => bracketPlaceholderSpans(source).map((span) => source.slice(span.start, span.end));
 
 const MEMO = [
   "OFFICE OF THE TOWN CLERK",
@@ -60,8 +63,32 @@ describe("rosterNameSpans", () => {
     ]);
   });
 
+  it("a name whose place is followed by the member's role (S. Hrg. 119-345)", () => {
+    assert.deepEqual(rosterOf("SHELLEY MOORE CAPITO, West Virginia, Chairman\n\nSHELDON WHITEHOUSE, Rhode Island, Ranking Member\n"), [
+      "SHELLEY MOORE CAPITO",
+      "SHELDON WHITEHOUSE",
+    ]);
+  });
+
   it("a run in capitals followed by a comma and prose, or a lower-case word, is no roster", () => {
     assert.deepEqual(rosterOf("DO NOT DELETE THIS, the file is needed.\nKEEP THE GATE SHUT, Bob.\nKEEP THE GATE SHUT, said the board\n"), []);
+  });
+});
+
+describe("bracketPlaceholderSpans", () => {
+  it("square brackets holding capitals and no lower-case letter", () => {
+    assert.deepEqual(placeholdersOf("[GRAPHIC(S) NOT AVAILABLE IN TIFF FORMAT]\n\nDefended in [NAME WITHHELD FOR REVIEW].\n"), [
+      "[GRAPHIC(S) NOT AVAILABLE IN TIFF FORMAT]",
+      "[NAME WITHHELD FOR REVIEW]",
+    ]);
+  });
+
+  it("brackets with a lower-case letter, round brackets, brackets across lines, with no letter or as link text are not", () => {
+    assert.deepEqual(
+      placeholdersOf("[The prepared statement of Mr. Telle follows:]\n(DO NOT OPEN THE BOX)\n[KEEP THE\nGATE SHUT]\n[1, 2]\n[READ THE RULES](rules.md)\n"),
+      [],
+    );
+    assert.deepEqual(placeholdersOf(""), []);
   });
 });
 
@@ -115,6 +142,32 @@ describe("all-caps-shouting with a letterhead", () => {
     assert.deepEqual(findingsOf(hearing), []);
   });
 
+  it("a roster entry with the member's role and a publisher's placeholder in brackets are not shouting", () => {
+    const hearing = [
+      "SHELLEY MOORE CAPITO, West Virginia, Chairman",
+      "",
+      "The Committee met at 10 a.m., Hon. Shelley Moore Capito presiding.",
+      "",
+      "[The prepared statement of Mr. Telle follows:]",
+      "",
+      "[GRAPHIC(S) NOT AVAILABLE IN TIFF FORMAT]",
+      "",
+      "The Chair. The study was done in [NAME WITHHELD FOR REVIEW] and the graphic is not available to the name of the review.",
+      "",
+    ].join("\n");
+    assert.deepEqual(findingsOf(hearing), []);
+  });
+
+  it("shouting next to a placeholder, or in round brackets, is still reported", () => {
+    const source = [
+      "The Chair. Please keep the gate open, and do not close the gate; the name is withheld for review.",
+      "",
+      "The Chair. KEEP THE GATE OPEN [NAME WITHHELD FOR REVIEW] and (DO NOT CLOSE THE GATE) at noon.",
+      "",
+    ].join("\n");
+    assert.deepEqual(findingsOf(source), ['"KEEP THE GATE OPEN" is written in capitals', '"DO NOT CLOSE THE GATE" is written in capitals']);
+  });
+
   it("a shouted line that is a sentence, or a shouted run inside prose, is still reported in a transcript", () => {
     const hearing = [
       "The Chair. We will open the gate at noon.",
@@ -130,5 +183,20 @@ describe("all-caps-shouting with a letterhead", () => {
   it("a wrapped warning in capitals at the head, which is a sentence, is still reported", () => {
     const source = "PLEASE DO NOT OPEN THE BOX\nBEFORE THE BOARD SAYS SO.\n\nPlease keep the box shut before the board says so, and do not open it.\n";
     assert.deepEqual(findingsOf(source), ['"PLEASE DO NOT OPEN THE BOX" is written in capitals', '"BEFORE THE BOARD SAYS SO" is written in capitals']);
+  });
+});
+
+describe("all-caps-shouting with a quoted label", () => {
+  const PROSE = "Mark the copy that holds the information. The office will keep the copy and will mark it.";
+
+  it("a whole quotation in capitals, the label a reader is to write, is not shouting", () => {
+    const notice = `${PROSE} Put a cover note on the copy that states “THIS COPY HOLDS THE INFORMATION.” The office will review it.\n`;
+    assert.deepEqual(findingsOf(notice), []);
+    assert.deepEqual(findingsOf(`${PROSE} Write "KEEP THE COPY" on the cover.\n`), []);
+  });
+
+  it("capitals that are only part of a quotation, or not quoted, are still reported", () => {
+    assert.deepEqual(findingsOf(`${PROSE} He said “please KEEP THE COPY now.”\n`), ['"KEEP THE COPY" is written in capitals']);
+    assert.deepEqual(findingsOf(`${PROSE} Please KEEP THE COPY on the cover.\n`), ['"KEEP THE COPY" is written in capitals']);
   });
 });

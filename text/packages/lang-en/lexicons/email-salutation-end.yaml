@@ -1,0 +1,7 @@
+# The mark a name alone ends with when it is the salutation (Priya,). An internal email often opens on the reader's name
+# and a comma, with no Dear or Hi; a first line of a few words ending with this mark is a greeting. Japanese has none: a
+# name alone there (中村さん) is the addressee, and the greeting still follows it.
+id: email-salutation-end
+language: en
+entries:
+  - pattern: ","

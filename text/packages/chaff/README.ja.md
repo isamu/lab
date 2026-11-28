@@ -116,11 +116,21 @@ npx chaffjs genres                              ジャンルの一覧と、そ�
 | 種類 | 動かし方 |
 | --- | --- |
 | 試験中のルール（まだ測っていない新しいルール） | `--experimental` で全部、`npx chaffjs enable <ルール>` で一つずつ |
-| チームの言葉が要るルール（社内用語、必須の見出し、表記） | `chaff.yaml` の `jargon` `required_sections` `prefer` に書く |
-| 意味を読む検査 | `npx chaffjs test`（API key が要る） |
+| チームの言葉が要るルール（社内用語、必須の見出し、表記、決まった書き方の名前、まぜない語の組） | `chaff.yaml` の `jargon` `required_sections` `prefer` `terms` `consistent` に書く |
+| 意味を読む検査（例: 書き出しが「多くの企業が〜」のような一般論から始まっていないか、`generic-opening`） | `npx chaffjs test`（API key が要る） |
+
+どちらも正しい書き方が二つある所では、一つの文書の中で揃っているかだけを見て、少ないほうを指します。たとえば `enumeration-marker-mix` は、「1.」「2.」「4.」と番号を振った並びの中の「3)」を指します。
+
+日本語だけのルールもあります。`ra-nuki`（見れる → 見られる）と `sa-ire`（読まさせて → 読ませて）は品詞解析で動詞の形を読み、英語の文書では理由つきで動きません。
+
+書いたとおりに表示されない Markdown を見るルールもあります。`heading-marker-no-space` は「##手順」「#見出し」のように「#」の後ろに空白の無い行を指します。見出しにならず、「#」の付いた本文として表示されるからです。
 
 どのルールがいまどの強さで動くかは、`npx chaffjs rules` が表にします。「default」の列が設定なしで動くルールです。
 一つのルールの意図と根拠は `npx chaffjs explain <ルール>` で読めます。ルールの一覧は [ルールのページ](https://isamu.github.io/lab/ja/rules/) にもあります。
+
+Markdown の書き損じで、目次や画面読み上げから節が消える形も見ます。見出しで節を分けた文書の中で、見出しの代わりに置いた太字の一行（「**次の手順**」、`pseudo-heading`）などです。
+
+文字起こしから作った議事録やメモは `business/meeting-notes` でかけます。残った「ええと」「まあ、」のようなつなぎの言葉を `filler-word` が指します。言ったとおりに残す記録の `speech/transcript` では指しません。
 
 ある種類の文書で外れることの多いルールは、そのジャンルの既定で止めてあります。止めたルールは「動かなかったルール」に理由つきで出ます。
 外れの多さは、実在の文書で判定した精度（下）で、ルールとジャンルごとに測っています。
@@ -153,6 +163,14 @@ rules:                        # ルールごとの強さ: strict / normal / rela
 prefer:                       # チームの表記（左を見つけたら右を勧める）
   サーバ: サーバー
   ユーザ: ユーザー
+  弊社: { use: 当社, scope: [~quote] }   # 引用の中では言わない
+
+terms:                        # 決まった書き方の名前・用語（Github や ＧｉｔＨｕｂ と書いた所を指す）
+  - GitHub
+  - JavaScript
+
+consistent:                   # どちらも正しいが一つの文書でまぜない語の組（少ないほうを指す）
+  - [顧客, お客様]
 
 custom_rules:                 # チーム独自のルール（コードは要らない）
   - id: team-no-tbd
@@ -165,6 +183,11 @@ custom_rules:                 # チーム独自のルール（コードは要ら
     example: { before: 締切は TBD です。, after: 締切は 10 月 5 日です。 }
 ```
 
+フォルダごとに違う文書を置くときは、`by_path` の項目に `files` と `genre` や `rules` を書くと、そのファイルだけ変えられます（一番上の `rules` より強く効きます）。
+
+`exclude: [vendor/**, CHANGELOG.md]` と書くと、フォルダを渡したときの検査からそのファイルを外します。`.gitignore` が無視するファイルも外します。コマンドラインで名前を挙げたファイルは、それでも検査します。外した数と理由は締めに出ます。
+
+文末の調子をチームで決めているなら、`options:` に `no-mixed-desumasu: { body: desumasu, list: dearu }` のように本文・箇条書き・見出しごとに書くと、混ざっていなくても決めた調子と違う文を指摘します（書かなければ、そろっているかだけを見ます。日本語だけのオプションです）。
 `npx chaffjs init` でひな形を作れます。いま効いている設定は `npx chaffjs rules` で一覧になります。
 AI に設定を書かせるときは、`npx chaffjs rules --json` の出力を渡します。いまの値、使える値、なぜいま `off` なのかが一つに入っています。
 書き方の詳しい説明は手引きの「[設定](https://isamu.github.io/lab/ja/guide/configuration/)」と「[チームの表記ルール](https://isamu.github.io/lab/ja/guide/house-style/)」にあります。
@@ -172,13 +195,16 @@ AI に設定を書かせるときは、`npx chaffjs rules --json` の出力を�
 ## 指摘されたら
 
 応じ方は 3 つです。指摘がもっともなら文章を直します。指摘は正しいがそこは意図して書いたのなら、`<!-- stet: rule-id — 理由 -->` でその箇所だけ黙らせます。
+範囲なら `<!-- stet-begin: rule-id — 理由 -->` … `<!-- stet-end -->`、1 つの語句だけなら `<!-- stet: preferred-term["サーバ"] — 理由 -->` と書きます（ルール名は必ず書きます）。
 自分たちの方針に合わないなら、`npx chaffjs relax rule-id --why "理由"` でルールのほうを変えます。
 強さは `strict` `normal` `relaxed` `off` の 4 語から選び、足りなければ上限を数で書けます（`max-sentence-length: 260`）。
-黙らせている箇所は `npx chaffjs suppressions docs/` が数えます。
+同じ語がいつも正しい（製品名、引用の決まった形）なら、`chaff.yaml` の `allow:` に `text:`（そのままの文字列）か `pattern:`（正規表現）と `reason:` を書きます。理由の無い項目は設定の誤りとして止まります。
+黙らせている箇所は、stet も allow も `npx chaffjs suppressions docs/` が理由と一緒に数えます。
 
 ## チーム独自のルールとルールの束
 
 一つのチームのルールは、上の例のように `chaff.yaml` の `custom_rules` に書きます。語（`type: words`）、正規表現（`type: pattern`）、品詞の並び（`type: tokens`）、Node の関数（`type: module`）で書けます。
+`scope` を添えると、読む所を見出し・箇条書き・表・引用・本文（`heading` `list` `table` `quote` `paragraph`）に絞れます。`~quote` のように `~` を付けた所は外します。`prefer` の項目にも書けます。
 書き方は「[ルールを足す](https://isamu.github.io/lab/ja/guide/adding-rules/)」にあります。
 
 いくつものチームで使うルールは、プラグインのパッケージ `chaff-plugin-<名前>` にまとめます。ルール・語彙表・スタイルを YAML だけで書く束なら、コードは要りません。
@@ -205,6 +231,17 @@ npx chaffjs compare article.md after.md            書き直しで事実（数�
 
 `compare` は、名前の綴りを直した所（Borrowmoney → BorrowMoney）を、落ちた事実ではなく綴りの直しとして出します。
 
+AI らしさを全部消すときは、次を繰り返します。
+
+```bash
+npx chaffjs fix-plan article.md --all-ai-signs --json                       AI らしさのルールを全部動かし、点と止めるときを添える
+npx chaffjs fix-plan after.md --all-ai-signs --before article.md --json     書き直しに残ったものと、元より指摘が増えたルール
+npx chaffjs test after.md --checks ai-tells --dry-run                       読まないとわからない目印（作った具体など）を問う
+```
+
+`--all-ai-signs` は、ジャンルが止めているものも含めて AI らしさのルールを全部動かし、`ai-score` の点と止めるときを計画に足します。
+`--before` は、元の文書より指摘が増えたルールを全部挙げます。`--checks ai-tells` は、ルールでは見えない目印について chaff が同梱する問いを聞きます。
+
 深さは `light`（語と文）、`structure`（節・見出し・段落の組み替えまで）、`register`（文体の変換まで）の 3 つで、深いものは浅いものを含みます。
 決めた深さより深いルールの指摘は、名前と箇所の数だけが計画に載ります。毎回同じ深さにするなら `chaff.yaml` に `fix_plan: { depth: light }` と書きます。
 深さを決めなければ、chaff が直し方を勧め、その深さを計画に書きます。
@@ -219,7 +256,7 @@ npx chaffjs ai-score article.md                  低・中・高と、出てい�
 npx chaffjs ai-score article.md --format json    同じものを JSON で
 ```
 
-短すぎる文書は測らず、そう言います。
+短すぎる文書は測らず、そう言います。目印の一つが `email-stock-courtesy` で、英文のメールに「I hope this email finds you well」「I apologize for any inconvenience」のような決まり文句が 2 つ以上重なった所を言います。`honesty-marker` は、「正直、」「正直に言うと」「if I'm being honest」のように本音だと前置きする言い回しを、ブログと業務文書では 1 つでも言います。もう一つの例が `closing-exhortation` で、「ぜひ〜してみてください」「きっと〜はずです」のように結びで読み手を励ます文が 2 つ以上重なった所を言います。`cold-open` は、状況も例もないまま、短い願い（「〜に任せたい。」）、前の文の語の引き直し（この「だいたい」が）、難所の予告（「それだけのことに見えて」）が書き出しに重なった所を言います。`unprompted-denial` は、「〜の話ではありません」「〜の材料になりません」のように、誰も言っていない前提を打ち消して終わる文が多い所を言います。
 
 ## AI の評価に使う（chaff grade）
 
@@ -285,6 +322,7 @@ npx chaffjs feedback a.md --rule <ルール> --line 42    誤った指摘の報�
 - [AI の評価（AI evals）に使う](https://isamu.github.io/lab/ja/guide/ai-evals/)
 - [CI](https://isamu.github.io/lab/ja/guide/ci/)
 - [ルールの一覧](https://isamu.github.io/lab/ja/rules/)
+- [直せる文章の見本](https://github.com/isamu/lab/tree/main/text/docs/samples/ja): ルールごとに、元の文章、chaff の指摘、直した文章、設定
 
 ソースは [GitHub の isamu/lab の text/](https://github.com/isamu/lab/tree/main/text) にあります。
 
@@ -316,15 +354,22 @@ what level now.
 
 **Your own preset** is a `chaff.yaml` in the repository: a genre, a `style`, rules and their levels, your preferred
 spellings, the genre's guide and your own rules under `custom_rules` (`words`, `pattern`, `tokens` for part-of-speech
-patterns, or `module` for a Node function). `npx chaffjs init --plugin <name>` starts a YAML-only rule pack, `chaff-plugin-<name>/`,
+patterns, or `module` for a Node function). A `scope` on a team rule or a `prefer` entry limits what it reads (`[heading]`,
+`[list, table]`, `[~quote]`). `npx chaffjs init --plugin <name>` starts a YAML-only rule pack, `chaff-plugin-<name>/`,
 and `npx chaffjs plugin-test` checks each of its rules on the rule's own example.
 
 **Fix plans.** `npx chaffjs fix-plan article.md` is a plan for whoever rewrites the file, a person or an AI: findings by
 rule, how to rewrite each, and the checks to run after. `--depth light|structure|register` (or `fix_plan: { depth }`
-in `chaff.yaml`) sets how deep the rewrite may go.
+in `chaff.yaml`) sets how deep the rewrite may go. To remove every AI tell, `--all-ai-signs` runs every AI-likeness
+rule (also those the genre turns off) and adds the `ai-score` level and when to stop; `--before <original>` lists every
+rule the rewrite raised; `npx chaffjs test <file> --checks ai-tells` asks about the tells no rule can see.
 
 **AI score.** `chaff ai-score <file>` — a quick AI-likeness score (low, medium, high): counts the signs of generated
-text that human documents of the same genre rarely show. It is not a verdict on whether AI wrote it.
+text that human documents of the same genre rarely show. It is not a verdict on whether AI wrote it. One sign is
+`email-stock-courtesy`: two or more stock email courtesies in one English email. `honesty-marker`: a sentence flagged as
+candid ("Honestly,", 「正直、」), reported alone in blog posts and business documents.
+`closing-exhortation`: a closing that cheers the reader on two or more times. `unprompted-denial`: many sentences that
+deny a premise nobody stated ("This isn't about tooling.").
 
 **AI evals.** `npx chaffjs grade outputs.jsonl --out results.jsonl` grades a JSONL file of a model's outputs (`id` and
 `output` on each line) with the rules, `compare` and `cite`, and fails when an output fails. How is in

@@ -1,4 +1,5 @@
-import type { Suppressed, Suppression } from "../stet.ts";
+import type { StetProblem, Suppressed, Suppression } from "../stet.ts";
+import type { Allowed } from "../allow.ts";
 import type { NotRun } from "../not-run.ts";
 import type { Texts, UiLanguage } from "../ui.ts";
 import { counted } from "./plural.ts";
@@ -14,6 +15,13 @@ const TEXT: Texts<{
   readonly reasonless: (n: number) => string;
   readonly notRun: string;
   readonly runExperimental: string;
+  readonly ranges: string;
+  readonly noReason: string;
+  readonly problems: (n: number) => string;
+  readonly problem: Readonly<Record<StetProblem["kind"], (rule: string) => string>>;
+  readonly allowTotal: (n: number) => string;
+  readonly allowReason: (reason: string) => string;
+  readonly allowRules: (rules: string) => string;
 }> = {
   ja: {
     nudge: "  ← 設定の見直しを検討してください",
@@ -26,6 +34,19 @@ const TEXT: Texts<{
     reasonless: (n) => `理由が書かれていない抑制: ${n} 件`,
     notRun: "stet はあるが、今回動いていない rule（数えていません）:",
     runExperimental: "試験中の rule は --experimental を付けると数えます。",
+    ranges: "範囲の stet（stet-begin … stet-end）:",
+    noReason: "（理由なし）",
+    problems: (n) => `効いていない、または書き方に問題のある stet: ${n} 件`,
+    problem: {
+      unclosed: () => "stet-begin に対応する stet-end がありません。何も黙らせていません",
+      "stray-end": () => "対応する stet-begin の無い stet-end です",
+      "no-rules": () => "ルール名がありません。黙らせるルールを書いてください（全ルールをまとめて黙らせる書き方はありません）",
+      "unknown-rule": (rule) => `「${rule}」というルールはありません`,
+      "no-matched-text": (rule) => `${rule} の指摘は見つけた語句を持たないので、rule["語句"] では黙りません`,
+    },
+    allowTotal: (n) => `chaff.yaml の allow で抑制されている指摘: ${n} 件`,
+    allowReason: (reason) => `理由: ${reason}`,
+    allowRules: (rules) => `rule: ${rules}`,
   },
   en: {
     nudge: "  <- consider changing the setting instead",
@@ -38,15 +59,32 @@ const TEXT: Texts<{
     reasonless: (n) => `Silenced without a reason: ${n}`,
     notRun: "Rules with a stet that did not run in this check (not counted):",
     runExperimental: "Experimental rules are counted with --experimental.",
+    ranges: "Range stets (stet-begin … stet-end):",
+    noReason: "(no reason)",
+    problems: (n) => `Stets that do not work or are written wrong: ${n}`,
+    problem: {
+      unclosed: () => "stet-begin has no stet-end; it silences nothing",
+      "stray-end": () => "stet-end with no stet-begin to close",
+      "no-rules": () => "names no rule; write the rules to silence (there is no all-rules form)",
+      "unknown-rule": (rule) => `there is no rule named "${rule}"`,
+      "no-matched-text": (rule) => `${rule} findings carry no matched text, so rule["text"] silences none of them`,
+    },
+    allowTotal: (n) => `Silenced by allow in chaff.yaml: ${n}`,
+    allowReason: (reason) => `reason: ${reason}`,
+    allowRules: (rules) => `rules: ${rules}`,
   },
 };
 
 export type PerFile = {
   readonly path: string;
   readonly suppressed: readonly Suppressed[];
+  /** Findings an entry of chaff.yaml's allow silenced, each with its entry (and so its reason). */
+  readonly allowed?: readonly Allowed[];
   readonly reasonless: readonly Suppression[];
   /** Rules a stet in the file names that did not run, so their silenced findings could not be counted. */
   readonly notRun: readonly NotRun[];
+  readonly ranges: readonly Suppression[];
+  readonly problems: readonly StetProblem[];
 };
 
 /** これを超えたら、その rule は (b) ではなく (c) にすべきというサイン。 */
@@ -98,6 +136,62 @@ const notRunLines = (files: readonly PerFile[], ui: UiLanguage): string[] => {
   return ["", `  ${text.notRun}`, ...lines, ...(rows.some((row) => row.needsExperimental) ? [`  ${text.runExperimental}`] : [])];
 };
 
+/** Every range stet, with its lines, the rules it names and why, so a long silenced stretch is seen. */
+const rangeLines = (files: readonly PerFile[], ui: UiLanguage): string[] => {
+  const text = TEXT[ui];
+  const rows = files.flatMap((file) =>
+    file.ranges.map((range) => `      ${file.path}:${range.line}-${range.blockEnd}   ${range.rules.join(", ")}   ${range.reason ?? text.noReason}`),
+  );
+  return rows.length === 0 ? [] : ["", `  ${text.ranges}`, ...rows];
+};
+
+const problemLines = (files: readonly PerFile[], ui: UiLanguage): string[] => {
+  const text = TEXT[ui];
+  const rows = files.flatMap((file) =>
+    file.problems.map((problem) => `      ${file.path}:${problem.line}   ${text.problem[problem.kind](problem.rule ?? "")}`),
+  );
+  return rows.length === 0 ? [] : ["", `  ${text.problems(rows.length)}`, ...rows];
+};
+
+type AllowGroup = { readonly entry: Allowed["entry"]; readonly count: number; readonly files: readonly string[] };
+
+/** Findings silenced by allow, one group per entry, most first. */
+const groupByEntry = (files: readonly PerFile[]): AllowGroup[] => {
+  const rows = files.flatMap((file) => (file.allowed ?? []).map((entry) => ({ path: file.path, entry: entry.entry })));
+  const ats = [...new Set(rows.map((row) => row.entry.at))];
+  return ats
+    .flatMap((at) => {
+      const mine = rows.filter((row) => row.entry.at === at);
+      const [first] = mine;
+      return first === undefined ? [] : [{ entry: first.entry, count: mine.length, files: [...new Set(mine.map((row) => row.path))] }];
+    })
+    .toSorted((left, right) => right.count - left.count);
+};
+
+const allowTarget = (entry: Allowed["entry"]): string => (entry.text === undefined ? ["/", entry.pattern ?? "", "/"].join("") : JSON.stringify(entry.text));
+
+const allowLabel = (entry: Allowed["entry"]): string => `${entry.at} ${allowTarget(entry)}`;
+
+const allowGroupLines = (group: AllowGroup, ui: UiLanguage): string[] => {
+  const text = TEXT[ui];
+  const shown = group.files.slice(0, 3).join(", ");
+  const rest = group.files.length > 3 ? text.more(group.files.length - 3) : "";
+  return [
+    "",
+    `  ${allowLabel(group.entry).padEnd(26)}${text.count(group.count)}`,
+    `      ${text.allowReason(group.entry.reason)}`,
+    ...(group.entry.rules.length > 0 ? [`      ${text.allowRules(group.entry.rules.join(", "))}`] : []),
+    `      ${shown}${rest}`,
+  ];
+};
+
+/** What chaff.yaml's allow silenced, each entry with its reason: an allowance must not make findings vanish unseen. */
+const allowLines = (files: readonly PerFile[], ui: UiLanguage): string[] => {
+  const groups = groupByEntry(files);
+  const total = groups.reduce((sum, group) => sum + group.count, 0);
+  return total === 0 ? [] : ["", `  ${TEXT[ui].allowTotal(total)}`, ...groups.flatMap((group) => allowGroupLines(group, ui))];
+};
+
 /**
  * 抑制が溜まったことに気づけないと、規範と現実の乖離が静かに進む。
  * 同じ rule を何度も黙らせているなら、それは (b) ではなく (c) のサイン。
@@ -107,15 +201,18 @@ export const renderSuppressions = (files: readonly PerFile[], ui: UiLanguage = "
   const text = TEXT[ui];
   const groups = groupByRule(files);
   const total = groups.reduce((sum, group) => sum + group.count, 0);
-  const notRun = notRunLines(files, ui);
-  if (total === 0) return notRun.length === 0 ? text.none : [text.none.trimEnd(), ...notRun, ""].join("\n");
+  const allowed = allowLines(files, ui);
+  const trailing = [...notRunLines(files, ui), ...rangeLines(files, ui), ...problemLines(files, ui)];
+  if (total === 0 && allowed.length > 0) return [...allowed, ...trailing, ""].join("\n");
+  if (total === 0) return trailing.length === 0 ? text.none : [text.none.trimEnd(), ...trailing, ""].join("\n");
   const reasonless = files.flatMap((file) => file.reasonless.map(() => file.path));
   return [
     "",
     `  ${text.total(total)}`,
     ...groups.flatMap((group) => groupLines(group, ui)),
     ...(reasonless.length > 0 ? ["", `  ${text.reasonless(reasonless.length)}`, `      ${[...new Set(reasonless)].join(", ")}`] : []),
-    ...notRun,
+    ...allowed,
+    ...trailing,
     "",
   ].join("\n");
 };

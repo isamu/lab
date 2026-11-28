@@ -30,6 +30,10 @@ describe("request-without-deadline: 期限も担当も無い依頼", () => {
     assert.deepEqual(findingsOf("添付の見積書を、来週の金曜までにご確認ください。"), []);
     assert.deepEqual(findingsOf("添付の見積書を2026年10月20日にご確認ください。"), []);
     assert.deepEqual(findingsOf("添付の見積書をご確認ください。15時に電話します。"), []);
+    assert.deepEqual(findingsOf("数えた結果は、その日のうちに表に入れ、物流部に送ってください。"), []);
+    assert.deepEqual(findingsOf("申込書は当日中にご提出ください。"), []);
+    assert.deepEqual(findingsOf("届いた荷物は当日のうちに開けてください。"), []);
+    assert.deepEqual(findingsOf("不具合は即日ご連絡ください。"), []);
     assert.deepEqual(findingsOf("Please review the attached quote by Friday.", en), []);
     assert.deepEqual(findingsOf("Please review the attached quote. We sign on Oct 20.", en), []);
   });
@@ -57,6 +61,51 @@ describe("request-without-deadline: 期限も担当も無い依頼", () => {
     assert.deepEqual(findingsOf(before, en), [MESSAGE_EN]);
   });
 
+  it("締め切りの節は、同じ見出しの下で前に並ぶ節の依頼にも締め切りを与える（結論で頼み、判断の期限で日付を書く提案）", () => {
+    const proposal = (deadline: string): string =>
+      `## 結論\n\n協賛したい。承認をお願いします。\n\n## 費用\n\n三十万円。\n\n## ${deadline}\n\n申込締切が12月15日。`;
+    assert.deepEqual(findingsOf(proposal("判断の期限"), ja, "business/proposal"), []);
+    assert.deepEqual(findingsOf(proposal("背景"), ja, "business/proposal"), [MESSAGE_JA]);
+    const nested = "## 結論\n\n承認をお願いします。\n\n## 日程\n\n### 期限\n\n申込締切が12月15日。";
+    assert.deepEqual(findingsOf(nested, ja, "business/proposal"), [MESSAGE_JA]);
+    const otherParent = "## 結論\n\n承認をお願いします。\n\n# 付録\n\n## 期限\n\n申込締切が12月15日。";
+    assert.deepEqual(findingsOf(otherParent, ja, "business/proposal"), [MESSAGE_JA]);
+    const en_ = "## Summary\n\nPlease approve the budget.\n\n## Decision deadline\n\nThe deadline is December 15, 2026.";
+    assert.deepEqual(findingsOf(en_, en, "business/proposal"), []);
+  });
+
+  it("予定の節が決める日を書いていれば、結びの「ご検討ください」はその日を期限に持つ", () => {
+    const proposal = (heading: string, step: string): string =>
+      `## 提案\n\n手当を新設します。\n\n## ${heading}\n\n- 2026年12月：${step}\n- 2027年4月：支給開始\n\nご検討のほど、よろしくお願いいたします。`;
+    assert.deepEqual(findingsOf(proposal("6. 今後のスケジュール", "経営会議にて承認"), ja, "business/proposal"), []);
+    assert.deepEqual(findingsOf(proposal("6. 今後のスケジュール", "社内説明会"), ja, "business/proposal"), [MESSAGE_JA]);
+    assert.deepEqual(findingsOf(proposal("6. 期待される効果", "経営会議にて承認"), ja, "business/proposal"), [MESSAGE_JA]);
+    assert.deepEqual(findingsOf("## 提案\n\nご承認をお願いします。\n\n## 背景\n\n承認が要ります。", ja, "business/proposal"), [MESSAGE_JA]);
+    const en_ = (step: string): string =>
+      `## Proposal\n\nA new allowance.\n\n## Timeline\n\n- December 2026: ${step}\n- April 2027: first payment\n\nPlease review the proposal.`;
+    assert.deepEqual(findingsOf(en_("board approval"), en, "business/proposal"), []);
+    assert.deepEqual(findingsOf(en_("staff briefing"), en, "business/proposal"), [MESSAGE_EN]);
+  });
+
+  it("参加を「検討して」と頼む文は誘い", () => {
+    assert.deepEqual(findingsOf("まだの方も、ぜひ参加をご検討ください。"), []);
+    assert.deepEqual(findingsOf("ご参加をご検討ください。"), []);
+    assert.deepEqual(findingsOf("見積書の内容をご検討ください。"), [MESSAGE_JA]);
+  });
+
+  it("題が諮問の文書は、期限を付けずに審議を頼む", () => {
+    const shimon = (title: string): readonly string[] =>
+      namedRuleRun(
+        RULE,
+        `# ${title}\n\n審議会\n\n次の事項について諮問します。\n\n具体的な方策について御検討をお願いします。\n`,
+        ja,
+        "a.md",
+        "business/proposal",
+      ).findings;
+    assert.deepEqual(shimon("教育の在り方について（諮問）"), []);
+    assert.deepEqual(shimon("教育の在り方について"), [MESSAGE_JA]);
+  });
+
   it("担当があれば言わない（呼び名、役割、人の名前）", () => {
     assert.deepEqual(findingsOf("経理部の担当者が見積書をご確認ください。"), []);
     assert.deepEqual(findingsOf("見積書のご確認をお願いします。山田さんにも伝えます。"), []);
@@ -78,6 +127,15 @@ describe("request-without-deadline: 期限も担当も無い依頼", () => {
     ["Please send any questions to me.", "Please reply with any questions.", "Please contact us with questions.", "Please send your questions to me."].forEach(
       (source) => assert.deepEqual(findingsOf(source, en), [], source),
     );
+  });
+
+  it("書き手がやり方を尋ねる依頼は、答えが書き手の次の一手で、期限の要る仕事ではない", () => {
+    assert.deepEqual(findingsOf("Could you let me know how to send the boots back, and whether you will provide a label?", en), []);
+    assert.deepEqual(findingsOf("Please let me know where to send the signed form.", en), []);
+    assert.deepEqual(findingsOf("返送の方法を教えてください。"), []);
+    assert.deepEqual(findingsOf("Could you let me know whether you can attend?", en), [MESSAGE_EN]);
+    assert.deepEqual(findingsOf("Please send the setup guide.", en), [MESSAGE_EN]);
+    assert.deepEqual(findingsOf("ご都合を教えてください。"), [MESSAGE_JA]);
   });
 
   it("読み手の質問を受け付けるのでない依頼は、申し出と読まずに言う", () => {
@@ -120,6 +178,12 @@ describe("request-without-deadline: 期限も担当も無い依頼", () => {
     ].forEach((source) => assert.deepEqual(findingsOf(source), [], source));
     assert.deepEqual(findingsOf("Please send the receipt after you pay.", en), []);
     assert.deepEqual(findingsOf("Please review the agenda in advance.", en), []);
+  });
+
+  it("決まった間隔で繰り返す依頼（定期的に、regularly）は期限が要らないので言わない", () => {
+    assert.deepEqual(findingsOf("在庫の一覧を定期的に確認してください。"), []);
+    assert.deepEqual(findingsOf("Please review regularly our list of open issues.", en), []);
+    assert.deepEqual(findingsOf("Please check the backup log periodically.", en), []);
   });
 
   it("時機の語が次の文にあるだけなら言う（次の文は別の話）", () => {
@@ -201,6 +265,29 @@ describe("request-without-deadline: 期限も担当も無い依頼", () => {
   it("期限を言う見出しは、別の節の依頼には受け継がない", () => {
     const source = "# 件\n\n## 見積提出期限：2026年10月26日\n\n見積書を2026年10月26日までにお送りください。\n\n## 提出書類\n\n見積書を確認してください。\n";
     assert.deepEqual(namedRuleRun(RULE, source, ja, "a.md", "business/email").findings, [MESSAGE_JA]);
+  });
+
+  it("場合を言う見出しの下の依頼は、その場合にする依頼として言わない", () => {
+    const under = (heading: string): readonly string[] =>
+      namedRuleRun(RULE, `# 案内\n\n## ${heading}\n\n避難の準備をしてください。\n`, ja, "a.md", "business/report").findings;
+    assert.deepEqual(under("火山噴火の場合"), []);
+    assert.deepEqual(under("停電のとき"), []);
+    assert.deepEqual(under("火山噴火について"), [MESSAGE_JA]);
+  });
+
+  it("日付で始まる項目の下の項目の依頼は、その日付を期限と読む", () => {
+    const item = "  * We will schedule brownouts, so please respond to any suggested schedule.\n";
+    const dated = `# Notice\n\n* February 2025: We will publish the schedule.\n${item}`;
+    const undated = `# Notice\n\n* Next we will publish the schedule.\n${item}`;
+    assert.deepEqual(namedRuleRun(RULE, dated, en, "a.md", "business/report").findings, []);
+    assert.deepEqual(namedRuleRun(RULE, undated, en, "a.md", "business/report").findings, [MESSAGE_EN]);
+  });
+
+  it("始める時を言う提案の結びの「ご検討」は言わない", () => {
+    const proposal = (plan: string): readonly string[] =>
+      namedRuleRun(RULE, `# 勉強会の企画書\n\n${plan}\n\nご検討よろしくお願いします。\n`, ja, "a.md", "business/proposal").findings;
+    assert.deepEqual(proposal("まずは12月から3か月試してみます。"), []);
+    assert.deepEqual(proposal("まずは3か月間試してみます。"), [MESSAGE_JA]);
   });
 
   it("ビジネスの文書でだけ動く", () => {

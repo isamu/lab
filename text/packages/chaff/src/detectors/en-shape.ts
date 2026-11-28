@@ -5,6 +5,7 @@ import { namesWrittenMidSentence } from "./heading-names.ts";
 import type { Detector, Finding, Lexicon, ProseDocument, Section, Sentence, Token } from "../plugin.ts";
 import { entryOpens } from "./lexicon-match.ts";
 import { opensWithPhrase } from "./opener-phrase.ts";
+import { speakerTurns } from "./speaker-turns.ts";
 
 const PER = 1000;
 
@@ -15,13 +16,38 @@ const wordsIn = (doc: ProseDocument): number => doc.sentences.reduce((sum, sente
 
 const isLyAdverb = (token: Token): boolean => token.pos === "ADV" && token.surface.toLowerCase().endsWith("ly");
 
+/** 頭だけ大文字の語。全部大文字（ONLY）は強調で、副詞のまま。 */
+const CAPITALISED = /^\p{Lu}\p{Ll}/u;
+
+const LETTER = /\p{L}/u;
+
+/**
+ * 数の前の -ly の語は数を絞る（only 26、nearly 40）。括弧の頭で読点が続く語は呼び名の前置き（(collectively, the agencies)）。
+ * どちらも動詞を修飾しておらず、畳む先が無い。
+ */
+const qualifiesNoVerb = (tokens: readonly Token[], at: number): boolean =>
+  tokens[at + 1]?.pos === "NUM" || (tokens[at - 1]?.surface === "(" && tokens[at + 1]?.surface === ",");
+
+/**
+ * 頭だけ大文字の -ly の語は、文の途中なら解析器が語尾で副詞と当てた名前（July、Kelly）か題の語、文頭でも行全体が題の書き方なら
+ * 題の語（Frequently Asked Questions）。どちらも動詞に畳める副詞ではない。書き手の確かさを言う副詞（probably、apparently）も、畳む先の動詞が無い。
+ */
+const lyAdverbsOf = (sentence: Sentence, stance: ReadonlySet<string>): Token[] => {
+  const tokens = sentence.tokens ?? [];
+  const first = tokens.findIndex((token) => LETTER.test(token.surface));
+  const titleLine = isTitleCase(sentence.text) === true;
+  const isTitleWord = (token: Token, at: number): boolean => CAPITALISED.test(token.surface) && (at > first || titleLine);
+  return tokens.filter((token, at) => isLyAdverb(token) && !stance.has(token.surface.toLowerCase()) && !isTitleWord(token, at) && !qualifiesNoVerb(tokens, at));
+};
+
 /**
  * -ly 副詞は、動詞が弱いことの目印になる。「walked quickly」より「hurried」。
  * 1 つずつは正しいので、件数ではなく密度で見る（bold-density と同じ）。
  */
 export const adverbDensity: Detector = (doc, options): Finding[] => {
   const words = wordsIn(doc);
-  const hits = doc.sentences.flatMap((sentence) => (sentence.tokens ?? []).filter(isLyAdverb).map((token) => ({ sentence, token })));
+  const stance = new Set((doc.lexicons["stance-adverb"] ?? []).map((entry) => entry.pattern));
+  const hits = doc.sentences.flatMap((sentence) => lyAdverbsOf(sentence, stance).map((token) => ({ sentence, token })));
   const density = words === 0 ? 0 : Math.round((hits.length / words) * PER);
   const first = hits[0];
   if (words < MIN_WORDS || first === undefined || density <= options.limit) return [];
@@ -40,26 +66,88 @@ export const adverbDensity: Detector = (doc, options): Finding[] => {
 const BE = new Set(["be", "is", "are", "was", "were"]);
 
 /**
+ * The words before ", but": "It's not fashionable these days, but my view is that …" is a concessive aside, and its
+ * that-clause belongs to the clause after but.
+ */
+export const beforeConcession = (tokens: readonly Token[]): readonly Token[] => {
+  const at = tokens.findIndex((token, index) => token.surface === "," && tokens[index + 1]?.surface.toLowerCase() === "but");
+  return at === -1 ? tokens : tokens.slice(0, at);
+};
+
+/** The words a be can follow in the same verb: a modal (There will be), a perfect's have (There have been), a negation (There has never been). */
+const BEFORE_BE = new Set([
+  "will",
+  "would",
+  "may",
+  "might",
+  "can",
+  "could",
+  "should",
+  "must",
+  "shall",
+  "'ll",
+  "wo",
+  "ca",
+  "has",
+  "have",
+  "had",
+  "'ve",
+  "'d",
+  "not",
+  "n't",
+  "never",
+]);
+
+/** The be of the verb right after head, past the modal, have and negation before it: There were / There have been / There will not be. */
+const beAfter = (tokens: readonly Token[], head: Token): Token | undefined => {
+  const words = tokens.filter((token) => token.span.start >= head.span.end && token.pos !== "PUNCT");
+  const at = words.findIndex((token) => !BEFORE_BE.has(token.surface.toLowerCase()));
+  const verb = words[at];
+  return verb !== undefined && BE.has(verb.lemma ?? verb.surface.toLowerCase()) ? verb : undefined;
+};
+
+/**
  * There is / It is ... that は、主語を後ろへ押しやって誰が何をするのかを消す。
  * 「There is a need to review」は、誰が必要としているのかを言っていない。
  */
-const expletiveAt = (tokens: readonly Token[]): Token | undefined => {
+/** The sentence's opening, from There / It through its be: the finding names the form this sentence uses (There were, It was). */
+type Opening = { readonly head: Token; readonly be: Token };
+
+/**
+ * It + be + a past participle + to ("It is designed to give the public a clear sense …") is a passive whose it names the
+ * thing before it: the that later in the sentence (", and that understanding is …") belongs to another clause. A be
+ * before an adjective (It is important to, It's tempting to, which the tagger may call a verb) stays the empty it.
+ */
+const isPassiveOfThing = (tokens: readonly Token[], be: Token): boolean => {
+  const after = tokens.filter((token) => token.span.start >= be.span.end && token.pos !== "ADV");
+  const verb = after[0];
+  return verb?.pos === "VERB" && !verb.surface.toLowerCase().endsWith("ing") && after[1]?.surface.toLowerCase() === "to";
+};
+
+const hasThat = (tokens: readonly Token[]): boolean => tokens.some((token) => token.surface.toLowerCase() === "that");
+
+const expletiveAt = (tokens: readonly Token[]): Opening | undefined => {
   const head = tokens.find((token) => token.pos !== "PUNCT");
   if (head === undefined) return undefined;
   const lead = head.surface.toLowerCase();
   if (lead !== "there" && lead !== "it") return undefined;
-  const next = tokens.find((token) => token.span.start >= head.span.end && token.pos !== "PUNCT");
-  if (next === undefined || !BE.has(next.lemma ?? next.surface.toLowerCase())) return undefined;
+  const be = beAfter(tokens, head);
+  if (be === undefined) return undefined;
   // "it is" は "it is raining" のような正当な用法があるので、that 節を伴うときだけ数える。
-  if (lead === "it" && !tokens.some((token) => token.surface.toLowerCase() === "that")) return undefined;
-  return head;
+  if (lead === "it" && (!hasThat(beforeConcession(tokens)) || isPassiveOfThing(tokens, be))) return undefined;
+  return { head, be };
 };
 
+/** In minutes of who said what, a speaker's sentences are their own phrasing, recorded as said: not the writer's to recast. */
 export const expletive: Detector = (doc, options): Finding[] => {
-  const hits = doc.sentences.flatMap((sentence) => {
-    const at = expletiveAt(sentence.tokens ?? []);
-    return at === undefined ? [] : [{ sentence, at }];
-  });
+  const turns = speakerTurns(doc.source);
+  const spoken = (sentence: Sentence): boolean => turns.some((turn) => turn.start <= sentence.span.start && sentence.span.start < turn.end);
+  const hits = doc.sentences
+    .filter((sentence) => !spoken(sentence))
+    .flatMap((sentence) => {
+      const at = expletiveAt(sentence.tokens ?? []);
+      return at === undefined ? [] : [{ sentence, at }];
+    });
   if (hits.length <= options.limit) return [];
   return hits.map(({ sentence, at }) => ({
     rule: "expletive-construction",
@@ -67,7 +155,7 @@ export const expletive: Detector = (doc, options): Finding[] => {
     line: 0,
     column: 0,
     quote: sentence.text.trim(),
-    values: { word: at.surface, count: hits.length, limit: options.limit, offset: at.span.start },
+    values: { form: doc.source.slice(at.head.span.start, at.be.span.end), count: hits.length, limit: options.limit, offset: at.head.span.start },
   }));
 };
 
@@ -133,8 +221,17 @@ export const conjunctionRun: Detector = (doc, options): Finding[] => {
 /** Weekday and month names, capitalised in either style (the list leaves out May, March and August, also ordinary words). */
 const FIXED_CASE_LISTS = ["calendar-name"] as const;
 
+/**
+ * A heading that is a name with its acronym in brackets, either way round (Contractor Performance Assessment Report
+ * (CPARS), CORs (Contracting Officer Representatives)): the name keeps its capitals in either style.
+ */
+const NAME_THEN_ACRONYM = /^[^()]+\(\s*\p{Lu}{2,10}s?\s*\)\s*$/u;
+const ACRONYM_THEN_NAME = /^\s*\p{Lu}{2,10}s?\s*\([^()]+\)\s*$/u;
+const namesAcronym = (heading: string): boolean => NAME_THEN_ACRONYM.test(heading) || ACRONYM_THEN_NAME.test(heading);
+
 const headingsOf = (sections: readonly Section[], fixedCase: ReadonlySet<string>): { readonly section: Section; readonly title: boolean }[] =>
   sections.flatMap((section) => {
+    if (namesAcronym(section.heading)) return [];
     const title = isTitleCase(section.heading, fixedCase);
     return title === undefined ? [] : [{ section, title }];
   });

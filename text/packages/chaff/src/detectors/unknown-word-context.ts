@@ -1,0 +1,201 @@
+// Where a word stands, for unknown-word: places in a document where a word not in the dictionary is a name or a term the
+// writer means as written, not a slip. Pure functions over the Markdown source and an offset into it.
+import { isAddress, isKnownWord, stemsOf, type CheckedWord, type Speller } from "../spelling.ts";
+
+/** Each half of a closed compound keeps this many letters: a shorter half (open + end, pip + line) is more often a slip at the joint. */
+const MIN_COMPOUND_PART = 4;
+
+/** Where a word splits into the two halves of a closed compound (flag + salute in flagsalute). */
+const compoundSplits = (word: string, speller: Speller): number[] => {
+  const listed: Speller = { ...speller, suffixes: [], prefixes: [] };
+  const inflected: Speller = { ...listed, suffixes: speller.suffixes.filter(({ inflection }) => inflection === true) };
+  return [...Array(Math.max(0, word.length - 2 * MIN_COMPOUND_PART + 1)).keys()]
+    .map((index) => index + MIN_COMPOUND_PART)
+    .filter((split) => isKnownWord(word.slice(0, split), listed) && isKnownWord(word.slice(split), inflected));
+};
+
+/**
+ * Two dictionary words of four letters or more written as one (crowdwork, crowdworkers): a closed compound, not a slip. The
+ * head is a word as listed and the tail takes only an inflection: a prefix or a derived ending on a half (misre + presenation)
+ * reads too many slips as words.
+ */
+export const isClosedCompound = (word: string, speller: Speller): boolean => compoundSplits(word, speller).length > 0;
+
+const QUOTE_MARK = /["“”‘’']/u;
+
+/** Where the line of source around offset starts and ends. */
+const lineAround = (source: string, offset: number): readonly [number, number] => {
+  const end = source.indexOf("\n", offset);
+  return [source.lastIndexOf("\n", offset - 1) + 1, end === -1 ? source.length : end];
+};
+
+/** Text set in quotation marks at either end (Not "user name", "factcheck this"): a spelling named or searched for, not used. */
+export const isQuotedAt = (source: string, start: number, end: number): boolean =>
+  QUOTE_MARK.test(source.charAt(start - 1)) || QUOTE_MARK.test(source.charAt(end));
+
+/**
+ * The fewest uses of the apart form before the joined one counts as a slip. A document that writes a compound both ways a
+ * few times (rule making twice, rulemaking once) is choosing between two spellings, which is orthographic-variant's.
+ */
+const MIN_APART_USES = 3;
+
+/**
+ * How the document writes a closed compound apart elsewhere (flag salute, flag-salute beside flagsalute), its most common
+ * such form in lower case, or undefined. Written apart three times or more, the joined form is two words run together, not the writer's term.
+ * A form in quotation marks or on the word's own line (Do not use white list or whitelist) names spellings, not uses one.
+ */
+export const writtenApart = (word: string, speller: Speller, source: string, offset: number): string | undefined => {
+  const [lineStart, lineEnd] = lineAround(source, offset);
+  const forms = compoundSplits(word, speller).flatMap((split) => {
+    const apart = new RegExp(`(?<![\\p{L}-])${word.slice(0, split)}[ -]${word.slice(split)}(?![\\p{L}-])`, "giu");
+    return [...source.matchAll(apart)]
+      .filter((match) => (match.index < lineStart || match.index >= lineEnd) && !isQuotedAt(source, match.index, match.index + match[0].length))
+      .map((match) => match[0].toLowerCase());
+  });
+  if (forms.length < MIN_APART_USES) return undefined;
+  return [...countsOf(forms)].toSorted((left, right) => right[1] - left[1])[0]?.[0];
+};
+
+/**
+ * A word spelled -nce where the dictionary spells it -nse (recompence, expence, suspence): the older or British spelling of
+ * that word, as licence and defence are, not a slip.
+ */
+export const isNceSpelling = (word: string, speller: Speller): boolean => {
+  const at = word.lastIndexOf("nce");
+  return at > 0 && isKnownWord(`${word.slice(0, at)}nse${word.slice(at + "nce".length)}`, speller);
+};
+
+/** Letters a name keeps before its drug stem: fewer, and the word is too short to be read as a drug by its ending alone. */
+const MIN_DRUG_HEAD = 3;
+
+/** A drug's international name, read by its stem (paroxetine by -oxetine, as fluoxetine): stems from the drug-stem lexicon. */
+export const hasDrugStem = (word: string, stems: readonly string[]): boolean =>
+  stems.some((stem) => word.endsWith(stem) && word.length >= stem.length + MIN_DRUG_HEAD);
+
+/** How far back or ahead to look for a neighbouring word or a search stem. */
+const NEIGHBOUR_REACH = 40;
+
+const CLOSER: Readonly<Record<string, string>> = { '"': '"', "“": "”", "(": ")" };
+
+/** The word alone between quotes or brackets ("mailto", (jchaplin)): a word the writer names as such, or an account handle. */
+export const isMention = (source: string, offset: number, word: string): boolean => {
+  const closer = CLOSER[source.charAt(offset - 1)];
+  return closer !== undefined && source.charAt(offset + word.length) === closer;
+};
+
+/**
+ * A search stem with a wildcard in a list of terms (ukrain*, vaccin*): the word ends in a * that closes no emphasis
+ * (nothing opens one before the word), and a separator or the line's end follows it, not a word as after a footnote's *.
+ */
+export const isSearchStem = (source: string, offset: number, word: string): boolean => {
+  const end = offset + word.length;
+  return source[end] === "*" && source[offset - 1] !== "*" && /^[ \t]*(?:[,;|)\]]|\r?\n|$)/u.test(source.slice(end + 1));
+};
+
+const LETTER = /\p{L}/u;
+
+/** The stem a * at index of source closes: the letters right before it, or "" when none come before. */
+const stemBefore = (source: string, index: number): string => {
+  const head = Array.from(source.slice(Math.max(0, index - NEIGHBOUR_REACH), index));
+  return head.slice(head.findLastIndex((character) => !LETTER.test(character)) + 1).join("");
+};
+
+/** The word stands in a line with a search stem (president, maga, biden, democrat*): every item of that list is a term. */
+export const inSearchTermList = (source: string, offset: number): boolean => {
+  const start = source.lastIndexOf("\n", offset - 1) + 1;
+  const end = source.indexOf("\n", offset);
+  const line = source.slice(start, end === -1 ? source.length : end);
+  return [...line.matchAll(/\*/gu)].some((star) => {
+    const stem = stemBefore(source, start + star.index);
+    return stem !== "" && isSearchStem(source, start + star.index - stem.length, stem);
+  });
+};
+
+/** A Latin letter outside English's a–z (ê, é, ñ, ß): a word of another language. */
+const isForeignWord = (token: string): boolean => [...token].some((letter) => letter > "\u007f" && /\p{Script=Latin}/u.test(letter));
+
+const SPACE = /\s/u;
+
+/** The last space-separated token of text when a space ends it ("old bête " gives "bête"), or "". */
+const lastToken = (text: string): string => (SPACE.test(text.at(-1) ?? "") ? (text.trimEnd().split(SPACE).at(-1) ?? "") : "");
+
+/** The first space-separated token of text when a space starts it (" noire for" gives "noire"), or "". */
+const firstToken = (text: string): string => (SPACE.test(text.charAt(0)) ? (text.trimStart().split(SPACE)[0] ?? "") : "");
+
+/** The word stands beside a word of another language written in Latin letters (bête noire): it belongs to that phrase. */
+export const besideForeignWord = (source: string, offset: number, word: string): boolean => {
+  const end = offset + word.length;
+  return (
+    isForeignWord(lastToken(source.slice(Math.max(0, offset - NEIGHBOUR_REACH), offset))) || isForeignWord(firstToken(source.slice(end, end + NEIGHBOUR_REACH)))
+  );
+};
+
+const INNER_CAPITAL = /\p{Ll}\p{Lu}/u;
+
+/** Words the source writes with a capital after a small letter (SystemJS), lower-cased: the same letters in lower case are that name. */
+export const innerCapitalWordsOf = (source: string): Set<string> =>
+  new Set((source.match(/\p{L}+/gu) ?? []).filter((word) => INNER_CAPITAL.test(word)).map((word) => word.toLowerCase()));
+
+/** The letters of every URL and email address in the source, lower-cased: a word also in an address names what it points at. */
+export const addressWordsOf = (source: string): Set<string> =>
+  new Set((source.match(/\S+/gu) ?? []).filter(isAddress).flatMap((chunk) => chunk.toLowerCase().match(/\p{L}+/gu) ?? []));
+
+const countsOf = (keys: readonly string[]): Map<string, number> => {
+  const counts = new Map<string, number>();
+  keys.forEach((key) => counts.set(key, (counts.get(key) ?? 0) + 1));
+  return counts;
+};
+
+/**
+ * The word and its stems, the forms another word of its family shares (rightsized and rightsizing share rightsize), for a
+ * word the dictionary does not know. A known word is in no such family: "refactored" does not make "refactore" a form of
+ * it, nor "tools" "toolss".
+ */
+const familyOf = (word: string, speller: Speller): string[] => (isKnownWord(word, speller) ? [] : [...new Set([word, ...stemsOf(word, speller)])]);
+
+/**
+ * Words the document uses once, counting a word's other forms as uses (rightsize, rightsized, rightsizing): a word used
+ * twice or more, in any form, is more often the document's own term than a slip.
+ */
+export const usedOnce = (words: readonly CheckedWord[], speller: Speller): CheckedWord[] => {
+  const uses = countsOf(words.map(({ word }) => word));
+  const families = new Map([...uses.keys()].map((word) => [word, familyOf(word, speller)]));
+  const shared = countsOf([...families.values()].flat());
+  return words.filter(({ word }) => uses.get(word) === 1 && (families.get(word) ?? []).every((key) => shared.get(key) === 1));
+};
+
+/** A release number of three parts or more (1.21.5, v2.0.1), after spaces. */
+const VERSION_AFTER = /^[ \t]+v?\d+\.\d+\.\d+/u;
+
+/** The word names what a release number follows (golang 1.21.5): a product or a tool, written as its makers write it. */
+export const beforeVersion = (source: string, offset: number, word: string): boolean => VERSION_AFTER.test(source.slice(offset + word.length));
+
+/** A release number of three parts or more (1.21.5, v2.0.1), as a whole chunk between spaces. */
+const VERSION = /^v?\d+\.\d+\.\d+/u;
+const LETTERS_ONLY = /^\p{L}+$/u;
+
+/**
+ * Every word the source writes before a release number (Diego 2.85.0), lower-cased: the name of a component, also when the
+ * document writes it bare in lower case elsewhere (update diego sync).
+ */
+export const versionedWordsOf = (source: string): Set<string> => {
+  const chunks = source.split(/\s+/u);
+  return new Set(chunks.flatMap((chunk, index) => (LETTERS_ONLY.test(chunk) && VERSION.test(chunks[index + 1] ?? "") ? [chunk.toLowerCase()] : [])));
+};
+
+/** A journal's volume and issue (22 (3), 5(2)), after spaces. */
+const VOLUME_AFTER = /^[ \t]+\d+[ \t]*\(\d+\)/u;
+
+/** The word ends a journal's title before its volume and issue (Biochemia medica 22 (3)): the title as the journal writes it, often Latin. */
+export const beforeVolume = (source: string, offset: number, word: string): boolean => VOLUME_AFTER.test(source.slice(offset + word.length));
+
+/** Two words of one length that differ in one letter only. */
+const oneLetterApart = (left: string, right: string): boolean =>
+  left.length === right.length && [...left].filter((letter, index) => letter !== right.charAt(index)).length === 1;
+
+/**
+ * Another word of the document, itself not in the dictionary, one letter from this one (pthread and bthread): a family of
+ * names built on one scheme. A slip is one letter from a word the dictionary knows, and two slips seldom make such a pair.
+ */
+export const hasSiblingName = (word: string, unknownWords: ReadonlySet<string>): boolean =>
+  [...unknownWords].some((other) => other !== word && oneLetterApart(word, other));

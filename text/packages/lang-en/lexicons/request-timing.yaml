@@ -9,3 +9,6 @@ entries:
   - pattern: beforehand
   - pattern: at the time of
   - pattern: upon receipt
+  # A request to do something at intervals ("please review regularly") is standing: when is every time, not a date.
+  - pattern: regularly
+  - pattern: periodically

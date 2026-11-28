@@ -74,5 +74,5 @@ example:
       Wear gloves.
 
 not_flagged:
-  ja: 最初の見出しは何段から始めてもかまいません。浅くなる見出し（「####」の次の「##」）も指しません。
-  en: The first heading may start at any level, and a heading that goes back up ("##" after "####") is not reported.
+  ja: 最初の見出しは何段から始めてもかまいません。浅くなる見出し（「####」の次の「##」）も指しません。文字の無い見出し（プレスリリースの終わりの印「###」）は見出しとして数えません。節番号が「2.1」のように入れ子で振られた文書では番号が骨組みなので、一番深い番号より深い番号無しの見出し（論文の段落の頭の小見出しや「Abstract」）は比べません。
+  en: The first heading may start at any level, and a heading that goes back up ("##" after "####") is not reported. A heading with no text (the "###" that ends a press release) is not counted. In a document whose sections are numbered in nested form ("2.1"), the numbers are the outline, so an unnumbered heading deeper than the deepest numbered one (a paper's run-in paragraph heading, or its "Abstract") is not compared.

@@ -113,11 +113,19 @@ const nameLineDefinitions = (source: string): string[] => {
     .filter((initials) => initials !== "");
 };
 
+/**
+ * 文中の書式のタグ（<span id="13.18">**"GDPR"**</span> means）。読み手には見えず、語と定義の語の間を空けない。表の欄や段落のタグは
+ * 区切りなので外さない。
+ */
+const INLINE_TAG = /<\/?(?:span|a|b|strong|em|i|u|mark|small|abbr|dfn)(?:\s[^<>\n]{0,200})?>/giu;
+
 /** 文書が括弧の展開の形をとらずに定義した略語。 */
-export const statedAcronyms = (source: string, words: DefinitionStatementWords): ReadonlySet<string> =>
-  new Set([
-    ...statementDefinitions(source, words.statements),
-    ...labelDefinitions(source),
-    ...markedDefinitions(source, words.markers),
-    ...nameLineDefinitions(source),
+export const statedAcronyms = (source: string, words: DefinitionStatementWords): ReadonlySet<string> => {
+  const text = source.replaceAll(INLINE_TAG, "");
+  return new Set([
+    ...statementDefinitions(text, words.statements),
+    ...labelDefinitions(text),
+    ...markedDefinitions(text, words.markers),
+    ...nameLineDefinitions(text),
   ]);
+};

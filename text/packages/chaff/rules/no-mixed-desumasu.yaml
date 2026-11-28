@@ -3,7 +3,25 @@ layer: L3
 status: stable
 how_to_find: sentence-ending
 word_list: polite-ending
-extra_word_lists: [neutral-ending, neutral-request, notice-phrase, asker-heading, licence-word]
+extra_word_lists:
+  [
+    neutral-ending,
+    neutral-request,
+    neutral-wish,
+    notice-phrase,
+    asker-heading,
+    licence-word,
+    set-polite-phrase,
+    contact-line-opener,
+    declaration-particle,
+    declaration-ending,
+    takeup-opener,
+    address-particle,
+    quote-label,
+    interviewer-mark,
+    feeling-aside,
+    page-pointer,
+  ]
 requires: [pos]
 languages: [ja]
 severity: info
@@ -25,6 +43,13 @@ messages:
   list:
     ja: この文だけ他と文末の調子が違います（この箇条書きの中で {count} 文）
     en: "This sentence's ending register differs from the rest ({count} in this list)"
+  # Only when chaff.yaml names the register a region requires (options body, list, heading).
+  required-desumasu:
+    ja: この文はである調です。チームの決まり（chaff.yaml）では、ここはですます調で書きます
+    en: This sentence ends in the plain register; the team's chaff.yaml requires the polite one (desumasu) here
+  required-dearu:
+    ja: この文はですます調です。チームの決まり（chaff.yaml）では、ここはである調で書きます
+    en: This sentence ends in the polite register; the team's chaff.yaml requires the plain one (dearu) here
 
 how_to_fix:
   ja: 多いほうに揃えてください。少数派のほうを直すのが、いちばん手数が少なくて済みます。
@@ -32,6 +57,57 @@ how_to_fix:
 
 # 少数派が何文までなら「混在」と見るか。これを超えたら、混在ではなく別の文体と判断して黙る。
 levels: { strict: 5, normal: 3, relaxed: 1 }
+
+# チームが調子を決めたまとまりだけ、決めた調子で見る。決めていなければ、そろっているかだけを見る（既定）。英語には対応するものが無い。
+options:
+  body:
+    kind: choice
+    default: consistent
+    about:
+      ja: 本文の文末の調子をチームで決めるか
+      en: Whether the team requires one register in the body text
+    choices:
+      consistent:
+        ja: 決めない。文書の中でそろっているかだけを見る
+        en: No side taken; only checks that the document is consistent
+      desumasu:
+        ja: 本文をですます調で書く。である調の文を、混ざっていなくても指摘する
+        en: "Body sentences are written in the polite register (desumasu): a plain sentence is reported even with no mix"
+      dearu:
+        ja: 本文をである調で書く。ですます調の文を、混ざっていなくても指摘する
+        en: "Body sentences are written in the plain register (dearu): a polite sentence is reported even with no mix"
+  list:
+    kind: choice
+    default: consistent
+    about:
+      ja: 箇条書き（番号で始まる段落の並びも）の文末の調子をチームで決めるか
+      en: Whether the team requires one register in lists (and runs of numbered paragraphs)
+    choices:
+      consistent:
+        ja: 決めない。文書の中でそろっているかだけを見る
+        en: No side taken; only checks that the document is consistent
+      desumasu:
+        ja: 箇条書きをですます調で書く。である調の文を、混ざっていなくても指摘する
+        en: "List items are written in the polite register (desumasu): a plain sentence is reported even with no mix"
+      dearu:
+        ja: 箇条書きをである調で書く。ですます調の文を、混ざっていなくても指摘する
+        en: "List items are written in the plain register (dearu): a polite sentence is reported even with no mix"
+  heading:
+    kind: choice
+    default: consistent
+    about:
+      ja: 見出しの文末の調子をチームで決めるか（述語で終わる見出しだけを見る）
+      en: Whether the team requires one register in headings (only a heading that ends in a predicate is read)
+    choices:
+      consistent:
+        ja: 決めない。文書の中でそろっているかだけを見る
+        en: No side taken; only checks that the document is consistent
+      desumasu:
+        ja: 見出しをですます調で書く。である調の文を、混ざっていなくても指摘する
+        en: "Headings are written in the polite register (desumasu): a plain sentence is reported even with no mix"
+      dearu:
+        ja: 見出しをである調で書く。ですます調の文を、混ざっていなくても指摘する
+        en: "Headings are written in the plain register (dearu): a polite sentence is reported even with no mix"
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
 off_for:
@@ -51,8 +127,8 @@ example:
       新しい料金は来月から始まります。請求書の形式も変わります。支払いの期限は月末です。古い料金は三月で終わります。
 
 not_flagged:
-  ja: どちらの調子が正しいかは決めません。多いほうに揃っていない、少ないほうの文だけを指します。本文と箇条書きは別々に数えます。箇条書きの中の少ないほうが文書全体では多いほうなら、その文は指しません。項目や段落の頭の太字の札（「- **速く書ける。** 説明です。」の「速く書ける。」）は見出しと同じく文に数えません。免責や変更の予告を書いた段落（「…ご了承ください。」）が、2 文以上すべて文書の多いほうと違う同じ調子でそろっているときも、本文とは別の決まり文句として数えません。読み手の相談や質問を載せる節（見出しが「【相談事例等】」「ご質問内容」）の文も、尋ねた人の言葉のままなので数えません。文書の最後に掲載先が付けた利用条件の断り書き（ライセンスの名前と条件の URL を書いた短い段落）も数えません。
-  en: Neither register is called right; only the sentences in the minority are pointed at. The body and each list are counted apart, and a sentence in a list's minority is left alone when its register is the document's majority. A bold label that opens an item or a paragraph and is followed by more text on its line is a heading, not a sentence. A paragraph of disclaimer or notice wording (…ご了承ください。) whose two or more sentences all share the register the rest of the document does not use is boilerplate in its own voice and is not counted. Nor are the sentences of a section whose heading names what a reader asked (【相談事例等】, ご質問内容), since they quote the asker in their own words. Nor is a licence notice the publisher appends at the end (a short closing paragraph that names a licence and links to its terms).
+  ja: どちらの調子が正しいかは決めません。多いほうに揃っていない、少ないほうの文だけを指します。チームが chaff.yaml の options で本文・箇条書き・見出しの調子を決めたときだけ、そのまとまりでは混ざっていなくても決めた調子と違う文を指し、そのまとまりがそろっているかは見ません。文書の中で二つの調子が同じ数なら、揃える先の多いほうが無いので、どちらも指しません。本文と箇条書きは別々に数えます。箇条書きの中の少ないほうが文書全体では多いほうなら、その文は指しません。項目や段落の頭の太字の札（「- **速く書ける。** 説明です。」の「速く書ける。」）は見出しと同じく文に数えません。項目の頭の太字の札とコロンの直後の注記が、同じ項目の続きの文と違う調子のとき（「- **HDDが見つからない**：マウントされていない。差し直すと直ります。」の「マウントされていない。」）も、欄の値のような短い書き方なので指しません。免責や変更の予告を書いた段落（「…ご了承ください。」）が、2 文以上すべて文書の多いほうと違う同じ調子でそろっているときも、本文とは別の決まり文句として数えません。読み手の相談や質問を載せる節（見出しが「【相談事例等】」「ご質問内容」）の文も、尋ねた人の言葉のままなので数えません。文書の最後に掲載先が付けた利用条件の断り書き（ライセンスの名前と条件の URL を書いた短い段落）も数えません。札を付けて引いた言葉（「例：」「Q:」で始まる文、「用例」だけの段落の下の段落）、「■ 調査目的」のような印付きの札の行の下の記入欄の値、〒や「電話：」の行がある問い合わせ先の段落、一つの文の中に「？」で並べて引いた問い（…一覧か？順序付きか？などです。）、一番上の見出し（#）が二つ以上ある文書で、その見出しの下の 2 文以上がみな文書の多いほうと違う同じ調子でそろった部分（通達の後ろに付いた、ページの説明）も数えません。見出しが無くても、文書の多いほうの最後の文より後ろの 2 文以上がみな違う同じ調子でそろい（その調子の文がそれより前に無く）、その間に調子を持たない行（「第1」のようなリンクの並び）を挟むときは、ページの後ろの注記として数えません。数えたうえで指さないのは、丁寧な形でしか言わない挨拶（お疲れ様でした。）と結びの頼み（承認をお願いします。）、見出しの下にその一文だけを置いて、ページの読み手に詳しい所を示す丁寧な案内（## 概要 の下の「本検討会の概要は、…をご覧ください。」）、相手への願い（信じてほしい。）、条件だけで問う文（…だったら？）、演説で主語を言わずに決意を言い切る文（戦争の惨禍を、二度と繰り返さない。）、演説でこれから成し遂げることを「〜を…ていく。」と言い切る文（現場の気づきを、幹部の皆さんが形にしていく。）、次の文が「そんな」「こんな」「これだけで」で受ける場面や行いの書き出し（PDFが送れない。そんなときは…）、「！」で終わる叫び（わかるかっ！）、読み手に呼びかける終助詞「よ」「ね」「かな」で終わる文（…含まれているよ。…のかな？）、ブログで書き手が気持ちを漏らす文（形容詞で言い切る「まだよかった。」や、「〜し、」で並べてこぼす「画面は止まるし、音も途切れる。」）、※や＊で始まる行の注記、文で終わらない行の塊に前後を挟まれた表のセル（制限なし。）、インタビュー（見出しの節の半分以上が聞き手の「――」の問いで始まる文書）の答えの段落の文です。答えは話した言葉を書き起こしたもので、話し手は丁寧な文と常体の文を混ぜて話します。動画の題（末尾に再生時間を括弧で書いた見出し）の下の説明も、動画の言葉のままなので数えません。
+  en: Neither register is called right; only the sentences in the minority are pointed at. Only where a team names in chaff.yaml's options the register its body, lists or headings require is a sentence in the other register pointed at with no mix, and that region is then not checked for consistency. When the document holds as many sentences in one register as in the other, there is no majority to match and neither side is pointed at. The body and each list are counted apart, and a sentence in a list's minority is left alone when its register is the document's majority. A bold label that opens an item or a paragraph and is followed by more text on its line is a heading, not a sentence. The note right after a list item's bold label and colon is not pointed at either when the item goes on in the other register (- **HDDが見つからない**：マウントされていない。差し直すと直ります。), since it is written as a field's value. A paragraph of disclaimer or notice wording (…ご了承ください。) whose two or more sentences all share the register the rest of the document does not use is boilerplate in its own voice and is not counted. Nor are the sentences of a section whose heading names what a reader asked (【相談事例等】, ご質問内容), since they quote the asker in their own words. Nor is a licence notice the publisher appends at the end (a short closing paragraph that names a licence and links to its terms). Nor are words quoted under a label (a sentence opening with 例： or Q:, the paragraph under a lone 用例), the value under a marked field label (■ 調査目的), a contact block (a paragraph with a 〒 or 電話： line), questions run together inside one sentence (…一覧か？順序付きか？などです。), or, in a document with two top-level (#) headings or more, a part under one of them whose two or more sentences all share the register the rest of the document does not use (a page's note about the directive it carries). Nor, without such a heading, are the two or more sentences after the last one in the document's register when they all share the other register, used nowhere before them, and a line without a register (links such as 第1) sits among them (a page's note under the text it carries). Counted but never pointed at are a greeting or a closing request said only politely (お疲れ様でした。承認をお願いします。), a polite pointer the page gives its reader to where more is said, as the only sentence under its heading (本検討会の概要は、…をご覧ください。 under ## 概要),a wish to others (信じてほしい。), a question that gives only a condition (…だったら？), a speaker declaring a resolve without a subject in a speech (戦争の惨禍を、二度と繰り返さない。), a speaker stating in a speech what is to be carried out, ending in 〜ていく with an object (現場の気づきを、幹部の皆さんが形にしていく。), a scene-setting opener the next sentence takes up with そんな, こんな or これだけで, a cry that ends in an exclamation mark (わかるかっ！), a sentence that closes with a particle addressing the reader, よ, ね or かな (…含まれているよ。…のかな？), a blog writer's aside of feeling, ending on an adjective (まだよかった。) or running complaints together with 〜し、 (画面は止まるし、音も途切れる。),a note on a line opening with ※ or ＊, a table cell set out between runs of lines that do not end as sentences (制限なし。), and the sentences of an interview's answers (in a document where at least half of the headed sections open with the interviewer's ―― question), since an answer is speech set down and a speaker mixes polite and plain sentences. Nor is the caption under a video's title (a heading ending with its running time in brackets), which is in the video's own words.
 level_meaning:
   ja: 少ないほうの調子の文が {limit} 文以下のとき、それを指摘
-  en: reported when the minority register has {limit} sentences or fewer
+  en: reported when the minority register has {limit} {limit|sentence|sentences} or fewer

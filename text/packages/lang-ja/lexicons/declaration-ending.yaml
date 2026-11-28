@@ -1,0 +1,10 @@
+# no-mixed-desumasu が、演説の中で、これから成し遂げることを言い切る文（現場の気づきを、幹部の皆さんが形にしていく。）を指さないための文末。
+# declaration-particle の object の助詞を含み、この文末で終わる常体の文は、主語を言っていても話し手の決意や描く姿の言い切りとして数えたうえで指さない。
+# 「〜ていく」は先へ向けて続ける形で、起きたことの報告（警備行動が発令される。）には使わない。目的語の無い文（人口が減っていく。）は今までどおり指す。
+id: declaration-ending
+language: ja
+entries:
+  - pattern: ていく
+    genres: [speech]
+  - pattern: てゆく
+    genres: [speech]

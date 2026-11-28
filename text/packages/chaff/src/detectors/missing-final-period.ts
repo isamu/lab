@@ -1,5 +1,8 @@
+import { isLinkLabel } from "./link-label.ts";
 import type { Detector, Finding, LexiconEntry, Paragraph, ProseDocument, Token } from "../plugin.ts";
 import { formMinority } from "./form-minority.ts";
+import { captionParagraphs, slotParagraphs } from "./final-period-captions.ts";
+import { isHeaderField } from "./email-letter.ts";
 
 // A paragraph whose last sentence stops without its closing mark, in a document whose other paragraphs end with one. It
 // takes no side: a document that ends none of its paragraphs with the mark (slides, labels) is not reported. The marks
@@ -30,6 +33,8 @@ const DESCRIPTION = /^[：:](?![：:])/u;
 const LAYOUT = /[ \u3000]{2}/u;
 /** Fewer characters than this is a label or a caption, not a sentence. */
 const MIN_SENTENCE_CHARS = 15;
+/** A cell is short: a one-line paragraph this long or longer is a clause (…と認められた場合), not a cell before the term. A paragraph masked to nothing (a quotation) is no cell either. */
+const MAX_CELL_CHARS = MIN_SENTENCE_CHARS * 2;
 /** Words that end a clause: a verb, an adjective or an auxiliary in its dictionary form ends the sentence. */
 const PREDICATE: ReadonlySet<string> = new Set(["VERB", "ADJ", "AUX"]);
 
@@ -78,9 +83,20 @@ const isTerm = (body: string, marks: PeriodMarks): boolean =>
 const isDescription = (text: string, paragraph: Paragraph, marks: PeriodMarks, previous: Paragraph | undefined): boolean =>
   DESCRIPTION.test(bodyOf(text, paragraph)) && previous !== undefined && isTerm(bodyOf(text, previous), marks);
 
+/**
+ * A cell of a table laid out as paragraphs: a term line with its note under it (乾式バッテリー / …マンガンバッテリーも含む), right after
+ * another open one-line cell (ニッケル水素電池等). The note annotates the term, like the cell it came from.
+ */
+const isTermCell = (text: string, paragraph: Paragraph, marks: PeriodMarks, previous: Paragraph | undefined): boolean => {
+  const [first, ...rest] = bodyOf(text, paragraph).split("\n");
+  const cellBefore = previous === undefined ? "\n" : bodyOf(text, previous);
+  const isCell = cellBefore !== "" && !cellBefore.includes("\n") && Array.from(cellBefore).length < MAX_CELL_CHARS && !isClosed(cellBefore, marks.ends);
+  return rest.length > 0 && isTerm(first?.trim() ?? "", marks) && isCell;
+};
+
 /** How a paragraph ends, or undefined when its last line is not a sentence (a label, a lead-in, a note, a laid-out row). */
 export const paragraphEnd = (text: string, paragraph: Paragraph, marks: PeriodMarks, next?: Paragraph, previous?: Paragraph): ParagraphEnd | undefined => {
-  if (isDescription(text, paragraph, marks, previous)) return undefined;
+  if (isDescription(text, paragraph, marks, previous) || isTermCell(text, paragraph, marks, previous)) return undefined;
   const body = text.slice(paragraph.span.start, paragraph.span.end).trimEnd();
   const last = body.split("\n").at(-1)?.trim() ?? "";
   if (Array.from(last).length < MIN_SENTENCE_CHARS || LEAD_IN.test(last)) return undefined;
@@ -99,10 +115,33 @@ const marksOf = (lexicon: readonly LexiconEntry[]): PeriodMarks => ({
   labels: lexicon.filter((entry) => entry.group === "label").map((entry) => entry.pattern),
 });
 
+/** A paragraph of one line opened by a header field (件名：…, Subject: …): a label and its value, not a sentence. Read from the source line, since the paragraph may start past the label. */
+const isFieldLine = (source: string, paragraph: Paragraph, fields: readonly string[]): boolean => {
+  const line = source.slice(source.lastIndexOf("\n", paragraph.span.start - 1) + 1, paragraph.span.end).trim();
+  return !line.includes("\n") && isHeaderField(line, fields);
+};
+
+/** A paragraph of one line that is the words of a link (Google Arts & Cultureで見る): it points somewhere, and is no sentence. */
+const isLinkLine = (text: string, paragraph: Paragraph, endings: readonly string[]): boolean => {
+  const body = bodyOf(text, paragraph);
+  return !body.includes("\n") && isLinkLabel(body, endings);
+};
+
 export const missingFinalPeriod: Detector = (doc: ProseDocument, options): Finding[] => {
   const text = doc.prose ?? doc.source;
   const marks = marksOf(doc.lexicons["final-period"] ?? []);
-  const ends = doc.paragraphs.flatMap((paragraph, index) => paragraphEnd(text, paragraph, marks, doc.paragraphs[index + 1], doc.paragraphs[index - 1]) ?? []);
+  const fields = (doc.lexicons["email-header-field"] ?? []).map((entry) => entry.pattern);
+  const captions = captionParagraphs(
+    text,
+    doc.sections,
+    slotParagraphs(text, doc.paragraphs, (line) => isClosed(line, marks.ends)),
+  );
+  const linkEndings = (doc.lexicons["link-label-ending"] ?? []).map((entry) => entry.pattern);
+  const ends = doc.paragraphs.flatMap((paragraph, index) =>
+    captions.has(index) || isFieldLine(doc.source, paragraph, fields) || isLinkLine(text, paragraph, linkEndings)
+      ? []
+      : (paragraphEnd(text, paragraph, marks, doc.paragraphs[index + 1], doc.paragraphs[index - 1]) ?? []),
+  );
   const minority = formMinority(ends, options.limit);
   if (minority === undefined || minority.usual.form !== "closed") return [];
   return minority.odd.map((end) => ({

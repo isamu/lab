@@ -1,0 +1,14 @@
+# Words that pick some out of a kind with "of" and a determiner: "some of these terms", "many of the services". A defined
+# term names one thing or one set ("Terms" is this agreement); some of them are items of the ordinary kind, so
+# defined-term-form reads the lower-case word after these as the ordinary word. "all of" and "each of" take the whole
+# defined set and are not here.
+id: defined-term-partitive
+language: en
+entries:
+  - pattern: some
+  - pattern: any
+  - pattern: many
+  - pattern: most
+  - pattern: several
+  - pattern: few
+  - pattern: one

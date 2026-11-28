@@ -77,11 +77,22 @@ const namesRest = (source: string, sentence: Span, shares: readonly Amount[], wo
   });
 };
 
+/** Whether only a joiner stands between two percentages ("from 51% to 53%", 「50%〜60%」): one share at two values. */
+const joinedTo = (source: string, earlier: Amount, later: Amount, joiners: readonly string[]): boolean => {
+  const written = source.slice(earlier.end, later.offset);
+  const between = (written.startsWith(earlier.unit) ? written.slice(earlier.unit.length) : written).trim().toLowerCase();
+  return joiners.some((joiner) => joiner.toLowerCase() === between);
+};
+
+/** Two shares joined into a range or a change: which of the two values is the part cannot be told, so the sentence is not added. */
+const holdsJoinedPair = (source: string, shares: readonly Amount[], joiners: readonly string[]): boolean =>
+  shares.some((share, index) => index > 0 && joinedTo(source, shares[index - 1] ?? share, share, joiners));
+
 const issueIn = (source: string, sentence: Span, percents: readonly Amount[], words: ShareWords): StructureIssue[] => {
   const text = source.slice(sentence.start, sentence.end);
   if (includesAny(text, words.exceptions)) return [];
   const shares = percents.filter((amount) => amount.offset >= sentence.start && amount.end <= sentence.end);
-  if (shares.length < MIN_PARTS || shares.some((share) => isSigned(source, share))) return [];
+  if (shares.length < MIN_PARTS || shares.some((share) => isSigned(source, share)) || holdsJoinedPair(source, shares, words.joiners ?? [])) return [];
   if (!includesAny(text, words.labels) && !namesRest(source, sentence, shares, words)) return [];
   const sum = shares.reduce((total, share) => total + share.value, 0);
   const decimals = Math.max(0, ...shares.map((share) => decimalsOf(source, share)));

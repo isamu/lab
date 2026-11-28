@@ -11,20 +11,28 @@ import { escapeRegExp } from "./regexp.ts";
  * - a name abbreviation (Jas., Wm.) stands before a name, so it does not end it before any word but a
  *   sentence-start-word, even before a name and a comma ("Jas. Whittaker, J. Hocknell"). Its full stop is replaced
  *   with a letter;
- * - capitals with full stops (J., U.K.) before a word in lower case ("J. meacham", "Hart, K. and J. Reed") do not end
- *   it, since no sentence opens in lower case. A word that is lower case only at its head (iPhone) may be a name that
+ * - an abbreviation that closes a list (etc.) before a sentence-start-word ends the sentence. The splitter joins it to
+ *   the next sentence when more than one space or a line break comes between. Its letters are replaced with a plain letter;
+ * - capitals with full stops (J., U.K.), or two or three small letters with them (a.m., p.m.), before a word in lower case
+ *   ("J. meacham", "Hart, K. and J. Reed", "9 a.m. and 4 p.m.") do not end it, since no sentence opens in lower case. A word that is lower case only at its head (iPhone) may be a name that
  *   opens one, so it is left out. Their last full stop is replaced with a letter.
  * The length does not change, so the spans fit the original text. Initials first on their line are a list's labels
  * (A. The first item) and are left as they are.
  */
 
-export type InitialStops = { readonly ends: RegExp | undefined; readonly joins: RegExp | undefined; readonly names: RegExp | undefined };
+export type InitialStops = {
+  readonly ends: RegExp | undefined;
+  readonly joins: RegExp | undefined;
+  readonly names: RegExp | undefined;
+  readonly closings: RegExp | undefined;
+};
 
 const EDGE_BEFORE = String.raw`(?<![\p{L}\p{N}_.'’])`;
 const WORD_END = String.raw`(?![\p{L}\p{N}_.'’-])`;
 const PLAIN_LETTER = "n";
 const CAPITAL = /\p{Lu}/gu;
-const BEFORE_LOWER_CASE = new RegExp(String.raw`${EDGE_BEFORE}(?:\p{Lu}\.){1,3}(?=[ \t\r\n]+\p{Ll}(?!\p{Lu}))`, "gu");
+const LETTER = /\p{L}/gu;
+const BEFORE_LOWER_CASE = new RegExp(String.raw`${EDGE_BEFORE}(?:(?:\p{Lu}\.){1,3}|(?:\p{Ll}\.){2,3})(?=[ \t\r\n]+\p{Ll}(?!\p{Lu}))`, "gu");
 
 const oneOf = (words: readonly string[]): string => `(?:${words.map(escapeRegExp).join("|")})`;
 
@@ -49,10 +57,19 @@ const nameJoins = (start: string | undefined, names: readonly string[]): RegExp 
   return new RegExp(String.raw`${EDGE_BEFORE}${oneOf(names)}(?=\s+\p{L})${PRONOUN_I}${notBefore(start)}`, "gu");
 };
 
+/** A closing abbreviation (etc.) before a sentence-start word. */
+const closingEnds = (start: string | undefined, closings: readonly string[]): RegExp | undefined =>
+  start === undefined || closings.length === 0 ? undefined : new RegExp(String.raw`${EDGE_BEFORE}${oneOf(closings)}(?=${start})`, "gu");
+
 /** Built once from the lexicons. */
-export const initialStops = (startWords: readonly string[], prepositive: readonly string[], names: readonly string[] = []): InitialStops => {
+export const initialStops = (
+  startWords: readonly string[],
+  prepositive: readonly string[],
+  names: readonly string[] = [],
+  closings: readonly string[] = [],
+): InitialStops => {
   const start = startOf(startWords);
-  return { ...sentenceStops(start, prepositive), names: nameJoins(start, names) };
+  return { ...sentenceStops(start, prepositive), names: nameJoins(start, names), closings: closingEnds(start, closings) };
 };
 
 /** Only a list's marker, or nothing, before the initials on their line (A. The first item; - B. The second item). */
@@ -66,15 +83,18 @@ const withoutLastStop = (abbreviation: string): string => `${abbreviation.slice(
 
 const joined = (text: string, pattern: RegExp | undefined): string => (pattern === undefined ? text : text.replace(pattern, withoutLastStop));
 
+const closed = (text: string, pattern: RegExp | undefined): string =>
+  pattern === undefined ? text : text.replace(pattern, (abbreviation: string) => abbreviation.replace(LETTER, PLAIN_LETTER));
+
 /** Initials before a word in lower case, not first on their line (a list's label stays as it is), rewritten. */
 const joinedBeforeLowerCase = (text: string): string =>
   text.replace(BEFORE_LOWER_CASE, (initials: string, index: number) => (isFirstOnLine(text, index) ? initials : withoutLastStop(initials)));
 
-/** The text with every initial that ends a sentence, and every prepositive or name abbreviation or initial that does not, rewritten. */
+/** The text with every initial or closing abbreviation that ends a sentence, and every prepositive or name abbreviation or initial that does not, rewritten. */
 export const unmarkInitialStops = (text: string, stops: InitialStops): string => {
   const ended =
     stops.ends === undefined
       ? text
       : text.replace(stops.ends, (initials: string, index: number) => (isFirstOnLine(text, index) ? initials : initials.replace(CAPITAL, PLAIN_LETTER)));
-  return joinedBeforeLowerCase(joined(joined(ended, stops.joins), stops.names));
+  return joinedBeforeLowerCase(joined(joined(closed(ended, stops.closings), stops.joins), stops.names));
 };

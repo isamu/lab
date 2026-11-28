@@ -3,6 +3,7 @@ import { atxHeadingText, headingText } from "../heading-text.ts";
 import { addressSpans } from "../address-chain.ts";
 import { relativeMentions, substitutedDocuments } from "./relative-find.ts";
 import { resolveRelative } from "./relative-resolve.ts";
+import { resolveOwnNames } from "./own-name.ts";
 import { maskSpans } from "../mask.ts";
 import type { DocumentProfile, Mention, NumberedLine, NumberingContext, Span, StructureKind, StructureNode, StructurePatterns } from "../plugin.ts";
 import { lineNumberAt, linesOf, type Line } from "./lines.ts";
@@ -398,7 +399,7 @@ export const buildTree = (input: StructureInput, patterns: StructurePatterns): S
     // コードの行は覆って読まないが、開いている節の中身ではある。節の最後にコードブロックがあっても、範囲をそこまで伸ばす。
     else if (input.source.slice(line.start, line.start + line.text.length).trim() !== "") extend(state, line.start + line.text.length);
   });
-  const tree = freeze(doc);
+  const tree = resolveOwnNames(freeze(doc), input.source);
   const relative = input.profile?.relative;
   return relative === undefined ? tree : resolveRelative(tree, relative.implicitFirst);
 };

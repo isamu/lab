@@ -26,6 +26,23 @@ describe("orthographic-variant: 人の「方」と比べる「ほう」", () => 
   it("ほかの語のかなと漢字は今までどおり比べる", () => {
     assert.equal(findingsOf("# 案内\n\n窓口で申請できます。郵送でもできます。代理の人も申請出来ます。担当の方に伝えます。\n").length, 1);
   });
+
+  it("「が」の後ろに人のいる・いないを言う語（方がいない、方がいらっしゃる、方がおられる）が続く「方」を比べない", () => {
+    const comparing = "早いほうがよい。広いほうがよい。安いほうがよい。";
+    assert.deepEqual(findingsOf(`# 案内\n\n${comparing}手伝える方がいない。\n`), []);
+    assert.deepEqual(findingsOf(`# 案内\n\n${comparing}詳しい方がいらっしゃいます。\n`), []);
+    assert.deepEqual(findingsOf(`# 案内\n\n${comparing}見識のある方がおられましたら教えてください。\n`), []);
+  });
+
+  it("紹介記事の一覧の、媒体の名前を括弧に入れた行の頭の題名は比べない。後ろの紹介の文は比べる", () => {
+    const body = "取組を進める。取組を広げる。取組を続ける。";
+    assert.deepEqual(findingsOf(`# 記事\n\n${body}\n\nまちの取り組みについて（市の公式ブログ） まちの取組を紹介しています。\n`), []);
+    assert.equal(findingsOf(`# 記事\n\n${body}\n\nまちの話（市の公式ブログ） まちの取り組みを紹介しています。\n`).length, 1);
+  });
+
+  it("invalid: 「方が」の後ろが比べる言い方なら、今までどおり比べる", () => {
+    assert.equal(findingsOf("# 案内\n\n早いほうがよい。広いほうがよい。安いほうがよい。手伝う方がいい。\n").length, 1);
+  });
 });
 
 describe("orthographic-variant: 文の頭の印", () => {

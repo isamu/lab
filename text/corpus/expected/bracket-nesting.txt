@@ -2,7 +2,6 @@ aoml-hurricane-faq  1
 chrome-blog-pwa-origin-migration  1
 chrome-blog-pwa-origin-migration-ja  1
 da-agile-review-4  1
-gutenberg-whitman-leaves-of-grass  1
 meti-press-level4-bus  1
 mext-heatstroke-after-holidays  1
 mhlw-kokuji-h18-107-keiji-jiko  1

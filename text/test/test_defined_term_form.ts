@@ -2,7 +2,7 @@ import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { innerLowered, lowerCaseUses, nameBefore, quotedUses } from "../packages/chaff/src/detectors/defined-term-form.ts";
 import { extendedAfter, extendedBefore } from "../packages/chaff/src/detectors/term-extension.ts";
-import { headsKindPhrase, insideLongerTerm, isNamedAsTerm, isNarrowedUse } from "../packages/chaff/src/detectors/ordinary-phrase.ts";
+import { headsKindPhrase, insideLongerTerm, isNamedAsTerm, isNarrowedUse, isPartitiveUse } from "../packages/chaff/src/detectors/ordinary-phrase.ts";
 import { isSignatureLine, opensClosingBlock } from "../packages/chaff/src/detectors/name-field.ts";
 import { prefixGroupsOf, prefixVariants, variantUses } from "../packages/chaff/src/structure/term-prefix.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
@@ -167,6 +167,12 @@ describe("defined-term-form: a term written longer with a word of its definition
     assert.equal(extendedBefore("x当該文書管理責任者が", 5, "管理責任者", "文書の管理の責任者", ["当該"]), "文書管理責任者");
   });
 
+  it("does not report the term written twice in a row, a run-in heading joined to its text (ライセンス対象物ライセンス対象物の受領者)", () => {
+    const definition = "## 第1条 定義\n\n- 「ライセンス対象物」 とは、許諾者が本ライセンスを適用した著作物その他のライセンス対象物をいう。\n\n";
+    const source = `${definition}## 第2条 申出\n\n- 許諾者からの申出－ライセンス対象物ライセンス対象物の受領者は、申出を受け取る。\n`;
+    assert.deepEqual(valuesOf(ja, "defined-term-form", source, "written"), []);
+  });
+
   it("reports the Application where the Pinecone Notes application is defined as the App", () => {
     const source = [
       "# Terms",
@@ -178,6 +184,20 @@ describe("defined-term-form: a term written longer with a word of its definition
     ].join("\n");
     assert.deepEqual(valuesOf(en, "defined-term-form", source, "written"), ["extended Application"]);
     assert.equal(extendedAfter("the Application.", 4, "App", "the Pinecone Notes application (the App)"), "Application");
+  });
+
+  it("does not read the definition's own marker (以下本契約において同じ) as a word added to the term", () => {
+    const source = [
+      "# 業務委託契約書",
+      "",
+      "甲と乙は、次のとおり契約（以下「本契約」という。）を締結する。",
+      "",
+      "第1条（著作権）",
+      "",
+      "成果物の著作権（著作権法第27条の権利を含む。以下本契約において同じ。）は、甲に帰属する。",
+      "",
+    ].join("\n");
+    assert.deepEqual(valuesOf(ja, "defined-term-form", source, "written"), []);
   });
 
   it("does not report a pointing word, a short term, the long name, a plural, a lower-case term or another word", () => {
@@ -336,6 +356,19 @@ describe("defined-name-repeated: a long name used again after its short name", (
       "",
     ].join("\n");
     assert.deepEqual(valuesOf(en, "defined-name-repeated", english, "term"), ["name Supplier"]);
+  });
+
+  it("reads the second party after and, with or without a comma, as its own name", () => {
+    const opening = 'This agreement is made between Brookside Medical Centre (the "Client") and Harbour Works Ltd (the "Supplier").';
+    const sentence = tokensOf(en, opening);
+    assert.ok(sentence !== undefined);
+    assert.equal(nameBefore(sentence, opening.lastIndexOf("("), ["and"]), "Harbour Works Ltd");
+    const comma = 'This agreement is made between Brookside Medical Centre ("Client"), and Harbour Works Ltd ("Supplier").';
+    const commaSentence = tokensOf(en, comma);
+    assert.ok(commaSentence !== undefined);
+    assert.equal(nameBefore(commaSentence, comma.lastIndexOf("("), ["and"]), "Harbour Works Ltd");
+    const source = ["# Agreement", "", opening, "", "1. Harbour Works Ltd shall send an invoice every month.", ""].join("\n");
+    assert.deepEqual(valuesOf(en, "defined-name-repeated", source, "term"), ["name Supplier"]);
   });
 
   it("does not read the last item of a list the definition names together (書面または電磁的記録（以下「書面等」）)", () => {
@@ -525,6 +558,14 @@ describe("defined-term-form: an ordinary phrase that shares a word with a define
     assert.deepEqual(valuesOf(en, "defined-term-form", source, "term"), []);
   });
 
+  it("does not report the term joined by and / or to an ordinary word in front of a noun they share", () => {
+    const head = ["# Supply Agreement", "", '1. "Supplier" means Southfield Mills. "Buyer" means Northwind Foods.', ""];
+    const shared = [...head, "2. The Supplier keeps forecasts, customer and supplier information and plans secret. The Supplier delivers to the Buyer.", ""];
+    assert.deepEqual(valuesOf(en, "defined-term-form", shared.join("\n"), "term"), []);
+    const alone = [...head, "2. The Supplier keeps forecasts and plans secret. The supplier delivers to the Buyer. The Supplier invoices the Buyer.", ""];
+    assert.deepEqual(valuesOf(en, "defined-term-form", alone.join("\n"), "term"), ["case Supplier"]);
+  });
+
   it("still reports the defined term in lower case after a pointing word, or before of and a particular thing", () => {
     const head = ["# Agreement", "", '1. "Party" means the Buyer or the Seller. "Certificate" means a certificate for a Share.', ""];
     const other = [...head, "2. Each Party pays its costs. A Party gives notice to the other party.", ""];
@@ -603,6 +644,25 @@ describe("defined-term-form: an ordinary phrase that shares a word with a define
       ),
       false,
     );
+  });
+
+  it("does not report a term picked out of its kind (some of these terms), and still reports all of them", () => {
+    const head = ["# Terms", "", 'We may update these Terms of Service ("Terms") in the future. You accept the Terms by using the service.', ""];
+    const some = [...head, "Typically these changes clarify some of these terms by linking to a related policy.", ""];
+    assert.deepEqual(valuesOf(en, "defined-term-form", some.join("\n"), "term"), []);
+    const all = [...head, "You accept all of these terms by using the service.", ""];
+    assert.deepEqual(valuesOf(en, "defined-term-form", all.join("\n"), "term"), ["case Terms"]);
+  });
+
+  it("isPartitiveUse: a quantifier, of and a determiner before the use", () => {
+    const words = (quantifier: string, of = "of", determiner: readonly [string, string] = ["these", "DET"]): Token[] =>
+      tokensOf([[quantifier, "DET"], [of, "ADP"], determiner, ["terms", "NOUN"]]);
+    assert.equal(isPartitiveUse(words("Some"), 3, ["some", "many"]), true);
+    assert.equal(isPartitiveUse(words("all"), 3, ["some", "many"]), false);
+    assert.equal(isPartitiveUse(words("some", "for"), 3, ["some"]), false);
+    assert.equal(isPartitiveUse(words("some", "of", ["new", "ADJ"]), 3, ["some"]), false);
+    assert.equal(isPartitiveUse(words("some"), 1, ["some"]), false);
+    assert.equal(isPartitiveUse([], 0, ["some"]), false);
   });
 
   it("headsKindPhrase: of and a bare lower-case noun after the use", () => {

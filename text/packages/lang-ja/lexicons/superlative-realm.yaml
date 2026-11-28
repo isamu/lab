@@ -1,0 +1,14 @@
+# 名前ではないが、範囲の「で」の前で何の中の最もなのかを言う、場や分野の名詞。「世界で唯一の」「業界で最も」。
+# 「費用で最大の効果」の「費用」のような手段の名詞は入れない。
+id: superlative-realm
+language: ja
+entries:
+  - pattern: 世界
+  - pattern: 国内
+  - pattern: 海外
+  - pattern: 業界
+  - pattern: 社内
+  - pattern: 県内
+  - pattern: 市内
+  - pattern: 都内
+  - pattern: 史上

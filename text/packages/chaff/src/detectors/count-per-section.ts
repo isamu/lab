@@ -1,5 +1,8 @@
 import { charLength, proseText } from "../measure.ts";
-import type { Detector, Finding, Section } from "../plugin.ts";
+import type { Detector, Finding, Section, Span } from "../plugin.ts";
+import { isQuotedMention } from "./bold-quoted.ts";
+import { isFieldLabel } from "./bold-field-label.ts";
+import { isReleaseScopeLabel, releaseSpansOf } from "./release-notes.ts";
 
 /** これより短い節では密度が暴れる。43 字に 1 箇所で「1000 字あたり 23」になる。 */
 const MIN_CHARS = 200;
@@ -9,6 +12,15 @@ const PER = 1000;
 const charsOf = (section: Section): number => section.sentences.reduce((sum, sentence) => sum + charLength(sentence), 0);
 
 /**
+ * The section's bold runs, less those that only quote words (a README bolds the part of an example sentence it talks about),
+ * the field labels opening a line (**Date:** in a memo's header) and a changelog entry's commit scope (* **deps:** ...).
+ */
+const boldsOf = (section: Section, source: string, releases: readonly Span[]): number =>
+  section.strongs === undefined
+    ? section.strongCount
+    : section.strongs.filter((span) => !isQuotedMention(source, span) && !isFieldLabel(source, span) && !isReleaseScopeLabel(source, releases, span)).length;
+
+/**
  * 節あたりの「密度」を見る。件数ではない。
  *
  * 件数で数えると、節が長いほど当たる。実文書で測ると、1095 字に 2 箇所の節と
@@ -16,13 +28,14 @@ const charsOf = (section: Section): number => section.sentences.reduce((sum, sen
  *
  * rule の名前（bold-density）が最初から密度と言っていた。件数で実装していたのが誤り。
  */
-export const countPerSection: Detector = (doc, options): Finding[] =>
-  doc.sections
-    .map((section) => ({ section, chars: charsOf(section) }))
+export const countPerSection: Detector = (doc, options): Finding[] => {
+  const releases = releaseSpansOf(doc);
+  return doc.sections
+    .map((section) => ({ section, chars: charsOf(section), bolds: boldsOf(section, doc.source, releases) }))
     .filter(({ chars }) => chars >= MIN_CHARS)
-    .map(({ section, chars }) => ({ section, chars, density: Math.round((section.strongCount / chars) * PER) }))
+    .map(({ section, chars, bolds }) => ({ section, chars, bolds, density: Math.round((bolds / chars) * PER) }))
     .filter(({ density }) => density > options.limit)
-    .map(({ section, chars, density }) => ({
+    .map(({ section, chars, bolds, density }) => ({
       rule: "bold-density",
       severity: "warning",
       line: 0,
@@ -32,8 +45,9 @@ export const countPerSection: Detector = (doc, options): Finding[] =>
       values: {
         count: density,
         limit: options.limit,
-        bolds: section.strongCount,
+        bolds,
         chars,
         offset: section.firstSentence?.span.start ?? section.span.start,
       },
     }));
+};

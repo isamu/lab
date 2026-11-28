@@ -3,7 +3,8 @@ import type { Token } from "../plugin.ts";
 const nameType = (token: Token | undefined): string | undefined => token?.features?.["NameType"];
 
 /** 人の姓と名（田中太郎）。姓が 2 つ続けば（田中山田）、名前の並び。 */
-const isFullName = (named: readonly (Token | undefined)[]): boolean => named.length === 2 && nameType(named[0]) === "Sur" && nameType(named[1]) === "Giv";
+export const isFullName = (named: readonly (Token | undefined)[]): boolean =>
+  named.length === 2 && nameType(named[0]) === "Sur" && nameType(named[1]) === "Giv";
 
 /**
  * 漢字の連なりの語（covering: tokens の添字）が 1 つの名前か。辞書が固有名詞と読む 1 語（日本銀行）か、人の姓と名。

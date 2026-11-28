@@ -1,0 +1,56 @@
+id: term-consistency
+layer: L2
+status: stable
+how_to_find: term-consistency
+word_list: term-consistency
+# The groups are the team's own: with nothing under consistent in chaff.yaml, the rule does not run and the run says so.
+team_list: consistent
+severity: warning
+
+name:
+  ja: チームが一つにそろえる語のまざり
+  en: Words the team keeps to one, mixed
+
+why:
+  ja: 「顧客」と「お客様」、「申込」と「申し込み」のように、どちらも正しいけれど一つの文書の中ではまぜない語があります。まざっていると、読み手は別のものを指しているのかと迷い、検索でも片方を取りこぼします。AI に段落ごとに書かせた文書や、何人かで書き足した文書でよく起きます。どちらに寄せるかは文書ごとに違ってよいので、chaff は側に立たず、文書の中で少ないほうを指します。同じ数ずつなら、まざっていることだけを言います。組は chaff.yaml の consistent にチームが並べます。並べていなければ動きません。
+  en: 'Some words are each right but should not be mixed in one document: "log in" and "sign in", "customer" and "client". Mixed, they leave the reader wondering whether two things are meant, and a search misses one. It happens when an AI writes a document section by section, or several people add to it. Which one a document uses may differ, so chaff takes no side and points at the one the document uses less; when they are used equally, it only says they are mixed. The team lists the groups under consistent in chaff.yaml. With nothing listed, this rule does not run.'
+
+message:
+  ja: 「{matched}」と書いていますが、この文書ではほかに「{preferred}」を {other} 箇所で使っています
+  en: '"{matched}" here, but the document uses "{preferred}" in {other} other {other|place|places}'
+
+messages:
+  tie:
+    ja: 「{forms}」を同じ数ずつ（{count} 箇所ずつ）使っています。どれか一つにそろえてください
+    en: '"{forms}" are used equally often ({count} {count|time|times} each); keep to one'
+
+how_to_fix:
+  ja: 文書の中で多いほうの語にそろえてください。同じ数ずつなら、どれか一つを選んでそろえます。使い分けている箇所なら、stet で理由を添えて黙らせます。
+  en: Use the word the document uses more; when they are used equally, pick one. Where two are meant differently, silence that place with stet and the reason.
+
+# The team listed the group, so one stray member is already a mix.
+levels: { strict: 1, normal: 1, relaxed: 3 }
+
+use_for: [business, blog, technical, legal, docs, academic, literature, speech]
+sources: [plain-2011, kyodo-2022]
+
+group: team
+summary:
+  ja: consistent に並べた組（顧客／お客様）を一つの文書でまぜた所。少ないほうを指します
+  en: Words grouped under consistent (log in / sign in) mixed in one document
+example:
+  ja:
+    config: { consistent: [[顧客, お客様]] }
+    before: 顧客の声を集めます。顧客ごとに担当を決めます。お客様には来週連絡します。
+    after: 顧客の声を集めます。顧客ごとに担当を決めます。顧客には来週連絡します。
+  en:
+    config: { consistent: [[log in, sign in]] }
+    before: Log in with your email. If you cannot log in, reset your password. Then sign in again.
+    after: Log in with your email. If you cannot log in, reset your password. Then log in again.
+
+not_flagged:
+  ja: chaff.yaml の consistent に並べた組だけを見ます。組の一つしか使っていない文書と、組に入っていない語（顧客とユーザー）は指しません。英語の語は大文字と小文字を区別せず（Log in と log in は同じ）、長い語の一部（login）は数えません。ファイルどうしの違いは cross-doc-term-variant が見ます。
+  en: Only the groups under consistent in chaff.yaml are checked. A document that uses one member of a group, and words outside the groups, are left alone. Case does not count ("Log in" is "log in"), and a longer word that holds a member (login) is not counted. Differences between files are for cross-doc-term-variant.
+level_meaning:
+  ja: 少ないほうの語が {limit} 箇所あれば指摘
+  en: reported once the less-used word appears {limit} {limit|time|times}

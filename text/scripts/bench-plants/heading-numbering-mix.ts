@@ -1,4 +1,4 @@
-// Seeded heading numbering for `yarn bench`: sibling headings numbered, all but the last one.
+// Seeded heading numbering for `yarn bench`: sibling headings numbered, all but the second one.
 // Pure and deterministic, like scripts/bench-mutations.ts.
 import { codeLines, linesOf, type Mutation, type Plant } from "../bench-text.ts";
 
@@ -33,16 +33,21 @@ const firstSiblingRun = (headings: readonly Heading[]): Heading[] | undefined =>
   return runs.find((run) => run.length >= 3 && run.every((head) => !NUMBERED.test(head.text) && !isMatter(head.text)));
 };
 
-/** 兄弟の見出しに、最後の一つを除いて番号を付ける。最後の見出しだけ番号が無くなる。 */
-const numberAllButLast = (source: string): Plant | undefined => {
+/** 番号を落とす見出しの位置。並びの途中で番号が無くなった見出しを植える（並びの後ろの見出しは締めの見出しと読むので言わない）。 */
+const UNNUMBERED_AT = 1;
+
+/** 兄弟の見出しに、二つ目を除いて並びの位置の番号を付ける。二つ目の見出しだけ番号が無くなる。 */
+const numberAllButSecond = (source: string): Plant | undefined => {
   const lines = linesOf(source);
   const run = firstSiblingRun(headingsOf(lines));
-  const last = run?.at(-1);
-  if (run === undefined || last === undefined) return undefined;
-  const numbered = new Map(run.slice(0, -1).map((head, at) => [head.index, `${"#".repeat(head.depth)} ${String(at + 1)}. ${head.text}`]));
-  return { source: lines.map((line, index) => numbered.get(index) ?? line).join("\n"), line: last.index + 1 };
+  const lost = run?.[UNNUMBERED_AT];
+  if (run === undefined || lost === undefined) return undefined;
+  const numbered = new Map<number, string>(
+    run.flatMap((head, at): [number, string][] => (at === UNNUMBERED_AT ? [] : [[head.index, `${"#".repeat(head.depth)} ${String(at + 1)}. ${head.text}`]])),
+  );
+  return { source: lines.map((line, index) => numbered.get(index) ?? line).join("\n"), line: lost.index + 1 };
 };
 
 export const MUTATIONS: readonly Mutation[] = [
-  { id: "heading-numbered-but-last", rule: "heading-numbering-mix", languages: ["ja", "en"], plant: numberAllButLast },
+  { id: "heading-numbered-but-one", rule: "heading-numbering-mix", languages: ["ja", "en"], plant: numberAllButSecond },
 ];

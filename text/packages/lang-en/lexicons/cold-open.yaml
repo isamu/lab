@@ -1,0 +1,30 @@
+# Words of an opening that starts with no situation and no example. The group names the shape.
+#   open:   the first, short sentence opens with it (You want to ...)
+#   echo:   it stands right before a quote that repeats a word of the previous sentence (That 'almost')
+#   teaser: it makes the task look easy before announcing the hard part (Sounds simple.)
+id: cold-open
+language: en
+entries:
+  - { pattern: You want to, group: open }
+  - { pattern: You'd like to, group: open }
+  - { pattern: Imagine, group: open }
+  - { pattern: Picture this, group: open }
+  - { pattern: Let's be honest, group: open }
+  - { pattern: Let's face it, group: open }
+  - { pattern: We've all been there, group: open }
+  - { pattern: Say you, group: open }
+  - { pattern: Suppose you, group: open }
+  - { pattern: Ever wondered, group: open }
+  - { pattern: this, group: echo }
+  - { pattern: that, group: echo }
+  - { pattern: Sounds simple, group: teaser }
+  - { pattern: Sounds easy, group: teaser }
+  - { pattern: It sounds simple, group: teaser }
+  - { pattern: It sounds easy, group: teaser }
+  - { pattern: Seems simple, group: teaser }
+  - { pattern: Easier said than done, group: teaser }
+  - { pattern: Here's the catch, group: teaser }
+  - { pattern: There's a catch, group: teaser }
+  - { pattern: harder than it sounds, group: teaser }
+  - { pattern: harder than it looks, group: teaser }
+  - { pattern: the hardest part, group: teaser }

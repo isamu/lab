@@ -1,4 +1,5 @@
 import type { Span, Token } from "../plugin.ts";
+import { quotedSpans } from "../quoted-span.ts";
 
 /** 頭から外す語と、文書全体の座標でのその範囲。 */
 export type Edge = { readonly surface: string; readonly span: Span };
@@ -14,6 +15,33 @@ const KANJI_OR_HIRAGANA = /[一-鿿ぁ-ゖ]/u;
  */
 export const holdsName = (text: string, span: Span, start: number, end: number): boolean =>
   span.start <= start && end <= span.end && !KANJI_OR_HIRAGANA.test(text.slice(span.start, start) + text.slice(end, span.end));
+
+/** 括弧の中身の尻の、丸括弧の補い（「非常勤職員選考書類在中（健康・生活衛生局）」の「（健康・生活衛生局）」）。 */
+const TRAILING_NOTE = /[（(][^（）()]*[）)]$/u;
+
+/**
+ * 鉤括弧の中身（span）が holdsName か、それに尻の丸括弧の補いだけを足したものか。
+ * 封筒に書く文句のように、名前の後ろに宛先や区分を括弧で添えて引いたもの（「非常勤職員選考書類在中（健康・生活衛生局）」）。補いの中は名前の外。
+ */
+export const holdsQuotedName = (text: string, span: Span, start: number, end: number): boolean => {
+  if (holdsName(text, span, start, end)) return true;
+  const note = TRAILING_NOTE.exec(text.slice(end, span.end));
+  return note !== null && holdsName(text, { start: span.start, end: span.end - note[0].length }, start, end);
+};
+
+const HIRAGANA_HEAD = /^\s*[ぁ-ゖ]/u;
+
+/**
+ * 漢字の連なり [start, end) が、一行を漢字も平仮名も無い語（ダイヤル）とだけで埋め、その下に行が続くか。
+ * 番号や内容の上に置いた名前の行（児童相談所虐待対応ダイヤル / 189）。下の行が平仮名で始まれば、折り返した文の途中。
+ */
+export const labelsLines = (text: string, start: number, end: number): boolean => {
+  const lineStart = text.lastIndexOf("\n", start - 1) + 1;
+  const lineEnd = text.indexOf("\n", end);
+  if (start >= end || lineEnd < 0) return false;
+  const below = text.slice(lineEnd + 1);
+  return below.trim() !== "" && !HIRAGANA_HEAD.test(below) && holdsName(text, { start: lineStart, end: lineEnd }, start, end);
+};
 
 /** 連なりの前（before: 文の頭から連なりまで）が、空白を挟んだ法人格で終わるか（一般社団法人 全国銀行個人信用情報センター）。 */
 export const followsForm = (before: string, forms: readonly string[]): boolean => {
@@ -76,4 +104,58 @@ export const leadingOrdinal = (tokens: readonly Token[], start: number, name: st
   if (surface === undefined || surface.length >= name.length) return undefined;
   const end = start + surface.length;
   return tokens.some((token) => token.span.end === end) ? { surface, span: { start, end } } : undefined;
+};
+
+/** 漢数字で書いた月と日までの日付（令和七年六月二十三日、十一月二十五日）。 */
+const KANJI_DATE = /^(?:(?:明治|大正|昭和|平成|令和)?[〇一二三四五六七八九十百千元]+年)?[一二三四五六七八九十]+月[一二三十]*[一二三四五六七八九十]日/u;
+/** 元号の付いた年（令和元年）。度が続けば（令和七年度）語の一部。元号の無い年だけ（十年）は数の語の一部にもなるので読まない。 */
+const ERA_YEAR = /^(?:明治|大正|昭和|平成|令和)[〇一二三四五六七八九十百千元]+年(?!度)/u;
+/** 〇（漢字の連なりの外の字）で割れた年の後半（二〇二七年の「二七年」）。度が続けば語の一部。 */
+const YEAR_AFTER_ZERO = /^[〇一二三四五六七八九十]*年(?!度)/u;
+const ZERO = "〇";
+
+/**
+ * 連なり（文書全体の座標で start から始まる）の頭の、漢数字で書いた日付（大正三年十一月二十五日学習院輔仁会の「大正三年十一月二十五日」、
+ * 令和元年東日本台風の「令和元年」）。連なりのすぐ前が〇なら、〇で割れた年の後半（二〇二七年国際園芸博覧会の「二七年」）も。
+ * 算用数字の日付（7月1日）が連なりを切るのと同じく、日付は後ろの名前の一部ではない。連なりがまるごと日付（署名の日付の行）でもよい。
+ * 日付が解析の語の切れ目で終わるときだけ。
+ */
+export const leadingDate = (tokens: readonly Token[], start: number, name: string, before = ""): Edge | undefined => {
+  const surface = before.endsWith(ZERO) ? YEAR_AFTER_ZERO.exec(name)?.[0] : (KANJI_DATE.exec(name)?.[0] ?? ERA_YEAR.exec(name)?.[0]);
+  if (surface === undefined) return undefined;
+  const end = start + surface.length;
+  return tokens.some((token) => token.span.end === end) ? { surface, span: { start, end } } : undefined;
+};
+
+/**
+ * 連なり（文書全体の座標で end に終わる）の尻が、仮名へ続く接続の語の漢字（方針及び基本構想の「及」、又は、並びに）なら、その字。
+ * 解析が接続の語と読み、語が連なりの中で始まって連なりの外まで続くときだけ。字は後ろの語とつなぐ語で、名前の一部ではない。
+ */
+export const trailingConjunction = (tokens: readonly Token[], start: number, end: number, run: string): { surface: string; start: number } | undefined => {
+  const token = tokens.find((candidate) => candidate.span.start < end && end < candidate.span.end);
+  if (token === undefined || token.pos !== "CCONJ" || token.span.start <= start) return undefined;
+  return { surface: run.slice(run.length - (end - token.span.start)), start: token.span.start };
+};
+
+/** 丸括弧の補い。 */
+const GLOSS_MARKS = { "（": "）", "(": ")" };
+/** 補いの括弧のすぐ前に立つ、語の字（修士の学位（…）の「位」、ＥＢＩＴＤＡ＋（…）の「＋」）。 */
+const GLOSSED_WORD_END = /[\p{Script=Han}\p{Script=Katakana}\p{Script=Latin}\p{N}ー＋+]$/u;
+
+/**
+ * 語のすぐ後ろの丸括弧の中身が、この連なりだけか（ＥＢＩＴＤＡ＋（減価償却他調整前営業利益）、修士の学位（大学院修士課程修了程度））。
+ * 前の語の言い換えや展開で、書き手が 1 つの名前として示したもの。
+ */
+export const fillsGloss = (text: string, start: number, end: number): boolean =>
+  quotedSpans(text, GLOSS_MARKS).some((span) => GLOSSED_WORD_END.test(text.slice(0, span.start - 1)) && holdsName(text, span, start, end));
+
+const holds = (span: Span, start: number, end: number): boolean => span.start <= start && end <= span.end;
+
+/**
+ * 漢字の連なり [start, end) が二重鉤括弧『』の中にあり、その『』が鉤括弧「」の中にないか。『』は作品や碑の題を引く印
+ * （『原爆犠牲国民学校教師と子どもの碑』）で、中の連なりは書き手が割れない。「」の中の『』は引用の中の引用で、引いた人の言葉。
+ */
+export const inWorkTitle = (text: string, start: number, end: number): boolean => {
+  const quotes = quotedSpans(text, { "「": "」" });
+  return quotedSpans(text, { "『": "』" }).some((title) => holds(title, start, end) && !quotes.some((quote) => holds(quote, title.start, title.end)));
 };

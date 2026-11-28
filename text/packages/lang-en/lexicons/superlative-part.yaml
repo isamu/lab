@@ -1,0 +1,22 @@
+# Nouns that name a part of something the text describes. A superlative whose noun is one of them ranks the parts of that
+# whole ("the most important part of the formula", "the customer is the most important role" in a workshop), not the
+# world: the set is the whole's parts. English only: the noun follows the superlative's modifiers.
+id: superlative-part
+language: en
+entries:
+  - pattern: part
+  - pattern: parts
+  - pattern: role
+  - pattern: roles
+  - pattern: step
+  - pattern: steps
+  - pattern: aspect
+  - pattern: aspects
+  - pattern: element
+  - pattern: elements
+  - pattern: component
+  - pattern: components
+  - pattern: stage
+  - pattern: stages
+  - pattern: phase
+  - pattern: phases

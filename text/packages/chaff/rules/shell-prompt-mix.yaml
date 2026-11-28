@@ -97,11 +97,11 @@ example:
       ```
 
 not_flagged:
-  ja: シェル以外の言語のブロック、言語名の無いブロック、コマンドと出力を一緒に書いたブロック、コメント（#）の行は見ません。少ないほうが {limit} ブロックを超えるときは使い分けとみなします。
-  en: Blocks in other languages or without a language, blocks that show a command with its output, and comment lines (#) are not read. When the fewer kind is more than {limit} blocks, it is taken as a choice.
+  ja: シェル以外の言語のブロック、言語名の無いブロック、コマンドと出力を一緒に書いたブロック（デバッガの (gdb) の操作も）、数字で始まる出力の行を含むブロック、コメント（#）の行は見ません。少ないほうが {limit} ブロックを超えるときは使い分けとみなします。
+  en: Blocks in other languages or without a language, blocks that show a command with its output (a debugger's (gdb) session too), blocks holding a line of output that opens with a digit, and comment lines (#) are not read. When the fewer kind is more than {limit} blocks, it is taken as a choice.
 level_meaning:
   ja: 少ないほうの書き方が {limit} ブロック以下のとき指摘
-  en: reported when the fewer style appears in {limit} blocks or fewer
+  en: reported when the fewer style appears in {limit} {limit|block|blocks} or fewer
 rewrite:
   depth: light
   ja:

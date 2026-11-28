@@ -21,6 +21,8 @@ entries:
   - pattern: 変更履歴
   - pattern: 更新履歴
   - pattern: 改訂履歴
+  # 記書きの「記」。案内の手紙は「記」の前に挨拶と主文を書き、要項を「記」の下に並べる。番号を付けず、手紙の本文の後ろに置く。
+  - pattern: 記
   # 文書の末尾に置く連絡先（報道発表の「担当」「お問い合わせ先」）。
   - pattern: 担当
   - pattern: 担当者
@@ -37,6 +39,10 @@ entries:
   - pattern: お問合わせ先
   - pattern: 問い合わせ窓口
   - pattern: お問い合わせ窓口
+  # 自治体のサイトが記事の末尾に置く連絡先の囲み。
+  - pattern: この記事に関するお問い合わせ先
+  - pattern: このページに関するお問い合わせ先
+  - pattern: このページに関するお問い合わせ
   # 官公庁の報道発表が使う「照会先」。
   - pattern: 照会先
   - pattern: はしがき
@@ -44,3 +50,6 @@ entries:
   - pattern: 序文
   - pattern: References
   - pattern: Abstract
+  # 見出しにした図と表の題（「図　データモデル」「表1 費用」）。本文の節ではないので番号の並びに入らない。
+  - pattern: 図
+  - pattern: 表

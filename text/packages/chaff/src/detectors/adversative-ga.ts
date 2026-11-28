@@ -22,5 +22,27 @@ const followsVolitional = (at: number, tokens: readonly Token[]): boolean => {
 /** A が with only punctuation after it (思えるんですが……。) softens the sentence's end; it joins no second clause. */
 const endsSentence = (at: number, tokens: readonly Token[]): boolean => tokens.slice(at + 1).every((token) => isSpace(token) || CLOSING_POS.has(token.pos));
 
-/** The conjunctive が at `at` contrasts two clauses: not a volitional's concession, not a softened end. */
-export const isContrastiveGa = (at: number, tokens: readonly Token[]): boolean => !followsVolitional(at, tokens) && !endsSentence(at, tokens);
+const NOMINAL_POS: ReadonlySet<string> = new Set(["NOUN", "PRON", "PROPN"]);
+
+const isNominal = (token: Token | undefined): boolean => token !== undefined && NOMINAL_POS.has(token.pos);
+const isComma = (token: Token | undefined): boolean => token?.surface === "、" || token?.surface === "，";
+
+/**
+ * A Kyushu dialect topic しや (あんたしやが, ムツシユウしやが): the parser reads a verb し with no particle after a bare noun,
+ * then が as conjunctive; the が marks the noun.
+ */
+const followsDialectTopic = (at: number, tokens: readonly Token[]): boolean => {
+  const [noun, verb, auxiliary] = [tokens[at - 3], tokens[at - 2], tokens[at - 1]];
+  return isNominal(noun) && verb?.surface === "し" && verb.pos === "VERB" && auxiliary?.surface === "や" && auxiliary.pos === "AUX";
+};
+
+/** A copula cut from its noun by a comma (恋、では無いが): the writer takes back the word just said; no clause is contrasted. */
+const takesBackWord = (at: number, tokens: readonly Token[]): boolean => {
+  const comma = tokens.findLastIndex((token, index) => index < at && isComma(token));
+  const [copula, topic] = [tokens[comma + 1], tokens[comma + 2]];
+  return comma > 0 && isNominal(tokens[comma - 1]) && copula?.surface === "で" && copula.pos === "AUX" && topic?.surface === "は";
+};
+
+/** The conjunctive が at `at` contrasts two clauses: not a volitional's concession, not a softened end, not a misread particle. */
+export const isContrastiveGa = (at: number, tokens: readonly Token[]): boolean =>
+  !followsVolitional(at, tokens) && !endsSentence(at, tokens) && !followsDialectTopic(at, tokens) && !takesBackWord(at, tokens);

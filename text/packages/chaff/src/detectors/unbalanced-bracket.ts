@@ -5,7 +5,9 @@ import { quoteAround } from "./quote-around.ts";
 import { mergeSpans } from "../span-merge.ts";
 import { firstEndingAfter } from "../soft-break.ts";
 import { isLabelClose, isLabelInAside } from "./bracket-label.ts";
+import { isTitleDateOpen } from "./bracket-title-date.ts";
 import { isInchMark } from "./inch-mark.ts";
+import { isEmoticonMouth } from "./emoticon.ts";
 
 /**
  * 括弧の組。どの言語でも同じ字の決まりなので、語彙表ではなくここに置く。family は形（丸・角）で、全角と半角は同じ形の別の幅。
@@ -15,6 +17,7 @@ type Bracket = { readonly open: string; readonly close: string; readonly family:
 
 const BRACKETS: readonly Bracket[] = [
   { open: "「", close: "」", family: "kagi" },
+  { open: "｢", close: "｣", family: "kagi" },
   { open: "『", close: "』", family: "double-kagi" },
   { open: "（", close: "）", family: "round" },
   { open: "(", close: ")", family: "round" },
@@ -47,8 +50,15 @@ export type BracketProblem = {
   readonly partner?: string;
 };
 
-type Open = { readonly bracket: Bracket; readonly offset: number };
+/** continues は、行の頭で同じ引用符を開き直したときの、その前の開き（詩の引用は行ごとに開き直し、終わりで一度だけ閉じる）。 */
+type Open = { readonly bracket: Bracket; readonly offset: number; readonly continues?: Open };
 type Scan = { readonly open: Open[]; readonly problems: BracketProblem[] };
+
+/** 半角の「｢｣」。幅の違いは hankaku-kana が指すので、全角と組んでも幅の違いとしては指さない。 */
+const HALFWIDTH_KAGI: ReadonlySet<string> = new Set(["｢", "｣"]);
+
+const isWidthSlip = (opened: Bracket, closing: Bracket): boolean =>
+  opened !== closing && !HALFWIDTH_KAGI.has(opened.open) && !HALFWIDTH_KAGI.has(closing.close);
 
 const unclosedOf = (entry: Open): BracketProblem => ({ kind: "unclosed", offset: entry.offset, mark: entry.bracket.open });
 
@@ -68,7 +78,24 @@ const closeWith = (scan: Scan, text: string, bracket: Bracket, offset: number): 
     .slice(1)
     .filter((inner) => !(QUOTATIONS.has(bracket.family) && inner.offset === offset - 1))
     .forEach((inner) => scan.problems.push(unclosedOf(inner)));
-  if (opened !== undefined && opened.bracket !== bracket) scan.problems.push({ kind: "mismatch", offset, mark: bracket.close, partner: opened.bracket.open });
+  if (opened !== undefined && isWidthSlip(opened.bracket, bracket))
+    scan.problems.push({ kind: "mismatch", offset, mark: bracket.close, partner: opened.bracket.open });
+  if (opened !== undefined && reopenedLines(opened) >= MIN_REOPENED_LINES) dropContinued(scan, opened.continues);
+};
+
+/**
+ * 行の頭で開き直した数がこれより少なければ、行の頭の引用符は中に引いた言葉（“I told her\n“go away” and left.”）と読む。
+ * 詩の引用は二行以上を続けて開き直す。
+ */
+const MIN_REOPENED_LINES = 2;
+
+const reopenedLines = (entry: Open | undefined): number => (entry?.continues === undefined ? 0 : 1 + reopenedLines(entry.continues));
+
+/** 閉じた引用が開き直しで続けてきた前の開きを、閉じたものとして外す。 */
+const dropContinued = (scan: Scan, prior: Open | undefined): void => {
+  if (prior === undefined || scan.open.at(-1) !== prior) return;
+  scan.open.pop();
+  dropContinued(scan, prior.continues);
 };
 
 /** 段落（空行で区切った塊）の最初の字。 */
@@ -76,32 +103,48 @@ const PARAGRAPH_HEAD = /(?:^|\n[ \t\u3000]*\n)[ \t\u3000]*(?=\S)/gu;
 
 const paragraphHeads = (text: string): ReadonlySet<number> => new Set([...text.matchAll(PARAGRAPH_HEAD)].map((match) => match.index + match[0].length));
 
+/** 行の最初の字（字下げの後ろ）。 */
+const LINE_HEAD = /(?:^|\n)[ \t\u3000]*(?=\S)/gu;
+
+const lineHeads = (text: string): ReadonlySet<number> => new Set([...text.matchAll(LINE_HEAD)].map((match) => match.index + match[0].length));
+
+type Heads = { readonly paragraphs: ReadonlySet<number>; readonly lines: ReadonlySet<number> };
+
 /** 人の言葉を引く括弧。続く段落を同じ開きで始めて、引用が続くことを示す書き方がある。 */
 const QUOTATIONS: ReadonlySet<string> = new Set(["quote", "kagi", "double-kagi"]);
 
-const openWith = (scan: Scan, bracket: Bracket, offset: number, opensParagraph: boolean): void => {
+/** 空行。詩の連や、詩の一つ一つの区切り。 */
+const BLANK_LINE = /\n[ \t\u3000]*\n/u;
+
+const openWith = (scan: Scan, text: string, bracket: Bracket, offset: number, heads: Heads): void => {
+  const top = scan.open.at(-1);
+  const reopens = QUOTATIONS.has(bracket.family) && top?.bracket === bracket;
   // 段落をまたぐ台詞・引用（英語の小説）は、閉じずに次の段落を同じ開きで始める。前の開きはここで続く。
-  // 行の頭では続きと読まない。折り返した台詞の行の頭の開きは、中に引いた別の言葉のこともある。
-  if (opensParagraph && QUOTATIONS.has(bracket.family) && scan.open.at(-1)?.bracket === bracket) scan.open.pop();
-  scan.open.push({ bracket, offset });
+  if (reopens && heads.paragraphs.has(offset)) scan.open.pop();
+  // 行の頭では、閉じるまで続きかどうか決められない。折り返した台詞の行の頭の開きは、中に引いた別の言葉のこともある。
+  // 続きと読むのは同じ連の中だけ。前の詩で閉じ忘れた開きを、次の詩の引用の続きにはしない。
+  const sameStanza = top !== undefined && !BLANK_LINE.test(text.slice(top.offset, offset));
+  const continues = reopens && sameStanza && !heads.paragraphs.has(offset) && heads.lines.has(offset) ? top : undefined;
+  scan.open.push(continues === undefined ? { bracket, offset } : { bracket, offset, continues });
 };
 
 /**
  * 一つの節の中の括弧の組を読む。text は節の文字列で、offset は text の中の位置。
- * 詩の連や、段落をまたぐ引用があるので、括弧は段落を越えて組にする。節の終わりまで閉じない開きを指摘する。
+ * 詩の連や、段落をまたぐ引用があるので、括弧は段落を越えて組にする。節の終わりまで閉じない開きを指摘する。題の行で日付を添える開き（Year of Meteors [1859-60）は除く。
  */
 export const bracketProblems = (text: string): BracketProblem[] => {
   const scan: Scan = { open: [], problems: [] };
-  const heads = paragraphHeads(text);
+  const heads: Heads = { paragraphs: paragraphHeads(text), lines: lineHeads(text) };
   [...text.matchAll(MARKS)].forEach((match) => {
     const quoteOpen = scan.open.some((entry) => entry.bracket.family === "quote");
-    if (isInchMark(text, match.index, quoteOpen)) return;
+    if (isInchMark(text, match.index, quoteOpen) || isEmoticonMouth(text, match.index)) return;
     const opening = BY_OPEN.get(match[0]);
     const closing = BY_CLOSE.get(match[0]);
-    if (opening !== undefined) openWith(scan, opening, match.index, heads.has(match.index));
+    if (opening !== undefined) openWith(scan, text, opening, match.index, heads);
     else if (closing !== undefined) closeWith(scan, text, closing, match.index);
   });
-  return [...scan.problems, ...scan.open.map(unclosedOf)].toSorted((left, right) => left.offset - right.offset);
+  const unclosed = scan.open.filter((entry) => !isTitleDateOpen(text, entry.offset)).map(unclosedOf);
+  return [...scan.problems, ...unclosed].toSorted((left, right) => left.offset - right.offset);
 };
 
 /** sorted（昇順・接しもしない）で、offset の後ろの最初の境目: offset を含む範囲の終わりか、次の範囲の始まり。 */

@@ -1,0 +1,17 @@
+# 名前のすぐ後ろに続いてよい助動詞（山田です、山田だ、山田らしい）。名前と読んだ語のすぐ後ろに、これ以外の助動詞が続けば
+# （白華咲けり の けり）、その語は動詞の語幹で、名前ではない（name-variant）。品詞解析の切った語の形で照らす。英語の名前は
+# 助動詞の前に立つ（Smith will）ので、英語の語彙表は持たない。
+id: name-copula
+language: ja
+entries:
+  - pattern: です
+  - pattern: でし
+  - pattern: でしょ
+  - pattern: だ
+  - pattern: だっ
+  - pattern: だろ
+  - pattern: で
+  - pattern: でござい
+  - pattern: らしい
+  - pattern: みたい
+  - pattern: じゃ

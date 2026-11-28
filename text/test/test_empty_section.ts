@@ -45,6 +45,11 @@ describe("empty-section: 中身の無い節", () => {
     assert.deepEqual(emptyIn(["# A", "", "## B", "", "text"]), []);
   });
 
+  it("同じ深さでも、番号が節の下の番号（3. の後の 3.1、4. の後の (1)）なら小さな節に分けただけ", () => {
+    assert.deepEqual(emptyIn(["#### 3. 動向", "", "#### 3.1 事例", "", "text", "", "#### 4. 見直し", "", "#### (1) 時間", "", "text"]), []);
+    assert.deepEqual(emptyIn(["#### 3. 動向", "", "#### 4. まとめ", "", "text"]), ["3. 動向"]);
+  });
+
   it("HTML のコメントだけの節は空。コメントの間に本文があれば中身がある", () => {
     assert.deepEqual(emptyIn(["## A", "<!-- 後で書く -->", "", "## B", "<!-- toc -->", "- [A](#a)", "<!-- /toc -->", "", "## C", "text"]), ["A"]);
   });
@@ -83,5 +88,40 @@ describe("empty-section: 中身の無い節", () => {
 
   it("Markdown でない文書では動かず、理由を言う", () => {
     assert.deepEqual(namedRuleRun(RULE, "準備\n", ja, "a.txt").skipped, ["Markdown の文書ではないため"]);
+  });
+});
+
+describe("empty-section: a release with nothing to note in a changelog", () => {
+  it("does not report a release heading in a run of release headings", () => {
+    const changelog = [
+      "# Changelog",
+      "",
+      "## 2.1.0 (2022-09-05)",
+      "## 2.1.0-beta.0 (2022-08-29)",
+      "### Bug Fixes",
+      "",
+      "* fix the build",
+      "",
+      "## 2.0.1 (2022-08-11)",
+      "",
+      "* fix the types",
+      "",
+    ];
+    assert.deepEqual(findingsOf(changelog.join("\n"), en), []);
+    const linked = [
+      "# Changelog",
+      "",
+      "## [2.1.0](https://example.com/compare/2.0.1...2.1.0) (2022-09-05)",
+      "## [2.0.1](https://example.com/compare/2.0.0...2.0.1) (2022-08-11)",
+      "",
+      "* fix the types",
+      "",
+    ];
+    assert.deepEqual(findingsOf(linked.join("\n"), en), []);
+  });
+
+  it("still reports an empty heading that names no release", () => {
+    const changelog = ["# Changelog", "", "## Unreleased", "", "## 2.0.1 (2022-08-11)", "", "* fix the types", "", "## 2.0.0 (2022-08-01)", "", "* first", ""];
+    assert.equal(findingsOf(changelog.join("\n"), en).length, 1);
   });
 });

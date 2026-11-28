@@ -8,6 +8,7 @@ entries:
   - pattern: minutes
   - pattern: hours
   - pattern: days
+  - pattern: nights
   - pattern: weeks
   - pattern: months
   - pattern: years

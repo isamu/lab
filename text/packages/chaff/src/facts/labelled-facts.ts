@@ -125,16 +125,19 @@ const containsSeparator = (label: string, words: FactWords): boolean =>
 
 const isShort = (text: string): boolean => text.length <= MAX_LABEL_LENGTH && wordsOf(text).length <= MAX_LABEL_WORDS;
 
-/** 名前の長さ。条件の付いた名前（waiting period for cancellation cover）は、名前と条件がそれぞれ短いこと。 */
-const isShortLabel = (label: string, key: string, words: FactWords): boolean => {
+/**
+ * 名前の長さ。頭の冠詞（The registration deadline の The）は数えないので key で測る。条件の付いた名前（waiting period for
+ * cancellation cover）は、名前と条件がそれぞれ短いこと。
+ */
+const isShortLabel = (key: string, words: FactWords): boolean => {
   const qualified = words.qualifiers === undefined ? undefined : qualifiedLabelOf(key, words.qualifiers);
-  return qualified === undefined ? isShort(label) : isShort(qualified.head) && isShort(qualified.qualifier);
+  return qualified === undefined ? isShort(key) : isShort(qualified.head) && isShort(qualified.qualifier);
 };
 
 /** 名前として使える書き方か。短く、字を含み、区切りを含まず、指すだけの語（それ、it）でない。 */
 const isLabel = (label: string, key: string, words: FactWords): boolean =>
   label.length > 0 &&
-  isShortLabel(label, key, words) &&
+  isShortLabel(key, words) &&
   LETTER.test(key) &&
   !CODE_MARK.test(label) &&
   !containsSeparator(label, words) &&

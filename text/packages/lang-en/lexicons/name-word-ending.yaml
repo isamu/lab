@@ -1,0 +1,19 @@
+# Last letters that make another form of a word in place of another (pattern in place of instead_of): the people of a
+# place (Texan for Texas, Kansan for Kansas) and a Latin case beside the English plural (Romano beside Romans). name-variant
+# does not read two one-word names that differ only in such a last letter as one name written two ways. An Italian
+# ending beside the English one (Paradiso, Dante's title, beside Paradise), and a final silent s respelled by its sound
+# in a period spelling (Arkansaw beside Arkansas), and a period singular with a silent final e beside the plural (Turke
+# beside Turks), are such forms too.
+id: name-word-ending
+language: en
+entries:
+  - pattern: n
+    instead_of: s
+  - pattern: o
+    instead_of: s
+  - pattern: o
+    instead_of: e
+  - pattern: w
+    instead_of: s
+  - pattern: e
+    instead_of: s

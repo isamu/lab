@@ -73,6 +73,14 @@ const SENTENCES: Readonly<
   });
 });
 
+describe("製品の売りの最上級（the lightest, the cheapest, the safest）", () => {
+  it("比べる相手が無ければ指摘し、相手があれば指摘しない", () => {
+    assert.ok(superlativeReported(en, "The Volt is the lightest electric bike, and its battery is the most reliable."));
+    assert.ok(superlativeReported(en, "It is the cheapest plan."));
+    assert.ok(!superlativeReported(en, "It is the safest of the three models we tested."));
+  });
+});
+
 describe("比較の語は語として照らす", () => {
   it("語の一部には当たらない（thanks・accordingly・amongst・そのうち）", () => {
     assert.ok(superlativeReported(en, "Thanks, it is the fastest."));

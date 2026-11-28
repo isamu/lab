@@ -1,0 +1,9 @@
+# 制度が物や場所をある区分に入れることを言う句。max-kanji-continuous は、漢字の連なりのすぐ後ろにこの句が続けば、
+# 連なりを制度が決めた区分の名前と読んで数えない（認定希少種保全動植物園等として認定、国内希少野生動植物種として指定）。
+id: designation-phrase
+language: ja
+entries:
+  - pattern: として認定
+  - pattern: として指定
+  - pattern: として登録
+  - pattern: として選定

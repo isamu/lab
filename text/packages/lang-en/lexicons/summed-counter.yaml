@@ -3,6 +3,20 @@
 id: summed-counter
 language: en
 entries:
+  - pattern: items
+    group: item
+  - pattern: item
+    group: item
+  - pattern: people
+    group: person
+  - pattern: persons
+    group: person
+  - pattern: person
+    group: person
+  - pattern: documents
+    group: document
+  - pattern: document
+    group: document
   - pattern: credits
     group: credit
   - pattern: credit

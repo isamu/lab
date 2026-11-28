@@ -25,6 +25,8 @@ export type EmailParts = {
   readonly furniture: readonly Span[];
   /** An attribution line and the quoted lines after it: someone else's words, so not this document's headings or structure. */
   readonly replyQuotes: readonly Span[];
+  /** A header names a field the writer does not type (From, Date): a message as sent or kept, not a draft. */
+  readonly sent: boolean;
 };
 
 const lowerCased = (lexicon: Lexicon | undefined): ReadonlySet<string> => new Set((lexicon ?? []).map((entry) => entry.pattern.toLowerCase()));
@@ -142,12 +144,17 @@ const fieldMask = (field: readonly Line[], vocabulary: EmailVocabulary): Span | 
   return { start: first.start, end: first.start + label[0].length };
 };
 
-const headerSpans = (lines: readonly Line[], vocabulary: EmailVocabulary): Span[] =>
-  blocksOf(lines).flatMap((block) => {
-    const first = block[0];
-    if (first === undefined || !isHeader(block, opensMessage(lines, first), vocabulary)) return [];
-    return fieldsOf(block).flatMap((field) => fieldMask(field, vocabulary) ?? []);
-  });
+const headerBlocks = (lines: readonly Line[], vocabulary: EmailVocabulary): Line[][] =>
+  blocksOf(lines).filter((block) => block[0] !== undefined && isHeader(block, opensMessage(lines, block[0]), vocabulary));
+
+const headerSpans = (headers: readonly Line[][], vocabulary: EmailVocabulary): Span[] =>
+  headers.flatMap((block) => fieldsOf(block).flatMap((field) => fieldMask(field, vocabulary) ?? []));
+
+/** A header line the writer does not type: a known field outside the written ones (From, Date), or the envelope line. */
+const isSentField = (line: Line, vocabulary: EmailVocabulary): boolean => {
+  const name = FIELD.exec(line.text)?.[1]?.toLowerCase();
+  return name === undefined ? ENVELOPE.test(line.text) : vocabulary.headerFields.has(name) && !vocabulary.writtenFields.has(name);
+};
 
 const isUrlField = (line: Line | undefined): boolean => {
   const label = line === undefined ? null : FIELD.exec(line.text);
@@ -256,14 +263,16 @@ export const emailParts = (source: string, vocabulary: EmailVocabulary): EmailPa
   const lines = linesOf(source);
   const replies = repliesOf(lines, vocabulary);
   const separators = lines.filter((line) => isSeparator(line)).map((line) => spanOfLines(line, line));
+  const headers = headerBlocks(lines, vocabulary);
   return {
     furniture: [
-      ...headerSpans(lines, vocabulary),
+      ...headerSpans(headers, vocabulary),
       ...attachmentStubSpans(lines, vocabulary),
       ...separators,
       ...signatureSpans(lines),
       ...replies.map((reply) => reply.attribution),
     ].toSorted(bySpanStart),
     replyQuotes: replies.map((reply) => reply.quote),
+    sent: headers.some((block) => block.some((line) => isSentField(line, vocabulary))),
   };
 };

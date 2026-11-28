@@ -5,7 +5,8 @@ import { bySentence } from "./sentence-buckets.ts";
  * 起点の年から数えた年数（「2015年創業」と「創業10年」、「1980年生まれ」と「45歳」）を、文書の日付の年と比べる。
  * 年数は、文書の年から起点の年を引いた数と、前後一年まで合えばよい（誕生日の前後、「10年目」の数え方）。それより離れていれば言う。
  * 創業の年数は、起点の語のすぐ後ろか前に、つなぎの語（から、以来、since）だけを挟んで書いたもの（「創業10年」「設立から10年」）。
- * 起点の年は同じ文の中で起点の語に一番近い年、無ければ文書の中で起点の語に付いた年（一通りのときだけ）。
+ * 起点の年は同じ文の中で起点の語に一番近い年、無ければ文書の中で起点の語に付いた年、それも無ければ同じ文の中で起点の語や開いた語
+ * （opened its doors）に付いた年（どちらも一通りのときだけ）。
  * 年齢は、生まれた年と同じ文の年齢だけを比べる（文に生まれた年と年齢が一つずつのとき）。別の人の年齢と組にしないため。
  */
 export type Year = Span & { readonly year: number };
@@ -20,6 +21,8 @@ export type ElapsedInput = {
   readonly years: readonly Year[];
   /** 創業・設立・founded など、年数を数え始める語。 */
   readonly foundings: readonly OriginWord[];
+  /** opened、opened its doors など、同じ文の年数の起点の年だけを決める語。広く使う語なので、文書の中の年の当てにはしない。 */
+  readonly openings?: readonly OriginWord[];
   /** 生まれ・born など。 */
   readonly births: readonly OriginWord[];
   /** 年数（10年、20周年、10 years）。 */
@@ -59,6 +62,7 @@ const MAX_YEAR_DISTANCE = 6;
 type InSentence = {
   readonly years: readonly Year[];
   readonly foundings: readonly OriginWord[];
+  readonly openings: readonly OriginWord[];
   readonly births: readonly OriginWord[];
   readonly elapsed: readonly Elapsed[];
   readonly ages: readonly Elapsed[];
@@ -80,11 +84,20 @@ const documentYear = (sentences: readonly InSentence[]): Year | undefined => {
   return new Set(found.map((year) => year.year)).size === 1 ? found[0] : undefined;
 };
 
+/**
+ * 文の中で、起点の語（founded、opened its doors）に付いた年。一通りのときだけ。「Brookside Dental opened its doors in 2006, and
+ * this month marks 10 years since its founding」の年数は、文書が創業の年を書いていなければ、その文の開いた年から数える。
+ */
+const sentenceYear = (sentence: InSentence): Year | undefined => {
+  const found = [...sentence.foundings, ...sentence.openings].flatMap((word) => yearAt(sentence.years, word) ?? []);
+  return new Set(found.map((year) => year.year)).size === 1 ? found[0] : undefined;
+};
+
 const foundingMismatches = (input: ElapsedInput, sentence: InSentence, fallback: Year | undefined): ElapsedMismatch[] =>
   sentence.elapsed.flatMap((elapsed) => {
     const word = sentence.foundings.find((candidate) => attached(input, candidate, elapsed));
     if (word === undefined) return [];
-    const origin = yearAt(sentence.years, word) ?? fallback;
+    const origin = yearAt(sentence.years, word) ?? fallback ?? sentenceYear(sentence);
     return origin === undefined ? [] : mismatchOf(input, elapsed, origin);
   });
 
@@ -104,6 +117,7 @@ const sentencesOf = (input: ElapsedInput): InSentence[] => {
       input.years.filter((year) => year.year < input.reference),
     ),
     foundings: bySentence(input.sentences, input.foundings),
+    openings: bySentence(input.sentences, input.openings ?? []),
     births: bySentence(input.sentences, input.births),
     elapsed: bySentence(input.sentences, input.elapsed),
     ages: bySentence(input.sentences, input.ages),
@@ -112,6 +126,7 @@ const sentencesOf = (input: ElapsedInput): InSentence[] => {
   return indexes.map((index) => ({
     years: groups.years.get(index) ?? [],
     foundings: groups.foundings.get(index) ?? [],
+    openings: groups.openings.get(index) ?? [],
     births: groups.births.get(index) ?? [],
     elapsed: groups.elapsed.get(index) ?? [],
     ages: groups.ages.get(index) ?? [],

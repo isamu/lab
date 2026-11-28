@@ -1,7 +1,7 @@
 import type { Detector, Finding } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { formMinority } from "./form-minority.ts";
-import { quoteAround } from "./quote-around.ts";
+import { quoteAround, sentenceQuoteAt } from "./quote-around.ts";
 
 // One document writing a number and a unit symbol both with a space between them ("5 GB") and without ("5GB"). Neither is
 // called right; per unit, the less common way is reported. The symbols come from each language's lexicon "unit-symbol".
@@ -65,7 +65,7 @@ export const unitSpacing: Detector = (doc, options): Finding[] => {
     severity: "info",
     line: 0,
     column: 0,
-    quote: quoteAround(text, odd.offset, odd.offset + odd.written.length),
+    quote: sentenceQuoteAt(doc.sentences, odd.offset) ?? quoteAround(text, odd.offset, odd.offset + odd.written.length),
     values: { written: odd.written, usual, count, of, offset: odd.offset },
   }));
 };

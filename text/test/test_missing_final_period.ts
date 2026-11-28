@@ -43,6 +43,11 @@ describe("missing-final-period: 「。」で終わらない段落", () => {
     assert.deepEqual(formsOf(documentWith("詳しい手順は担当者から説明します", "この方法が手続きとしていちばん望ましい")).slice(-2), ["open", "open"]);
   });
 
+  it("リンクの言葉だけの一行の段落（〜で見る）は文として数えない", () => {
+    assert.deepEqual(findingsOf(documentWith("公園の四季の写真をフォトギャラリーで見る")), []);
+    assert.deepEqual(findingsOf(documentWith("公園の四季の写真をフォトギャラリーで見た")).length, 1);
+  });
+
   it("閉じ括弧や引用で閉じた段落は閉じたものと数える", () => {
     assert.deepEqual(formsOf("担当者は「明日までに送ります。」\n\n係の人が「受付は終わりました」\n").slice(0, 2), ["closed", "closed"]);
   });
@@ -94,6 +99,40 @@ describe("missing-final-period: 「。」で終わらない段落", () => {
     ]);
   });
 
+  it("段落に並べた表のセル（語の行と、その下の注記）は、前もセルなら文として数えない", () => {
+    const cells = ["ニッケル水素電池等（乾電池）", "乾式電池\n多くの機器に使われている電池も含む"];
+    assert.deepEqual(formsOf(`${cells.join("\n\n")}\n`), ["-", "-"]);
+    // 前が文の段落なら、語の行の下の文も文として数える。
+    assert.deepEqual(formsOf("申請は市役所の窓口で受け付けます。\n\n乾式電池\n多くの機器に使われている電池も含む\n"), ["closed", "open"]);
+    // 前が長い一行（条件の節）なら、条の見出しの下の文として数える。
+    const clause = "他の法人と合併し、経営権が実質的に第三者に移動したと認められた場合";
+    assert.deepEqual(formsOf(`${clause}\n\n第16条（契約終了後の措置）\n乙は、契約が終了した場合は、直ちにサービスの利用を停止しなければならない\n`)[1], "open");
+    // 前が引用（本文から覆われて空になる段落）でも、セルではない。
+    assert.deepEqual(formsOf("> 経営権が移動した場合\n\n第16条（契約終了後の措置）\n乙は、直ちにサービスの利用を停止しなければならない\n").at(-1), "open");
+  });
+
+  it("繰り返す型に置いた一行（見出しの下の要約、語と説明の語、続けて書いた項目）は、どれも「。」が無ければ数えない", () => {
+    // 「。」で閉じた段落を多めに置き、閉じていない二つが少ないほうに入るようにする。
+    const prose = [...CLOSED, ...CLOSED].join("\n\n");
+    const summaries = ["窓口で申請の書類をまとめて受け付ける", "書類の中身を担当者が一つずつ確かめる", "審査の結果を後日郵送でお知らせする"];
+    const step = (line: string, index: number): string => ["## 手順" + String(index + 1), line, "### 例", "- 窓口"].join("\n\n");
+    const underHeadings = (lines: readonly string[]): string => ["# 手続き", prose, ...lines.map(step)].join("\n\n") + "\n";
+    assert.deepEqual(findingsOf(underHeadings(summaries)), []);
+    // 一つでも「。」で閉じた要約があれば型ではなく、閉じていないほうを数える。二つしか無ければ型と見ない。
+    assert.equal(findingsOf(underHeadings([...summaries.slice(0, 2), `${summaries[2]}。`])).length, 2);
+    assert.equal(findingsOf(underHeadings(summaries.slice(0, 2))).length, 2);
+
+    const terms = ["住所が変わって手続きが分からない", "書類を書くのがむずかしいと感じる", "窓口に行く時間がなかなか取れない"];
+    const explained = terms.flatMap((term) => [term, "担当者が電話で手続きを一緒に確かめます。"]);
+    assert.deepEqual(findingsOf(documentWith(...CLOSED, ...explained)), []);
+    assert.equal(findingsOf(documentWith(...CLOSED, ...explained.slice(0, 4))).length, 2);
+
+    const items = ["（1）窓口で申請の書類を受け付けます", "（2）書類の中身を担当者が確かめます", "（3）審査の結果を郵送でお知らせします"];
+    assert.deepEqual(findingsOf(`${prose}\n\n${items.join("\n")}\n`), []);
+    const closedLast = [...items.slice(0, 2), items[2] + "。"].join("\n");
+    assert.equal(findingsOf(`${prose}\n\n${closedLast}\n`).length, 2);
+  });
+
   it("「。」で終わらない段落の多い文書と、混ざりすぎた文書は指さない", () => {
     assert.deepEqual(findingsOf("審査の結果は郵送でお知らせしました\n\n詳しい手順は担当者から説明します\n\n申請は市役所の窓口で受け付けます。\n"), []);
     assert.deepEqual(findingsOf(documentWith("審査の結果は郵送でお知らせしました", "詳しい手順は担当者から説明します")), []);
@@ -113,5 +152,19 @@ describe("missing-final-period: 「。」で終わらない段落", () => {
     const paragraph = doc.paragraphs.at(-1);
     assert.ok(paragraph !== undefined);
     assert.equal(paragraphEnd(source, paragraph, MARKS)?.offset, source.indexOf(last) + last.length - 1);
+  });
+
+  it("ヘッダーの項目の行（件名：…）は、述語で終わっても文として数えない", () => {
+    const email = [
+      "件名：経費精算のページが新しくなりました",
+      "お疲れさまです。総務部の佐藤です。",
+      "本日から、経費精算のページが新しくなりました。申請の画面が一つにまとまりました。",
+      "古いページは今月末まで使えますが、来月からは新しいページだけになります。",
+      "使い方の説明は、社内ポータルの総務の欄に載せています。",
+    ].join("\n\n");
+    assert.deepEqual(findingsOf(`${email}\n`), []);
+    assert.deepEqual(findingsOf(documentWith("Subject: 経費精算のページが新しくなりました")), []);
+    assert.equal(findingsOf(documentWith("経費精算のページが新しくなりました")).length, 1);
+    assert.equal(findingsOf(documentWith("新しい件名：経費精算のページが新しくなりました")).length, 1);
   });
 });

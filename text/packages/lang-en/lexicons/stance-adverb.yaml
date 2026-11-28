@@ -1,0 +1,18 @@
+# -ly adverbs that say how sure or how frank the writer is, not how something is done (adverb-overuse).
+# "It probably should have been an email" has no verb to fold "probably" into, so they are not counted.
+# Boosters (certainly, obviously, really) are left out: they prop up a claim the way a manner adverb props up a verb.
+id: stance-adverb
+language: en
+entries:
+  - pattern: actually
+  - pattern: apparently
+  - pattern: arguably
+  - pattern: evidently
+  - pattern: frankly
+  - pattern: honestly
+  - pattern: hopefully
+  - pattern: likely
+  - pattern: possibly
+  - pattern: presumably
+  - pattern: probably
+  - pattern: supposedly

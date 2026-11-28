@@ -1,6 +1,6 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { minorityStyles, numberMarksIn, type NumberMark, type NumberWords } from "../packages/chaff/src/detectors/number-style.ts";
+import { minorityStyles, numberMarksIn, ownMarks, type NumberMark, type NumberWords } from "../packages/chaff/src/detectors/number-style.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -27,6 +27,8 @@ const wordsOf = (adapter: LanguageAdapter): NumberWords => {
     countWords: patterns("count-number"),
     figureNouns: patterns("figure-noun"),
     nameWords: patterns("number-name-word"),
+    nativeCounts: patterns("numeral-native-count"),
+    nameSuffixes: patterns("numeral-name-suffix"),
   };
 };
 
@@ -76,6 +78,22 @@ describe("numberMarksIn: Japanese", () => {
     ["3 人来ました。", ["count:digits:3 人"]],
     ["三　人が来ました。", ["count:kanji:三　人"]],
     ["3人事務員がいます。", ["count:digits:3人"]],
+    ["汚染された二枚貝があります。", []],
+    ["二枚舌を使う人です。", []],
+    ["三人称で書きます。", []],
+    ["三枚目の資料です。", ["count:kanji:三枚"]],
+    ["二枚の資料です。", ["count:kanji:二枚"]],
+    ["二通りの方法があります。", []],
+    ["四通りの方法があります。", ["count:kanji:四通り"]],
+    ["2通りの方法があります。", ["count:digits:2通り"]],
+    ["高さは約1500、3,000、9,000mとする。", ["grouping:plain:1500", "grouping:grouped:3,000", "grouping:grouped:9,000"]],
+    ["番号は 1500、3000 です。", []],
+    ["費用は約3000円です。", ["grouping:plain:3000"]],
+    ["番号はA3000円です。", []],
+    ["十円玉を残します。", []],
+    ["10円玉を残します。", []],
+    ["五円硬貨と千円札です。", []],
+    ["十円を払います。", ["count:kanji:十円"]],
   ];
   cases.forEach(([sentence, marks]) => {
     it(`${sentence} → ${marks.join(", ") || "none"}`, () =>
@@ -164,6 +182,12 @@ describe("number-style-consistency: the minority style in a document", () => {
   it("does not count a number that names a group (Grade 5 students) among spelled-out counts", () =>
     assert.deepEqual(flagged(en, "# Camp\n\nOur Grade 5 students will spend two days at the camp with three teachers and four parents.\n"), []));
 
+  it("does not count a section number after a section sign (§4 flags) among spelled-out counts", () =>
+    assert.deepEqual(flagged(en, "# Plan\n\nWe set out two rules and three duties here, and §4 flags four questions for later.\n"), []));
+
+  it("does not count nights, a measure of a stay, among spelled-out counts", () =>
+    assert.deepEqual(flagged(en, "# Trip\n\nWe met two clients and three partners. Hotel (2 nights) $410, paid in four parts.\n"), []));
+
   it("still reports a digit count beside a named group", () =>
     assert.deepEqual(flagged(en, "# Camp\n\nOur Grade 5 students will bring two bags and three hats. Each class also brings 4 tents.\n"), ["count-small:4"]));
 
@@ -192,5 +216,46 @@ describe("number-style-consistency: the minority style in a document", () => {
     const source = "# 件数\n\n今月は 12件、先月は 9件、先々月は 7件でした。うち三件は同じ内容です。\n";
     assert.deepEqual(flagged(ja, source, "legal/contract"), []);
     assert.deepEqual(flagged(ja, source, "literature/fiction"), []);
+  });
+});
+
+describe("number-style-consistency: articles a document quotes", () => {
+  const fees = "# 手数料\n\n申請は 1件ごとに 2,400円、書面は 1枚ごとに 800円です。2件をまとめても 2,400円、3件なら 4,800円です。\n\n";
+  const order = "第5条　手数料の額は、一件につき二千四百円に書面一枚につき八百円とする。二件以上は合計額とする。\n";
+
+  it("leaves out the numbers of an article set out in a manual (a fee order quoted under its own heading)", () =>
+    assert.deepEqual(flagged(ja, `${fees}## 根拠条文（抜粋）\n\n${order}`, "docs/manual"), []));
+
+  it("still reports the same kanji counts written in the manual's own text", () =>
+    assert.deepEqual(flagged(ja, `${fees}## 補足\n\n手数料の額は、二千四百円に八百円を足した額です。\n`, "docs/manual"), ["count:二千四百円", "count:八百円"]));
+
+  it("compares the numbers under numbered headings of the document's own outline (2.1 Results)", () => {
+    const paper =
+      "# Report\n\nTurnout was 40% last year, 38% the year before, 35% before that and 30% at first.\n\n## 1 Method\n\nWe count votes.\n\n## 2 Results\n\n### 2.1 Turnout\n\nTurnout rose 12% in March and fell 3 percent in May.\n";
+    assert.deepEqual(flagged(en, paper, "academic/paper"), ["percent:3 percent"]);
+  });
+
+  it("compares the numbers of a document written in articles (work rules)", () => {
+    const rules =
+      "第1条　休暇は年 10日とする。\n\n第2条　申請は 3日前までとする。\n\n第3条　届出は 2回までとする。\n\n第4条　延長は 5回までとする。\n\n第5条　更新は三回までとする。\n";
+    assert.deepEqual(flagged(ja, rules, "docs/manual"), ["count:三回"]);
+  });
+});
+
+describe("ownMarks", () => {
+  const mark = (offset: number): NumberMark => ({ kind: "count", style: "digits", written: "3件", offset });
+  const article = [{ start: 100, end: 200 }];
+
+  it("drops the marks inside articles when most marks are outside", () =>
+    assert.deepEqual(ownMarks([mark(0), mark(10), mark(150)], article), [mark(0), mark(10)]));
+
+  it("keeps every mark when most are inside articles, or half are", () => {
+    assert.deepEqual(ownMarks([mark(0), mark(120), mark(150)], article), [mark(0), mark(120), mark(150)]);
+    assert.deepEqual(ownMarks([mark(0), mark(150)], article), [mark(0), mark(150)]);
+  });
+
+  it("keeps every mark without articles, and is empty for no marks", () => {
+    assert.deepEqual(ownMarks([mark(0), mark(150)], []), [mark(0), mark(150)]);
+    assert.deepEqual(ownMarks([], article), []);
   });
 });

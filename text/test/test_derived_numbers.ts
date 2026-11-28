@@ -58,6 +58,12 @@ describe("duration-mismatch", () => {
     assert.deepEqual(durationEn("The trial lasts 10 days, from May 1, 2026 to May 10, 2026."), []);
   });
 
+  it("two dates that both start something (from … and from …) are two starts, not a start and an end", () => {
+    assert.deepEqual(durationEn("Check the wiring every 5 years (for new homes from 1 July 2020 and older homes from 1 April 2021)."), []);
+    assert.deepEqual(durationJa("5年ごとに点検します（新しい住宅は2020年7月1日から、古い住宅は2021年4月1日から）。"), []);
+    assert.deepEqual(durationEn("The trial runs for 3 months from 1 April 2026 to 31 July 2026."), ["31 July 2026→30 June 2026"]);
+  });
+
   it("the computed end is written day first in a document that writes its dates day first (en)", () => {
     assert.deepEqual(durationEn("The trial runs for 3 months from 1 April 2026 (until 31 July 2026)."), ["31 July 2026→30 June 2026"]);
   });
@@ -253,6 +259,13 @@ describe("duration-mismatch: nights of a stay", () => {
     assert.deepEqual(stayEn("A trip of 3 days and 1 night to York."), ["nights-days:3 days→2"]);
   });
 
+  it("as many days as nights, days first, is round the clock, not a stay (43 days and 43 nights)", () => {
+    assert.deepEqual(stayEn("We were shut down for 43 days and 43 nights."), []);
+    assert.deepEqual(stayEn("For three days and three nights the storm went on."), []);
+    assert.deepEqual(stayEn("A trip of 3 days and 4 nights to York."), ["nights-days:3 days→5"]);
+    assert.deepEqual(stayJa("京都・奈良 3泊3日の旅行です。"), ["nights-days:3日→4"]);
+  });
+
   it("nights and days written before their noun (a 2-night, 4-day tour)", () => {
     assert.deepEqual(stayEn("We run a 2-night, 4-day tour."), ["nights-days:4-day→3"]);
     assert.deepEqual(stayEn("We run a 2-night, 3-day tour."), []);
@@ -344,6 +357,23 @@ describe("elapsed-years-mismatch", () => {
   it("years since founding (en)", () => {
     assert.deepEqual(elapsedEn("Acme was founded in 2015.", "", "We mark 20 years since its founding."), ["20 years/11"]);
     assert.deepEqual(elapsedEn("Acme was founded in 2015.", "", "We mark 11 years since its founding."), []);
+  });
+
+  it("en: the year a word of opening gives in the same sentence starts the count since founding", () => {
+    const doors = "Brookside Dental opened its doors in 2006, and this month marks 10 years since its founding.";
+    assert.deepEqual(elapsedEn(doors), ["10 years/20"]);
+    assert.deepEqual(elapsedEn(doors.replace("10 years", "20 years")), []);
+    assert.deepEqual(elapsedEn("The practice opened in 2006, and this month marks 10 years since its founding."), ["10 years/20"]);
+    assert.deepEqual(elapsedEn("The practice was founded in 2006, and this month marks 10 years since its founding."), ["10 years/20"]);
+    assert.deepEqual(elapsedEn("The shop first opened in 2016, and we mark 20 years since our founding."), ["20 years/10"]);
+  });
+
+  it("en: a word of opening does not date a count in another sentence, nor one with two years", () => {
+    assert.deepEqual(elapsedEn("Our new wing opened in 2019.", "", "We mark 25 years since our founding."), []);
+    assert.deepEqual(elapsedEn("The clinic opened in 2006 and the lab opened in 2012, 10 years since its founding."), []);
+    assert.deepEqual(elapsedEn("The clinic opened in 2006, and 3 years after its founding we added a lab."), []);
+    assert.deepEqual(elapsedEn("Acme was founded in 2006.", "", "Our new wing opened in 2019, and we mark 20 years since our founding."), []);
+    assert.deepEqual(elapsedEn("Acme was founded in 2006.", "", "Our new wing opened in 2019, and we mark 10 years since our founding."), ["10 years/20"]);
   });
 
   it("a count of years written as a word", () => {

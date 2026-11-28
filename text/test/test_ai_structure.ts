@@ -7,6 +7,8 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules, type Settings } from "../packages/chaff/src/run.ts";
 import type { Finding, LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { aiStructure } from "../packages/chaff/src/detectors/ai-structure.ts";
+import { isWholeTemplateOutline, templateSectionsOf } from "../packages/chaff/src/structure-shape/template-outline.ts";
+import { headingWords } from "../packages/chaff/src/structure-shape/heading-words.ts";
 
 // ai-structure: several structure measures past 90% of human articles at once, the document-level rule over chaff
 // outline's structure block. Every text here is written for the test.
@@ -52,6 +54,11 @@ describe("ai-structure", () => {
     assert.equal(finding?.line, 3);
   });
 
+  it("names the rules that read the same shapes as its measures, so the composite counts each shape once", () => {
+    const [finding] = ofRule(run(ja, SPLIT, { "ai-structure": "strict" }), "ai-structure");
+    assert.equal(finding?.values["same_shape_rules"], "bold-label-list");
+  });
+
   it("stays quiet below the count: two measures do not reach the normal level", () => {
     assert.deepEqual(ofRule(run(ja, SPLIT, {}), "ai-structure"), []);
   });
@@ -88,5 +95,118 @@ describe("ai-structure", () => {
     );
     const found = aiStructure(buildDocument("a.md", english, en), { limit: 2 });
     assert.match(String(found[0]?.values["word"] ?? ""), /headings split into three/u);
+  });
+});
+
+/** A short proposal under the given headings: one paragraph each, and a list of bold-label items in the second. */
+const proposal = (title: string, headings: readonly string[], sentence: string, labels: readonly string[]): string =>
+  lines(
+    `# ${title}`,
+    "",
+    ...headings.flatMap((heading, index) => [
+      `## ${heading}`,
+      "",
+      sentence.repeat(index + 1),
+      "",
+      ...(index === 1 ? [...labels.map((label) => `- **${label}**: ${sentence}`), ""] : []),
+    ]),
+  );
+
+const TEXTBOOK_EN = ["Summary", "Current Situation", "Proposed Solution", "Expected Benefits", "Costs", "Risks and Mitigation", "Next Steps"];
+const OWN_EN = ["Where we are", "What hurts", "What I would try", "What it changes", "What it costs", "What could go wrong", "What I need from you"];
+const SENTENCE_EN = "The team tracks its work in a shared sheet that nobody keeps up to date. ";
+const LABELS_EN = ["Ownership", "Status", "Deadlines"];
+
+const TEXTBOOK_JA = ["提案の背景", "現状の課題", "提案内容", "期待される効果", "費用", "リスクと対策", "今後の進め方"];
+const OWN_JA = ["困っていること", "試したいこと", "変わること", "かかるお金", "心配なこと", "お願いしたいこと", "次に決めること"];
+const SENTENCE_JA = "請求書は紙で受け取り、毎月の締めに三日かかっています。";
+const LABELS_JA = ["担当", "状況", "期限"];
+
+const englishWords = (headings: readonly string[]): string[] => headings.map((heading) => headingWords(heading));
+
+describe("templateSectionsOf: the sections of a textbook proposal outline", () => {
+  const lexiconOf = (adapter: LanguageAdapter) => adapter.lexicons["template-heading"] ?? [];
+
+  it("names each section once, in heading order", () => {
+    assert.deepEqual(templateSectionsOf(englishWords(TEXTBOOK_EN), lexiconOf(en)), ["summary", "background", "proposal", "benefits", "costs", "risks", "next"]);
+  });
+
+  it("does not read a longer compound as the section: 効果測定, 提案者, 費用対効果", () => {
+    assert.deepEqual(templateSectionsOf(["効果測定の方法", "提案者の紹介", "費用対効果", "リスク管理表"], lexiconOf(ja)), []);
+    assert.deepEqual(templateSectionsOf(["効果", "提案（案）", "費用について"], lexiconOf(ja)), ["benefits", "proposal", "costs"]);
+  });
+
+  it("reads a heading by its longest entry: 提案の背景 is the background, not the proposal", () => {
+    assert.deepEqual(templateSectionsOf(["提案の背景"], lexiconOf(ja)), ["background"]);
+  });
+
+  it("matches whole words after the number, and counts a section once however often it stands", () => {
+    assert.deepEqual(templateSectionsOf(englishWords(["1. Costs", "Costs (continued)", "Costing model", "Summary"]), lexiconOf(en)), ["costs", "summary"]);
+  });
+
+  it("finds nothing in headings of the writer's own words, or without a lexicon", () => {
+    assert.deepEqual(templateSectionsOf(englishWords(OWN_EN), lexiconOf(en)), []);
+    assert.deepEqual(templateSectionsOf(englishWords(TEXTBOOK_EN), []), []);
+  });
+});
+
+describe("isWholeTemplateOutline: the template with little of the writer's own", () => {
+  const lexiconOf = (adapter: LanguageAdapter) => adapter.lexicons["template-heading"] ?? [];
+  const mixed = (template: number, own: number): string[] => englishWords([...TEXTBOOK_EN.slice(0, template), ...OWN_EN.slice(0, own)]);
+
+  it("holds when every heading, or three in four, is a template section", () => {
+    assert.equal(isWholeTemplateOutline(englishWords(TEXTBOOK_EN), lexiconOf(en)), true);
+    assert.equal(isWholeTemplateOutline(mixed(6, 2), lexiconOf(en)), true);
+    assert.equal(isWholeTemplateOutline(englishWords(TEXTBOOK_JA.slice(0, 5)), lexiconOf(ja)), true);
+  });
+
+  it("does not hold when the writer's own headings stand among the sections, or the sections are too few", () => {
+    assert.equal(isWholeTemplateOutline(mixed(5, 2), lexiconOf(en)), false);
+    assert.equal(isWholeTemplateOutline(mixed(4, 4), lexiconOf(en)), false);
+    assert.equal(isWholeTemplateOutline(mixed(3, 0), lexiconOf(en)), false);
+    assert.equal(isWholeTemplateOutline([], lexiconOf(en)), false);
+    assert.equal(isWholeTemplateOutline(englishWords(TEXTBOOK_EN), []), false);
+  });
+});
+
+describe("ai-structure in business documents", () => {
+  it("counts the textbook outline as one more measure, and one more again when it is the whole outline", () => {
+    const [finding] = ofRule(run(en, proposal("Proposal", TEXTBOOK_EN, SENTENCE_EN, LABELS_EN), {}, "business/proposal"), "ai-structure");
+    assert.equal(finding?.values["count"], 4);
+    assert.match(String(finding?.values["word"] ?? ""), /textbook proposal or report headings, almost no heading outside that outline$/u);
+  });
+
+  it("counts the template once when the writer's own headings stand among its sections", () => {
+    const among = [...TEXTBOOK_EN.slice(0, 4), ...OWN_EN.slice(4)];
+    const [finding] = ofRule(run(en, proposal("Proposal", among, SENTENCE_EN, LABELS_EN), {}, "business/proposal"), "ai-structure");
+    assert.equal(finding?.values["count"], 3);
+    assert.doesNotMatch(String(finding?.values["word"] ?? ""), /almost no heading/u);
+  });
+
+  it("counts it in Japanese too", () => {
+    const [finding] = ofRule(run(ja, proposal("提案", TEXTBOOK_JA, SENTENCE_JA, LABELS_JA), {}, "business/proposal"), "ai-structure");
+    assert.match(String(finding?.values["word"] ?? ""), /定型の見出し/u);
+  });
+
+  it("stays quiet on the same proposal under the writer's own headings", () => {
+    assert.deepEqual(ofRule(run(en, proposal("Proposal", OWN_EN, SENTENCE_EN, LABELS_EN), {}, "business/proposal"), "ai-structure"), []);
+    assert.deepEqual(ofRule(run(ja, proposal("提案", OWN_JA, SENTENCE_JA, LABELS_JA), {}, "business/proposal"), "ai-structure"), []);
+  });
+
+  it("stays quiet when only three template sections stand, as in a real proposal", () => {
+    const three = [...TEXTBOOK_EN.slice(0, 3), ...OWN_EN.slice(3)];
+    assert.deepEqual(ofRule(run(en, proposal("Proposal", three, SENTENCE_EN, LABELS_EN), {}, "business/proposal"), "ai-structure"), []);
+  });
+
+  it("stays quiet on a whole textbook outline with no measure past the human articles: the template alone is not enough", () => {
+    const paragraphs = (index: number): string[] => [1, 3, 6].map((size) => SENTENCE_EN.repeat(size + index)).flatMap((paragraph) => [paragraph, ""]);
+    const plain = lines("# Proposal", "", ...TEXTBOOK_EN.flatMap((heading, index) => [`## ${heading}`, "", ...paragraphs(index)]));
+    assert.deepEqual(ofRule(run(en, plain, {}, "business/proposal"), "ai-structure"), []);
+    assert.equal(ofRule(run(en, plain, { "ai-structure": "strict" }, "business/proposal"), "ai-structure")[0]?.values["count"], 2);
+  });
+
+  it("reaches the normal level with the whole textbook outline and one measure past the human articles", () => {
+    const [finding] = ofRule(run(en, proposal("Proposal", TEXTBOOK_EN, SENTENCE_EN.repeat(6), []), {}, "business/proposal"), "ai-structure");
+    assert.equal(finding?.values["count"], 3);
   });
 });

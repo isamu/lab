@@ -86,6 +86,32 @@ describe("change-rate-mismatch", () => {
   });
 });
 
+describe("change-rate-mismatch: an earlier value written without its noun (up N% from X)", () => {
+  it("en: reads the bare earlier value in the unit of the value before the rate", () => {
+    assert.deepEqual(found("The service is used by 1,300 companies, up 20% from 1,000.", en), ["20:30"]);
+    assert.deepEqual(found("The service is used by 1,300 companies, up 30% from 1,000.", en), []);
+    assert.deepEqual(found("The service is used by 1,300 companies, up 20% from 1,000 the year before.", en), ["20:30"]);
+    assert.deepEqual(found("Staff fell to 900 people, down 25% from 1,000.", en), ["25:10"]);
+    assert.deepEqual(found("Staff fell to 900 people, down 10% from 1,000.", en), []);
+  });
+
+  it("en: reads two bare values tied by the rate", () => {
+    assert.deepEqual(found("Visits reached 186,400, up 12% from 152,800 the year before.", en), ["12:22"]);
+    assert.deepEqual(found("Visits reached 186,400, up 22% from 152,800 the year before.", en), []);
+    assert.deepEqual(found("Visits reached 186,400, up 12 percent from 152,800.", en), ["12:22"]);
+  });
+
+  it("en: does not tie a value with a noun of its own, a year, an amount, a magnitude or a looser shape", () => {
+    assert.deepEqual(found("The service is used by 1,300 companies, up 20% from 1,000 dollars.", en), []);
+    assert.deepEqual(found("Visits reached 186,400, up 12% from 2019.", en), []);
+    assert.deepEqual(found("Revenue was $1,300, up 20% from 1,000.", en), []);
+    assert.deepEqual(found("Users reached 2.4 million, up 20% from 1.0 million.", en), []);
+    assert.deepEqual(found("Users reached 2.4 million, up 20% from 1.0.", en), []);
+    assert.deepEqual(found("Visits reached 186,400 and costs rose 12% from 152,800.", en), []);
+    assert.deepEqual(found("Visits reached 186,400, an increase of 12% from 152,800.", en), []);
+  });
+});
+
 describe("change-rate-mismatch: the two values written together before the rate", () => {
   // Each form with a wrong rate, then the same with the right one.
   const ja_forms: readonly (readonly [string, string])[] = [

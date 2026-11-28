@@ -13,3 +13,6 @@ entries:
   - pattern: "Dr"
   - pattern: "Miss"
   - pattern: "Madam"
+  # A law report prints an English judge's name in capitals after his title (Lord HOLT, Mr. Justice BULLER).
+  - pattern: "Lord"
+  - pattern: "Justice"

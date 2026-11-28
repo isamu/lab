@@ -1,4 +1,5 @@
 import { lengthOf, proseText } from "../measure.ts";
+import { cleftFocus } from "./cleft-focus.ts";
 import { newContentMorphemes } from "./content-morphemes.ts";
 import { echoedHeadingUnits, trigrams } from "./heading-overlap.ts";
 import { fieldValueStart } from "./field-label.ts";
@@ -9,7 +10,7 @@ import { handsOver } from "./lead-in.ts";
 import { holdsLink, namesLocation } from "./location-pointer.ts";
 import { withoutQuotedVariants } from "./quoted-variant.ts";
 import { namesHeadingSubject } from "./subject-name-line.ts";
-import type { Detector, Finding, LengthUnit, ProseDocument, Section, Sentence } from "../plugin.ts";
+import type { Detector, Finding, LengthUnit, ProseDocument, Section, Sentence, Token } from "../plugin.ts";
 
 /** 見出しが短すぎると、偶然の一致で 100% になる。これ未満の見出しは見ない。 */
 const MIN_GRAMS = 4;
@@ -46,11 +47,23 @@ const NEW_CONTENT_MORPHEMES = 1;
 /** 重なりを測る見出し。頭の番号の札（例 3：、Step 3:、1.）は本文で繰り返されないので、数えると短い見出しほど重なりが下がる。 */
 const measuredHeading = (section: Section): string => section.unlabeledHeading ?? section.heading;
 
-const addsLittle = (section: Section, unit: LengthUnit): boolean => {
+/**
+ * 内容を測る文の語。分裂文（いちばん大きく変わったのは、季節の移り変わりに気づくようになったことだ。）は焦点の語だけ:
+ * 主題の節は焦点を差し出すだけで、焦点が見出しを言い直していれば、文は見出しを繰り返している。
+ */
+const statedTokens = (doc: ProseDocument, sentence: Sentence): readonly Token[] | undefined => {
+  const focus = cleftFocus(sentence.text, doc.lexicons["cleft-frame"] ?? []);
+  if (sentence.tokens === undefined || focus === undefined) return sentence.tokens;
+  const [start, end] = [sentence.span.start + focus.start, sentence.span.start + focus.end];
+  return sentence.tokens.filter((token) => token.span.start >= start && token.span.end <= end);
+};
+
+const addsLittle = (doc: ProseDocument, section: Section, unit: LengthUnit): boolean => {
   const first = section.firstSentence;
   if (first === undefined) return false;
-  if (unit === "char" && first.tokens !== undefined && section.headingTokens !== undefined)
-    return newContentMorphemes(titleTokens(section.heading, measuredHeading(section), section.headingTokens), first.tokens) <= NEW_CONTENT_MORPHEMES;
+  const stated = statedTokens(doc, first);
+  if (unit === "char" && stated !== undefined && section.headingTokens !== undefined)
+    return newContentMorphemes(titleTokens(section.heading, measuredHeading(section), section.headingTokens), stated) <= NEW_CONTENT_MORPHEMES;
   return lengthOf(first, unit) - echoedHeadingUnits(measuredHeading(section), proseText(first), unit) <= NEW_MATERIAL[unit];
 };
 
@@ -74,10 +87,10 @@ const pointsElsewhere = (doc: ProseDocument, section: Section): boolean => {
  * 予告や指示の語（covers, below, 説明, 以下）だけを述語にする文は、見出しを言い直しているだけで繰り返し。
  */
 const statesClaim = (doc: ProseDocument, section: Section): boolean => {
-  const first = section.firstSentence;
-  if (first?.tokens === undefined || section.headingTokens === undefined) return false;
+  const stated = section.firstSentence === undefined ? undefined : statedTokens(doc, section.firstSentence);
+  if (stated === undefined || section.headingTokens === undefined) return false;
   const heading = titleTokens(section.heading, measuredHeading(section), section.headingTokens);
-  return makesClaim(heading, first.tokens, announcerWords(doc.lexicons["heading-announcer"] ?? []));
+  return makesClaim(heading, stated, announcerWords(doc.lexicons["heading-announcer"] ?? []));
 };
 
 /** A figure, with its thousands separators (1,320,000), compared without them. */
@@ -138,7 +151,7 @@ const echoedText = (section: Section): string =>
 export const headingEcho: Detector = (doc, options): Finding[] => {
   const leadIns = (doc.lexicons["lead-in"] ?? []).map((entry) => entry.pattern);
   return doc.sections
-    .filter((section) => section.heading.length > 0 && section.firstSentence !== undefined && addsLittle(section, doc.lengthUnit))
+    .filter((section) => section.heading.length > 0 && section.firstSentence !== undefined && addsLittle(doc, section, doc.lengthUnit))
     .filter(
       (section) =>
         !leadsIn(doc, section, leadIns) &&

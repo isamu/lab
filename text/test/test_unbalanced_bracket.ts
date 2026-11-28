@@ -6,6 +6,7 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { bracketProblems, withRunOnRestored } from "../packages/chaff/src/detectors/unbalanced-bracket.ts";
 import { isLabelClose, isLabelInAside } from "../packages/chaff/src/detectors/bracket-label.ts";
 import { isInchMark } from "../packages/chaff/src/detectors/inch-mark.ts";
+import { isEmoticonMouth } from "../packages/chaff/src/detectors/emoticon.ts";
 
 // 括弧の組（unbalanced-bracket）。例文はすべて自作。
 
@@ -96,6 +97,63 @@ describe("unbalanced-bracket: 括弧が組になっていない", () => {
     assert.deepEqual(findingsOf("“I went out,\n\n“and came back.”\n", en), []);
   });
 
+  it("行ごとに引用符で開き直し、終わりで一度だけ閉じる詩の引用は、続きとして数えない", () => {
+    // Walt Whitman, "Going Somewhere", Leaves of Grass (1891-92)（パブリックドメイン）。
+    const verse = [
+      "  Ended our talk--“The sum, concluding all we know of old or modern",
+      "      learning, intuitions deep,",
+      "  “Of all Geologies--Histories--of all Astronomy--of Evolution,",
+      "      Metaphysics all,",
+      "  “Is, that we all are onward, onward, speeding slowly, surely bettering,",
+      "  “Life, life an endless march, an endless army, (no halt, but it is",
+      "      duly over,)",
+      "  “All bound as is befitting each--all surely going somewhere.”",
+    ].join("\n");
+    assert.deepEqual(findingsOf(`${verse}\n`, en, "a.txt"), []);
+    assert.deepEqual(bracketProblems(`${verse}\nThen “a” and “b”.`), []);
+  });
+
+  it("行の頭で開き直した引用が閉じなければ、開きをすべて数える。閉じた後ろの余った閉じも数える", () => {
+    assert.deepEqual(
+      bracketProblems("He said “one\n“two\n“three").map((problem) => problem.offset),
+      [8, 13, 18],
+    );
+    assert.deepEqual(
+      bracketProblems("He said “one\n“two\n“three.”\nThen it ended.”").map((problem) => problem.kind),
+      ["unopened"],
+    );
+  });
+
+  it("前の詩で閉じ忘れた引用は、空行の後ろの詩の、行ごとに開き直す引用の続きにしない", () => {
+    const poems = [
+      "And at last I said, “These are not leaves,",
+      "Why, can you not see they are days?",
+      "",
+      "",
+      "The Second Stone",
+      "",
+      "She told me:",
+      "“The sum of it all",
+      "“Is that we go on,",
+      "“All of us, somewhere.”",
+    ].join("\n");
+    assert.deepEqual(
+      bracketProblems(poems).map((problem) => problem.offset),
+      [poems.indexOf("“These")],
+    );
+  });
+
+  it("行の頭で一度だけ開いた引用符は、中に引いた言葉として組にする", () => {
+    assert.deepEqual(
+      bracketProblems("He said “I told her\n“go away” and left.”").map((problem) => problem.kind),
+      [],
+    );
+    assert.deepEqual(
+      bracketProblems("He said “I told her\n“go away” and left.").map((problem) => problem.kind),
+      ["unclosed"],
+    );
+  });
+
   it("コードの中と、URL に続けて書いた括弧（読み手には見える）", () => {
     assert.deepEqual(findingsOf("`(` と ``「`` はコード。\n\nサイト（https://example.jp/）をご覧ください。\n"), []);
     assert.deepEqual(findingsOf("サイト（https://example.jp/をご覧ください。\n"), ["「（」が閉じていません"]);
@@ -106,6 +164,11 @@ describe("unbalanced-bracket: 括弧が組になっていない", () => {
     assert.deepEqual(findingsOf("住所（`https://example.jp`）と（`https://example.com/a`）です。\n"), []);
     assert.deepEqual(findingsOf("住所（`https://example.jp`です。\n"), ["「（」が閉じていません"]);
     assert.deepEqual(findingsOf("住所は `https://example.jp`）です。\n"), ["「）」に対応する開きがありません"]);
+  });
+
+  it("IPv6 のアドレスを書いた URL の角括弧は URL の字", () => {
+    assert.deepEqual(findingsOf("The file for the IPv6 address:\n\n   https://[2001:db8:8:4::2]/.well-known/security.txt\n", en, "a.txt"), []);
+    assert.deepEqual(findingsOf("The host (https://[2001:db8::1]/ is down.\n", en), ['"(" is never closed']);
   });
 
   it("テキストの文書でも動く", () => {
@@ -210,5 +273,50 @@ describe("isInchMark", () => {
     assert.equal(isInchMark("2.5 “Hg” hit", 4, false), false);
     assert.equal(isInchMark("2.5 (Hg", 4, false), false);
     assert.equal(isInchMark("", 0, false), false);
+  });
+});
+
+describe("unbalanced-bracket: the mouth of an emoticon is not a bracket", () => {
+  it("an emoticon quoted inside a parenthesis leaves the parenthesis whole", () => {
+    assert.deepEqual(findingsOf('It reads symbols (e.g., ":-)"), short forms (e.g., "LOL"), and slang.\n', en), []);
+    assert.deepEqual(findingsOf("She signed off with a wink ;) and left (for good).\n", en), []);
+    assert.deepEqual(findingsOf('A sad face (":(") is scored low.\n', en), []);
+  });
+
+  it("a bracket after a colon inside a word still counts", () => {
+    assert.deepEqual(findingsOf("The ratio, see note:) is fixed.\n\nThe list is final.\n", en), ['")" closes nothing that was opened']);
+    assert.deepEqual(findingsOf("Leave a space after the colon (:) between the two names.\n", en), []);
+  });
+
+  it("isEmoticonMouth", () => {
+    assert.equal(isEmoticonMouth(':-)"', 2), true);
+    assert.equal(isEmoticonMouth(" ;(", 2), true);
+    assert.equal(isEmoticonMouth("note:)", 5), false);
+    assert.equal(isEmoticonMouth("(:)", 2), false);
+    assert.equal(isEmoticonMouth("a)", 1), false);
+    assert.equal(isEmoticonMouth("", 0), false);
+  });
+
+  it("半角の「｢｣」も鉤括弧として組にし、全角との幅の違いは指さない", () => {
+    assert.deepEqual(findingsOf("子供たちの｢生きる力｣を育む。\n"), []);
+    assert.deepEqual(findingsOf("目標を，｢英語で何ができるか」という観点から示す。\n"), []);
+    assert.deepEqual(findingsOf("目標を，｢英語で何ができるかという観点から示す。\n"), ["「｢」が閉じていません"]);
+  });
+});
+
+describe("unbalanced-bracket: a title's open bracket for its date", () => {
+  it("does not report a title line that opens a bracket for its date and never closes it", () => {
+    const poem = ["Song of the Harbour [1861-62", "", "  The ships come in at dawn,", "  and leave before the night.", ""].join("\n");
+    assert.deepEqual(findingsOf(poem, en, "a.txt"), []);
+    const dated = ["", "Lines for the Bridge [June 3, 1870", "", "  The river runs below.", ""].join("\n");
+    assert.deepEqual(findingsOf(dated, en, "a.txt"), []);
+  });
+
+  it("still reports an open bracket inside a paragraph, without a number, on a long line, or with no title", () => {
+    assert.equal(findingsOf("The ships come in [1861 and leave\nbefore the night.\n", en, "a.txt").length, 1);
+    assert.equal(findingsOf("Song of the Harbour [an old tune\n\n  The ships come in.\n", en, "a.txt").length, 1);
+    const long = `${"The ships come in at dawn and leave before the night, ".repeat(2)}[1861\n\nMore.\n`;
+    assert.equal(findingsOf(long, en, "a.txt").length, 1);
+    assert.equal(findingsOf("[1861-62\n\nMore.\n", en, "a.txt").length, 1);
   });
 });

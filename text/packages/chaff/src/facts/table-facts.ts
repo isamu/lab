@@ -112,15 +112,42 @@ const groupsOf = <T>(items: readonly T[], width: number | undefined): T[][] =>
 /** columnGroups: 見出しを繰り返す表を、並びごとに読む（並びの升には columnGroup が付く）。 */
 export type TableReading = { readonly columnGroups?: boolean };
 
-type RowReading = { readonly values: readonly FactValue[]; readonly source: string; readonly totals?: TotalColumns; readonly counts?: CountLabelWords };
+/** repeated: 並びの中で二つ以上の行に書いた行の見出し（groupLabelKey）。 */
+type RowReading = {
+  readonly values: readonly FactValue[];
+  readonly source: string;
+  readonly repeated: ReadonlySet<string>;
+  readonly totals?: TotalColumns;
+  readonly counts?: CountLabelWords;
+};
 
 /** 一つの行の升の値。見出しを繰り返す表（width がある）は、並びごとに読んで columnGroup を付ける。 */
 const groupedRowFacts = (row: Line, headings: readonly string[], width: number | undefined, at: RowReading): TableFact[] => {
   const headingGroups = groupsOf(headings, width);
   return groupsOf(cellsOf(row), width).flatMap((cells, group) => {
-    const facts = rowFacts(cells, headingGroups[group] ?? [], at.values, at.source, at.totals, at.counts);
+    const read = rowFacts(cells, headingGroups[group] ?? [], at.values, at.source, at.totals, at.counts);
+    const facts = at.repeated.has(groupLabelKey(cells, group)) ? read.map((fact) => withRowCells(fact, cells)) : read;
     return width === undefined ? facts : facts.map((fact) => ({ ...fact, columnGroup: group }));
   });
+};
+
+const groupLabelKey = (cells: readonly Cell[], group: number): string => `${String(group)}\u0000${keyOf(plain(cells[0]?.text ?? ""))}`;
+
+/** 一つの表の並びごとに、二つ以上の行に書いた行の見出し。 */
+const repeatedRowLabels = (rows: readonly Line[], width: number | undefined): ReadonlySet<string> => {
+  const keys = rows.flatMap((row) =>
+    groupsOf(cellsOf(row), width).flatMap((cells, group) => (plain(cells[0]?.text ?? "") === "" ? [] : [groupLabelKey(cells, group)])),
+  );
+  return new Set(keys.filter((key, index) => keys.indexOf(key) !== index));
+};
+
+/**
+ * 同じ見出しの行が二つある表の升は、ほかの升（行の見出しと自分の升を除く）も名前に入れる。状態や条件の列が違う二つの行
+ * （Enabled with at least 1 と at least 2）は別の行で、値の違いは食い違いではない。ほかの升がすべて同じ行どうしだけを比べる。
+ */
+const withRowCells = (fact: TableFact, cells: readonly Cell[]): TableFact => {
+  const others = cells.slice(1).filter((cell) => !inside(cell, fact.value));
+  return { ...fact, key: [fact.key, ...others.map((cell) => keyOf(plain(cell.text)))].join("\u0000") };
 };
 
 /** 文書の表すべての升の値。 */
@@ -134,7 +161,8 @@ export const tableFacts = (
   tablesOf(linesOf(source)).flatMap((table) => {
     const headings = cellsOf(table.header).map((cell) => plain(cell.text));
     const width = reading.columnGroups === true ? columnGroupWidth(headings) : undefined;
-    const at: RowReading = { values, source, ...(totals === undefined ? {} : { totals }), ...(counts === undefined ? {} : { counts }) };
+    const repeated = repeatedRowLabels(table.rows, width);
+    const at: RowReading = { values, source, repeated, ...(totals === undefined ? {} : { totals }), ...(counts === undefined ? {} : { counts }) };
     return table.rows.flatMap((row) => groupedRowFacts(row, headings, width, at));
   });
 

@@ -9,8 +9,15 @@ import { quoteAt } from "./structure-tree.ts";
 import { formsOf } from "./currency-notation.ts";
 import { scaledFiguresIn, scaleGaps, type ScaleWords } from "./scaled-figure-unit.ts";
 
-/** One value of a kind: where its number starts, as written, and its unit ("" when bare). */
-export type Measured = { readonly kind: string; readonly name: string; readonly offset: number; readonly written: string; readonly unit: string };
+/** One value of a kind: where its number starts, as written, and its unit ("" when bare). row: the table row of a cell. */
+export type Measured = {
+  readonly kind: string;
+  readonly name: string;
+  readonly offset: number;
+  readonly written: string;
+  readonly unit: string;
+  readonly row?: string;
+};
 
 export type UnitGap = { readonly value: Measured; readonly unit: string };
 
@@ -50,10 +57,11 @@ export const unitOf = (text: string, units: ReadonlySet<string>): string | undef
   return currency === "" && UNIT_SHAPE.test(suffix) && isUnit(suffix, units) ? suffix : undefined;
 };
 
-const measured = (kind: string, name: string, text: string, offset: number, units: ReadonlySet<string>): Measured[] => {
+const measured = (kind: string, name: string, text: string, offset: number, units: ReadonlySet<string>, row?: string): Measured[] => {
   const written = text.trim();
   const unit = unitOf(written, units);
-  return unit === undefined ? [] : [{ kind, name, offset: offset + Math.max(0, text.indexOf(written)), written, unit }];
+  const placed = row === undefined ? {} : { row };
+  return unit === undefined ? [] : [{ kind, name, offset: offset + Math.max(0, text.indexOf(written)), written, unit, ...placed }];
 };
 
 type LabelLine = { readonly label: string; readonly value: string; readonly at: number };
@@ -83,9 +91,10 @@ const tableValues = (source: string, table: MarkdownNode, index: number, units: 
   const [header, ...body] = table.children ?? [];
   return (header?.children ?? []).flatMap((headCell, column) => {
     const name = cellText(source, headCell)?.text.trim() ?? "";
-    return body.flatMap((row) => {
+    return body.flatMap((row, rowIndex) => {
       const cell = cellText(source, row.children?.[column]);
-      return cell === undefined || name === "" ? [] : measured(`table ${String(index)}: ${name}`, name, cell.text, cell.start, units);
+      const place = `table ${String(index)} row ${String(rowIndex)}`;
+      return cell === undefined || name === "" ? [] : measured(`table ${String(index)}: ${name}`, name, cell.text, cell.start, units, place);
     });
   });
 };
@@ -132,6 +141,17 @@ const gapsOfKind = (values: readonly Measured[]): UnitGap[] => {
 export const unitGaps = (values: readonly Measured[]): UnitGap[] => {
   const kinds = values.reduce((groups, value) => groups.set(value.kind, [...(groups.get(value.kind) ?? []), value]), new Map<string, Measured[]>());
   return [...kinds.values()].flatMap(gapsOfKind).toSorted((left, right) => left.value.offset - right.value.offset);
+};
+
+/**
+ * A bare cell whose row gives another column, one that carries a unit elsewhere, a bare number too: the row counts a
+ * thing of its own (| Website visits | 412,000 | 486,000 | +18% |), in a table whose rows are different measures.
+ */
+export const isBareRow = (gap: UnitGap, values: readonly Measured[]): boolean => {
+  const { row, kind } = gap.value;
+  if (row === undefined) return false;
+  const measuredKinds = new Set(values.filter((value) => value.unit !== "").map((value) => value.kind));
+  return values.some((value) => value.row === row && value.kind !== kind && value.unit === "" && measuredKinds.has(value.kind));
 };
 
 const unitsOf = (doc: ProseDocument): Set<string> =>
@@ -184,8 +204,9 @@ const scaleFindings = (doc: ProseDocument): Finding[] => {
 
 const columnFindings = (doc: ProseDocument): Finding[] => {
   const count = pieceCountOf(doc);
-  return unitGaps(measuredValues(doc.source, doc.prose ?? doc.source, unitsOf(doc)))
-    .filter((gap) => !isPieceCount(gap, count))
+  const values = measuredValues(doc.source, doc.prose ?? doc.source, unitsOf(doc));
+  return unitGaps(values)
+    .filter((gap) => !isPieceCount(gap, count) && !isBareRow(gap, values))
     .map((gap) => ({
       rule: "number-without-unit",
       severity: "warning",

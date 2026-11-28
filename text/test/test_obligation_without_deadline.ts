@@ -2,6 +2,7 @@ import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { statesAmount, untimedDuties, type DutyWords } from "../packages/chaff/src/detectors/obligation-without-deadline.ts";
 import { actsTimedAt, unitAt } from "../packages/chaff/src/detectors/deadline-unit.ts";
+import { pointedParagraphs } from "../packages/chaff/src/detectors/paragraph-pointer.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -41,6 +42,13 @@ describe("obligation-without-deadline", () => {
     assert.deepEqual(wordsIn(en, en_("3. The Company will notify you of any change to these Terms by email.")), ["notify"]);
   });
 
+  it('reads "by the" followed by a party as who, not when', () => {
+    assert.deepEqual(wordsIn(en, en_("3. On termination, the Designer shall return all materials supplied by the Client.")), ["return"]);
+    assert.deepEqual(wordsIn(en, en_("3. The Designer shall return all materials by the end of the month.")), []);
+    assert.deepEqual(wordsIn(en, en_("3. The Designer shall return all materials by the fifth business day after termination.")), []);
+    assert.deepEqual(wordsIn(en, en_("3. The Customer shall pay the invoice by the due date.")), []);
+  });
+
   it("does not report where the duties without a limit are not the minority", () => {
     assert.deepEqual(wordsIn(ja, "第1条　甲は、委託料を支払う。\n\n第2条　乙は、資料を提出する。\n"), []);
     const half = ["1. The Customer shall pay the fees.", "", "2. The Supplier shall deliver the goods within ten days.", ""].join("\n");
@@ -59,6 +67,20 @@ describe("obligation-without-deadline", () => {
     );
     assert.deepEqual(wordsIn(en, en_("3. The Supplier shall notify the Customer promptly of any breach.")), []);
     assert.deepEqual(wordsIn(en, en_("3. The Customer shall pay the Fees in accordance with the Order Form.")), []);
+  });
+
+  it("a duty whose time a payment schedule, a final award or the act it precedes sets is timed", () => {
+    assert.deepEqual(wordsIn(en, en_("3. The buyer will pay the seller its Fees in dollars according to the Payment Schedule.")), []);
+    assert.deepEqual(wordsIn(en, en_("3. The seller will pay the damages and costs finally awarded against the buyer.")), []);
+    assert.deepEqual(wordsIn(en, en_("3. On request, the club will submit its designs to the owner for prior written approval.")), []);
+    assert.deepEqual(wordsIn(en, en_("3. The club will submit its designs to the owner.")), ["submit"]);
+  });
+
+  it("a return made under the other party's return authorization follows that process, which sets its time", () => {
+    const rma = "3. The buyer shall return faulty units after obtaining a return material authorization number from the seller.";
+    assert.deepEqual(wordsIn(en, en_(rma)), []);
+    assert.deepEqual(wordsIn(en, en_("3. The buyer shall return faulty units with a return authorization from the seller.")), []);
+    assert.deepEqual(wordsIn(en, en_("3. The buyer shall return faulty units to the seller.")), ["return"]);
   });
 
   it("a notice period in the same sentence times the duty to notify; a notice with no period does not", () => {
@@ -95,6 +117,38 @@ describe("obligation-without-deadline", () => {
     assert.deepEqual(wordsIn(ja, ja_(...otherAct)), ["支払"]);
     const delivery = ["3. The Customer shall pay the Fees.", "4. The Supplier shall ship the goods before the delivery date."];
     assert.deepEqual(wordsIn(en, en_(...delivery)), ["pay"]);
+  });
+
+  it("does not report a duty whose article times the same act in a paragraph one of the two points at (本条1項, 前項)", () => {
+    const article = [
+      "第3条（利用料）",
+      "　乙は、甲に対し、本サービスの対価として利用料を支払う。",
+      "",
+      "2　乙は、前項の利用料を、毎月末日から10日以内に支払うものとする。",
+      "",
+      "3　乙は前項の利用料を銀行振込の方法により支払う。",
+      "",
+    ];
+    assert.deepEqual(wordsIn(ja, ja_(...article)), []);
+    const byNumber = ["第3条（利用料）", "　乙は、甲に対し、利用料を支払う。", "", "2　乙は、本条1項の利用料を、毎月末日から10日以内に支払う。", ""];
+    assert.deepEqual(wordsIn(ja, ja_(...byNumber)), []);
+    const other = ["第3条（利用料）", "　乙は、甲に対し、利用料を支払う。", "", "2　乙は、毎月末日から10日以内に報告書を提出する。", ""];
+    assert.deepEqual(wordsIn(ja, ja_(...other)), ["支払"]);
+    const unpointed = ["第3条（報酬）", "　甲は、乙に対し、報酬を支払う。", "", "2　甲は、乙に対し、毎月末日から10日以内に手数料を支払う。", ""];
+    assert.deepEqual(wordsIn(ja, ja_(...unpointed)), ["支払"]);
+    const sameParagraph = ["第3条（通知）", "　甲は、速やかに乙に通知する。甲は、理由とともに相手方に通知するものとする。", ""];
+    assert.deepEqual(wordsIn(ja, ja_(...sameParagraph)), ["通知"]);
+  });
+
+  it("a period set as a target (2か月を目途に) times the duty in its sentence", () => {
+    assert.deepEqual(wordsIn(ja, ja_("第3条　乙は、本契約締結日から2か月を目途に、甲に対して、契約を締結するか否かを通知する。")), []);
+  });
+
+  it("a duty done at a named occasion (次回の支払いの際に) or with another payment (翌月の請求と合算して) is timed", () => {
+    assert.deepEqual(wordsIn(ja, ja_("第3条　甲は、不足額を次回の支払いの際に合算して乙に支払う。")), []);
+    assert.deepEqual(wordsIn(ja, ja_("第3条　甲は、不足額を翌月の請求と合算して乙に支払う。")), []);
+    assert.deepEqual(wordsIn(ja, ja_("第3条　乙は、資料を作成し、甲に通知する。甲は、必要と判断した際に当該資料を確認する。")), []);
+    assert.deepEqual(wordsIn(ja, ja_("第3条　甲は、不足額を乙に支払う。")), ["支払"]);
   });
 
   it("does not run in a statute nor outside the legal genres", () => {
@@ -250,5 +304,16 @@ describe("unitAt and actsTimedAt", () => {
     assert.deepEqual(actsTimedAt(source, { articles: [], lists: [], paragraphs: [] }, 5, deadlines, holds), []);
     assert.deepEqual(actsTimedAt("", units, 5, deadlines, holds), []);
     assert.deepEqual(actsTimedAt(source, units, 5, [], holds), []);
+  });
+});
+
+describe("pointedParagraphs", () => {
+  const pointers = [{ pattern: "前項", group: "previous" }, { pattern: "本条…項" }, { pattern: "本条第…項" }];
+  it("reads the paragraph before and paragraphs by number, in half or full width", () => {
+    assert.deepEqual(pointedParagraphs("乙は前項の対価を支払う。", 4, pointers), [3]);
+    assert.deepEqual(pointedParagraphs("本条1項に定める対価", 3, pointers), [1]);
+    assert.deepEqual(pointedParagraphs("本条第２項の費用", 3, pointers), [2]);
+    assert.deepEqual(pointedParagraphs("乙は対価を支払う。", 3, pointers), []);
+    assert.deepEqual(pointedParagraphs("前項", 2, []), []);
   });
 });

@@ -19,6 +19,7 @@ import { PatternTimeout } from "./custom/pattern-timeout.ts";
 import { PluginRuleFailure } from "./extension/module-detector.ts";
 import { failureReason } from "./extension/failure-text.ts";
 import { tagCoverage } from "./tag-coverage.ts";
+import { compositeSignals, signalNames } from "./composite-signals.ts";
 
 export type Skipped = {
   readonly rule: string;
@@ -52,9 +53,11 @@ export const levelFor = (rule: RuleDefinition, settings: Settings, experimental:
   return "normal";
 };
 
-/** Why a rule at off did not run: chaff.yaml turned it off, the genre's preset did, it waits for a style, or it is experimental. */
-const offSkip = (rule: RuleDefinition, settings: Settings, preset: Settings, genre: string, reasons: Reasons): Skipped => {
-  if (settings[rule.id] !== undefined) return { rule: rule.id, why: reasons.turnedOff };
+/** Why a rule at off did not run: a by_path entry or chaff.yaml turned it off, the genre's preset did, it waits for a style, or it is experimental. */
+const offSkip = (rule: RuleDefinition, context: RunContext, preset: Settings, reasons: Reasons): Skipped => {
+  const { settings, genre } = context;
+  const byPath = context.levelsFrom?.[rule.id];
+  if (settings[rule.id] !== undefined) return { rule: rule.id, why: byPath === undefined ? reasons.turnedOff : reasons.turnedOffBy(byPath) };
   if (preset[rule.id] !== undefined) return { rule: rule.id, why: reasons.presetOff(genre) };
   if (rule.opt_in === true) return { rule: rule.id, why: reasons.optIn };
   return { rule: rule.id, why: reasons.experimental, offUntilExperimental: true };
@@ -102,15 +105,28 @@ const unreadOf = (doc: ProseDocument): Unread | undefined => {
 /** 見出しを読む rule の要求。表題より下の見出しが無い文書では、本題の前を測れない。0 件を「前置きが短い」に見せない。 */
 /** 記法を読む rule の要求（markdown）。.txt には見出しの記法も画像もリンクの記法も無いので、0 件を「問題なし」に見せない。 */
 /** documents: a rule that compares the documents of one run (cross-run.ts). Run on one document, it says so instead of finding nothing. */
-const DOCUMENT_NEEDS: ReadonlySet<string> = new Set(["headings", "markdown", "documents"]);
+/** sent-message: a rule that reads what a message carries (its attachments). A draft's are added when sending, out of the text's sight. */
+const DOCUMENT_NEEDS: ReadonlySet<string> = new Set(["headings", "markdown", "documents", "sent-message"]);
 
 const documentNeed = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
   if (rule.requires.includes("markdown") && !isMarkdownPath(doc.path)) return reasonsFor(doc).notMarkdown;
   if (rule.requires.includes("headings") && bodySectionOf(doc.sections) === undefined) return reasonsFor(doc).noHeadings;
+  if (rule.requires.includes("sent-message") && doc.sentMessage !== true) return reasonsFor(doc).draftMessage;
   if (!rule.requires.includes("documents")) return undefined;
   // Set aside only what the cross pass can run: a missing word list is said here, as for any rule.
   const absent = missingList(rule, doc.lexicons);
   return absent === undefined ? reasonsFor(doc).oneDocument : reasonsFor(doc).noLexicon(doc.language, absent);
+};
+
+/**
+ * 語彙表を要求する rule で、その言語に語彙表が無ければ動かせない。黙って通さない。
+ * A rule that reads only the team's list (team_list) has nothing to check while chaff.yaml lists nothing: its 0 findings would read as checked and fine.
+ */
+const listNeed = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
+  const absent = missingList(rule, doc.lexicons);
+  if (absent !== undefined) return reasonsFor(doc).noLexicon(doc.language, absent);
+  const listed = rule.word_list === undefined ? undefined : doc.lexicons[rule.word_list];
+  return rule.team_list !== undefined && (listed ?? []).length === 0 ? reasonsFor(doc).noTeamList(rule.team_list) : undefined;
 };
 
 /** 知らない要求は満たされていないものとして扱う。黙って無視すると、要求なしで動いてしまう。 */
@@ -153,6 +169,10 @@ const untagged = (rule: RuleDefinition, doc: ProseDocument): string | undefined 
   rule.requires.some((need) => need === "pos" || need === "lemma") ? tagReason(doc) : undefined;
 
 const suitsGenre = (rule: RuleDefinition, genre: string): boolean => rule.use_for.some((target) => genre.startsWith(target));
+
+/** Why the genre keeps the rule from running, in a run's words: use_for leaves the genre out, or its preset turns the rule off and chaff.yaml does not name it. */
+export const genreStop = (rule: RuleDefinition, settings: Settings, preset: Settings, genre: string, reasons: Reasons): string | undefined =>
+  !suitsGenre(rule, genre) || (settings[rule.id] === undefined && preset[rule.id] === "off") ? reasons.presetOff(genre) : undefined;
 
 const forGenre = (rules: readonly RuleDefinition[], genre: string): RuleDefinition[] => rules.filter((rule) => suitsGenre(rule, genre));
 
@@ -209,10 +229,14 @@ export const place = (starts: readonly number[], finding: Finding): Finding => {
  * 元の指摘は消さない。`padded-intro` のように単独でも正しい指摘が混ざっており、
  * まとめるために消すと本物の指摘が見えなくなる。
  */
-const compositeOf = (rule: RuleDefinition, found: readonly Finding[], limit: number, starts: readonly number[], language: string): Finding[] => {
-  const fired = rule.from.filter((id) => found.some((finding) => finding.rule === id));
+type CompositeContext = { readonly starts: readonly number[]; readonly language: string; readonly rules: readonly RuleDefinition[] };
+
+const compositeOf = (rule: RuleDefinition, found: readonly Finding[], limit: number, context: CompositeContext): Finding[] => {
+  const { starts, language, rules } = context;
+  const fired = compositeSignals(rule.from, found);
   if (fired.length < limit) return [];
-  const first = found.find((finding) => fired.includes(finding.rule));
+  // 数えなかった signal も含めて、最初に出た所に置く。同じ形を 1 種に数えても、指摘の位置は動かない。
+  const first = found.find((finding) => rule.from.includes(finding.rule));
   return [
     place(starts, {
       rule: rule.id,
@@ -220,7 +244,13 @@ const compositeOf = (rule: RuleDefinition, found: readonly Finding[], limit: num
       line: 0,
       column: 0,
       quote: first?.quote ?? "",
-      values: { word: joinWords(fired, language), count: fired.length, limit, offset: first === undefined ? 0 : Number(first.values["offset"] ?? 0) },
+      values: {
+        word: joinWords(fired, language),
+        signals: joinWords(signalNames(fired, rules, uiLanguageOf(language)), language),
+        count: fired.length,
+        limit,
+        offset: first === undefined ? 0 : Number(first.values["offset"] ?? 0),
+      },
     }),
   ];
 };
@@ -229,6 +259,17 @@ const compositeOf = (rule: RuleDefinition, found: readonly Finding[], limit: num
 export type Limits = Readonly<Record<string, number>>;
 
 export const limitFor = (rule: RuleDefinition, level: Level, genre: string, limits: Limits): number => limits[rule.id] ?? resolve(rule, level, genre).limit;
+
+type CompositeLevels = {
+  readonly levelOf: (rule: RuleDefinition) => Level;
+  readonly limitOf: (rule: RuleDefinition, level: Level) => number;
+  readonly context: CompositeContext;
+};
+
+const compositesOf = (applicable: readonly RuleDefinition[], found: readonly Finding[], levels: CompositeLevels): Finding[] =>
+  applicable
+    .filter((rule) => rule.from.length > 0 && levels.levelOf(rule) !== "off")
+    .flatMap((rule) => compositeOf(rule, found, levels.limitOf(rule, levels.levelOf(rule)), levels.context));
 
 /** 文書と違う言語で書いた文の上限。chaff.yaml の数値は文書の言語の単位で書いたものなので、ここには効かせない。 */
 const embeddedLimitsFor = (rule: RuleDefinition, level: Level, genre: string, embedded: readonly string[]): Record<string, number> =>
@@ -253,6 +294,8 @@ export type RunContext = {
   readonly optionLayers?: readonly OptionLayer[];
   /** The detectors loaded from the code chaff.yaml names, by rule id. They come before chaff's own table. */
   readonly detectors?: Readonly<Record<string, Detector>>;
+  /** For each rule a by_path entry set, which entry: a rule it turns off says so where the rules that did not run are listed. */
+  readonly levelsFrom?: Readonly<Record<string, string>>;
 };
 
 export const runRules = (
@@ -281,7 +324,7 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
     const blocked = unmet(rule, doc);
     if (blocked !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: blocked }] };
     const level = levelFor(rule, settings, experimental, preset);
-    if (level === "off") return { findings: acc.findings, skipped: [...acc.skipped, offSkip(rule, settings, preset, genre, reasonsFor(doc))] };
+    if (level === "off") return { findings: acc.findings, skipped: [...acc.skipped, offSkip(rule, context, preset, reasonsFor(doc))] };
     const noTags = untagged(rule, doc);
     if (noTags !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noTags }] };
     // 木は capability ではなく、adapter が structure を持つかで決まる。持たない言語で動かすと「参照先が無い」が 0 件に見える。
@@ -295,10 +338,8 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
     const detector = detectors[rule.id] ?? DETECTORS[rule.how_to_find];
     if (detector === undefined)
       return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).noDetector(rule.how_to_find) }] };
-    // 語彙表を要求する rule で、その言語に語彙表が無ければ動かせない。黙って通さない。
-    const absent = missingList(rule, doc.lexicons);
-    if (absent !== undefined)
-      return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).noLexicon(doc.language, absent) }] };
+    const noList = listNeed(rule, doc);
+    if (noList !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noList }] };
     const options = {
       limit: limitFor(rule, level, genre, limits),
       lexicon: rule.word_list === undefined ? undefined : doc.lexicons[rule.word_list],
@@ -322,11 +363,11 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
     },
     { findings: [], skipped: [] },
   );
-  const composites = applicable
-    .filter((rule) => rule.from.length > 0 && levelFor(rule, settings, experimental, preset) !== "off")
-    .flatMap((rule) =>
-      compositeOf(rule, outcome.findings, limitFor(rule, levelFor(rule, settings, experimental, preset), genre, limits), starts, doc.language),
-    );
+  const composites = compositesOf(applicable, outcome.findings, {
+    levelOf: (rule) => levelFor(rule, settings, experimental, preset),
+    limitOf: (rule, level) => limitFor(rule, level, genre, limits),
+    context: { starts, language: doc.language, rules },
+  });
   const all = [...outcome.findings, ...composites];
   return { ...outcome, findings: all.toSorted(byPosition), forcedExperimental: forced, presetExperimental: presetOn };
 };

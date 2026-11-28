@@ -9,6 +9,7 @@ import type { StructureScore } from "../structure-shape/score.ts";
 import { structureTargetsOf, type StructureTarget } from "./structure-targets.ts";
 import { DEFAULT_DEPTH, depthIncludes, type RewriteDepth } from "../rewrite-depth.ts";
 import type { ReportedGuide } from "../genre-guide/report.ts";
+import type { RisenRule } from "./risen.ts";
 
 /** One flagged spot, where it is and what chaff said about it. */
 export type PlanSpot = { readonly line: number; readonly column: number; readonly quote: string; readonly message: string };
@@ -38,6 +39,18 @@ type DocumentSignal = { readonly rule: string; readonly message: string };
 /** A rule that fired but reaches deeper than the chosen depth: named, not planned, so its silence is not read as fixed. */
 export type DeeperRule = { readonly rule: string; readonly name: string; readonly depth: RewriteDepth; readonly spots: number };
 
+/** The AI-likeness quick score in short: its level (or why none), the signs and the ones that showed. */
+export type AiScoreSummary = {
+  readonly level: string | null;
+  readonly notScored: string | null;
+  readonly signs: number;
+  readonly compared: number;
+  readonly shown: readonly string[];
+};
+
+/** The original a rewrite is checked against (--before): the rules whose findings rose, and the original's score. */
+export type SincePlan = { readonly path: string; readonly risen: readonly RisenRule[]; readonly aiScore: AiScoreSummary | null };
+
 /** The depth chosen for the plan, and where: --depth on the command line, or fix_plan.depth in chaff.yaml. */
 export type ChosenDepth = { readonly depth: RewriteDepth; readonly from: "flag" | "config" };
 
@@ -50,6 +63,14 @@ export type FixPlan = {
   /** What a good document of the genre does, to rewrite against; null when the genre was not set or the guide is off. */
   readonly guide: ReportedGuide | null;
   readonly experimental: boolean;
+  /** --all-ai-signs: every AI-likeness rule ran, whatever the genre turns off, and the plan loops to the stop conditions. */
+  readonly allSigns: boolean;
+  /** The document's AI-likeness score; null without --all-ai-signs. */
+  readonly aiScore: AiScoreSummary | null;
+  /** With --all-ai-signs, the AI-likeness rules that have a finding, in the order the plan lists them; empty is done. */
+  readonly aiRules: readonly string[];
+  /** The comparison with the original given by --before; null without it. */
+  readonly since: SincePlan | null;
   readonly mode: ModeChoice;
   /** None when chaff recommends the depth itself. */
   readonly chosenDepth: ChosenDepth | undefined;
@@ -84,6 +105,9 @@ export type PlanInput = {
   readonly phrases: Lexicon;
   readonly chosenDepth?: ChosenDepth | undefined;
   readonly guide?: ReportedGuide | undefined;
+  /** Given with --all-ai-signs: the findings already hold every AI-likeness rule's, and this is the document's score. */
+  readonly allSigns?: { readonly aiScore: AiScoreSummary; readonly ruleIds: ReadonlySet<string> } | undefined;
+  readonly since?: SincePlan | undefined;
 };
 
 const BOLD_DENSITY_RULE = "bold-density";
@@ -190,16 +214,29 @@ const notRunOf = (input: PlanInput, signalRules: ReadonlySet<string>): Skipped[]
   return input.skipped.filter((skipped) => watched.has(skipped.rule));
 };
 
-/** The commands to run on the rewrite. A rewrite past light cuts repeats and rebuilds headings, which compare is told. */
+/** The bundled judgement checks for the AI-likeness tells only a reader can see (packages/chaff/checks/). */
+export const AI_TELLS_CHECKS = "ai-tells";
+
+/**
+ * The commands to run on the rewrite. A rewrite past light cuts repeats and rebuilds headings, which compare is told.
+ * With --all-ai-signs the first is the same plan for the rewrite, set against the original, and the last sends the
+ * judgement tells (shown with --dry-run first: the passages would leave the machine).
+ */
 const checksOf = (input: PlanInput, choice: ModeChoice): string[] => {
   const original = shellPath(input.path);
   const rewritten = shellPath(rewrittenPathOf(input.path));
-  const lintFlags = [...(input.experimental ? ["--experimental"] : []), ...(input.genreFlag === undefined ? [] : ["--genre", input.genreFlag])];
+  const genreFlags = input.genreFlag === undefined ? [] : ["--genre", input.genreFlag];
+  const lintFlags = [...(input.experimental ? ["--experimental"] : []), ...genreFlags];
   const compareFlags = choice.depth !== undefined && choice.depth !== "light" ? ["--distinct", "--allow-dropped heading", "--allow-added heading"] : [];
+  const first =
+    input.allSigns === undefined
+      ? ["npx chaffjs", rewritten, ...lintFlags]
+      : ["npx chaffjs fix-plan", rewritten, "--all-ai-signs --before", original, ...lintFlags, "--json"];
   return [
-    ["npx chaffjs", rewritten, ...lintFlags].join(" "),
+    first.join(" "),
     ["npx chaffjs compare", original, rewritten, ...compareFlags].join(" "),
     ["npx chaffjs outline", original, rewritten].join(" "),
+    ...(input.allSigns === undefined ? [] : [["npx chaffjs test", rewritten, "--checks", AI_TELLS_CHECKS, ...genreFlags, "--dry-run"].join(" ")]),
   ];
 };
 
@@ -208,6 +245,12 @@ const structureLimitOf = (rules: readonly RuleDefinition[]): number =>
   rules.find((rule) => rule.id === STRUCTURE_RULE)?.levels.normal ?? DEFAULT_STRUCTURE_LIMIT;
 
 const documentLength = (outline: Outline): number => outline.entries.reduce((sum, entry) => sum + entry.length, 0);
+
+/** The AI-likeness rules with a finding, the composite included; none without --all-ai-signs. */
+const aiRulesFired = (input: PlanInput): string[] => {
+  const ids = input.allSigns?.ruleIds;
+  return ids === undefined ? [] : [...new Set(input.findings.map((finding) => finding.rule))].filter((rule) => ids.has(rule));
+};
 
 /** The plan for one document: deterministic, from chaff's findings, the rule files and the human baseline alone. */
 export const buildFixPlan = (input: PlanInput): FixPlan => {
@@ -226,6 +269,10 @@ export const buildFixPlan = (input: PlanInput): FixPlan => {
     genre: input.genre,
     guide: input.guide ?? null,
     experimental: input.experimental,
+    allSigns: input.allSigns !== undefined,
+    aiScore: input.allSigns?.aiScore ?? null,
+    aiRules: aiRulesFired(input),
+    since: input.since ?? null,
     mode,
     chosenDepth: input.chosenDepth,
     signals: signalsOf(input, signalRules),

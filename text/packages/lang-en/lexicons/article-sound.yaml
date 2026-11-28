@@ -80,6 +80,9 @@ entries:
   - { pattern: MIR, group: word }
   - { pattern: SEP, group: word }
   - { pattern: SIG, group: word }
+  - { pattern: NAS, group: word }
+  - { pattern: SAR, group: word }
+  - { pattern: SHA, group: either }
   - { pattern: SQL, group: either }
   - { pattern: FAQ, group: either }
   - { pattern: URL, group: either }
@@ -87,6 +90,7 @@ entries:
   - { pattern: RCV, group: either }
   - { pattern: SWS, group: either }
   - { pattern: SKU, group: either }
+  - { pattern: SOW, group: either }
   - { pattern: NIC, group: either }
   - { pattern: herb, group: either }
   - { pattern: histor, group: either }

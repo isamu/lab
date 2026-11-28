@@ -52,5 +52,19 @@ export const termSeriesSaving = (text: string): number =>
     .filter((terms) => terms.every((words) => words.length > 0 && words.length <= MAX_TERM_WORDS))
     .reduce((total, terms) => total + Math.max(0, terms.flat().length - 1), 0);
 
+/** A title, then a remark in parentheses that closes the line (Joint Statement on … Providers (See also the Board's press release.)). */
+const TITLE_AND_REMARK = /^([^()]+)\(([^()]+)\)$/u;
+
+/** The remark after a title line, the only words of it the writer wrote as a sentence; undefined when the text is not one. */
+export const remarkAfterTitle = (text: string): string | undefined => {
+  const parts = TITLE_AND_REMARK.exec(text.trim());
+  return parts !== null && isTitleLine(parts[1] ?? "") ? parts[2] : undefined;
+};
+
+/** A reference to another document: a short name, its quoted title, then its date (SR letter 21-8, "Interagency …" (April 9, 2021).). */
+const REFERENCE_LINE = /^[^"“”]{0,40}["“][^"“”]+["”],?\s*\([^()]*\d{4}\)\.?$/u;
+
+export const isReferenceLine = (text: string): boolean => REFERENCE_LINE.test(text.trim());
+
 /** Whether a span lies inside one of the item spans of the document's lists. */
 export const isInListItem = (span: Span, items: readonly Span[]): boolean => items.some((item) => item.start <= span.start && span.end <= item.end);

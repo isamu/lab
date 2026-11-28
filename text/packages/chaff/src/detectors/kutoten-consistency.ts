@@ -11,7 +11,8 @@ const KINDS: readonly Kind[] = [
   { id: "period", usual: "。", western: "．" },
 ];
 
-const MARKS = /[、，。．]/gu;
+/** 日本語の語と語の間の半角の「,」（自家用自動車,社用車）も、読点を「，」の側で書いたものと数える。 */
+const MARKS = /[、，。．]|(?<=[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]),(?=[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー])/gu;
 
 const DIGIT = /[\d０-９]/u;
 
@@ -95,6 +96,25 @@ const isItemReference = ({ text, at }: Place): boolean => DIGIT.test(text.charAt
 
 const isInsideNumber = (text: string, at: number): boolean => DIGIT.test(text.charAt(at - 1)) && DIGIT.test(text.charAt(at + 1));
 
+/**
+ * 符号（特許の図の符号や記号）。数字に一、二文字の英字を添えたもの（３０ａ、１１ｅ、Ｓ１）か、一、二文字の英字だけ（ａ、ｂ）。後ろにプライム（ａ′、３０ａ′）を添えてもよい。
+ * 「Word，Excel」のような語は符号ではない。
+ */
+const SIGN = /^(?:[A-Za-zＡ-Ｚａ-ｚ]{0,2}[\d０-９]{1,4}[A-Za-zＡ-Ｚａ-ｚ]{0,2}|[A-Za-zＡ-Ｚａ-ｚ]{1,2})[′″]?$/u;
+const SIGN_BEFORE = /(?:^|[^\dA-Za-z０-９Ａ-Ｚａ-ｚ])([\dA-Za-z０-９Ａ-Ｚａ-ｚ]+[′″]?)(?:[（(][^（）()]{0,20}[）)])?$/u;
+const SIGN_AFTER = /^([\dA-Za-z０-９Ａ-Ｚａ-ｚ]+[′″]?)(?![\dA-Za-z０-９Ａ-Ｚａ-ｚ′″])/u;
+const SIGN_REACH = 32;
+
+/**
+ * 符号を並べる「，」（側壁９ｃ，９ｃ間、ａ，ｂ，ｃ、端部１１ｃ（引き出し口側），１１ｄ）。特許の公報は本文を「、」で書き、
+ * 符号の並びだけを「，」で区切る。前の符号の後ろに括弧の添え書きがあってもよい。
+ */
+const isBetweenSigns = (text: string, at: number): boolean => {
+  const before = SIGN_BEFORE.exec(text.slice(Math.max(0, at - SIGN_REACH), at))?.[1];
+  const after = SIGN_AFTER.exec(text.slice(at + 1, at + 1 + SIGN_REACH))?.[1];
+  return before !== undefined && after !== undefined && SIGN.test(before) && SIGN.test(after);
+};
+
 const isLabelPeriod = (place: Place, kana: ReadonlySet<string>): boolean => {
   const { text, at } = place;
   const beforeNumber = text.slice(Math.max(0, at - LIST_NUMBER_REACH), at);
@@ -116,7 +136,7 @@ const isLabelPeriod = (place: Place, kana: ReadonlySet<string>): boolean => {
  */
 const isNotPunctuation = (place: Place, mark: string, kana: ReadonlySet<string>): boolean => {
   if (mark === "．") return isInsideNumber(place.text, place.at) || isLabelPeriod(place, kana);
-  if (mark === "，") return isInsideNumber(place.text, place.at);
+  if (mark === "，") return isInsideNumber(place.text, place.at) || isBetweenSigns(place.text, place.at);
   return false;
 };
 
@@ -135,8 +155,8 @@ export const marksIn = (sentence: Sentence, source: string, exceptions: MarkExce
     })
     .filter((match) => !isWithinAny(skipped, { start: match.index, end: match.index }))
     .map((match) => {
-      const western = match[0] === "，" || match[0] === "．";
-      const kind = match[0] === "、" || match[0] === "，" ? "comma" : "period";
+      const western = match[0] !== "、" && match[0] !== "。";
+      const kind = match[0] === "、" || match[0] === "，" || match[0] === "," ? "comma" : "period";
       return { kind, western, mark: match[0], offset: sentence.span.start + match.index };
     });
 };
@@ -155,15 +175,39 @@ export const isCitation = (sentence: Sentence, source: string): boolean =>
 
 type Tally = { readonly count: number; readonly of: number; readonly limit: number };
 
-const findingOf = (sentence: Sentence, entry: Mark, kind: Kind, tally: Tally): Finding => ({
+/** 少ないほうの書き方の一つの印と、その種類の文書の中の数。 */
+type Odd = { readonly sentence: Sentence; readonly entry: Mark; readonly kind: Kind; readonly tally: Tally };
+
+const usualOf = (odd: Odd): string => (odd.entry.western ? odd.kind.usual : odd.kind.western);
+
+/** 一つの種類の印。同じ文に同じ書き方が二つあっても、書き方は一つずつ並べる（「，」）。 */
+const markOf = (odds: readonly Odd[]): string => [...new Set(odds.map((odd) => odd.entry.mark))].join("」「");
+
+const sentenceFinding = (sentence: Sentence, values: Finding["values"], variant: string): Finding => ({
   rule: "",
   severity: "warning",
   line: 0,
   column: 0,
   quote: sentence.text.trim(),
-  values: { mark: entry.mark, usual: entry.western ? kind.usual : kind.western, ...tally, offset: entry.offset },
-  variant: entry.kind,
+  values,
+  variant,
 });
+
+/** 一つの文の少ないほうの印。読点と句点の両方なら、一件で両方を言う（貼り付けた文が一つの書き違い）。 */
+const findingOf = (sentence: Sentence, odds: readonly Odd[]): Finding[] => {
+  const commas = odds.filter((odd) => odd.kind.id === "comma");
+  const periods = odds.filter((odd) => odd.kind.id === "period");
+  const [first] = odds;
+  const [comma] = commas;
+  const [period] = periods;
+  if (first === undefined) return [];
+  const offset = first.entry.offset;
+  if (comma === undefined || period === undefined) {
+    return [sentenceFinding(sentence, { mark: markOf(odds), usual: usualOf(first), ...first.tally, offset }, first.kind.id)];
+  }
+  const periodValues = { periodMark: markOf(periods), periodUsual: usualOf(period), periodCount: period.tally.count, periodOf: period.tally.of };
+  return [sentenceFinding(sentence, { mark: markOf(commas), usual: usualOf(comma), ...comma.tally, ...periodValues, offset }, "both")];
+};
 
 const exceptionsOf = (doc: ProseDocument): MarkExceptions => {
   const patterns = (name: string): string[] => (doc.lexicons[name] ?? []).map((entry) => entry.pattern);
@@ -182,13 +226,20 @@ export const kutotenConsistency: Detector = (doc, options): Finding[] => {
   const located = doc.sentences
     .filter((sentence) => !isCitation(sentence, doc.source))
     .flatMap((sentence) => marksIn(sentence, doc.source, exceptions).map((entry) => ({ sentence, entry })));
-  return KINDS.flatMap((kind) => {
+  const odds = KINDS.flatMap((kind): Odd[] => {
     const ofKind = located.filter(({ entry }) => entry.kind === kind.id);
     const minority = minorityOf(ofKind.map(({ entry }) => entry.western));
     if (minority === undefined) return [];
     const odd = ofKind.filter(({ entry }) => entry.western === minority);
     if (odd.length < options.limit) return [];
     const tally = { count: odd.length, of: ofKind.length, limit: options.limit };
-    return odd.map(({ sentence, entry }) => findingOf(sentence, entry, kind, tally));
-  });
+    return odd.map(({ sentence, entry }) => ({ sentence, entry, kind, tally }));
+  }).toSorted((left, right) => left.entry.offset - right.entry.offset);
+  const sentences = [...new Set(odds.map((odd) => odd.sentence))];
+  return sentences.flatMap((sentence) =>
+    findingOf(
+      sentence,
+      odds.filter((odd) => odd.sentence === sentence),
+    ),
+  );
 };

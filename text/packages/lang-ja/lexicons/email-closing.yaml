@@ -1,11 +1,11 @@
 # 仕事のメールや手紙の結びの言葉。本文の最後の数行（署名の名前や連絡先の行を含む）のどれかに、この語のどれかがあれば結びがあるとみなす。
-# 英語の語（Regards など）は行の頭にあるときだけ数える。
+# 英語の語（Regards など）は行の頭か、行の中の文の頭にあるときだけ数える。
+# 同僚あての短いメールは「よろしく。」で結ぶ。社内の案内は「ご不明な点は…まで」と問い合わせ先で結ぶ。
 id: email-closing
 language: ja
 entries:
-  - pattern: よろしくお願い
+  - pattern: よろしく
   - pattern: 宜しくお願い
-  - pattern: よろしく御願い
   - pattern: お願い申し上げます
   - pattern: 敬具
   - pattern: 謹白
@@ -18,6 +18,8 @@ entries:
   - pattern: ありがとうございました
   - pattern: ありがとうございます
   - pattern: お待ちしております
+  - pattern: ご不明な点
+  - pattern: ご不明点
   - pattern: Regards
   - pattern: Best regards
   - pattern: Sincerely

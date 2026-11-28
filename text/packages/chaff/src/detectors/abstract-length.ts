@@ -41,11 +41,15 @@ export const headLabel = (text: string): { readonly label: string; readonly leng
 
 export type AbstractSpan = { readonly label: number; readonly body: Span };
 
-type Words = { readonly abstracts: ReadonlySet<string>; readonly sections: ReadonlySet<string> };
+type Words = { readonly abstracts: ReadonlySet<string>; readonly sections: ReadonlySet<string>; readonly bookends: ReadonlySet<string> };
+
+/** The lexicon group of a section that only opens or closes a text (はじめに, おわりに), which an essay has as well as a paper. */
+const BOOKEND = "bookend";
 
 const wordsOf = (doc: ProseDocument): Words => {
-  const set = (id: string): ReadonlySet<string> => new Set((doc.lexicons[id] ?? []).map((entry) => entry.pattern.toLowerCase()));
-  return { abstracts: set("abstract-heading"), sections: set("paper-section-heading") };
+  const set = (id: string, group?: string): ReadonlySet<string> =>
+    new Set((doc.lexicons[id] ?? []).filter((entry) => group === undefined || entry.group === group).map((entry) => entry.pattern.toLowerCase()));
+  return { abstracts: set("abstract-heading"), sections: set("paper-section-heading"), bookends: set("paper-section-heading", BOOKEND) };
 };
 
 /** Abstracts under a heading of their own: the text up to the next heading. */
@@ -75,11 +79,17 @@ export const abstractsOf = (doc: ProseDocument): AbstractSpan[] => {
   return found.filter((abstract, index) => found.findIndex((other) => other.label === abstract.label) === index);
 };
 
-/** The first heading that names a paper's section, when there are MIN_SECTIONS of them; undefined otherwise. */
+/**
+ * The first heading that names a paper's section, when there are MIN_SECTIONS of them and one is more than an opening or a
+ * closing; undefined otherwise. An article with only はじめに and おわりに around its own sections is an essay or a review,
+ * which carries no abstract.
+ */
 export const firstSectionHeading = (doc: ProseDocument): number | undefined => {
   const words = wordsOf(doc);
-  const sections = (doc.markup?.headings ?? []).filter((heading) => words.sections.has(labelOf(heading.text)));
-  return sections.length >= MIN_SECTIONS ? sections[0]?.start : undefined;
+  const labels = (doc.markup?.headings ?? []).map((heading) => ({ start: heading.start, label: labelOf(heading.text) }));
+  const sections = labels.filter(({ label }) => words.sections.has(label));
+  const hasBody = sections.some(({ label }) => !words.bookends.has(label));
+  return sections.length >= MIN_SECTIONS && hasBody ? sections[0]?.start : undefined;
 };
 
 type Measure = { readonly size: number; readonly limit: number | undefined; readonly unit: LengthUnit };

@@ -72,6 +72,55 @@ describe("use-before-definition: a summary section and a numbered heading are no
     assert.deepEqual(early(`一般にいう小規模宅地等について申告した。\n${DEFINITION}`), reported);
     assert.deepEqual(early(`上告人が定める小規模宅地等について申告した。\n${DEFINITION}`), reported);
   });
+
+  // Self-written: a preface that points the reader ahead to the licence it introduces.
+  it("a use that points the reader ahead (下記, 後述の, below) is not an early use", () => {
+    const later = "\n## 第1条\n\nこの文書の条項（以下「利用条件」という。）に従い、利用を許諾する。\n";
+    assert.deepEqual(early(`作品は、下記利用条件に従って共有できます。${later}`), []);
+    assert.deepEqual(early(`作品は、後述の利用条件に従って共有できます。${later}`), []);
+    assert.deepEqual(early(`作品は、以下の利用条件に従って共有できます。${later}`), []);
+    assert.deepEqual(early(`作品は、利用条件に従って共有できます。${later}`), ["「利用条件」を、4 行目の定義より前で使っています"]);
+    assert.deepEqual(early(`作品は、次回の利用条件に従って共有できます。${later}`), ["「利用条件」を、4 行目の定義より前で使っています"]);
+    const terms = '\n## Section 1\n\nThese terms (the "Licence") let anyone share the work.\n';
+    assert.deepEqual(early(`You may share the work under the Licence below.${terms}`, en), []);
+    assert.deepEqual(early(`You may share the work under the following Licence.${terms}`, en), []);
+    assert.deepEqual(early(`You may share the work under the Licence.${terms}`, en), ['"Licence" is used here, before it is defined on line 4']);
+    assert.deepEqual(early(`You may share the work under the Licence belowground.${terms}`, en), ['"Licence" is used here, before it is defined on line 4']);
+  });
+
+  // Self-written: a term used with a parenthesis that says its definition comes later.
+  it("a use followed by (defined below) or (as defined below) is not an early use", () => {
+    const terms = '\n## Section 1\n\nThese terms (the "Licence") let anyone share the work.\n';
+    assert.deepEqual(early(`You may share the work under the Licence (defined below).${terms}`, en), []);
+    assert.deepEqual(early(`You may share the work under the Licence (as defined below).${terms}`, en), []);
+    const bold = 'This Agreement incorporates the Cover Page (defined below). The parties sign a cover page ("**Cover Page**").\n';
+    assert.deepEqual(early(bold, en), []);
+    assert.deepEqual(early(`You may share the work under the Licence (defined in Section 1).${terms}`, en), [
+      '"Licence" is used here, before it is defined on line 4',
+    ]);
+  });
+
+  it("after a use that points ahead, later early uses are not reported; an earlier one still is", () => {
+    const later = "\n## 第1条\n\nこの文書の条項（以下「利用条件」という。）に従い、利用を許諾する。\n";
+    assert.deepEqual(early(`作品は、下記利用条件に従って共有できます。\n\n利用条件は取り消せません。${later}`), []);
+    assert.deepEqual(early(`利用条件は取り消せません。\n\n作品は、下記利用条件に従って共有できます。${later}`), [
+      "「利用条件」を、6 行目の定義より前で使っています",
+    ]);
+  });
+});
+
+describe("use-before-definition: a run-in item heading straight before the defining sentence is not a use", () => {
+  // Self-written: a report flattened to one line, where an item heading runs into the sentence that defines its term.
+  const LINE =
+    "業績は次のとおりであります。(1)営業成績等の概要当期における当社の財政状態及び営業成績（以下「営業成績等」という。）の概要は次のとおりであります。\n";
+
+  it("the heading names the term its own passage goes on to define", () => {
+    assert.deepEqual(early(LINE), []);
+  });
+
+  it("a use in a closed sentence before the definition is still reported", () => {
+    assert.deepEqual(early(LINE.replace("(1)営業成績等の概要", "営業成績等を述べます。")), ["「営業成績等」を、1 行目の定義より前で使っています"]);
+  });
 });
 
 describe("summarySections and summarisesLaterDefinition", () => {

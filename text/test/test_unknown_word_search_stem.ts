@@ -2,7 +2,7 @@ import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { isSearchStem } from "../packages/chaff/src/detectors/unknown-word.ts";
+import { isSearchStem } from "../packages/chaff/src/detectors/unknown-word-context.ts";
 
 // unknown-word on a keyword list whose stems end in a wildcard (vaccin*). Every example is self-written.
 

@@ -73,6 +73,12 @@ describe("paragraph-restatement: a paragraph that only says the last one again",
   it("does not report a summary that adds its point", () =>
     assert.deepEqual(findingsOf(ja, `# 在庫\n\n${JA_BEFORE}\n\nこのように、来月から全店で使い始め、最初の棚卸しは四月十日に行います。\n`), []));
 
+  it("does not report a summary that leads into a next step in the same paragraph", () => {
+    const next = "その一方で、来月から全店で使い始めるため、各店の担当者に操作の手順を説明し、最初の棚卸しの日程を決めた。";
+    assert.deepEqual(findingsOf(ja, `# 在庫\n\n${JA_BEFORE}\n\n${JA_RESTATED}${next}\n`), []);
+    assert.equal(findingsOf(ja, `# 在庫\n\n${JA_BEFORE}\n\n${JA_RESTATED}${JA_BEFORE}\n`).length, 1);
+  });
+
   it("does not report a repeat without an opener", () =>
     assert.deepEqual(findingsOf(ja, `# 在庫\n\n${JA_BEFORE}\n\n${JA_RESTATED.replace("このように、", "")}\n`), []));
 

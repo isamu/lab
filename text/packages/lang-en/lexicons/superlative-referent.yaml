@@ -1,0 +1,15 @@
+# Words that point at one member of a set, after a superlative subject and its verb: "The best plan is the one you will
+# keep", "The most important divergence is the second". The sentence says which one is the most, not that something is.
+id: superlative-referent
+language: en
+entries:
+  - pattern: one
+  - pattern: ones
+  - pattern: first
+  - pattern: second
+  - pattern: third
+  - pattern: last
+  - pattern: former
+  - pattern: latter
+  - pattern: whichever
+  - pattern: whatever

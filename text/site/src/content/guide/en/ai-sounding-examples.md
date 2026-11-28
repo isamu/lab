@@ -60,8 +60,8 @@ Rewrite depth: structure (sections, headings and paragraphs are reorganised).
 
 ## Document-level signals
 
-- `ai-generated-composite`: "ai-tell, padded-intro, closing-cliche" occur together in this document (3 signals, 3 needed)
-- `ai-tell`: "delve into, in today's fast-paced world, plays a crucial role, a testament to, meticulously" appear together (score 39, limit 18)
+- `ai-generated-composite`: 3 signals of generated text occur together in this document (2 needed): Phrasing common in generated text, Padded opening, Cliched closing
+- `ai-tell`: "delve into, in today's fast-paced world, plays a crucial role, a testament to, meticulously" appear together (score 39, limit 4)
 - `padded-intro`: "in today's fast-paced world" is an opening that fits any article
 - `closing-cliche`: Closes with "in conclusion"
 - Outline: headings 1, average section 171 words, in lists 0%, bold 0
@@ -110,9 +110,65 @@ after:
 **Spots**
 
 - line 3: "In today's fast-paced world, build speed plays a crucial role in how a team ships."
-  "delve into, in today's fast-paced world, plays a crucial role, a testament to, meticulously" appear together (score 39, limit 18)
+  "delve into, in today's fast-paced world, plays a crucial role, a testament to, meticulously" appear together (score 39, limit 4)
 
 …
+
+**Direction**: Delete the opening that fits any document ("In recent years, X has gained attention") and start from the situation or the claim only this piece has. If the body has none, ask the writer.
+
+**Keep**
+
+- the situation and claim only this piece has
+
+**Avoid**
+
+- swapping the opening for another generality ("X is now essential")
+- inventing a scene or an anecdote that is not in the body
+
+**Example**
+
+before:
+
+> In recent years, generative AI has gained attention. This article shows how we use it internally.
+
+after:
+
+> This article shows how we use generative AI internally.
+
+**Spots**
+
+- line 3: "In today's fast-paced world, build speed plays a crucial role in how a team ships."
+  "in today's fast-paced world" is an opening that fits any article
+
+### `closing-cliche` Cliched closing
+
+**Direction**: Delete the stock closing. If the piece already ends on its conclusion, stop there; if not, state in one sentence the one thing from the body the reader should take away.
+
+**Keep**
+
+- the conclusion the body reached
+
+**Avoid**
+
+- adding a conclusion or a call to action that is not in the body
+- swapping "Hope this helps" for "Give it a try"
+
+**Example**
+
+before:
+
+> The setting lives in one place on the admin page. Hope this helps!
+
+after:
+
+> The setting lives in one place on the admin page.
+
+**Spots**
+
+- line 11: "In conclusion, the shared cache is a testament to what careful engineering can achieve."
+  Closes with "in conclusion"
+- line 11: "I hope this helps!"
+  Closes with "hope this helps"
 
 {not-run}
 
@@ -259,19 +315,27 @@ $ npx chaffjs ai.md --genre blog/tech --compact
 
 ai.md   blog/tech · English   genre from --genre
 
+  3:1     info    "delve into, quietly" appear together (score 12, limit 4)
+                  ai-tell
+  3:1     warning 6 signals of generated text occur together in this document (2 needed): Phrasing common in generated text, Everything comes in threes, Cliched closing, Too many contrast frames, Too many sentences that announce before they say, Bold emphasis scattered through the text
+                  ai-generated-composite
+  7:1     info    3 bold spans of emphasis: 10.8 per 1000 words (limit 4)
+                  bold-emphasis
   7:49    info    18 -ly adverbs per 1000 words (limit 15)
                   adverb-overuse
+  9:1     info    "wasn't" and other contrast frames: 10% of sentences (limit 6%)
+                  contrast-framing
   11:1    info    "To be honest," and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
-  11:1    warning "closing-cliche, contrast-framing, announcing-opener" occur together in this document (3 signals, 3 needed)
-                  ai-generated-composite
   17:1    info    "The key point is" and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
+  21:1    info    2 of 2 lists have exactly three items (70% allowed)
+                  rule-of-three
   27:1    info    "What's important is" and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
-  37:51   info    "not only" and other contrast frames: 7.2 per 1000 words (limit 3)
+  37:51   info    "not only" and other contrast frames: 10% of sentences (limit 6%)
                   contrast-framing
-  45:1    info    "not just" and other contrast frames: 7.2 per 1000 words (limit 3)
+  45:1    info    "not just" and other contrast frames: 10% of sentences (limit 6%)
                   contrast-framing
   47:1    warning Closes with "hope this helps"
                   closing-cliche
@@ -370,15 +434,19 @@ The quick AI-likeness score (`ai-score`) compares the article before and after.
 $ npx chaffjs ai-score ai.md rewritten.md --genre blog/tech
 ai.md
 AI-likeness: high (more signs than human-written documents (Blog))
-  5 signs (of 26 compared, ones 90% of human documents do not show); medium from 3, high from 5
+  8 signs (of 32 compared, ones 90% of human documents do not show); medium from 3, high from 5
   Not a verdict on whether AI wrote it: how many signs common in generated text show, compared with human documents.
 
 Wording and shape
+  ✗ Phrasing common in generated text: 1  in 0 of 23 human-written documents (Blog)
   ✗ Too many sentences that announce before they say: 3  in 0 of 23 human-written documents (Blog)
+  ✗ Bold emphasis scattered through the text: 1  in 0 of 23 human-written documents (Blog)
   ✗ Cliched closing: 1  in 0 of 23 human-written documents (Blog)
-  ✗ Too many contrast frames: 2  in 0 of 23 human-written documents (Blog)
-  ✗ Several signals of generated text together: 3 of its signals (Cliched closing, Too many contrast frames, Too many sentences that announce before they say); from 2, its strict level, that is one more sign
-  · the other 15 did not show
+  ✗ Too many contrast frames: 3  in 0 of 23 human-written documents (Blog)
+  ✗ Everything comes in threes: 1  in 0 of 23 human-written documents (Blog)
+  ✗ Several signals of generated text together: 6 of its signals (Phrasing common in generated text, Everything comes in threes, Cliched closing, Too many contrast frames, Too many sentences that announce before they say, Bold emphasis scattered through the text); from 2, its strict level, that is one more sign
+  · the other 19 did not show
+  not compared (no human baseline): Stock email courtesies piled up, Too many sweeping claims about people, Questions answered with a fragment
 
 Structure (against human articles)
   ✗ list items opening with a bold label: 3  higher than 95% of human articles
@@ -386,11 +454,12 @@ Structure (against human articles)
 
 rewritten.md
 AI-likeness: low (about as many signs as human-written documents (Blog))
-  1 sign (of 25 compared, ones 90% of human documents do not show); medium from 3, high from 5
+  1 sign (of 31 compared, ones 90% of human documents do not show); medium from 3, high from 5
   Not a verdict on whether AI wrote it: how many signs common in generated text show, compared with human documents.
 
 Wording and shape
-  · the other 18 did not show
+  · the other 25 did not show
+  not compared (no human baseline): Stock email courtesies piled up, Too many sweeping claims about people, Questions answered with a fragment
 
 Structure (against human articles)
   ✗ sections of one or two paragraphs: 100% (mean 1.3 paragraphs)  higher than 90% of human articles
@@ -455,8 +524,10 @@ demo.md   blog/tech · English   genre from --genre
                   section-length-uniformity
   5:1     info    4 structure measures lie past 90% of human articles (3 needed): sections of one or two paragraphs, headings in a stock form, introduction / conclusion headings, list items opening with a bold label
                   ai-structure
-  5:1     warning "section-length-uniformity, padded-intro, closing-cliche, ai-structure" occur together in this document (4 signals, 3 needed)
+  5:1     warning 5 signals of generated text occur together in this document (2 needed): Phrasing common in generated text, Section lengths are too uniform, Padded opening, Cliched closing, The outline is unlike human articles
                   ai-generated-composite
+  7:1     info    "in today's fast-paced world, it's not just" appear together (score 13, limit 4)
+                  ai-tell
   7:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro
   33:184  warning Closes with "hope this helps"

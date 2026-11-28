@@ -21,16 +21,7 @@ const UNIT_WORD: Readonly<Record<"ja" | "en", Readonly<Record<LengthUnit, RegExp
 };
 
 /** The density rules there are now. A new one is checked as soon as its text says per 1000. */
-const KNOWN = [
-  "proper-noun-density",
-  "cushion-phrase-density",
-  "emoji-density",
-  "excessive-hedging",
-  "contrast-framing",
-  "stock-transition",
-  "no-em-dash",
-  "bold-density",
-];
+const KNOWN = ["proper-noun-density", "cushion-phrase-density", "emoji-density", "excessive-hedging", "stock-transition", "no-em-dash", "bold-density"];
 
 const unitOf = (rule: RuleDefinition, adapter: LanguageAdapter): LengthUnit => FIXED_UNIT[rule.id] ?? adapter.capabilities.lengthUnit;
 

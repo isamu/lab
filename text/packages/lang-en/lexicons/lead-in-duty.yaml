@@ -1,0 +1,8 @@
+# Words that make a colon lead-in a duty for colon-lead-in: "The lead should:", "Each entry must include:". What follows
+# is what has to be done or contained, the steps or parts of a procedure, and stays a list.
+id: lead-in-duty
+language: en
+entries:
+  - pattern: should
+  - pattern: must
+  - pattern: shall

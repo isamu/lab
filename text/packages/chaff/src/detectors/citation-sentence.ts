@@ -42,3 +42,33 @@ export const citationLead = (text: string, signals: readonly string[]): string |
   const lastSignal = pattern === undefined ? undefined : [...beforeYear.matchAll(pattern)].at(-1);
   return (lastSignal === undefined ? beforeYear : beforeYear.slice(0, lastSignal.index)).trim();
 };
+
+/** The same marks of a publication, every one of them: where an earlier reference in the text ends. */
+const PUBLICATION_MARKS_ALL: readonly RegExp[] = PUBLICATION_MARKS.map((mark) => new RegExp(mark.source, "gu"));
+
+const LEADING_SEPARATOR = /^[\s;,.]*(?:and\s+)?/u;
+
+/**
+ * The lead without the tail of an earlier reference it begins inside (…Discussion Series 2020-069 (Washington: Board of
+ * Governors, August); and Ben S. Bernanke, …): a splitter that cut inside a reference list hands over the end of one
+ * reference before the next one's authors. What follows the last mark of a publication is kept.
+ */
+export const withoutEarlierReference = (lead: string): string => {
+  const ends = PUBLICATION_MARKS_ALL.flatMap((mark) => [...lead.matchAll(mark)].map((match) => match.index + match[0].length));
+  return ends.length === 0
+    ? lead
+    : lead
+        .slice(Math.max(...ends))
+        .replace(LEADING_SEPARATOR, "")
+        .trim();
+};
+
+/** One author as a reference list in the Vancouver style writes them: a surname, then the initials (Kreimer AR, Gail MH, Cyr JT). */
+const AUTHOR = String.raw`\p{Lu}[\p{L}'’-]*\p{Ll}[\p{L}'’-]*(?: \p{Lu}[\p{L}'’-]*\p{Ll}[\p{L}'’-]*)* \p{Lu}{1,3}`;
+/** Fewer authors in a row than this are a sentence naming people, not the author list of a reference. */
+const MIN_AUTHORS = 3;
+const AUTHOR_LIST = new RegExp(String.raw`(?<!\p{L})${AUTHOR}(?:, ${AUTHOR}){${MIN_AUTHORS - 1},}(?!\p{L})`, "gu");
+
+/** The words an author list (Kreimer AR, Porras C, Liu D, …) adds beyond one: the authors of a reference, not the writer's sentence. */
+export const authorListSaving = (text: string): number =>
+  [...text.matchAll(AUTHOR_LIST)].reduce((saving, match) => saving + match[0].split(/\s+/u).length - 1, 0);

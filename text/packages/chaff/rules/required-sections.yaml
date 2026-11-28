@@ -72,4 +72,4 @@ not_flagged:
   en: Only the headings under required_sections in chaff.yaml are checked. A heading that contains the word counts ("Risks" is met by "Risks and mitigations").
 level_meaning:
   ja: 無い見出しが {limit} 個あれば指摘
-  en: reported once {limit} required headings are missing
+  en: reported once {limit} {limit|required heading is|required headings are} missing

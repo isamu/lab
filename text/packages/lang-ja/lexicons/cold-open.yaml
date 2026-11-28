@@ -1,0 +1,30 @@
+# 状況も例もなく始まる書き出しの語。group が形を言う。
+#   end:    最初の短い文がこの語で終わる（〜に任せたい。）
+#   echo:   この語のすぐ後ろの鉤括弧で、前の文の語を引き直す（この「だいたい」が）
+#   teaser: 易しく見せてから難所を予告する（それだけのことに見えて）
+id: cold-open
+language: ja
+entries:
+  - { pattern: たい, group: end }
+  - { pattern: たいです, group: end }
+  - { pattern: てほしい, group: end }
+  - { pattern: でほしい, group: end }
+  - { pattern: が要る, group: end }
+  - { pattern: が要ります, group: end }
+  - { pattern: が必要だ, group: end }
+  - { pattern: が必要です, group: end }
+  - { pattern: この, group: echo }
+  - { pattern: その, group: echo }
+  - { pattern: こういう, group: echo }
+  - { pattern: そういう, group: echo }
+  - { pattern: だけのことに見え, group: teaser }
+  - { pattern: だけのように見え, group: teaser }
+  - { pattern: 簡単そうに見え, group: teaser }
+  - { pattern: 単純そうに見え, group: teaser }
+  - { pattern: 簡単に見えて, group: teaser }
+  - { pattern: 一番難しいところ, group: teaser }
+  - { pattern: いちばん難しいところ, group: teaser }
+  - { pattern: と思うかもしれませんが, group: teaser }
+  - { pattern: と思われるかもしれませんが, group: teaser }
+  - { pattern: そう簡単ではありません, group: teaser }
+  - { pattern: 一筋縄ではいきません, group: teaser }

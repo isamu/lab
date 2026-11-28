@@ -137,8 +137,8 @@ example:
       New versions are on the same page.
 
 not_flagged:
-  ja: 中身のある節が 5 より少ない文書は見ません（min_sections で変えられます）。ビジネス文書と仕様書（technical/spec）のジャンルでは見ません。
-  en: Documents with fewer than 5 sections are not checked (min_sections changes it). Business and specification (technical/spec) genres do not run this rule.
+  ja: 中身のある節が 5 より少ない文書は見ません（min_sections で変えられます）。節を一つずつ数えて揃っていても、読み手が並べて比べる節でも揃っていなければ指摘しません。比べるのは、小見出しを含めた長さでの節どうしと、本文の無いまとめ見出し（よかったところ・気になったところ）の下に続く小見出しどうしです。見出しの節の半分以上が聞き手の問い（語彙表 interviewer-mark の印、――）で始まるインタビューは見ません。節ごとに問い一つと答えがあり、長さが揃うのは形式のためです。ビジネス文書と仕様書（technical/spec）のジャンルでは見ません。
+  en: Documents with fewer than 5 sections are not checked (min_sections changes it). Sections that are even when counted one by one are reported only if they are also even where a reader compares them. A reader compares the top-level sections with their subsections, and a run of subsections under headings with no text of their own (Pros, Cons). An interview, where at least half of the headed sections open with the interviewer's question (a mark of the interviewer-mark lexicon, such as Q:), is not checked. Each section there is one question and its answer, so even lengths are its form. Business and specification (technical/spec) genres do not run this rule.
 level_meaning:
   ja: 節の長さのばらつきが {limit}% 未満なら指摘
   en: reported when section length varies by less than {limit}%

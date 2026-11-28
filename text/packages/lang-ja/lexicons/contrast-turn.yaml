@@ -1,4 +1,5 @@
 # 打ち消し（contrast-lead）を返す語。同じ文の後ろか、次の文の頭に来る。
+# group closing: 文を閉じる語。closing の打ち消し（はなく、）を、同じ文の終わりで返す。ほかの打ち消しは返さない。
 id: contrast-turn
 language: ja
 entries:
@@ -7,3 +8,7 @@ entries:
   - pattern: ではない
   - pattern: むしろ
   - pattern: そうではなく
+  - pattern: です
+    group: closing
+  - pattern: だ
+    group: closing

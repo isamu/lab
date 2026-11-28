@@ -1,0 +1,11 @@
+# A closing that cheers the reader on or promises the outcome. Groups as closing-exhortation.ts reads them: an open:<pair>
+# word opening the sentence, and the sentence ending in an end:<pair> word ("Happy baking!").
+id: closing-exhortation
+language: en
+entries:
+  - pattern: you've got this
+  - pattern: you won't regret it
+  - pattern: Happy
+    group: open:happy
+  - pattern: "!"
+    group: end:happy

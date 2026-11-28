@@ -1,4 +1,4 @@
-import type { Span } from "../plugin.ts";
+import type { LengthUnit, Span } from "../plugin.ts";
 
 // ひな形が項目ごとに繰り返す飾り（一覧の札、リンクの文字、記号の並び）。書き手の言い回しではない。
 
@@ -31,9 +31,136 @@ export const fixedEndingSpans = (text: string, endings: readonly string[]): Span
   return endings.filter((ending) => ending !== "" && text.slice(0, end).endsWith(ending)).map((ending) => ({ start: end - ending.length, end }));
 };
 
+/** かぎ括弧の中（「国家公務員法等の一部を改正する法律」『…』）。引いた題や言葉で、書き手の言い回しではない。 */
+const QUOTED = /「[^「」]*」|『[^『』]*』/gu;
+
+export const quotedSpans = (text: string): Span[] => spansOf(text, QUOTED, () => true);
+
+/**
+ * 欄の名前（Cited by: footnote 2、External Links: Document）。大文字で始まる 1〜2 語にコロンが付き、後ろに値が続く。
+ * 変換が残した書式や書類の欄で、項目ごとに繰り返す。Follow these guidelines: のような 3 語以上の導入は欄ではない。
+ */
+const FIELD_LABEL = /(?<![\p{L}\p{N}])\p{Lu}\p{L}*(?: \p{L}+)?:(?= \S)/gu;
+
+export const fieldLabelSpans = (text: string, unit: LengthUnit): Span[] => (unit === "word" ? spansOf(text, FIELD_LABEL, () => true) : []);
+
 /** 窓の中の空白でない文字の過半が飾りなら、その出現は飾り。 */
 export const isFurniture = (text: string, mask: readonly boolean[], window: Span): boolean => {
   const visible = Array.from({ length: window.end - window.start }, (_, step) => window.start + step).filter((index) => !/\s/u.test(text[index] ?? ""));
   const marked = visible.filter((index) => mask[index] === true);
   return visible.length > 0 && marked.length * 2 > visible.length;
 };
+
+/** 引いた題の後ろの結びとして読む長さ（を確認してください。は 10 文字）。これより長ければ、題の後ろに書き手の文が続いている。 */
+const QUOTE_CLOSING_MAX = 12;
+/**
+ * 題を受ける格助詞（を、が、に、で、へ）一つと、述語だけ。助詞が無ければ引いた語が述語の一部（「実行」してまいります）で、
+ * 二つ目の助詞があれば書き手が別のことを足している（「…支援」に力を尽くしてまいります）。
+ */
+const QUOTE_CLOSING = new RegExp(String.raw`[」』]([をがにでへ][^「」『』、，。．をがにでへ]{1,${String(QUOTE_CLOSING_MAX - 1)}}[。．]?)\s*$`, "u");
+
+/** リンクの文字のすぐ後ろの結び（[ノンス](…)を参照してください。）。題を受ける助詞と述語だけなのは引いた題の後ろと同じ。 */
+const LINK_CLOSING = new RegExp(String.raw`[をがにでへ][^「」『』、，。．をがにでへ]{1,${String(QUOTE_CLOSING_MAX - 1)}}[。．]?\s*$`, "u");
+
+/** 文の中の位置がリンクの文字か。リンクの無い文は、どの位置もリンクではない。 */
+export type Linked = (index: number) => boolean;
+
+const NOT_LINKED: Linked = () => false;
+
+/** 引いた題か、リンクの文字の直後で結ぶ範囲。手引きや参照のページは、別のページを指すたびに同じ結びで指す。 */
+const closingAfterReference = (text: string, linked: Linked): Span | undefined => {
+  const quoted = QUOTE_CLOSING.exec(text);
+  if (quoted !== null) return { start: quoted.index + 1, end: quoted.index + quoted[0].length };
+  const afterLink = LINK_CLOSING.exec(text);
+  return afterLink !== null && afterLink.index > 0 && linked(afterLink.index - 1)
+    ? { start: afterLink.index, end: afterLink.index + afterLink[0].length }
+    : undefined;
+};
+
+const closingTextOf = (text: string, linked: Linked): string | undefined => {
+  const span = closingAfterReference(text, linked);
+  return span === undefined ? undefined : text.slice(span.start, span.end).trimEnd();
+};
+
+/**
+ * 文書が参照の書式として使う結び: 引いた題かリンクの直後で結ぶことが、その結びで終わる文の過半である結び（詳しくは「…」を確認してください。
+ * 詳しくは[…](…)を参照してください。）。引いた名前の後ろにたまたま来た書き手の結び（「生涯活躍のまち」を推進している。のほかは整備を
+ * 推進している。）は、ほとんどが題の後ろではない。linked は texts と同じ順の、文ごとのリンクの位置。
+ */
+export const referenceClosings = (texts: readonly string[], linked: readonly Linked[] = []): ReadonlySet<string> => {
+  const afterQuote = texts.flatMap((text, index) => closingTextOf(text, linked[index] ?? NOT_LINKED) ?? []);
+  return new Set(
+    [...new Set(afterQuote)].filter((closing) => {
+      const quoted = afterQuote.filter((each) => each === closing).length;
+      const ending = texts.filter((text) => text.trimEnd().endsWith(closing)).length;
+      return quoted * 2 > ending;
+    }),
+  );
+};
+
+/**
+ * 引いた題かリンクで終わる文の結び（詳しくは「入力可能な文字」を確認してください。）の範囲。
+ * closings（referenceClosings）にある結びだけを、参照の書式として数えない。
+ */
+export const quotedClosingSpans = (text: string, closings: ReadonlySet<string>, linked: Linked = NOT_LINKED): Span[] => {
+  const span = closingAfterReference(text, linked);
+  const closing = closingTextOf(text, linked);
+  return span !== undefined && closing !== undefined && closings.has(closing) ? [span] : [];
+};
+
+/** 文書の中の番号の付いた部分を指す語（Section 3.1 の Section）。 */
+const PART_LABELS = new Set([
+  "section",
+  "sections",
+  "table",
+  "tables",
+  "figure",
+  "figures",
+  "fig.",
+  "chapter",
+  "chapters",
+  "appendix",
+  "appendices",
+  "annex",
+  "part",
+  "parts",
+]);
+
+/** 語と、その後ろの番号（3.1、2b、B）。語が PART_LABELS にあれば文書の部分を指す名前。 */
+const LABEL_AND_NUMBER = /\b([A-Z][a-z]+\.?)\s+(?:\d+(?:\.\d+)*[a-z]?|[A-Z])\b/gu;
+/** 表2、図1-3、第3章、第2節。 */
+const JA_PART_REFERENCE = /[表図][\d０-９]+(?:[-－.．][\d０-９]+)*|第[\d０-９一二三四五六七八九十]+[章節]/gu;
+
+/**
+ * 文書の部分を指す名前（Section 3.1、Table 2、Appendix B、表2、第3章）の範囲。名前と同じく、それにかかる語句
+ * （the mechanism families set out in Section 3.1）は参照の書式で、数えない。
+ */
+export const partReferenceSpans = (text: string, unit: LengthUnit): Span[] =>
+  unit === "word" ? spansOf(text, LABEL_AND_NUMBER, (match) => PART_LABELS.has((match[1] ?? "").toLowerCase())) : spansOf(text, JA_PART_REFERENCE, () => true);
+
+/**
+ * 日本語の、数を入れた短い括弧の注（（前期比99.6％）、(同101.6％)、（前期は営業損失3,887千円））の範囲。報告は数ごとに比べた数を括弧で
+ * 添え、同じ結び（〜となりました。）で閉じる。中身は数で、注に触れる語句は数を並べる書式。長い注は書き手の文なので外さない。
+ */
+const JA_FIGURE_ASIDE = /[（(][^（）()\n]{0,20}[\d０-９][^（）()\n]{0,20}[）)]/gu;
+
+export const figureAsideSpans = (text: string, unit: LengthUnit): Span[] => (unit === "char" ? spansOf(text, JA_FIGURE_ASIDE, () => true) : []);
+
+/**
+ * 角括弧でくくった画面の部品の名前（[許可]、［ブックマーク］、[内容を確認]リンク）と、それに付く助詞一つの範囲。画面の手引きは手順ごとに
+ * 違う部品を指して同じ形で書く（[…]をクリックすると）。名前にかかる語句と同じく、部品の名前に付いた所からの語句は数えない。
+ * 後ろの片仮名の語（ボタン、リンク）も名前に入れる。
+ */
+const SCREEN_LABEL = /[[［【][^[\]［］【】]+[\]］】][\p{Script=Katakana}ー]*[をがにでへ]/gu;
+
+export const screenLabelSpans = (text: string, unit: LengthUnit): Span[] => (unit === "char" ? spansOf(text, SCREEN_LABEL, () => true) : []);
+
+/**
+ * 引用符でくくった、空白の無いファイルの名前（"security.txt"、"robots.txt"）。仕様書が定める名前で、どの規則の主語にもなる。
+ * 名前と同じく、触れる語句（A "security.txt" file）は数えない。
+ */
+const QUOTED_CHUNK = /["“]([^"“”\s]+)["”]/gu;
+const FILE_EXTENSION = /\.[A-Za-z0-9]+$/u;
+
+export const quotedFileNameSpans = (text: string, unit: LengthUnit): Span[] =>
+  unit === "word" ? spansOf(text, QUOTED_CHUNK, (match) => FILE_EXTENSION.test(match[1] ?? "")) : [];

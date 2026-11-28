@@ -83,7 +83,7 @@ Guide: Report (business/report)
   - Are facts kept apart from opinions and guesses?
   - Are the next actions given with an owner and a deadline?
 
-  Rules that matter most for this genre: concrete-evidence-density, cushion-phrase-density, empty-conclusion, padded-intro, preamble-length, quote-unnamed-speaker, request-without-deadline, risk-disclosure, unsourced-number
+  Rules that matter most for this genre: concrete-evidence-density, cushion-phrase-density, empty-conclusion, generic-opening, padded-intro, preamble-length, quote-unnamed-speaker, request-without-deadline, risk-disclosure, unsourced-number
   Change it with guide: in chaff.yaml; leave it out with --no-guide.
 
 ════════════════════════════════════════════════════════════
@@ -110,7 +110,7 @@ enquiries.md   business/report · English   genre from --genre
 
   ⚠  Too much hedging
 
-     This sentence stacks 3 hedges ("could, perhaps, may")
+     This sentence stacks 2 hedges ("could, perhaps")
      The more the text avoids claiming, the less the reader can tell what was decided. One hedge is caution; many mean nobody is accountable. chaff looks two ways. A sentence that stacks hedges ("may possibly", "it could perhaps be argued") is reported on its own, even in a short document. Too many hedges across the whole document is measured only on longer documents. When counting hedges stacked in a sentence, a hedge inside a quotation is the speaker's, not the writer's, and is left out.
 
      → Commit where you can. Where you cannot, say what you would need to know. Where hedges are stacked, keep one or drop them all and commit.
@@ -193,7 +193,7 @@ enquiries.md   business/report · English   genre from --genre
 
   5:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro
-  5:112   warning This sentence stacks 3 hedges ("could, perhaps, may")
+  5:112   warning This sentence stacks 2 hedges ("could, perhaps")
                   excessive-hedging
   9:66    info    This sentence runs 53 words (limit 45)
                   max-sentence-length
@@ -289,7 +289,7 @@ enquiries.md   business/report · English   genre from --genre
 
   5:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro
-  5:112   warning This sentence stacks 3 hedges ("could, perhaps, may")
+  5:112   warning This sentence stacks 2 hedges ("could, perhaps")
                   excessive-hedging
 
 {counts}
@@ -354,7 +354,7 @@ Guide: Report (business/report)
   - Are facts kept apart from opinions and guesses?
   - Are the next actions given with an owner and a deadline?
 
-  Rules that matter most for this genre: concrete-evidence-density, cushion-phrase-density, empty-conclusion, padded-intro, preamble-length, quote-unnamed-speaker, request-without-deadline, risk-disclosure, unsourced-number
+  Rules that matter most for this genre: concrete-evidence-density, cushion-phrase-density, empty-conclusion, generic-opening, padded-intro, preamble-length, quote-unnamed-speaker, request-without-deadline, risk-disclosure, unsourced-number
   Change it with guide: in chaff.yaml; leave it out with --no-guide.
 
 ════════════════════════════════════════════════════════════

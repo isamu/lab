@@ -67,7 +67,7 @@ describe("undefined-acronym and words the document makes known", () => {
   });
 
   it("invalid: the same words without code, in a title, outside a cited link, or a site a link leads to, are still reported", () => {
-    assert.deepEqual(reportedAcronyms(ja, "# 手引き\n\n単一の表への SELECT でも別名を付ける。\n"), ["SELECT"]);
+    assert.deepEqual(reportedAcronyms(ja, "# 手引き\n\n単一の表への QRYX でも別名を付ける。\n"), ["QRYX"]);
     assert.deepEqual(reportedAcronyms(en, "# Notes\n\nAsk the XYZ desk (`XYZ`).\n"), ["XYZ"]);
     assert.deepEqual(reportedAcronyms(en, "# The ACME naming guide\n\nName every ACME resource.\n"), ["ACME"]);
     assert.deepEqual(reportedAcronyms(en, "# Notes\n\nIt was said at FOSDEM 2024 ([Jane Roe](https://example.org/talk/)).\n"), ["FOSDEM"]);

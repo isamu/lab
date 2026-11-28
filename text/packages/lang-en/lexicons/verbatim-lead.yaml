@@ -1,0 +1,11 @@
+# Words of a lead-in that says the next paragraph is another document's text, word for word ("The entire receipt reads
+# as follows:"). A lead-in ends with a colon; max-sentence-length does not measure the paragraph after it. Matched
+# case-insensitively anywhere in the lead-in.
+id: verbatim-lead
+language: en
+entries:
+  - pattern: reads as follows
+  - pattern: read as follows
+  - pattern: reads in full
+  - pattern: reads in part
+  - pattern: reads in pertinent part

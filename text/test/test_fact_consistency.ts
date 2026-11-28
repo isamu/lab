@@ -330,6 +330,27 @@ describe("summary-fact-mismatch", () => {
     assert.deepEqual(doc("- Seats: 40"), []);
   });
 
+  it("a sentence's label is measured without its article (The registration deadline is …) (en)", () => {
+    const doc = (opening: string, body: string): string[] => summaryEn("# Workshop", "", opening, "", "## Registration", "", body);
+    const deadline = "The registration deadline is September 25, 2026.";
+    assert.deepEqual(doc("The registration deadline is September 18, 2026.", deadline), ["The registration deadline:September 18, 2026≠September 25, 2026"]);
+    assert.deepEqual(doc("Registration deadline: September 18, 2026", deadline), ["Registration deadline:September 18, 2026≠September 25, 2026"]);
+    assert.deepEqual(doc("The registration deadline is September 25, 2026.", deadline), []);
+    assert.deepEqual(doc("Registration deadline: September 25, 2026", deadline), []);
+    assert.deepEqual(doc("The maximum group size is 30.", "The maximum group size is 40."), ["The maximum group size:30≠40"]);
+    assert.deepEqual(doc("The maximum group size is 40.", "The maximum group size is 40."), []);
+    assert.deepEqual(doc("The cancellation fee is $300.", "The cancellation fee is $350."), ["The cancellation fee:$300≠$350"]);
+    // Without the article the label is still over the limit, so it is not read as a label.
+    assert.deepEqual(doc("The total number of registered participants is 30.", "The total number of registered participants is 40."), []);
+  });
+
+  it("a sentence's label in the opening against the body (ja)", () => {
+    const doc = (opening: string, body: string): string[] => summaryJa("# 説明会", "", opening, "", "## 申し込み", "", body);
+    assert.deepEqual(doc("締切は9月18日です。", "締切は9月25日です。"), ["締切:9月18日≠9月25日"]);
+    assert.deepEqual(doc("締切：9月18日", "締切は9月25日です。"), ["締切:9月18日≠9月25日"]);
+    assert.deepEqual(doc("締切は9月25日です。", "締切は9月25日です。"), []);
+  });
+
   it("a body that gives the label two values settles nothing", () => {
     const lines = ["# Report", "", "Seats: 30", "", "## First", "", "Seats: 40", "", "## Second", "", "Seats: 50"];
     assert.deepEqual(summaryEn(...lines), []);
@@ -970,5 +991,52 @@ describe("fact-conflict: worked examples and side-by-side tables", () => {
     assert.equal(columnGroupWidth(["Item", "Fee", "Item", "Seats"]), undefined);
     assert.equal(columnGroupWidth(["", "", "", ""]), undefined);
     assert.equal(columnGroupWidth([]), undefined);
+  });
+});
+
+describe("fact-conflict: a calendar era year, a record field inside list items, and two rows of one name", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+    await en.prepare?.({ pos: true });
+  });
+
+  it("a year after an era name (平成29年) is a date, not a retention length", () => {
+    const law = (year: string): string[] =>
+      conflictJa(
+        `野生動植物の種の保存に関する法律の一部を改正する法律（${year}法律第51号）では、制度が改められました。`,
+        "",
+        "改正法の施行から5年を経過したことを踏まえ、野生動植物の種の保存に関する法律の施行状況を評価しました。",
+      );
+    assert.deepEqual(law("平成29年"), []);
+    assert.deepEqual(law("平成 29年"), []);
+    assert.deepEqual(conflictJa("個人情報を1年間保存します。", "", "個人情報は3年経過後に削除します。"), ["個人情報:3年≠1年間"]);
+  });
+
+  it("a label that every reference entry carries is a field of each entry, not one fact (en)", () => {
+    const entry = (name: string, links: string): string => `- ${name}. A study of reading. Journal 3 (2), pp. 1–9. External Links: ${links} Cited by: §1.`;
+    const references = conflictEn(
+      "## References",
+      "",
+      entry("Abe (2020)", "2006.01463, Document"),
+      entry("Bell (2021)", "Document"),
+      entry("Cole (2022)", "2105.27117, Link"),
+      entry("Dunn (2023)", "Document"),
+    );
+    assert.deepEqual(references, []);
+    assert.deepEqual(conflictEn("## Fees", "", "- Fee: $300", "- Venue: Hall A", "- Fee: $350"), ["Fee:$350≠$300"]);
+  });
+
+  it("two rows of one name that differ in another column are two rows, not one value twice (en)", () => {
+    const rows = (second: string): string[] =>
+      conflictEn(
+        "| Name | Status | Tier |",
+        "| --- | --- | --- |",
+        "| Require approvals | Enabled with at least 1 | 2 |",
+        "| Allow deletions | Disabled | 1 |",
+        `| Require approvals | ${second} | 4 |`,
+      );
+    assert.deepEqual(rows("Enabled with at least 2"), []);
+    assert.deepEqual(rows("Enabled with at least 1"), ["Require approvals Tier:4≠2"]);
+    assert.deepEqual(conflictEn("| Item | Amount |", "| --- | --- |", "| Deposit | $500 |", "| Rent | $1,200 |", "| Deposit | $600 |"), ["Deposit:$600≠$500"]);
   });
 });

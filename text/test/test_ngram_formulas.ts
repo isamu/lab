@@ -1,0 +1,182 @@
+import { before, describe, it } from "node:test";
+import assert from "node:assert/strict";
+import { buildDocument } from "../packages/chaff/src/document.ts";
+import { loadRules } from "../packages/chaff/src/rule-load.ts";
+import { runRules } from "../packages/chaff/src/run.ts";
+import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { adapter as en } from "../packages/lang-en/src/index.ts";
+import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+
+// ngram-repetition: fixed formulas a document carries per item, not the writer saying it again. A label line repeated
+// verbatim before each box (The following rule has the force of law:), a plain-text definition list (qu:  The "qu" parameter
+// value conveys …), a cross-reference closing right after a link ([…](…)を参照してください。), a phrase a heading names, and a
+// report line filled in with different numbers. Each is checked both ways. Self-written text.
+
+const JA_FILLER = Array.from({ length: 70 }, (_, index) => `項目${String(index)}の値${String(index)}。`).join("");
+const EN_FILLER = Array.from({ length: 40 }, (_, index) => `Item ${String(index)} holds value ${String(index * 3)} today.`).join(" ");
+
+/** The phrase ngram-repetition reports in a source, with filler after it so that the document is long enough to measure. */
+const worst = (adapter: LanguageAdapter, source: string, genre = "business/report"): string | undefined => {
+  const filled = `${source}\n## Notes\n\n${adapter === ja ? JA_FILLER : EN_FILLER}\n`;
+  const finding = runRules(buildDocument("t.md", filled, adapter), loadRules(adapter.id), {}, true, genre).findings.find(
+    (each) => each.rule === "ngram-repetition",
+  );
+  return finding === undefined ? undefined : String(finding.values["word"]);
+};
+
+const SUBJECTS = ["paper records", "invoices", "receipts", "credit notes", "ledgers", "spreadsheets", "bank statements", "order forms"];
+const ACTIONS = ["keep", "store", "file", "sort", "copy", "check", "scan", "label"];
+const NAMES = ["qu", "w", "pk", "r", "t", "q", "id", "ts"];
+const MEANINGS = ["quota units", "a time window", "a partition key", "remaining units", "a reset time", "a quota", "a request id", "a timestamp"];
+const PAGES = ["ノンス", "ハッシュ", "インラインスクリプト", "評価の制限", "報告の送り先", "既定のソース", "投機ルール", "埋め込みの制限"];
+const TOPICS = ["鍵の管理", "署名の検証", "暗号の選び方", "証明書の更新", "権限の付与", "ログの保存", "通知の設定", "端末の登録"];
+const TAILS = [
+  "may lose income",
+  "raises credit risk",
+  "needs a cosigner",
+  "can still apply",
+  "pays a higher rate",
+  "faces more checks",
+  "is rarely approved",
+  "should be told why",
+];
+const PROJECTS = ["Alder", "Birch", "Cedar", "Dogwood", "Elm", "Fir", "Ginkgo", "Hazel"];
+
+before(async () => {
+  await en.prepare?.({ pos: true });
+  await ja.prepare?.({ pos: true });
+});
+
+describe("ngram-repetition: a fixed formula an item carries", () => {
+  it("does not count a label line repeated verbatim before each box, and counts one that varies", () => {
+    const boxes = SUBJECTS.map(
+      (subject, index) =>
+        `## Box ${String(index + 1)}\n\nThe following rule has the force of law:\n\nYou must ${ACTIONS[index] ?? ""} ${subject} for six years.\n`,
+    );
+    assert.equal(worst(en, `# Records\n\n${boxes.join("\n")}`), undefined);
+    const varied = SUBJECTS.map(
+      (subject, index) =>
+        `## Box ${String(index + 1)}\n\nFor ${subject}, the following rule has the force of law:\n\nYou must ${ACTIONS[index] ?? ""} them for six years.\n`,
+    );
+    assert.equal(worst(en, `# Records\n\n${varied.join("\n")}`), "following rule has");
+  });
+
+  it("does not count the opening of each entry in a plain-text definition list, and counts the same words in prose", () => {
+    const entries = NAMES.map((name, index) => `   ${name}:  The OPTIONAL "${name}" parameter value conveys ${MEANINGS[index] ?? ""}.\n`);
+    assert.equal(worst(en, `# Fields\n\nThe header has these parameters.\n\n${entries.join("\n")}`), undefined);
+    const prose = NAMES.map((name, index) => `In this header the "${name}" parameter value conveys ${MEANINGS[index] ?? ""}.`);
+    assert.equal(worst(en, `# Fields\n\n${prose.join(" ")}\n`), "parameter value conveys");
+  });
+
+  it("does not count a closing right after a link when the document closes its links that way, and counts it after plain words", () => {
+    const linked = PAGES.map((page, index) => `${TOPICS[index] ?? ""}は[${page}](/guide#${String(index)})を参照してください。`);
+    assert.equal(worst(ja, `# 設定\n\n${linked.join("\n\n")}\n`), undefined);
+    const plain = PAGES.map((page, index) => `${TOPICS[index] ?? ""}は${page}の節を参照してください。`);
+    assert.match(worst(ja, `# 設定\n\n${plain.join("\n\n")}\n`) ?? "", /参照/u);
+  });
+
+  it("does not count a phrase a heading names, and counts one no heading names", () => {
+    const body = SUBJECTS.map((subject, index) => `For ${subject}, a borrower not legally authorized to work ${TAILS[index] ?? ""}.`).join(" ");
+    assert.equal(worst(en, `## Letters\n\n### Lending to a borrower not legally authorized to work\n\n${body}\n`), undefined);
+    assert.match(worst(en, `## Letters\n\n### Guidance on lending\n\n${body}\n`) ?? "", /not legally authorized/u);
+  });
+
+  it("does not count a report line filled in with different numbers, and counts the same line copied verbatim", () => {
+    const filled = PROJECTS.map(
+      (project, index) => `## ${project}\n\nThere are currently ${String(index + 3)} committers and ${String(index + 2)} members in this project.\n`,
+    );
+    assert.equal(worst(en, `# Minutes\n\n${filled.join("\n")}`), undefined);
+    const copied = PROJECTS.map((project) => `## ${project}\n\nThere are currently 5 committers and 4 members in this project.\n`);
+    assert.notEqual(worst(en, `# Minutes\n\n${copied.join("\n")}`), undefined);
+  });
+
+  it("does not count one-line status items that differ only by a leading name, and counts them in prose or after plain words", () => {
+    const items = PROJECTS.map((project, index) => `- Apache ${project} ${String(index + 1)}.0 is in maintenance mode.`);
+    assert.equal(worst(en, `# Minutes\n\nSub-projects:\n\n${items.join("\n")}\n`), undefined);
+    const prose = PROJECTS.map((project, index) => `Apache ${project} ${String(index + 1)}.0 is in maintenance mode.`);
+    assert.match(worst(en, `# Minutes\n\n${prose.join(" ")}\n`) ?? "", /maintenance mode/u);
+    const plain = SUBJECTS.map((subject) => `- ${subject.charAt(0).toUpperCase()}${subject.slice(1).split(" ")[0] ?? ""} is in maintenance mode.`);
+    assert.match(worst(en, `# Minutes\n\nSub-projects:\n\n${plain.join("\n")}\n`) ?? "", /maintenance mode/u);
+  });
+
+  it("does not count a minutes' fixed line for a report not given, and counts a line the writer wrote", () => {
+    const missing = PROJECTS.map((project) => `## ${project}\n\nNo report was submitted.\n`);
+    assert.equal(worst(en, `# Minutes\n\n${missing.join("\n")}`), undefined);
+    const calm = PROJECTS.map((project) => `## ${project}\n\nThere are no issues requiring board attention.\n`);
+    assert.equal(worst(en, `# Minutes\n\n${calm.join("\n")}`), undefined);
+    const written = PROJECTS.map((project) => `## ${project}\n\nThe report was written late again.\n`);
+    assert.notEqual(worst(en, `# Minutes\n\n${written.join("\n")}`), undefined);
+  });
+
+  it("does not count the words around a quoted file name a specification defines, and counts them around a plain word", () => {
+    const quoted = ACTIONS.map((action, index) => `Our ${SUBJECTS[index] ?? ""} are listed in a "status.txt" file that we ${action}.`);
+    assert.equal(worst(en, `# Format\n\n${quoted.join(" ")}\n`), undefined);
+    const plain = ACTIONS.map((action, index) => `Our ${SUBJECTS[index] ?? ""} are listed in a status file that we ${action}.`);
+    assert.notEqual(worst(en, `# Format\n\n${plain.join(" ")}\n`), undefined);
+  });
+
+  it("does not count a closing each numbered example carries once, and counts it in numbered steps or repeated in one example", () => {
+    const example = (subject: string, index: number): string =>
+      `## Example ${String(index + 1)}\n\nThe firm keeps ${subject} in a cabinet. The record trail begins at the ${subject} because they hold the detail.\n`;
+    assert.equal(worst(en, `# Examples\n\n${SUBJECTS.map(example).join("\n")}`), undefined);
+    const step = (subject: string, index: number): string => example(subject, index).replace("Example", "Step");
+    assert.notEqual(worst(en, `# Steps\n\n${SUBJECTS.map(step).join("\n")}`), undefined);
+    const repeated = SUBJECTS.map((subject) => `The record trail begins at the ${subject} because they hold the detail.`).join(" ");
+    assert.notEqual(worst(en, `# Examples\n\n## Example 1\n\n${repeated}\n\n## Example 2\n\nNone.\n\n## Example 3\n\nNone.\n`), undefined);
+  });
+
+  it("does not count the opening each section under a shared field heading carries, and counts it under other headings", () => {
+    const report = (project: string, index: number, heading: string): string =>
+      `## ${project}\n\n### ${heading}\n\nThe mission of ${project} is the creation and maintenance of software related to ${SUBJECTS[index] ?? ""}.\n`;
+    assert.equal(worst(en, `# Reports\n\n${PROJECTS.map((project, index) => report(project, index, "Description:")).join("\n")}`), undefined);
+    const own = PROJECTS.map((project, index) => report(project, index, `What ${project} does`));
+    assert.notEqual(worst(en, `# Reports\n\n${own.join("\n")}`), undefined);
+    const label = PROJECTS.map((project, index) => report(project, index, "Advice"));
+    assert.notEqual(worst(en, `# Reports\n\n${label.join("\n")}`), undefined);
+  });
+
+  it("does not count a line each section with the same sub-headings carries, and counts it in sections without them", () => {
+    const report = (project: string, index: number, outline: string): string =>
+      `## ${project}\n\n${project} builds tools for ${SUBJECTS[index] ?? ""}.\n\n${project} has been incubating since 2022-10-${String(index + 10)}.\n${outline}`;
+    const questions = "\n### Issues to address\n\nNone.\n\n### Releases\n\nNone.\n";
+    assert.equal(worst(en, `# Podlings\n\n${PROJECTS.map((project, index) => report(project, index, questions)).join("\n")}`), undefined);
+    assert.notEqual(worst(en, `# Podlings\n\n${PROJECTS.map((project, index) => report(project, index, "")).join("\n")}`), undefined);
+  });
+
+  it("does not count the wording of a resolution's clauses, and counts the same wording in plain sentences", () => {
+    const resolution = (project: string): string =>
+      [
+        `## Establish ${project}\n`,
+        `RESOLVED, that the ${project} committee be and hereby is established; and be it further`,
+        `RESOLVED, that the office of chair of ${project} be and hereby is created; and be it further`,
+        `RESOLVED, that the persons listed below be and hereby are appointed to ${project}.\n`,
+      ].join("\n\n");
+    assert.equal(worst(en, `# Resolutions\n\n${PROJECTS.slice(0, 3).map(resolution).join("\n")}`), undefined);
+    const plain = PROJECTS.slice(0, 3).map((project) => resolution(project).replaceAll("RESOLVED, that", "We agreed that"));
+    assert.notEqual(worst(en, `# Resolutions\n\n${plain.join("\n")}`), undefined);
+  });
+
+  it("does not count the outcome line after each resolution, and counts it after plain paragraphs", () => {
+    const item =
+      (body: (project: string, subject: string) => string) =>
+      (project: string, index: number): string =>
+        [
+          `## ${String.fromCharCode(65 + index)}. Establish ${project}\n`,
+          `${body(project, SUBJECTS[index] ?? "")}\n`,
+          `Special Order 7${String.fromCharCode(65 + index)}, Establish ${project}, was approved by Unanimous Vote of the directors present.\n`,
+        ].join("\n");
+    const resolved = PROJECTS.map(
+      item((project, subject) => `WHEREAS, the board has heard about ${subject}.\n\nRESOLVED, that the ${project} committee is established.`),
+    );
+    assert.equal(worst(en, `# Special Orders\n\n${resolved.join("\n")}`), undefined);
+    const plain = PROJECTS.map(item((project, subject) => `${project} looks after ${subject}.`));
+    assert.match(worst(en, `# Special Orders\n\n${plain.join("\n")}`) ?? "", /approved by unanimous|unanimous vote/iu);
+  });
+
+  it("does not count a phrase whose only content word is the document's subject, and counts one with other words", () => {
+    const body = (verb: string): string => SUBJECTS.map((subject, index) => `For ${subject}, you can ${verb} the ${MEANINGS[index] ?? ""}.`).join(" ");
+    assert.equal(worst(en, `# Record keeping\n\n${body("record")}\n`), undefined);
+    assert.match(worst(en, `# Bookkeeping basics\n\n${body("record")}\n`) ?? "", /record/u);
+    assert.notEqual(worst(en, `# Record keeping\n\n${body("file")}\n`), undefined);
+  });
+});

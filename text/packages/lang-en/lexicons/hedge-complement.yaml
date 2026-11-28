@@ -1,0 +1,10 @@
+# Words that open a content clause after a verb (knowing that, wondering whether). A modal inside that clause is part
+# of what is known or wondered, not a second hedge on the claim: in "Perhaps you like knowing that you may not see
+# anyone", perhaps hedges the liking and may is the chance being known.
+# Used only by excessive-hedging's count of hedges in one sentence. Not after a hedge's own verb (it seems that).
+# English only: a Japanese hedge ends its sentence, after the clause it hedges, so no word opens a clause there.
+id: hedge-complement
+language: en
+entries:
+  - pattern: that
+  - pattern: whether

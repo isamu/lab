@@ -2,9 +2,7 @@ import type { Detector, Finding, Lexicon, ProseDocument, Span } from "../plugin.
 import { escapeRegExp } from "../orthography.ts";
 import { isQuotedAlone } from "../quoted-span.ts";
 import { findingAt, markupOf } from "./markup-finding.ts";
-
-/** One marker a chat interface leaves when its answer is pasted: where it is and what was written. */
-export type ChatMarker = { readonly matched: string; readonly span: Span };
+import { wholeMarks, type ChatMarker } from "./chat-mark-extent.ts";
 
 /** Every place a lexicon pattern is written in `text`, case and all, in the order they appear. */
 export const markersIn = (text: string, lexicon: Lexicon): ChatMarker[] =>
@@ -69,9 +67,10 @@ export const standsAlone = (source: string, span: Span): boolean => {
   return withoutSurrounding(`${before}${marker}${after}`) === marker;
 };
 
-/** Each marker is a leftover in its own right, so each is reported, from the first. */
+/** Each mark is a leftover in its own right, so each is reported once, whole, from the first. */
 export const chatCitationResidue: Detector = (doc, options): Finding[] => {
-  const markers = markersIn(doc.source, options.lexicon ?? []).filter((marker) => reachesReader(doc, marker.span) && !standsAlone(doc.source, marker.span));
+  const found = markersIn(doc.source, options.lexicon ?? []).filter((marker) => reachesReader(doc, marker.span) && !standsAlone(doc.source, marker.span));
+  const markers = wholeMarks(doc.source, found);
   if (markers.length === 0 || markers.length < options.limit) return [];
   return markers.map((marker) => findingAt(doc, marker.span, { matched: marker.matched, count: markers.length, limit: options.limit }));
 };

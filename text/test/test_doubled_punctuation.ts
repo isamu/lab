@@ -84,6 +84,33 @@ describe("doubled-punctuation: 句読点が重なっている", () => {
     assert.deepEqual(runsOf("Command,,     7"), [",,"]);
   });
 
+  it("点線で欄を揃えた表（配役表）の短い点線は数えない", () => {
+    // J. M. Synge, Riders to the Sea (1904) の配役表（パブリックドメイン）。
+    const cast = [
+      "MAURYA (_an old woman_)......  Honor Lavelle BARTLEY (_her",
+      "son_)..........  W. G. Fay CATHLEEN (_her daughter_)....  Sarah Allgood",
+      "NORA (_a younger daughter_)..  Emma Vernon MEN AND WOMEN",
+    ].join("\n");
+    assert.deepEqual(runsOf(cast), []);
+    assert.deepEqual(findingsOf(`${cast}\n`, en), []);
+  });
+
+  it("揃えの空白の後ろでも、ほかに長い点線の無い段落の「..」は数える", () => {
+    assert.deepEqual(runsOf("It was done..  Then we left."), [".."]);
+    assert.deepEqual(runsOf("Cast......  Ann\n\nIt was done..  Then we left."), [".."]);
+    assert.deepEqual(runsOf("NORA..  Emma\nMAURYA...... Honor"), [".."]);
+  });
+
+  it("「。」で終わる書名の後ろの、書誌の区切りの点（SIST02）は数えない", () => {
+    assert.deepEqual(runsOf("山田花子. 図書館はなぜ静かなのか？その理由を考えた。. 図書館研究. 2020, 12(3), p. 1-9."), []);
+    assert.deepEqual(runsOf("山田花子. 静かな図書館！. 図書館研究. 2020."), []);
+  });
+
+  it("書誌でない行の「。.」は重なりとして数える", () => {
+    assert.deepEqual(runsOf("資料を送ります。. 明日届きます。"), ["。."]);
+    assert.deepEqual(runsOf("山田花子. 静かな図書館。. 本を読む人が増えた。"), ["。."]);
+  });
+
   it("空の文書", () => {
     assert.deepEqual(runsOf(""), []);
   });

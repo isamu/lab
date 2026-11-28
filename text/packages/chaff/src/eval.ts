@@ -77,6 +77,8 @@ const meets = (need: string, docs: readonly ProseDocument[]): boolean => {
   if (need === "headings") return docs.some((doc) => bodySectionOf(doc.sections) !== undefined);
   // 記法を読む rule は Markdown の文書でしか動かない。
   if (need === "markdown") return docs.some((doc) => doc.markup?.markdown === true);
+  // 下書きでは lint が動かない。送ったメールが 1 つも無ければ、どの閾値でも 0 件になる。
+  if (need === "sent-message") return docs.some((doc) => doc.sentMessage === true);
   return false;
 };
 

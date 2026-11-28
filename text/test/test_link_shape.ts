@@ -68,6 +68,12 @@ describe("bare-url-mix: a bare URL among worded links", () => {
     assert.deepEqual(bareUrl(`${WORDED_EN}\n\n{ "home": "https://e.com/people/ann" }`, en), []);
   });
 
+  it("a URL template with placeholders is not bare, and a URL after it on the line still is", () => {
+    assert.deepEqual(bareUrl(`${WORDED_EN}\n\nReplace the placeholders: https://e.com/viewer/?uri=<platform>.com/<user_name>/<repo>.`, en), []);
+    assert.deepEqual(bareUrl(`${WORDED_EN}\n\nThe pattern is https://e.com/{owner}/{repo} for every project.`, en), []);
+    assert.deepEqual(bareUrl(`${WORDED_EN}\n\nSee https://e.com/help <for help>.`, en).length, 1);
+  });
+
   it("a quoted URL in a sentence is still bare", () =>
     assert.deepEqual(bareUrl(`${WORDED_EN}\n\nThe page "https://e.com/terms" has the full terms.`, en), [
       'The URL "https://e.com/terms" is written bare (3 worded links in this document)',

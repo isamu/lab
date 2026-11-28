@@ -1,34 +1,46 @@
-import { definedLevels, resolve, severityAt } from "../levels.ts";
+import { definedLevels, genreKeyFor, resolve, severityAt } from "../levels.ts";
 import { fill, localized, readableText } from "./text.ts";
 import { SEVERITY_NAME } from "./severity-name.ts";
 import { uiLanguageOf, type Texts } from "../ui.ts";
 import type { Level, RuleDefinition } from "../plugin.ts";
 import { optionLines } from "./options.ts";
 import type { OptionLayer } from "../rule-options.ts";
+import type { PathRuleLevel } from "../config/by-path-rules.ts";
 import { depthMeaning } from "../rewrite-depth.ts";
+import { writtenScope } from "../text-scope.ts";
 
 const TEXT: Texts<{
   readonly off: string;
-  readonly defaultGenre: string;
-  readonly genreNote: (genre: string, others: string) => string;
+  readonly numbersFor: (key: string | undefined, genre: string | undefined) => string;
+  readonly othersOwn: (others: readonly string[]) => string;
+  readonly othersDefault: string;
+  readonly sentenceGap: string;
   readonly experimental: string;
   readonly alone: (id: string) => string;
   readonly howToFix: string;
   readonly depth: (depth: string, meaning: string) => string;
   readonly example: string;
   readonly definedIn: (plugin: string | undefined) => string;
+  readonly scope: (written: string) => string;
   readonly values: string;
   readonly times: string;
   readonly severities: string;
   readonly now: (level: string) => string;
   readonly nowNumber: (limit: string) => string;
+  readonly notRun: (why: string) => string;
   readonly from: (source: string) => string;
   readonly change: (id: string) => string;
+  readonly byPath: string;
 }> = {
   ja: {
     off: "見ない",
-    defaultGenre: "既定",
-    genreNote: (genre, others) => `この数字は ${genre} のものです。ほかに ${others} で別の数字を持っています。`,
+    numbersFor: (key, genre) => {
+      const owner = key === undefined ? "既定" : ` ${key} `;
+      return genre === undefined || genre === key ? `この数字は${owner}のものです。` : `この数字は${owner}のもので、${genre} はこれを使います。`;
+    },
+    othersOwn: (others) => `${others.join(" / ")} は別の数字を持っています。`,
+    othersDefault: "ほかのジャンルは既定の数字を使います。",
+    sentenceGap: "",
     experimental: "このルールはまだ試験中で、既定では動きません（--experimental で動きます）。",
     alone: (id) => `このルールだけを動かす:  npx chaffjs enable ${id}（chaff.yaml の rules に ${id}: normal と書くのと同じです）`,
     howToFix: "直しかた",
@@ -37,18 +49,27 @@ const TEXT: Texts<{
     example: "例",
     definedIn: (plugin) =>
       plugin === undefined ? "このルールはチームが chaff.yaml の custom_rules で決めたものです。" : `このルールはプラグイン ${plugin} のものです。`,
+    scope: (written) => `読む所: ${written}（chaff.yaml の scope）`,
     values: "設定できる値:",
-    times: "回",
+    times: "{limit} 回",
     severities: "設定できる値（数える上限は無く、指摘の重さが変わります）:",
     now: (level) => `いまは ${level} です。`,
     nowNumber: (limit) => `いまは段階ではなく数です: ${limit}。`,
+    notRun: (why) => `いまは動きません（${why}）。`,
     from: (source) => `（${source} で決めています）`,
     change: (id) => `変える:  npx chaffjs relax ${id} --why "理由"`,
+    byPath: "chaff.yaml の by_path で、次のファイルだけ変えています（そのファイルでは上の段階より強く効きます）:",
   },
   en: {
     off: "not checked",
-    defaultGenre: "the default genre",
-    genreNote: (genre, others) => `These numbers are for ${genre}. ${others} have numbers of their own.`,
+    numbersFor: (key, genre) => {
+      if (key === undefined)
+        return genre === undefined ? "These numbers are for the default genre." : `These numbers are the default ones, which ${genre} takes.`;
+      return genre === key ? `These numbers are for ${key}.` : `These numbers are for ${key}, which ${genre} takes.`;
+    },
+    othersOwn: (others) => `${others.join(" / ")} ${others.length === 1 ? "has numbers of its own" : "have numbers of their own"}.`,
+    othersDefault: "Other genres take the default numbers.",
+    sentenceGap: " ",
     experimental: "This rule is still experimental and does not run by default (--experimental runs it).",
     alone: (id) => `Turn on this rule alone:  npx chaffjs enable ${id}  (the same as rules: { ${id}: normal } in chaff.yaml)`,
     howToFix: "How to fix",
@@ -56,13 +77,16 @@ const TEXT: Texts<{
     example: "Example",
     definedIn: (plugin) =>
       plugin === undefined ? "The team defined this rule under custom_rules in chaff.yaml." : `This rule comes from the plugin ${plugin}.`,
+    scope: (written) => `Reads: ${written} (scope in chaff.yaml)`,
     values: "Levels:",
-    times: "times",
+    times: "{limit} {limit|time|times}",
     severities: "Levels (there is no limit to count to; a level sets how a finding is marked):",
     now: (level) => `Now: ${level}.`,
     nowNumber: (limit) => `Now: ${limit}, set as a number rather than a level.`,
+    notRun: (why) => `Now: not run (${why}).`,
     from: (source) => ` (set by ${source})`,
     change: (id) => `Change it:  npx chaffjs relax ${id} --why "reason"`,
+    byPath: "by_path in chaff.yaml changes it for these files (there it wins over the level above):",
   },
 };
 
@@ -72,7 +96,7 @@ const TEXT: Texts<{
  */
 const limitText = (rule: RuleDefinition, limit: number, language: string): string => {
   const meaning = localized(rule.guide?.levelMeaning ?? {}, language);
-  return meaning === "" ? `${String(limit)} ${TEXT[uiLanguageOf(language)].times}` : fill(meaning, { limit });
+  return fill(meaning === "" ? TEXT[uiLanguageOf(language)].times : meaning, { limit });
 };
 
 /** What a level holds: the limit a detector counts to, or the severity a rule with nothing to count gives. */
@@ -90,9 +114,11 @@ const levelLine = (rule: RuleDefinition, level: Level, current: Level | undefine
 
 /** ジャンルで数字が変わる rule は、それを言わないと「設定したのに効かない」に見える。 */
 const genreNote = (rule: RuleDefinition, genre: string | undefined, text: (typeof TEXT)["ja"]): string[] => {
-  const others = Object.keys(rule.by_genre).filter((key) => key !== genre);
-  if (others.length === 0) return [];
-  return ["", `  ${text.genreNote(genre ?? text.defaultGenre, others.join(" / "))}`];
+  const key = genreKeyFor(rule, genre);
+  const others = Object.keys(rule.by_genre).filter((other) => other !== key);
+  if (others.length === 0 && key === undefined) return [];
+  const othersLine = others.length === 0 ? text.othersDefault : text.othersOwn(others);
+  return ["", `  ${text.numbersFor(key, genre)}${text.sentenceGap}${othersLine}`];
 };
 
 /** A team's rule shows its example, before and after, and says where it was defined. */
@@ -100,7 +126,15 @@ const exampleLines = (rule: RuleDefinition, language: string, text: (typeof TEXT
   const examples = rule.guide?.examples ?? {};
   const example = examples[language] ?? examples["en"] ?? Object.values(examples)[0];
   if (rule.custom === undefined || example === undefined) return [];
-  return ["", `  ${text.example}:  ${example.before}`, `      →  ${example.after}`, "", `  ${text.definedIn(rule.plugin)}`];
+  const scope = rule.custom.type === "module" ? undefined : rule.custom.scope;
+  return [
+    "",
+    `  ${text.example}:  ${example.before}`,
+    `      →  ${example.after}`,
+    ...(scope === undefined ? [] : ["", `  ${text.scope(writtenScope(scope))}`]),
+    "",
+    `  ${text.definedIn(rule.plugin)}`,
+  ];
 };
 
 /** How deep the rule's rewrite direction reaches, for a rule that has one: what chaff fix-plan --depth compares. */
@@ -117,6 +151,21 @@ export type ExplainSettings = {
   readonly limit?: number | undefined;
   /** The rule is off only because it is experimental, so naming it would run it: say how. */
   readonly offOnlyAsExperimental?: boolean;
+  /** Why the genre keeps the rule from running, as a run lists it: then no level is current. */
+  readonly genreStop?: string | undefined;
+  /** The by_path entries that set this rule for the files they match, in the order written. */
+  readonly byPath?: readonly PathRuleLevel[];
+};
+
+/** Each by_path entry that sets the rule, with the level or number it sets, so a rule off for one folder is not a surprise. */
+const byPathLines = (byPath: readonly PathRuleLevel[], text: (typeof TEXT)["ja"]): string[] =>
+  byPath.length === 0
+    ? []
+    : ["", `  ${text.byPath}`, ...byPath.map((entry) => `    ${entry.files.join(", ")}: ${entry.limit === undefined ? entry.level : String(entry.limit)}`)];
+
+const nowLine = (rule: RuleDefinition, current: Level, limit: number | undefined, language: string): string => {
+  const text = TEXT[uiLanguageOf(language)];
+  return limit === undefined ? text.now(current) : text.nowNumber(limitText(rule, limit, language));
 };
 
 /** rule の意図と根拠を読む。指摘に納得できないときの入口。 */
@@ -124,10 +173,15 @@ export const renderExplain = (rule: RuleDefinition, current: Level, language: st
   const { optionLayers = [], levelFrom } = settings;
   // A rule with nothing to count has no number to set; chaff.yaml's number on it is reported as a problem and ignored.
   const limit = rule.level_sets === "severity" ? undefined : settings.limit;
-  const marked = limit === undefined ? current : undefined;
+  const { genreStop } = settings;
+  const marked = limit === undefined && genreStop === undefined ? current : undefined;
   const text = TEXT[uiLanguageOf(language)];
   const experimental =
-    rule.status === "experimental" ? [`  ${text.experimental}`, ...(settings.offOnlyAsExperimental === true ? [`  ${text.alone(rule.id)}`] : [])] : [];
+    rule.status === "experimental" && genreStop === undefined
+      ? [`  ${text.experimental}`, ...(settings.offOnlyAsExperimental === true ? [`  ${text.alone(rule.id)}`] : [])]
+      : [];
+  const from = levelFrom === undefined ? "" : text.from(levelFrom);
+  const now = genreStop === undefined ? `${nowLine(rule, current, limit, language)}${from}` : text.notRun(genreStop);
   return [
     "",
     `  ${readableText(rule, rule.name, language)}   (${rule.id})`,
@@ -143,7 +197,8 @@ export const renderExplain = (rule: RuleDefinition, current: Level, language: st
     ...genreNote(rule, genre, text),
     ...optionLines(rule, optionLayers, language),
     "",
-    `  ${limit === undefined ? text.now(current) : text.nowNumber(limitText(rule, limit, language))}${levelFrom === undefined ? "" : text.from(levelFrom)}`,
+    `  ${now}`,
+    ...byPathLines(settings.byPath ?? [], text),
     ...experimental,
     "",
     `  ${text.change(rule.id)}`,

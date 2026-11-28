@@ -2,6 +2,7 @@ id: attachment-not-attached
 layer: L2
 status: stable
 how_to_find: attachment-missing
+requires: [sent-message]
 severity: warning
 
 name:
@@ -9,8 +10,8 @@ name:
   en: Attachment mentioned but not shown
 
 why:
-  ja: 「資料を添付します」と書いて添付を忘れるのは、仕事のメールでいちばんよくある失敗の一つです。受け手は返信で頼み直すことになり、やり取りが一往復増えます。本文が「添付」「別添」「同封」に触れているのに、文書のどこにも添付の欄（添付ファイル：）、ファイル名（見積書.pdf）、メーリングリストの添付の注記が無いとき指します。chaff はメールに実際に何が付いているかは見られないので、本文に添付を書き出す運用のときに役立ちます。
-  en: 'Writing "please find attached" and forgetting the attachment is one of the most common mistakes in work email. The recipient has to ask again, and the exchange takes another round. chaff points out a text that mentions an attachment ("attached", "enclosed") when the document shows none: no attachment field ("Attachment:", "Encl.:"), no file name ("quote.pdf"), and no mailing-list note about a removed attachment. chaff cannot see what is really attached to a message, so this helps where the files are listed in the text.'
+  ja: 「資料を添付します」と書いて添付を忘れるのは、仕事のメールでいちばんよくある失敗の一つです。受け手は返信で頼み直すことになり、やり取りが一往復増えます。本文が「添付」「別添」「同封」に触れているのに、文書のどこにも添付の欄（添付ファイル：）、ファイル名（見積書.pdf）、メーリングリストの添付の注記が無いとき指します。送る前の下書きは見ません。下書きのファイルは送るときに付けるので、本文に無いのが普通です。差出人や日時のヘッダーのある、送った・届いたメールやメーリングリストの保存分でだけ見ます。
+  en: 'Writing "please find attached" and forgetting the attachment is one of the most common mistakes in work email. The recipient has to ask again, and the exchange takes another round. chaff points out a text that mentions an attachment ("attached", "enclosed") when the document shows none: no attachment field ("Attachment:", "Encl.:"), no file name ("quote.pdf"), and no mailing-list note about a removed attachment. A draft is not checked: its files are attached when sending, so the text never shows them. Only a message as sent or kept, with a From: or Date: header, or a mailing-list archive, is checked.'
 
 message:
   ja: 添付に触れていますが、添付の欄やファイル名がありません
@@ -32,18 +33,20 @@ off_for:
 
 group: facts
 summary:
-  ja: 本文が「添付します」と書いているのに、添付の欄もファイル名も無いメール
-  en: An email that says something is attached but shows no attachment
+  ja: 本文が「添付します」と書いているのに、添付の欄もファイル名も無い送ったメール
+  en: A sent email that says something is attached but shows no attachment
 example:
   ja:
     config: { genre: business/email }
     before: |
+      差出人: 佐藤 一郎 <sato@example.com>
       件名: 見積書の送付
 
       いつもお世話になっております。見積書を添付しましたので、ご確認ください。
 
       よろしくお願いいたします。
     after: |
+      差出人: 佐藤 一郎 <sato@example.com>
       件名: 見積書の送付
 
       いつもお世話になっております。見積書を添付しましたので、ご確認ください。
@@ -54,6 +57,7 @@ example:
   en:
     config: { genre: business/email }
     before: |
+      From: Ichiro Sato <ichiro@example.com>
       Subject: Quote
 
       Dear Ms Lee,
@@ -63,6 +67,7 @@ example:
       Best regards,
       Ichiro
     after: |
+      From: Ichiro Sato <ichiro@example.com>
       Subject: Quote
 
       Dear Ms Lee,
@@ -74,8 +79,8 @@ example:
       Best regards,
       Ichiro
 not_flagged:
-  ja: 「添付なし」「添付はありません」のような、付けていないと言う書き方と、引用した返信の中の「添付」は数えません。メール・手紙のジャンルでだけ見ます。
-  en: 'Phrases that say nothing is attached ("no attachment") or that use the word for something else ("attached to the wall"), and mentions inside a quoted reply, are not counted. Only the email and letter genre runs this rule.'
+  ja: 「添付なし」「添付はありません」のような、付けていないと言う書き方と、引用した返信の中の「添付」は数えません。差出人や日時のヘッダーの無い下書きは見ません（添付は送るときに付けるため）。メール・手紙のジャンルでだけ見ます。
+  en: 'Phrases that say nothing is attached ("no attachment") or that use the word for something else ("attached to the wall"), and mentions inside a quoted reply, are not counted. A draft without a From: or Date: header is not checked (its files are attached when sending). Only the email and letter genre runs this rule.'
 rewrite:
   depth: light
   ja:

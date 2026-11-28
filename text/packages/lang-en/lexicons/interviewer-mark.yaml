@@ -1,0 +1,10 @@
+# Marks that open an interviewer's line (Q: How did you start?), read only at the start of a paragraph.
+# section-length-uniformity takes a document where at least half of the headed sections open with such a question as
+# an interview, and does not compare its section lengths: each section is one question and its answer, so even lengths
+# are the form. A bare Q also starts words (QR codes), so only the forms with a separator are listed.
+id: interviewer-mark
+language: en
+entries:
+  - pattern: "Q:"
+  - pattern: "Q."
+  - pattern: "Interviewer:"

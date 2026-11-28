@@ -132,6 +132,14 @@ describe("no-lead: a lead that only restates the title", () => {
     assert.equal(fired(en, "# The new inventory system\n\nJane Smith\n\nThe body.\n", "no-lead"), 0);
   });
 
+  it("does not read a marker line under the title as the lead", () => {
+    assert.equal(
+      fired(en, "# Glossary\n\nr[glossary.ast]\n### Abstract syntax tree\n\nAn abstract syntax tree is a structure.\n", "no-lead", "docs/glossary"),
+      0,
+    );
+    assert.equal(fired(en, "# Glossary\n\nThis is the glossary.\n\n### Abstract syntax tree\n\nA tree.\n", "no-lead", "docs/glossary"), 1);
+  });
+
   it("does not run on a contract", () => assert.equal(fired(ja, "# 利用規約\n\nこの利用規約について定めます。\n", "no-lead", "legal/contract"), 0));
 });
 
@@ -226,6 +234,13 @@ describe("title-length: a title or heading too long to scan", () => {
     );
   });
 
+  it("does not report the title of a video or a recording, which ends with its running time", () => {
+    const video = "### 守ろう心の健康～誰もが一人で悩みを抱えることのない地域の暮らしへ【字幕付】（3分00秒）";
+    assert.equal(fired(ja, `# 題\n\n本文です。\n\n${video}\n\n本文です。\n`, "title-length"), 0);
+    assert.equal(fired(ja, `# 題\n\n本文です。\n\n${video.replace("（3分00秒）", "（3回目）")}\n\n本文です。\n`, "title-length"), 1);
+    assert.equal(fired(en, `# Title\n\nText.\n\n${LONG_EN} (12:30)\n\nText.\n`, "title-length"), 0);
+  });
+
   it("reports a long English heading", () => assert.equal(fired(en, `# Title\n\nText.\n\n${LONG_EN}\n\nText.\n`, "title-length"), 1));
 
   it("names a long first top-level heading the title", () => {
@@ -279,6 +294,13 @@ describe("title-length: a title or heading too long to scan", () => {
     assert.equal(fired(en, `# Title\n\nText.\n\n${LONG_EN} (why?) and how\n\nText.\n`, "title-length"), 1);
   });
 
+  it("does not report a Japanese heading that asks with か, with or without 。", () => {
+    const asks = "### Q3：出願した後に、婚姻により氏名が変わりましたが、旧い氏を添えた氏名へ書類を直すことはできますか。";
+    assert.equal(fired(ja, `# 題\n\n本文です。\n\n${asks}\n\n本文です。\n`, "title-length"), 0);
+    assert.equal(fired(ja, `# 題\n\n本文です。\n\n${asks.replace(/。$/u, "")}\n\n本文です。\n`, "title-length"), 0);
+    assert.equal(fired(ja, `# 題\n\n本文です。\n\n${LONG_JA}を説明するいくつかの資料とそのほか\n\n本文です。\n`, "title-length"), 1);
+  });
+
   it("does not report a short heading", () => assert.equal(fired(ja, "# 在庫システム\n\n## 移行の手順\n\n本文です。\n", "title-length"), 0));
 
   it("does not count a number label at the head", () =>
@@ -291,6 +313,13 @@ describe("title-length: a title or heading too long to scan", () => {
     assert.equal(fired(en, aside, "title-length", "docs/glossary"), 1);
     const ratio = "# Glossary of terms for tax and National Insurance contributions for employee travel (ratio 2025: 10 per cent)\n\nText.\n";
     assert.equal(fired(en, ratio, "title-length", "docs/glossary"), 1);
+  });
+
+  it("does not count a date alone in brackets at the end, the issue a series title carries", () => {
+    const issue = "# 在庫管理ニュース（店舗運営部メールマガジン）第506号（令和7年5月23日）\n\n本文です。\n";
+    assert.equal(fired(ja, issue, "title-length", "business/email"), 0);
+    const aside = "# 在庫管理ニュース（店舗運営部メールマガジン）第506号（新しい倉庫と各店舗の移行作業の案内）\n\n本文です。\n";
+    assert.equal(fired(ja, aside, "title-length", "business/email"), 1);
   });
 
   it("counts another document's title quoted in 「」 as one name, but not a quoted event name nor a heading that is only a quote", () => {

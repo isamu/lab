@@ -30,6 +30,46 @@ describe("L3 英語", () => {
       assert.ok(!idsFor(padded("The team hurried and delivered. We wrote the code and reviewed it.")).includes("adverb-overuse"));
     });
 
+    it("valid: 文の途中の頭だけ大文字の -ly の語（July、Kelly）は名前で、副詞に数えない", () => {
+      const source = "Sales rose in July. Costs fell in July. Kelly met Holly in July. Kelly wrote the July report and sent it to Holly.";
+      assert.ok(!idsFor(padded(source)).includes("adverb-overuse"));
+    });
+
+    it("valid: 題の行の頭の -ly の語（Frequently Asked Questions）は題の語で、行が繰り返されても副詞に数えない", () => {
+      const title = "Frequently Asked Questions Regarding Treatment of Digital Credentials Under the Identification Rule";
+      const source = [
+        `SUBJECT:\n\n${title}`,
+        "The answers do not alter existing requirements.",
+        `Attachments:\n\n${title}`,
+        `Cross References:\n\n${title}`,
+        `${title}\n\n${title}`,
+      ].join("\n\n");
+      assert.ok(!idsFor(padded(source)).includes("adverb-overuse"));
+    });
+
+    it("invalid: 文頭の大文字の -ly 副詞と、全部大文字の -ly 副詞は数える", () => {
+      const source = "Finally, we shipped. Clearly, it worked. Honestly, we were lucky. Sadly, it broke. Luckily, we fixed it ONLY once QUICKLY.";
+      assert.ok(idsFor(padded(source)).includes("adverb-overuse"));
+    });
+
+    it("valid: 書き手の確かさを言う -ly 副詞（probably、apparently、obviously）は畳む動詞が無く、数えない", () => {
+      const source =
+        "It probably should have been an email. Apparently we all learned this in school. Obviously nobody does it now. Honestly, I actually liked the meeting. Possibly it was the coffee.";
+      assert.ok(!idsFor(padded(source)).includes("adverb-overuse"));
+    });
+
+    it("valid: 見込みを言う likely（would likely be）は probably と同じで、数えない", () => {
+      const source =
+        "Inflation would likely be slower next year. Rates will likely stay where they are. Hiring will likely take longer. Prices would likely rise in spring. The board will likely help the banks. Demand will likely increase later.";
+      assert.ok(!idsFor(padded(source)).includes("adverb-overuse"));
+    });
+
+    it("valid: 数の前の -ly の語（only 26）と括弧の頭の呼び名の前置き（collectively,）は動詞を修飾せず、数えない", () => {
+      const source =
+        "The agencies (collectively, the regulators) sent the notice. Only 26 of the banks replied, and nearly 40 did not. Only 1 bank asked for more time, and roughly 12 asked for a call. Exactly 3 banks wrote back twice.";
+      assert.ok(!idsFor(padded(source)).includes("adverb-overuse"));
+    });
+
     it("短い文書は測らない。密度が暴れるため", () => {
       assert.ok(!idsFor("We moved quickly and carefully and thoroughly.").includes("adverb-overuse"));
     });
@@ -50,6 +90,18 @@ describe("L3 英語", () => {
       // "It is raining" は正当な用法。
       const source = "It is raining. It is cold. It is late. It is quiet.";
       assert.ok(!idsFor(source).includes("expletive-construction"));
+    });
+
+    it("valid: a that-clause after ', but' belongs to the next clause, not to the opening it", () => {
+      const source =
+        "It's not popular, but my view is that rules matter. It is late, but we know that it works. There is a plan. It was cold, but the team said that it would go.";
+      assert.ok(!idsFor(source).includes("expletive-construction"));
+    });
+
+    it("invalid: the that-clause before ', but' still counts", () => {
+      const source =
+        "It's true that rules matter, but we wait. It is clear that it works, but slowly. There is a plan. It was said that it would go, but it did not.";
+      assert.ok(idsFor(source).includes("expletive-construction"));
     });
   });
 
@@ -440,5 +492,15 @@ describe("L3 英語", () => {
     const findings = runRules(buildDocument("t.md", source, en), RULES, {}, true, "blog/tech").findings;
     const head = findings.find((finding) => finding.rule === "repeated-sentence-head");
     assert.equal(head?.values["head"], "We continued the");
+  });
+
+  it("sentences that share only their first two words are not one opening, as the rule's why says", () => {
+    const source = "You can upload photos from your phone. You can share an album with your family. You can also print a book. You can see who viewed it.";
+    const findings = runRules(buildDocument("t.md", source, en), RULES, {}, true, "blog/tech").findings;
+    assert.equal(
+      findings.some((finding) => finding.rule === "repeated-sentence-head"),
+      false,
+    );
+    assert.match(RULES.find((rule) => rule.id === "repeated-sentence-head")?.why.en ?? "", /first three words/u);
   });
 });

@@ -33,6 +33,21 @@ describe("requirement-smell: a list in the clause that describes the topic (ja)"
     assert.deepEqual(found("写真等を載せるページは運営者の承認を受ける必要があります。"), ["open-end:等"]);
   });
 
+  it("a list a heading of the document names is the page's subject, not an open list (## 出願書類等の送付先)", () => {
+    const page = (heading: string): string[] =>
+      runRules(
+        buildDocument("t.md", `# T\n\n## ${heading}\n\n出願書類等は、郵便で提出する必要があります。\n`, ja),
+        loadRules(ja.id),
+        { [RULE]: "normal" },
+        false,
+        "docs/faq",
+      )
+        .findings.filter((finding) => finding.rule === RULE)
+        .map((finding) => String(finding.values["matched"]));
+    assert.deepEqual(page("出願書類等の送付先"), []);
+    assert.deepEqual(page("書類の送付先"), ["等"]);
+  });
+
   it("は in the scope-topic group is a cue, not an open-end word", () => {
     assert.equal(isScopeCue({ pattern: "は", group: "scope-topic" }), true);
   });

@@ -1,4 +1,8 @@
 # A denial that frames a contrast only when a turn (contrast-turn) answers it: "It's not a perk. It's a necessity."
+# Group across: a bare denial, contracted or written out (doesn't, does not), that frames a contrast only when the next
+# sentence opens with an across turn (It, They) and denies nothing ("What surprised me wasn't the food. It was the
+# evenings."); a turn later in the same sentence, a concession ("I don't always. But ...") or a remark on the whole
+# sentence ("That's more than ...") does not answer it.
 id: contrast-lead
 language: en
 entries:
@@ -13,3 +17,37 @@ entries:
   - pattern: they aren't
   - pattern: isn't about
   - pattern: is not about
+  - pattern: not really about
+  - pattern: isn't really about
+  - pattern: wasn't about
+  - pattern: wasn't really about
+  - pattern: isn't
+    group: across
+  - pattern: wasn't
+    group: across
+  - pattern: aren't
+    group: across
+  - pattern: weren't
+    group: across
+  - pattern: don't
+    group: across
+  - pattern: doesn't
+    group: across
+  - pattern: didn't
+    group: across
+  - pattern: is not
+    group: across
+  - pattern: was not
+    group: across
+  - pattern: are not
+    group: across
+  - pattern: were not
+    group: across
+  - pattern: do not
+    group: across
+  - pattern: does not
+    group: across
+  - pattern: did not
+    group: across
+  - pattern: not because
+    group: across

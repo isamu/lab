@@ -1,0 +1,14 @@
+# 対比の枠の語のすぐ前に立つと、量を言う語（一杯だけでなく＝一杯より多く）。誰も言っていない X を打ち消してはいない。
+# position before: 語は枠の語の前に立つ。数字と助数詞一字（1回だけでなく）は語彙表に無くても量。
+id: contrast-amount
+language: ja
+entries:
+  - { pattern: 一つ, position: before }
+  - { pattern: ひとつ, position: before }
+  - { pattern: 一度, position: before }
+  - { pattern: 一回, position: before }
+  - { pattern: 一人, position: before }
+  - { pattern: 一杯, position: before }
+  - { pattern: 一日, position: before }
+  - { pattern: 二つ, position: before }
+  - { pattern: 二度, position: before }

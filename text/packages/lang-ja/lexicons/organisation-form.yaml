@@ -2,6 +2,8 @@
 # 閉じれば、その連なりは 1 つの組織の正式名称（国立研究開発法人産業技術総合研究所）。書き手が割れる複合語ではない。
 # position: before の語（設置者）は名前の前にしか立たない。それ以外の法人格は名前の後ろにも立ち、連なりを閉じれば
 # その連なりも 1 つの名前（東日本自動車販売株式会社）。
+# 地方公共団体の段（都道府県、市町村）も設置者と同じに名前の前に立つ。地名の代わりに段を言い、その段のどれにもある組織を
+# 指す（都道府県社会福祉協議会、市町村教育委員会）。
 id: organisation-form
 language: ja
 entries:
@@ -39,3 +41,7 @@ entries:
   - { pattern: 区立, position: before }
   - { pattern: 町立, position: before }
   - { pattern: 村立, position: before }
+  - { pattern: 都道府県, position: before }
+  - { pattern: 市町村, position: before }
+  - { pattern: 市区町村, position: before }
+  - { pattern: 区市町村, position: before }

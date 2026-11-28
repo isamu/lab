@@ -157,8 +157,8 @@ chaff がまだ見ていない種類の誤りを探すため、次のチェッ�
 
 - <a id="textlint-ja-presets"></a>**textlint-ja** [github.com](https://github.com/textlint-ja/textlint-rule-preset-ja-technical-writing)
   - textlint-rule-preset-ja-technical-writing と textlint-rule-preset-japanese（日本語の技術文書向けの規則集）
-  - 分かったこと：日本語の文に機械で掛けられる確認です。文の長さ、読点の数、文末の混在、ら抜き、助詞の重なり、見えない文字など。
-  - chaff では：ほとんどに対応する規則があります（`max-sentence-length`、`max-ten`、`no-mixed-desumasu`、`ra-nuki`、`no-doubled-joshi`、`invisible-character`）。
+  - 分かったこと：日本語の文に機械で掛けられる確認です。文の長さ、読点の数、文末の混在、ら抜き、さ入れ、助詞の重なり、見えない文字など。
+  - chaff では：ほとんどに対応する規則があります（`max-sentence-length`、`max-ten`、`no-mixed-desumasu`、`ra-nuki`、`sa-ire`、`no-doubled-joshi`、`invisible-character`）。
 - <a id="proselint"></a>**proselint** [github.com](https://github.com/amperser/proselint)
   - 英語の文章のチェッカー。用法の手引きから確認項目を集めています。
   - 分かったこと：語の一覧で見つけられる用法の誤りです。決まり文句、重言、程度の無い形容詞に付けた程度、出所を言わない言い回しなど。
@@ -250,13 +250,13 @@ chaff はこれをもとに言い回しや書式を指しますが、「AI が�
   - Monitoring AI-Modified Content at Scale: A Case Study on the Impact of ChatGPT on AI Conference Peer Reviews
   - 載った所：ICML 2024。
   - 分かったこと：学会の査読の文章で、commendable、meticulous、intricate などの形容詞が大きく増えました。
-  - chaff では：`ai-tell` の裏付けです。1 語だけでは言わず、重なったときに言う理由でもあります。
+  - chaff では：`ai-tell` の裏付けです。1 語だけでは言わず、重なったときに言う理由でもあります（ブログでは、人の記事にほぼ出ない重い言い回しなら 1 つでも言います）。
 - <a id="zhang-2024"></a>**Zhang ほか（2024）** [arxiv.org](https://arxiv.org/abs/2409.11704)
   - From Lists to Emojis: How Format Bias Affects Model Alignment
   - 載った所：arXiv（査読前）。
   - 分かったこと：人の評価者も AI の評価者も、箇条書き、太字、絵文字、長い答えを、中身と関係なく高く評価しがちでした。
     モデルがそうした書式を多く使う理由の一つです。
-  - chaff では：[`bold-density`](../../rules/bold-density/)、[`emoji-density`](../../rules/emoji-density/)、
+  - chaff では：[`bold-density`](../../rules/bold-density/)、[`bold-emphasis`](../../rules/bold-emphasis/)、[`emoji-density`](../../rules/emoji-density/)、
     `rule-of-three` は、この偏りが文章に出た所を指します。
 - <a id="freeburg-2026"></a>**Freeburg（2026）** [arxiv.org](https://arxiv.org/abs/2603.27006)
   - The Last Fingerprint: How Markdown Training Shapes LLM Prose

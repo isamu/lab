@@ -22,6 +22,8 @@ const idsFor = (source: string, adapter: LanguageAdapter, genre = "blog/tech"): 
 /** Density rules do not measure short documents. Plain filler to pass the floor. */
 const BULK_EN = "We shipped the release and reported the numbers to the team. ".repeat(40);
 const BULK_JA = "本日の連絡です。今日も順調に進めます。明日も続けます。".repeat(20);
+/** contrast-framing counts a share of sentences: plain filler in fewer, longer sentences, to pass the floor without diluting the share. */
+const LONG_JA = "本日の連絡事項として、来週の作業の予定と担当者の割り当てをお知らせします。".repeat(14);
 
 const NEW_LEXICONS = ["contrast-frame", "contrast-lead", "contrast-turn", "stock-transition", "assistant-residue", "placeholder-word"];
 
@@ -179,11 +181,11 @@ describe("contrast-framing", () => {
 
   it("invalid: 「ではありません。むしろ」で打ち消しを返す形が重なる", () => {
     const framed = "これは道具ではありません。むしろ仲間です。".repeat(3);
-    assert.ok(idsFor(`# 記事\n\n${framed}${BULK_JA}`, ja).includes("contrast-framing"));
+    assert.ok(idsFor(`# 記事\n\n${framed}${LONG_JA}`, ja).includes("contrast-framing"));
   });
 
   it("invalid: 「単なる X ではなく」が重なる", () => {
-    assert.ok(idsFor(`# 記事\n\n${"これは単なる道具ではなく、仲間です。".repeat(3)}${BULK_JA}`, ja).includes("contrast-framing"));
+    assert.ok(idsFor(`# 記事\n\n${"これは単なる道具ではなく、仲間です。".repeat(3)}${LONG_JA}`, ja).includes("contrast-framing"));
   });
 
   it("valid: 「A ではなく B」だけの文は枠ではない", () => {
@@ -331,8 +333,8 @@ describe("the lexicon additions", () => {
     const source = [
       "# 記事",
       "",
-      "調査で課題が浮き彫りになりました。性能を最大限に引き出すには設定が要ります。大規模な案件で真価を発揮しました。",
-      "強力な武器になります。ステップバイステップで進めます。多角的な視点と包括的な分析を行います。",
+      "調査で課題が浮き彫りになりました。大規模な案件で真価を発揮しました。設定に時間を溶かしました。",
+      "強力な武器になります。ステップバイステップで進めます。",
       "シームレスに連携できます。速度が大幅に向上しました。",
     ].join("\n");
     assert.ok(idsFor(source, ja).includes("ai-tell"));
@@ -341,12 +343,9 @@ describe("the lexicon additions", () => {
   it("ai-tell: 増えた言い回しは、どれも活用した形の文に当たる", () => {
     const cases: readonly (readonly [string, string])[] = [
       ["浮き彫りになる", "調査で課題が浮き彫りになりました。"],
-      ["最大限に引き出す", "性能を最大限に引き出しています。"],
       ["真価を発揮する", "大規模な案件で真価を発揮しました。"],
       ["強力な武器", "型は強力な武器になります。"],
       ["ステップバイステップ", "ステップバイステップで進めます。"],
-      ["多角的な", "多角的な視点で見ます。"],
-      ["包括的な", "包括的な分析を行います。"],
       ["シームレスに", "シームレスに連携できます。"],
       ["大幅に向上する", "速度が大幅に向上しました。"],
     ];

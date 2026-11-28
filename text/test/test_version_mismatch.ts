@@ -56,6 +56,35 @@ describe("version-mismatch", () => {
     assert.deepEqual(found(readme("Install 2.3.0:", "npm install pkg@2.4.0"), en), ["3 2.3.0>2.4.0"]);
   });
 
+  it("en: reads a version a copula gives to the current release, in an earlier sentence of the lead-in", () => {
+    const install = "npm install --global csvtrim@2.3.1";
+    assert.deepEqual(found(readme("The current release is 2.4.0. Install it from npm:", install), en), ["3 2.4.0>2.3.1"]);
+    assert.deepEqual(found(readme("The current release is 2.3.1. Install it from npm:", install), en), []);
+    assert.deepEqual(found(readme("The latest stable version is 2.4.0. Install it:", install), en), ["3 2.4.0>2.3.1"]);
+    assert.deepEqual(found(readme("Version is 2.4.0.", install), en), ["3 2.4.0>2.3.1"]);
+    assert.deepEqual(found(readme("Our csvtrim release is 2.4.0.", install), en), []);
+    assert.deepEqual(found(readme("The csvtrim release is 2.4.0.", install), en), ["3 2.4.0>2.3.1"]);
+  });
+
+  it("en: does not read a copula's version of another program, another release, or another subject", () => {
+    const install = "npm install --global csvtrim@2.3.1";
+    assert.deepEqual(found(readme("The Node.js version is 18.17.0. Install csvtrim:", install), en), []);
+    assert.deepEqual(found(readme("The previous release is 2.2.0. Install the new one:", install), en), []);
+    assert.deepEqual(found(readme("The minimum version is 2.0.0. Install it:", install), en), []);
+    assert.deepEqual(found(readme("The last release was 2.2.0. Install the new one:", install), en), []);
+    assert.deepEqual(found(readme("Our server is 2.4.0 compatible. Install:", install), en), []);
+    assert.deepEqual(found(readme("Support for Python is 3.11.4 or later. Install:", install), en), []);
+  });
+
+  it("reads a version at the end of a sentence, and not a longer dotted number", () => {
+    const install = "npm install --global csvtrim@2.3.1";
+    assert.deepEqual(found(readme("Install version 2.4.0. It takes a minute:", install), en), ["3 2.4.0>2.3.1"]);
+    assert.deepEqual(found(readme("Install version 2.3.1. It takes a minute:", install), en), []);
+    assert.deepEqual(found(readme("This was fixed in 2.2.0. Install the new one:", install), en), []);
+    assert.deepEqual(found(readme("Install version 2.4.0.1 from npm:", install), en), []);
+    assert.deepEqual(found(readme("Install version 3.0.0-beta.2. It takes a minute:", "npm install csvtrim@3.0.0-beta.2"), en), []);
+  });
+
   it("reads a version of any length written right after the name of a program the block pins", () => {
     const docker = "docker run --name ci-cache -p 6379:6379 -d redis:7.4";
     assert.deepEqual(found(readme("We run Redis 7.2 in a container:", docker), en), ["3 7.2>7.4"]);
@@ -91,7 +120,12 @@ describe("version-mismatch", () => {
       "\r\n",
     );
     assert.deepEqual(
-      versionMismatches(source, source, [{ start: source.indexOf(FENCE), code: "npm install pkg@2.4.0" }], { ranges: [], versionWords: ["version"] }),
+      versionMismatches(source, source, [{ start: source.indexOf(FENCE), code: "npm install pkg@2.4.0" }], {
+        ranges: [],
+        versionWords: ["version"],
+        copulas: [],
+        currentWords: [],
+      }),
       [{ offset: source.indexOf("2.3.0"), values: { written: "2.3.0", code: "2.4.0" } }],
     );
   });
@@ -103,7 +137,7 @@ describe("version-mismatch", () => {
 
 describe("versionMismatches", () => {
   it("reads nothing without blocks or before the first paragraph", () => {
-    assert.deepEqual(versionMismatches("", "", [], { ranges: [], versionWords: [] }), []);
-    assert.deepEqual(versionMismatches("x", "x", [{ start: 0, code: "a@1.0.0" }], { ranges: [], versionWords: [] }), []);
+    assert.deepEqual(versionMismatches("", "", [], { ranges: [], versionWords: [], copulas: [], currentWords: [] }), []);
+    assert.deepEqual(versionMismatches("x", "x", [{ start: 0, code: "a@1.0.0" }], { ranges: [], versionWords: [], copulas: [], currentWords: [] }), []);
   });
 });

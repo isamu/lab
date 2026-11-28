@@ -1,0 +1,13 @@
+table  12  12  0  0
+ja/figures  filler-left  found
+ja/itinerary  filler-left  found
+ja/minutes  filler-left  found
+ja/press  filler-left  found
+ja/proposal  filler-left  found
+ja/quote  filler-left  found
+en/figures  filler-left  found
+en/itinerary  filler-left  found
+en/minutes  filler-left  found
+en/press  filler-left  found
+en/proposal  filler-left  found
+en/quote  filler-left  found

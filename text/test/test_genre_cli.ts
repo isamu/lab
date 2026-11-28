@@ -35,10 +35,10 @@ describe("rules --json と explain はジャンルの段を見る", () => {
     assert.equal(nowOf(run.out, "ngram-repetition")?.["level"], "normal");
   });
 
-  it("explain は --genre のジャンルで止めた rule を off と言う", async () => {
+  it("explain は --genre のジャンルで止めた rule を動かないと言う", async () => {
     const run = await runCli({}, ["explain", "ngram-repetition", "--genre", "literature/fiction"], "en_US.UTF-8");
     assert.equal(run.code, 0);
-    assert.match(run.out, /Now: off\./u);
+    assert.match(run.out, /Now: not run \(the literature\/fiction genre does not check it\)\./u);
     const plain = await runCli({}, ["explain", "ngram-repetition"], "en_US.UTF-8");
     assert.match(plain.out, /Now: normal\./u);
   });

@@ -5,16 +5,24 @@ import type { Span } from "../plugin.ts";
 import type { StructureIssue } from "./issues.ts";
 
 /**
- * A dotted version of three parts (2.4.0, v1.12.3, 3.0.0-beta.2). Two parts (22.04, 3.1) are too often a decimal, and a
- * first part of four digits is too often a date (2024.01.15).
+ * A dotted version of three parts (2.4.0, v1.12.3, 3.0.0-beta.2), also at the end of a sentence. Two parts (22.04, 3.1) are
+ * too often a decimal, and a first part of four digits is too often a date (2024.01.15).
  */
-const VERSION = /(?<![\w.])v?(\d{1,3}\.\d{1,4}\.\d{1,4}(?:-[0-9A-Za-z.]+)?)(?![\w.]|\.\d)/gu;
+const VERSION = /(?<![\w.])v?(\d{1,3}\.\d{1,4}\.\d{1,4}(?:-[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?)(?!\w|\.\w)/gu;
 
 /** A word that makes a version a bound or a starting point, not the version installed: 「2.3.0 から」 "from 2.3.0", "20.0.0 or later". */
 export type RangeWord = { readonly word: string; readonly position: "before" | "after" };
 
-/** What tells which versions are the block's: the bound words, and the Latin words that lead to the version installed. */
-export type VersionWords = { readonly ranges: readonly RangeWord[]; readonly versionWords: readonly string[] };
+/**
+ * What tells which versions are the block's: the bound words, the Latin words that lead to the version installed, and for
+ * a version a copula gives ("The current release is 2.4.0") the copulas and the words that say the subject is the current one.
+ */
+export type VersionWords = {
+  readonly ranges: readonly RangeWord[];
+  readonly versionWords: readonly string[];
+  readonly copulas: readonly string[];
+  readonly currentWords: readonly string[];
+};
 
 /** One code block: where it starts and the text between its fences. */
 export type CodeBlock = { readonly start: number; readonly code: string };
@@ -62,14 +70,39 @@ const latinWordBefore = (text: string): string | undefined => {
   return LATIN.test(word) ? word.toLowerCase() : undefined;
 };
 
+const includesWord = (list: readonly string[], word: string | undefined): boolean =>
+  word !== undefined && list.some((entry) => entry.toLowerCase() === word.toLowerCase());
+
+/** Where a clause starts: after a mark that ends a sentence or a clause, or a line break. */
+const CLAUSE_BREAK = /[.!?:;,]\s+|\n/u;
+/** How many words may stand before the subject's word of version ("The current stable release is"). */
+const SUBJECT_REACH = 3;
+
+/**
+ * "The current release is 2.4.0": a version a copula gives to a clause's subject that is a word leading to the version
+ * installed (lexicon version-lead), with only the words saying it is the current one (the, current, latest) or the block's
+ * names before it. Any other word there names another program or another release ("The Node.js version is", "The previous
+ * release is").
+ */
+const isStatedCurrent = (prose: string, found: Found, names: ReadonlySet<string>, words: VersionWords): boolean => {
+  const before = prose.slice(Math.max(0, found.start - WORD_REACH), found.start);
+  const clauses = before.split(CLAUSE_BREAK);
+  const clause = clauses.at(-1)?.trim() ?? "";
+  if (clauses.length === 1 && before.length === WORD_REACH) return false;
+  const [copula, subject, ...modifiers] = clause.split(/\s+/u).toReversed();
+  const isModifier = (word: string): boolean => names.has(word.toLowerCase()) || includesWord(words.currentWords, word);
+  const isSubject = subject !== undefined && (names.has(subject.toLowerCase()) || includesWord(words.versionWords, subject));
+  return includesWord(words.copulas, copula) && isSubject && modifiers.length <= SUBJECT_REACH && modifiers.every(isModifier);
+};
+
 /**
  * Whether a lead-in version is about the block's software. A Latin word right before it must be one of the words that lead
  * to the version installed (version, release, install; lexicon version-lead) or the pinned software: "Requires Node.js
  * 18.17.0" over `npm install pkg@2.4.0` names another program. A version after no Latin word (「npm から 2.3.0」) is the block's.
  */
-const isAboutBlock = (prose: string, found: Found, names: ReadonlySet<string>, versionWords: readonly string[]): boolean => {
+const isAboutBlock = (prose: string, found: Found, names: ReadonlySet<string>, words: VersionWords): boolean => {
   const word = latinWordBefore(prose.slice(Math.max(0, found.start - WORD_REACH), found.start));
-  return word === undefined || names.has(word) || versionWords.some((name) => name.toLowerCase() === word);
+  return word === undefined || names.has(word) || includesWord(words.versionWords, word) || isStatedCurrent(prose, found, names, words);
 };
 
 const BLANK_LINE = /\r?\n[ \t]*\r?\n/gu;
@@ -140,7 +173,7 @@ const shownMismatches = (prose: string, leadIn: Span, code: string, words: Versi
   if (shown.length !== 1 || only === undefined) return [];
   const names = pinnedNames(code);
   return versionsIn(prose.slice(leadIn.start, leadIn.end), leadIn.start)
-    .filter((found) => found.version !== only && !isBound(prose, found, words.ranges) && isAboutBlock(prose, found, names, words.versionWords))
+    .filter((found) => found.version !== only && !isBound(prose, found, words.ranges) && isAboutBlock(prose, found, names, words))
     .map((found) => ({ offset: found.start, values: { written: found.version, code: only } }));
 };
 

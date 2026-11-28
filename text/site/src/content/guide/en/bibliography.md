@@ -157,8 +157,8 @@ No rule text or word list was copied; chaff's lists are its own.
 
 - <a id="textlint-ja-presets"></a>**textlint-ja** [github.com](https://github.com/textlint-ja/textlint-rule-preset-ja-technical-writing)
   - textlint-rule-preset-ja-technical-writing and textlint-rule-preset-japanese (rule sets for Japanese technical writing)
-  - Found: Checks a machine can run on Japanese text: sentence length, commas, mixed endings, ら dropped, doubled particles, invisible characters.
-  - In chaff: most have a chaff rule (`max-sentence-length`, `max-ten`, `no-mixed-desumasu`, `ra-nuki`, `no-doubled-joshi`, `invisible-character`).
+  - Found: Checks a machine can run on Japanese text: sentence length, commas, mixed endings, ら dropped, an extra さ in the causative, doubled particles, invisible characters.
+  - In chaff: most have a chaff rule (`max-sentence-length`, `max-ten`, `no-mixed-desumasu`, `ra-nuki`, `sa-ire`, `no-doubled-joshi`, `invisible-character`).
 - <a id="proselint"></a>**proselint** [github.com](https://github.com/amperser/proselint)
   - A linter for English prose, with checks drawn from usage guides.
   - Found: Usage mistakes a word list can catch: clichés, redundancy, uncomparable adjectives given a degree, weasel words.
@@ -249,13 +249,13 @@ Several of them also show how often human writing is mistaken for generated text
   - Monitoring AI-Modified Content at Scale: A Case Study on the Impact of ChatGPT on AI Conference Peer Reviews
   - Appeared in: ICML 2024.
   - Found: In conference peer reviews, adjectives such as "commendable", "meticulous" and "intricate" rose sharply.
-  - In chaff: supports `ai-tell`, and is why it speaks only when such words pile up, never at one word.
+  - In chaff: supports `ai-tell`, and is why it speaks only when such words pile up (in a blog post, one of the heavier phrases, which human posts rarely use, is enough).
 - <a id="zhang-2024"></a>**Zhang et al. (2024)** [arxiv.org](https://arxiv.org/abs/2409.11704)
   - From Lists to Emojis: How Format Bias Affects Model Alignment
   - Appeared in: arXiv (not peer reviewed).
   - Found: Human raters and AI judges alike favour lists, bold text, emojis and long answers, whatever the content.
     That is one reason models use these formats so much.
-  - In chaff: [`bold-density`](../../rules/bold-density/), [`emoji-density`](../../rules/emoji-density/) and
+  - In chaff: [`bold-density`](../../rules/bold-density/), [`bold-emphasis`](../../rules/bold-emphasis/), [`emoji-density`](../../rules/emoji-density/) and
     `rule-of-three` point at the places where this bias shows in a text.
 - <a id="freeburg-2026"></a>**Freeburg (2026)** [arxiv.org](https://arxiv.org/abs/2603.27006)
   - The Last Fingerprint: How Markdown Training Shapes LLM Prose

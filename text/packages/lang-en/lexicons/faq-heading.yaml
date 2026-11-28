@@ -1,0 +1,11 @@
+# Headings of a question-and-answer section (FAQ, Frequently asked questions). The headings under one are the readers'
+# questions, so the structure measures do not count their form (What is, How do) as the writer's stock heading form.
+# Matched as whole words anywhere in the heading, ignoring case.
+id: faq-heading
+language: en
+entries:
+  - pattern: faq
+  - pattern: faqs
+  - pattern: frequently asked questions
+  - pattern: questions and answers
+  - pattern: q&a

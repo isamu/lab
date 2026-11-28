@@ -30,6 +30,18 @@ describe("emoji-density", () => {
   it("短い文書は測らない。密度が暴れるため", () => {
     assert.ok(!idsFor("# 連絡\n\n🎉 進捗 🚀 順調 ✨ 期待。").includes("emoji-density"));
   });
+
+  // A how-to's menu paths (Settings → Printers → Remove) were counted as emoji. Self-written text.
+  const PATHS = "- Open Settings → Devices → Printers → your printer → Remove.\n".repeat(8);
+
+  it("valid: an arrow between two words marks a menu path", () => {
+    assert.ok(!idsFor(`# Fix\n\n${PATHS}\n${BULK_EN}`, "blog/tech", en).includes("emoji-density"));
+    assert.ok(!idsFor(`# 手順\n\n${"- 設定→デバイス→プリンター→削除の順に開きます。\n".repeat(8)}\n${BULK}`, "blog/tech").includes("emoji-density"));
+  });
+
+  it("invalid: an arrow opening each line is decoration", () => {
+    assert.ok(idsFor(`# Fix\n\n${"→ Open the settings.\n\n→ Remove the printer.\n\n".repeat(8)}${BULK_EN}`, "blog/tech", en).includes("emoji-density"));
+  });
 });
 
 describe("ngram-repetition", () => {
@@ -197,7 +209,8 @@ describe("undefined-acronym", () => {
     "TIP",
   ].forEach((acronym) => {
     it(`よく知られた略語 ${acronym} は数えない`, () => {
-      assert.ok(!idsFor(`# 連絡\n\nSRE と SLO と ${acronym} を確かめます。${BULK}`).includes("undefined-acronym"));
+      // 業務文書は説明のない略語 2 つで指す。通じる略語を数えれば SRE と並んで届く。
+      assert.ok(!idsFor(`# 連絡\n\nSRE と ${acronym} を確かめます。${BULK}`).includes("undefined-acronym"));
     });
   });
 
@@ -378,7 +391,7 @@ describe("undefined-acronym: 略語でない大文字を数えない（コーパ
     });
 
     it("invalid: 数の隣でも CAD は computer-aided design と読めるので数える", () => {
-      assert.deepEqual(acronymsIn("# Drawings\n\nSend 3 CAD files."), ["CAD"]);
+      assert.deepEqual(acronymsIn("# Drawings\n\nSend 3 CAD drawings."), ["CAD"]);
     });
 
     it("invalid: 金額の隣でない通貨コードと、一覧に無い通貨コードは数える", () => {

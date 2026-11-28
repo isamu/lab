@@ -41,6 +41,11 @@ describe("dangling-participle: 主語の無い分詞の句", () => {
     assert.deepEqual(findingsOf("Seeing as the deploy failed, it is safer to roll back."), []);
   });
 
+  it("-ing の句が読点より前の動詞の主語なら言わない", () => {
+    assert.deepEqual(findingsOf("Treating masculinity as a pathology isn’t progressivism, it’s prejudice with better vocabulary."), []);
+    assert.deepEqual(findingsOf("Writing tests is slow, it is true."), []);
+  });
+
   it("主語が名詞や人の文は言わない", () => {
     assert.deepEqual(findingsOf("Having reviewed the code, the team approved it."), []);
     assert.deepEqual(findingsOf("Having finished, we left early."), []);

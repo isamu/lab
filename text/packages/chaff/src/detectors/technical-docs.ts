@@ -7,6 +7,7 @@ import { opensAsNounPhrase } from "./nominal-step.ts";
 import { quoteAt } from "./structure-tree.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { isFormatTemplate } from "../format-template.ts";
+import { afterOutputLeadIn } from "./output-lead-in.ts";
 import type { Detector, Finding, ProseDocument, Span, Token } from "../plugin.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
@@ -36,26 +37,51 @@ export const untaggedFewer = (fences: readonly CodeFence[], limit: number): read
   return untagged.length > 0 && untagged.length < tagged.length && untagged.length <= limit ? untagged : [];
 };
 
+const opensWithAny = (line: string, marks: readonly string[]): boolean => marks.some((mark) => mark !== "" && line.trimStart().startsWith(mark));
+
+/**
+ * A block of what a program printed alone: a line opens with a status mark (✖ Missing keys, ⚠ 2 slots short) and none with
+ * a shell prompt. A session that types a command and shows its output ($ npx tidy … ✖ 1 problem) holds a command, which
+ * a language can name.
+ */
+export const isPrintedOutput = (fence: CodeFence, marks: readonly string[], prompts: readonly string[]): boolean =>
+  fence.lines.some((line) => opensWithAny(line, marks)) &&
+  !fence.lines.some((line) =>
+    opensWithAny(
+      line,
+      prompts.map((prompt) => `${prompt} `),
+    ),
+  );
+
 export const codeFenceLanguage: Detector = (doc, options): Finding[] => {
+  const outputWords = patternsOf(doc, "output-lead-in");
+  const statusMarks = patternsOf(doc, "output-status-mark");
+  const prompts = patternsOf(doc, "shell-prompt");
   const fences = codeFences(doc.source).filter(wantsLanguage);
   const tagged = fences.filter((fence) => fence.language !== "").length;
-  return untaggedFewer(fences, options.limit).map((fence) =>
-    finding(doc, "code-fence-language-mix", fence.start, { tagged, untagged: fences.length - tagged }),
+  // A block of plain output (after "we'd expect to see:") is in no language: it still counts, but is not pointed at.
+  const reported = untaggedFewer(fences, options.limit).filter(
+    (fence) => !afterOutputLeadIn(doc.source, fence.start, outputWords) && !isPrintedOutput(fence, statusMarks, prompts),
   );
+  return reported.map((fence) => finding(doc, "code-fence-language-mix", fence.start, { tagged, untagged: fences.length - tagged }));
 };
 
 export type PromptStyle = "prompt" | "bare" | undefined;
 
+/** A line that opens with a digit is output (an address, a count), never a command a reader types. */
+const OUTPUT_LINE = /^\d/u;
+
 /**
  * Whether a shell block writes its commands after a prompt ($ npm install) or bare (npm install). A block that mixes
- * prompted and unprompted lines shows a command with its output, and is neither. Comment lines (#) are skipped.
+ * prompted and unprompted lines shows a command with its output, and is neither; so is an unprompted block holding a line
+ * of output. Comment lines (#) are skipped.
  */
 export const promptStyleOf = (fence: CodeFence, prompts: readonly string[]): PromptStyle => {
   const lines = fence.lines.map((line) => line.trim()).filter((line) => line !== "" && !line.startsWith("#"));
   if (lines.length === 0) return undefined;
   const prompted = lines.filter((line) => prompts.some((prompt) => line.startsWith(`${prompt} `))).length;
   if (prompted === lines.length) return "prompt";
-  return prompted === 0 ? "bare" : undefined;
+  return prompted === 0 && !lines.some((line) => OUTPUT_LINE.test(line)) ? "bare" : undefined;
 };
 
 export const shellPrompt: Detector = (doc, options): Finding[] => {
@@ -236,21 +262,60 @@ type Step = { readonly start: number; readonly kind: "statement" | "instruction"
 export const isInstruction = (tokens: readonly Token[]): boolean =>
   INSTRUCTION_OPENER.has(tokens.find((token) => !SKIPPED.has(token.pos))?.pos ?? "") && !opensAsNounPhrase(tokens);
 
-const kindOf = (tokens: readonly Token[]): Step["kind"] => {
-  if (isStatement(tokens)) return "statement";
+/**
+ * A later sentence that gives an order: it opens with a verb in its base form (Throw that label away). Stricter than
+ * isInstruction, whose noun openers (Data is central) are a paragraph's statements once they are not the step's head.
+ */
+const givesOrder = (tokens: readonly Token[]): boolean => {
+  const head = tokens.find((token) => !SKIPPED.has(token.pos));
+  return head?.pos === "VERB" && head.surface.toLowerCase() === head.lemma;
+};
+
+/**
+ * A step read by its first sentence. One that states what the machine does and then gives the order in a later sentence
+ * (The printer feeds a blank label. Throw that label away.) is an instruction: the reader still has something to do.
+ */
+/**
+ * A preposition and a relative word before the first verb (The document in which the field is published): the verb is
+ * the clause's, and the item is a noun phrase naming a thing, not a subject and its verb.
+ */
+const opensRelativeAfterPreposition = (tokens: readonly Token[], relatives: ReadonlySet<string>): boolean => {
+  const words = tokens.filter((token) => !SKIPPED.has(token.pos));
+  const verbAt = words.findIndex((token) => PREDICATE.has(token.pos));
+  return words.slice(1, verbAt === -1 ? words.length : verbAt).some((token, at) => words[at]?.pos === "ADP" && relatives.has(token.surface.toLowerCase()));
+};
+
+const kindOf = (tokens: readonly Token[], later: readonly (readonly Token[])[], relatives: ReadonlySet<string>): Step["kind"] => {
+  if (isStatement(tokens) && !opensRelativeAfterPreposition(tokens, relatives)) return later.some(givesOrder) ? "instruction" : "statement";
   return isInstruction(tokens) ? "instruction" : "other";
 };
 
+const relativesOf = (doc: ProseDocument): ReadonlySet<string> =>
+  new Set((doc.lexicons["relative-after-preposition"] ?? []).map((entry) => entry.pattern.toLowerCase()));
+
 /** The steps of each numbered list: each item's first sentence, read as a statement or not. */
-const stepLists = (doc: ProseDocument): Step[][] =>
+const stepLists = (doc: ProseDocument, relatives: ReadonlySet<string> = relativesOf(doc)): Step[][] =>
   doc.lists
     .filter((list) => ORDERED_ITEM.test(doc.source.slice(list.span.start, list.span.end)))
     .map((list) =>
       list.itemSpans.flatMap((item): Step[] => {
-        const sentence = doc.sentences.find((candidate) => candidate.span.start >= item.start && candidate.span.start < item.end);
-        // Only the sentence on the item's own line: a note paragraph under it (**NOTE:** …) is not the step.
-        const onItemLine = sentence !== undefined && !doc.source.slice(item.start, sentence.span.start).includes("\n");
-        return sentence?.tokens === undefined || !onItemLine ? [] : [{ start: sentence.span.start, kind: kindOf(sentence.tokens) }];
+        // Only the sentences on the item's own line: a note paragraph under it (**NOTE:** …) is not the step.
+        const onItemLine = doc.sentences.filter(
+          (candidate) =>
+            candidate.span.start >= item.start && candidate.span.start < item.end && !doc.source.slice(item.start, candidate.span.start).includes("\n"),
+        );
+        const [sentence, ...later] = onItemLine;
+        if (sentence?.tokens === undefined) return [];
+        return [
+          {
+            start: sentence.span.start,
+            kind: kindOf(
+              sentence.tokens,
+              later.map((next) => next.tokens ?? []),
+              relatives,
+            ),
+          },
+        ];
       }),
     )
     .filter((steps) => steps.length >= MIN_STEPS);

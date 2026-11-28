@@ -1,10 +1,11 @@
 // The shape of a document's top: whether the lead says anything the title does not, and whether a title or heading
 // runs too long to scan. Pure; both read only the sections, paragraphs and tokens chaff has already built.
 import { newContentMorphemes } from "./content-morphemes.ts";
+import { isRecordingTitle } from "../recording-title.ts";
 import { formValueTokens, isFormBlock } from "./form-line.ts";
 import { trigrams } from "./heading-overlap.ts";
 import { findingAt, writtenHeadings } from "./markup-finding.ts";
-import type { Detector, Finding, LengthUnit, MarkupHeading, Paragraph, ProseDocument, Section } from "../plugin.ts";
+import type { Detector, Finding, LengthUnit, MarkupHeading, Paragraph, ProseDocument, Section, Token } from "../plugin.ts";
 
 /** A title shorter than this many character trigrams matches any lead by chance. */
 const MIN_TITLE_GRAMS = 4;
@@ -17,10 +18,20 @@ const PERCENT = 100;
 /** The document's title: its first top-level heading, when it has words. */
 export const titleSectionOf = (doc: ProseDocument): Section | undefined => doc.sections.find((section) => section.depth === 1 && section.heading.trim() !== "");
 
-/** The paragraph right under the title, with nothing but blank lines between them. A list, a table or an image first is not a lead. */
+/** A marker a site's tooling reads, alone on its line (mdBook's rule identifier r[glossary.ast], {#anchor}): one run of marks and letters, no words. */
+const SPACE = /\s/u;
+const MARKER_BRACKET = /[[\]{}<>]/u;
+
+const isMarkerLine = (text: string): boolean => !SPACE.test(text) && MARKER_BRACKET.test(text);
+
+/**
+ * The paragraph right under the title, with nothing but blank lines between them. A list, a table or an image first is not
+ * a lead, and neither is a marker line.
+ */
 export const leadParagraphOf = (doc: ProseDocument, title: Section): Paragraph | undefined => {
   const first = doc.paragraphs.find((paragraph) => paragraph.span.start >= title.span.start && paragraph.span.start < title.span.end);
   if (first === undefined || first.sentences.length === 0) return undefined;
+  if (isMarkerLine(doc.source.slice(first.span.start, first.span.end).trim())) return undefined;
   return doc.source.slice(title.span.start, first.span.start).trim() === "" ? first : undefined;
 };
 
@@ -99,19 +110,33 @@ const QUESTION_END = /[?？]["'”’)）」』]*$/u;
 
 export const isQuestionHeading = (heading: string): boolean => QUESTION_END.test(heading.trim());
 
+const TRAILING_MARKS: ReadonlySet<string> = new Set(["PUNCT", "SYM"]);
+
+/**
+ * A heading that ends on a particle closing a question (…補正することはできますか。): it asks as one ending in ？ does. The
+ * particles come from the language's question-particle word list; a language without one has none.
+ */
+export const endsWithQuestionParticle = (tokens: readonly Token[], particles: ReadonlySet<string>): boolean => {
+  const last = tokens.findLast((token) => !TRAILING_MARKS.has(token.pos));
+  return last?.pos === "PART" && particles.has(last.surface);
+};
+
 /** A series label in brackets at a heading's end, a number and a colon opening it ("(490: Employee travel)"): the manual's reference. */
 const SERIES_LABEL_END = /[(（]\p{N}+[:：][^()（）]*[)）]$/u;
+/** A date alone in brackets at a heading's end (（令和7年5月23日）, (2025年5月23日)): the issue a series title carries, not words the writer chose. */
+const DATE_END = /[(（](?:令和|平成|昭和)?(?:\p{N}+|元)年\p{N}+月\p{N}+日[)）]$/u;
 const QUOTED = /「[^「」]*」/gu;
 const QUOTED_NAME = "「」";
 
 /**
- * The words the heading's writer chose: without a series label at its end, and with another document's title, quoted
+ * The words the heading's writer chose: without a series label or a bracketed date at its end, and with another document's title, quoted
  * right before what is done to it (「…の取扱いについて」等の一部改正, the cited-title-action word list), as one name.
  */
 export const ownWordsOf = (heading: string, citedTitleActions: readonly string[]): string =>
   heading
     .trimEnd()
     .replace(SERIES_LABEL_END, "")
+    .replace(DATE_END, "")
     .trimEnd()
     .replaceAll(QUOTED, (quote, offset: number) =>
       citedTitleActions.some((action) => action !== "" && heading.startsWith(action, offset + quote.length)) ? QUOTED_NAME : quote,
@@ -140,18 +165,21 @@ const variantOf = (heading: MarkupHeading, title: MarkupHeading | undefined): st
   return heading === title ? "title" : undefined;
 };
 
-/** The heading's words without a number label at its head (Chapter 2, 1.), from the section the heading opens. */
-const unlabeledOf = (doc: ProseDocument, heading: MarkupHeading): string =>
-  doc.sections.find((section) => section.span.start === heading.end)?.unlabeledHeading ?? heading.text;
+const sectionOf = (doc: ProseDocument, heading: MarkupHeading): Section | undefined => doc.sections.find((section) => section.span.start === heading.end);
 
 /** Each title or heading longer than the limit. The first top-level heading is the title; every other is a heading. */
 export const titleLength: Detector = (doc, options): Finding[] => {
   const headings = writtenHeadings(doc);
   const title = headings.find((heading) => heading.depth === 1);
   const citedTitleActions = (doc.lexicons["cited-title-action"] ?? []).map((entry) => entry.pattern);
+  const questionParticles = new Set((doc.lexicons["question-particle"] ?? []).map((entry) => entry.pattern));
   return headings
-    .map((heading) => ({ heading, words: unlabeledOf(doc, heading) }))
-    .filter(({ words }) => !isParagraphHeading(words) && !isQuestionHeading(words))
+    .map((heading) => ({ heading, section: sectionOf(doc, heading) }))
+    .map(({ heading, section }) => ({ heading, words: section?.unlabeledHeading ?? heading.text, tokens: section?.headingTokens ?? [] }))
+    .filter(
+      ({ words, tokens }) =>
+        !isParagraphHeading(words) && !isQuestionHeading(words) && !endsWithQuestionParticle(tokens, questionParticles) && !isRecordingTitle(words),
+    )
     .map(({ heading, words }) => ({ heading, count: headingLength(ownWordsOf(words, citedTitleActions), doc.lengthUnit) }))
     .filter(({ count }) => count > options.limit)
     .map(({ heading, count }) => ({

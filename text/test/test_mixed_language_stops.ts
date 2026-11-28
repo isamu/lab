@@ -52,6 +52,8 @@ const PIECES = [
   "XLIII",
   "V",
   "e.g.",
+  "etc.",
+  "  ",
   "x.",
   "done.",
   "done?",
@@ -168,8 +170,9 @@ describe("日本語のアダプタの写しは英語のアダプタの関数と�
   it("unmarkInitialStops", () => {
     const starts = ["The", "Then", "In"];
     const prepositive = ["U.S."];
-    const jaStops = jaInitialStops(starts, prepositive);
-    const enStops = enInitialStops(starts, prepositive);
+    const closings = ["etc."];
+    const jaStops = jaInitialStops(starts, prepositive, closings);
+    const enStops = enInitialStops(starts, prepositive, [], closings);
     englishSamples().forEach((sample) => assert.equal(jaUnmarkInitialStops(sample, jaStops), enUnmarkInitialStops(sample, enStops), JSON.stringify(sample)));
   });
 

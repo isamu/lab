@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
-import { isTooLongParagraph } from "../packages/chaff/src/paragraph-length.ts";
+import { isTooLongParagraph, labelledBlocks, lostLineBreaks, opensWithFusedHeading } from "../packages/chaff/src/paragraph-length.ts";
 import { contractionExtraWords } from "../packages/chaff/src/contraction-words.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
@@ -96,6 +96,40 @@ describe("max-paragraph-length (English)", () => {
   });
 });
 
+describe("max-paragraph-length: a block whose line breaks were lost", () => {
+  const rules = (glue: string): string =>
+    [
+      "You sort the replies in the queue by tone.",
+      `Read the reply and the post it answers.${glue}Pick the tone that fits best.`,
+      "Use calm for a reply that states facts.",
+      "Use sharp for a reply that mocks or blames.",
+      `Use mixed when the reply does both.${glue}Use none when it has no tone at all.`,
+      "Do not guess at what the writer meant.",
+      "Give one label and nothing else.",
+      "Keep the label in lower case.",
+      "Skip replies that are only a link.",
+      "Mark replies in another language as foreign.",
+    ]
+      .map((sentence) => sentence.replace(/[.]$/u, ", and keep in mind that the team reads every label you give when it plans the next round of checks."))
+      .join(" ");
+
+  it("valid: two or more sentence ends glued to the next sentence mean the line breaks were lost", () => {
+    assert.deepEqual(findingsOf(`# Prompt\n\n${rules("")}\n`, en, "academic/paper"), []);
+  });
+
+  it("invalid: the same paragraph written with spaces is reported", () => {
+    assert.deepEqual(findingsOf(`# Prompt\n\n${rules(" ")}\n`, en, "academic/paper").length, 1);
+  });
+
+  it("lostLineBreaks needs two glued pairs; one is a typo", () => {
+    assert.equal(lostLineBreaks([{ text: "It ends here.Next one.And this.Again" }]), true);
+    assert.equal(lostLineBreaks([{ text: "It ends here.Next one starts." }]), false);
+    assert.equal(lostLineBreaks([{ text: "See U.S.Army and e.g.Smith." }]), false);
+    assert.equal(lostLineBreaks([{ text: "See Cong.Rec., April 9 and Cong.Rec., April 21." }]), false);
+    assert.equal(lostLineBreaks([]), false);
+  });
+});
+
 describe("contractionExtraWords: the words a contraction stands for beyond the one written", () => {
   const cases: readonly (readonly [string, number])[] = [
     ["Don't write for a class.", 1],
@@ -162,5 +196,62 @@ describe("max-paragraph-length (Japanese)", () => {
 
   it("法令の上限（12 文）では、同じ段落も長すぎない", () => {
     assert.deepEqual(findingsOf(`# 見出し\n\n${LONG_JA}\n`, ja, "legal/statute"), []);
+  });
+});
+
+// 自作: 特許の明細書のように、【段落番号】と【見出し】の行を改行一つで本文とつないだ文書。
+const STEP = (index: number): string => LONG_JA.slice(0, LONG_JA.indexOf("。") + 1).replace("第1", `第${String(index)}`);
+const NUMBERED_PARAGRAPHS = [
+  "【０００１】",
+  "【技術分野】",
+  `${STEP(1)}${STEP(2)}${STEP(3)}`,
+  "【０００２】",
+  "【背景技術】",
+  `${STEP(4)}${STEP(5)}${STEP(6)}`,
+].join("\n");
+
+describe("max-paragraph-length: 【】の見出しと、改行の落ちた見出し", () => {
+  it("valid: 【】の見出しや段落番号だけの行は、段落の切れ目と読む", () => {
+    assert.deepEqual(findingsOf(`# 明細書\n\n${NUMBERED_PARAGRAPHS}\n`, ja, "blog/tech"), []);
+  });
+
+  it("invalid: 切れ目の行の間に長い文を詰めれば、その組を指す", () => {
+    const dense = `${NUMBERED_PARAGRAPHS}\n${STEP(7)}`;
+    assert.deepEqual(findingsOf(`# 明細書\n\n${dense.replace("【０００２】\n【背景技術】\n", "")}\n`, ja, "blog/tech"), ["7"]);
+    assert.deepEqual(findingsOf(`# 明細書\n\n${dense.replace("【０００２】\n【背景技術】\n", "")}\n`.replace("【技術分野】\n", ""), ja, "blog/tech"), ["7"]);
+  });
+
+  it("valid: 番号付きの見出しに改行なしで本文が続く段落（改行の落ちた文書）は測らない", () => {
+    assert.deepEqual(findingsOf(`２【沿革】${LONG_JA}\n`, ja, "business/report"), []);
+    assert.deepEqual(findingsOf(`３【事業の内容】\u3000${LONG_JA}\n`, ja, "business/report"), []);
+  });
+
+  it("invalid: 番号の無い【】のラベルで始まる段落と、見出しが行に一つだけの段落は測る", () => {
+    assert.deepEqual(findingsOf(`【重要】${LONG_JA}\n`, ja, "business/report"), ["6"]);
+    assert.deepEqual(findingsOf(`２【沿革】\n${LONG_JA}\n`, ja, "business/report"), ["6"]);
+  });
+});
+
+describe("labelledBlocks and opensWithFusedHeading", () => {
+  const sentence = (start: number, end: number): { span: { start: number; end: number } } => ({ span: { start, end } });
+  it("splits at lines holding only a 【】 label, counting from the paragraph's start", () => {
+    const text = "一。二。\n【０００２】\n三。";
+    const blocks = labelledBlocks(text, 100, [sentence(100, 102), sentence(102, 104), sentence(105, 115)]);
+    assert.deepEqual(
+      blocks.map((block) => block.length),
+      [2, 1],
+    );
+    assert.deepEqual(labelledBlocks("一。【注】二。", 0, [sentence(0, 2), sentence(2, 7)]).length, 1);
+    assert.deepEqual(labelledBlocks("", 0, []), []);
+  });
+
+  it("a numbered 【】 heading with its body on the same line", () => {
+    assert.equal(opensWithFusedHeading("２【沿革】1893年"), true);
+    assert.equal(opensWithFusedHeading("①【株式の総数】種類"), true);
+    assert.equal(opensWithFusedHeading("２【沿革】\n1893年"), false);
+    assert.equal(opensWithFusedHeading("２【沿革】"), false);
+    assert.equal(opensWithFusedHeading("【重要】本日"), false);
+    assert.equal(opensWithFusedHeading("本文の中の２【沿革】は"), false);
+    assert.equal(opensWithFusedHeading(""), false);
   });
 });

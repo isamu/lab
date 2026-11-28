@@ -13,3 +13,17 @@ const LETTER_JOINED_NAME = new RegExp(String.raw`(?<![${SPACED_WORD_CHAR}.-])[A-
 /** 文の中の、一文字を - で語の前に繋いだ名前の範囲。 */
 export const letterJoinedNameSpans = (text: string): Span[] =>
   [...text.matchAll(LETTER_JOINED_NAME)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
+
+/**
+ * 大文字の語を - で頭だけ大文字の語に繋いだ名前（NITE SAFE-Lite）。後ろの語が名前を作るので、前の大文字は展開を待つ略語ではない。
+ * 後ろに大文字で始まる語が続けば、見出しの語の頭を大文字にした書き方（NASA-Funded Research）で、前の大文字は略語のまま数える。
+ * 小文字の語に繋いだもの（API-driven）と、大文字どうし（RT-PCR）も略語のまま。
+ */
+const CAPITAL_JOINED_NAME = new RegExp(
+  String.raw`(?<![${SPACED_WORD_CHAR}.-])[A-Z]{2,6}-\p{Lu}\p{Ll}{2,}(?![${SPACED_WORD_CHAR}-]|\.[A-Za-z0-9]|[ \t]+\p{Lu})`,
+  "gu",
+);
+
+/** 文の中の、大文字の語を頭だけ大文字の語に繋いだ名前の範囲。 */
+export const capitalJoinedNameSpans = (text: string): Span[] =>
+  [...text.matchAll(CAPITAL_JOINED_NAME)].map((match) => ({ start: match.index, end: match.index + match[0].length }));

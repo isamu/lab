@@ -7,8 +7,9 @@ import { codePointName } from "./invisible-character.ts";
  * compatibility: a CJK compatibility ideograph (or one of its supplement) that Unicode maps to a unified one (樂 U+F914 for 樂).
  * decomposed: a letter and a separate combining mark (か + U+3099 for が, e + U+0301 for é), from file names or text
  * copied on macOS. spacing-mark: kana followed by the spacing ゛ or ゜, typed in place of the combined letter.
+ * dash: a dash or minus between katakana (ニュ－ス, U+FF0D), typed in place of the long-vowel mark ー.
  */
-export type LookalikeKind = "radical" | "compatibility" | "decomposed" | "spacing-mark";
+export type LookalikeKind = "radical" | "compatibility" | "decomposed" | "spacing-mark" | "dash";
 
 export type Lookalike = { readonly span: Span; readonly kind: LookalikeKind; readonly written: string; readonly usual: string };
 
@@ -48,10 +49,52 @@ const spacingMarkLookalikes = (source: string): Lookalike[] =>
     return [{ span: { start: match.index, end: match.index + match[0].length }, kind: "spacing-mark", written: match[0], usual }];
   });
 
+const LONG_VOWEL = "ー";
+/**
+ * A dash, a minus or a box line after a katakana letter that can be lengthened and before another katakana letter. The
+ * half-width - is left out: between katakana it joins the parts of a template or a range (<アルゴリズム>-<ハッシュ>, ァ-ヶ).
+ */
+const DASH_FOR_LONG_VOWEL = /(?<=[ァ-ヂツ-ヲヴ-ヺ])[\u2010-\u2015\u2212\uFF0D\u2500\u2501](?=[ァ-ヺ])/gu;
+
+/** A dash typed in place of the long-vowel mark between katakana (ニュ－ス → ニュース). */
+const dashLookalikes = (source: string): Lookalike[] =>
+  [...source.matchAll(DASH_FOR_LONG_VOWEL)].map((match) => ({
+    span: { start: match.index, end: match.index + match[0].length },
+    kind: "dash",
+    written: match[0],
+    usual: LONG_VOWEL,
+  }));
+
 export const lookalikesIn = (source: string): Lookalike[] =>
-  [...singleLookalikes(source), ...decomposedLookalikes(source), ...spacingMarkLookalikes(source)].toSorted(
+  [...singleLookalikes(source), ...decomposedLookalikes(source), ...spacingMarkLookalikes(source), ...dashLookalikes(source)].toSorted(
     (left, right) => left.span.start - right.span.start,
   );
+
+/** Words naming the characters themselves (濁点, NFD, Kangxi). A look-alike next to one is an example shown on purpose. */
+const MENTION_LEXICON = "lookalike-mention";
+
+const lineStartBefore = (source: string, at: number): number => source.lastIndexOf("\n", at - 1) + 1;
+
+const lineEndAfter = (source: string, at: number): number => {
+  const end = source.indexOf("\n", at);
+  return end === -1 ? source.length : end;
+};
+
+/** The look-alike's line with the line before and the line after it: an example and its explanation may sit on neighbouring lines (a code comment). */
+const linesAround = (source: string, span: Span): string => {
+  const lineStart = lineStartBefore(source, span.start);
+  const lineEnd = lineEndAfter(source, span.end);
+  const start = lineStart === 0 ? 0 : lineStartBefore(source, lineStart - 1);
+  const end = lineEnd === source.length ? lineEnd : lineEndAfter(source, lineEnd + 1);
+  return source.slice(start, end).toLowerCase();
+};
+
+/** Whether a word that names these characters stands on or next to the look-alike's line (ホ゜ケット のような…濁点のチェック). */
+export const isShownExample = (source: string, span: Span, mentions: readonly string[]): boolean => {
+  if (mentions.length === 0) return false;
+  const around = linesAround(source, span);
+  return mentions.some((mention) => around.includes(mention.toLowerCase()));
+};
 
 const QUOTE_REACH = 20;
 
@@ -63,13 +106,17 @@ const quoteOf = (source: string, span: Span): string =>
 
 const codesOf = (text: string): string => Array.from(text).map(codePointName).join(" ");
 
-export const lookalikeCharacter: Detector = (doc): Finding[] =>
-  lookalikesIn(doc.source).map((lookalike) => ({
-    rule: "",
-    severity: "warning",
-    line: 0,
-    column: 0,
-    quote: quoteOf(doc.source, lookalike.span),
-    values: { written: lookalike.written, usual: lookalike.usual, code: codesOf(lookalike.written), offset: lookalike.span.start },
-    variant: lookalike.kind,
-  }));
+export const lookalikeCharacter: Detector = (doc): Finding[] => {
+  const mentions = (doc.lexicons[MENTION_LEXICON] ?? []).map((entry) => entry.pattern);
+  return lookalikesIn(doc.source)
+    .filter((lookalike) => !isShownExample(doc.source, lookalike.span, mentions))
+    .map((lookalike) => ({
+      rule: "",
+      severity: "warning",
+      line: 0,
+      column: 0,
+      quote: quoteOf(doc.source, lookalike.span),
+      values: { written: lookalike.written, usual: lookalike.usual, code: codesOf(lookalike.written), offset: lookalike.span.start },
+      variant: lookalike.kind,
+    }));
+};

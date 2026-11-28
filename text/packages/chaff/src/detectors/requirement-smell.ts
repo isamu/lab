@@ -5,6 +5,9 @@ import { classWordsOf, isClassCue, namesClassAfter } from "./open-end-class.ts";
 import { glossesCondition } from "./open-end-condition.ts";
 import { openEndAt, openEndNames, type OpenEndNames } from "./open-end-names.ts";
 import { asksAfter, questionWordsOf } from "./open-end-question.ts";
+import { anaphorWordsOf, isAnaphorCue, refersBack } from "./open-end-anaphor.ts";
+import { itemsOpenOnPurpose } from "./open-end-lead.ts";
+import { exemplifiesMethod, isMethodCue, methodWordsOf } from "./open-end-method.ts";
 import { isScopeCue, openOnPurpose, scopeWordsOf } from "./open-end-scope.ts";
 import { statesConcrete } from "./vague-deadline.ts";
 
@@ -18,6 +21,8 @@ const LOOPHOLE = "requirement-loophole";
 const OPEN_QUESTION = "requirement-open-question";
 /** The words of a condition whose bracketed examples an open list may give. */
 const OPEN_CONDITION = "requirement-open-condition";
+/** The terms law or usage fixes with an open-end word (消費税等), which close their own list. The language may have none. */
+const FIXED_TERMS = "requirement-open-end-fixed-term";
 const TIME = "time";
 const CONCRETE_DEADLINE = "concrete-deadline";
 
@@ -70,12 +75,16 @@ const boundedInTime = (doc: ProseDocument, sentence: Sentence, entry: LexiconEnt
  * lexicon also holds the cues of a class named after the list and of what holds it, which are no smell.
  */
 const smellWords = (doc: ProseDocument, lexicon: string, genre: string | undefined): LexiconEntry[] =>
-  entriesForGenre(doc.lexicons[lexicon] ?? [], genre).filter((entry) => !isClassCue(entry) && !isScopeCue(entry));
+  entriesForGenre(doc.lexicons[lexicon] ?? [], genre).filter(
+    (entry) => !isClassCue(entry) && !isScopeCue(entry) && !isAnaphorCue(entry) && !isMethodCue(entry),
+  );
 
 /**
  * Where the word stands as a smell. An open-end word inside a name the document gives (業務執行取締役等), giving examples
- * of a class named right after it (印刷等、二次的に利用), or ending a list a condition, a permission or a prohibition holds
- * (転載等をしてはならない), is none; without tokens none of these can be told apart.
+ * of a class named right after it (印刷等、二次的に利用), ending a list a condition, a permission or a prohibition holds
+ * (転載等をしてはならない), ending a list a pointing word opens (当該改良、改善等), giving an example of how to do the act
+ * that follows (分離するなどデータ構造を改める), or part of a term law fixes (消費税等), is
+ * none; without tokens none of these can be told apart.
  */
 const smellAt = (doc: ProseDocument, sentence: Sentence, entry: LexiconEntry, lexicon: string, names: () => OpenEndNames): number | undefined => {
   if (!entryIn(sentence, entry) || boundedInTime(doc, sentence, entry, lexicon)) return undefined;
@@ -83,7 +92,19 @@ const smellAt = (doc: ProseDocument, sentence: Sentence, entry: LexiconEntry, le
   if (lexicon !== OPEN_END || !tokenized) return offsetOf(sentence, entry);
   const classWords = classWordsOf(doc.lexicons[OPEN_END] ?? []);
   const scopeWords = scopeWordsOf(doc.lexicons[OPEN_END] ?? []);
-  return openEndAt(doc, sentence, entry, names(), (tokens, range) => namesClassAfter(tokens, range, classWords) || openOnPurpose(tokens, range, scopeWords));
+  const anaphors = anaphorWordsOf(doc.lexicons[OPEN_END] ?? []);
+  const methodCases = methodWordsOf(doc.lexicons[OPEN_END] ?? []);
+  return openEndAt(
+    doc,
+    sentence,
+    entry,
+    names(),
+    (tokens, range) =>
+      namesClassAfter(tokens, range, classWords) ||
+      openOnPurpose(tokens, range, scopeWords) ||
+      refersBack(tokens, range, anaphors) ||
+      exemplifiesMethod(tokens, range, methodCases),
+  );
 };
 
 /** An open list right before a question the reader answers (…措置など、どのような措置を求めるのか): its items are example answers. */
@@ -117,6 +138,14 @@ export const requirementSmell: Detector = (doc, options): Finding[] => {
   const statements = (doc.lexicons[STATEMENTS] ?? []).map((entry) => entry.pattern);
   // Read once, and only when a requirement has an open-end word to tell apart from a name.
   const cache: { names?: OpenEndNames } = {};
-  const names = (): OpenEndNames => (cache.names ??= openEndNames(doc, smellWords(doc, OPEN_END, options.genre), statements));
-  return doc.sentences.filter((sentence) => isRequirement(sentence, markers, notMarkers)).flatMap((sentence) => smellsIn(doc, sentence, options.genre, names));
+  const fixed = (doc.lexicons[FIXED_TERMS] ?? []).map((entry) => entry.pattern);
+  const names = (): OpenEndNames => (cache.names ??= openEndNames(doc, smellWords(doc, OPEN_END, options.genre), statements, fixed));
+  const onPurpose = scopeWordsOf(doc.lexicons[OPEN_END] ?? []).onPurpose;
+  const openItems = itemsOpenOnPurpose(doc.source, doc.sentences, doc.lists, onPurpose);
+  return doc.sentences.flatMap((sentence, index) => {
+    if (!isRequirement(sentence, markers, notMarkers)) return [];
+    const findings = smellsIn(doc, sentence, options.genre, names);
+    // An item under a lead that forbids or permits it: its list is open on purpose, like the lead's own.
+    return openItems.has(index) ? findings.filter((finding) => finding.variant !== "open-end") : findings;
+  });
 };

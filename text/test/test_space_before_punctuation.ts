@@ -35,6 +35,26 @@ describe("space-before-punctuation: 句読点の前に空白がある", () => {
     assert.deepEqual(marksIn("He paused . . . and left. Goals . . . . . 4. Wait .. what"), []);
   });
 
+  it("行の折り返しをまたいだ、空白で区切った省略の点", () => {
+    // Oscar Wilde, The Importance of Being Earnest (1895)（パブリックドメイン）。
+    const wrapped =
+      "It produces absolutely no vibrations .\n. . I have known several Jacks.\nBut seriously, Cecily .\r\n. . [Moving to her] . . . if my name was Algy";
+    assert.deepEqual(marksIn(wrapped), []);
+    assert.deepEqual(findingsOf(`${wrapped}\n`), []);
+  });
+
+  it("行の終わりの空白の後ろの点の次の行が点で始まらなければ、空白として数える", () => {
+    assert.deepEqual(marksIn("It produces no vibrations .\nI have known several Jacks."), ["."]);
+    assert.deepEqual(marksIn("It produces no vibrations .\n\n. Next"), ["."]);
+  });
+
+  it("文献一覧で値を落とした大文字の欄（ISBN ,）は見ず、本文と小文字の語は見る", () => {
+    const references =
+      "# Paper\n\nText.\n\n## References\n\n- Ge, L. Data literacy. New York, pp. 1–5. External Links: ISBN , Document\n- Ito, K. Breaks , revisited.\n";
+    assert.deepEqual(findingsOf(references), ['A space before ","']);
+    assert.deepEqual(findingsOf("# Paper\n\nWe asked the USA , and others.\n"), ['A space before ","']);
+  });
+
   it("次の語の頭の点（.NET、.5）", () => {
     assert.deepEqual(marksIn("We use .NET and a .5 mm pen."), []);
   });
@@ -49,6 +69,19 @@ describe("space-before-punctuation: 句読点の前に空白がある", () => {
 
   it("コードと、強調の印を覆ってできた空白は数えない", () => {
     assert.deepEqual(findingsOf("Run `make all .` now. It is *done*. It is **fine**, really.\n"), []);
+  });
+
+  it("文字だけの規格文書に組んだ ABNF の文法の行は、注釈を始める「 ;」を見ない。文法の外の文は見る", () => {
+    const source = [
+      "   The record follows the grammar below ; it is short.",
+      "",
+      '   record  = "REC" SP *field ; one or more fields',
+      "             *line (end-field eol) ; exactly one required",
+      "   field   = %x21-7E ; a visible character",
+      '   end-field = "END" ; closes the record',
+      "",
+    ].join("\n");
+    assert.deepEqual(namedRuleRun(RULE, source, en, "a.txt").findings, ['A space before ";"']);
   });
 
   it("句読点が付いていれば何も言わない", () => {

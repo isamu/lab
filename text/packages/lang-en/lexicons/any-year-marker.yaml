@@ -20,6 +20,8 @@ entries:
     group: continues
   - pattern: every year
   - pattern: each year
+  - pattern: marketing year
+  - pattern: crop year
   - pattern: each
     group: adjacent
   - pattern: every

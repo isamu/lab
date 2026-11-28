@@ -1,0 +1,16 @@
+# 最上級を、言い切った主張ではなく、求めるもの・あるべき姿として受ける述語。最上級より後ろに来る
+# （最高の規律が求められる・最高の栄誉が与えられるべき・最高の栄誉が与えられなければならない）。
+# 同じ文の最上級より後ろにあれば unqualified-superlative は指さない。動詞は原形で書く。
+id: superlative-goal
+language: ja
+entries:
+  - pattern: 求める
+    position: after
+  - pattern: 目指す
+    position: after
+  - pattern: べき
+    position: after
+  - pattern: なければ
+    position: after
+  - pattern: ねば
+    position: after

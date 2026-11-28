@@ -1,10 +1,11 @@
 import { joinWords } from "./word-list.ts";
-import { pairMinority } from "./contraction-minority.ts";
-import { withoutMentions } from "./contraction-mention.ts";
-import { straightApostrophes } from "../orthography.ts";
+import { FIGURE_NUMBER } from "../figure-references.ts";
+import { escapeRegExp } from "../orthography.ts";
+import { densestStretch } from "./densest-stretch.ts";
 import { wordsOf } from "./structure.ts";
 import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { entryIn, entryOpens, entryRanges, type TokenRange } from "./lexicon-match.ts";
+import { headingSentences, sentencesWithHeadings } from "./heading-sentences.ts";
 import { scoped, scopeMarkersOf, type ScopeMarkers } from "./superlative-scope.ts";
 import { makesWord, namesQuantity } from "./superlative-name.ts";
 import { namesAmount } from "./superlative-amount.ts";
@@ -12,6 +13,7 @@ import { restricted, type Restrictors } from "./superlative-clause.ts";
 import { stackedHedges, type StackedHedge } from "./stacked-hedge.ts";
 import { comparisonMarkersOf, counterpartBefore, onlyQuoted, quotedRange, type ComparisonMarkers } from "./superlative-comparison.ts";
 import { inPhrase, ownedBefore } from "./superlative-phrase.ts";
+import { asked, contextOf, picksFromNamedSet, pointsAtReferent, ranksParts, sought, supposed, viewpointBefore, type Context } from "./superlative-context.ts";
 
 const PER = 1000;
 
@@ -20,10 +22,16 @@ const FLOOR = { word: 200, char: 500 };
 
 type Hit = { readonly sentence: Sentence; readonly matched: string; readonly group?: string | undefined };
 
-const hitsFor = (doc: ProseDocument, lexicon: Lexicon): Hit[] =>
-  doc.sentences.flatMap((sentence) =>
-    lexicon.filter((entry) => entryIn(sentence, entry)).map((entry) => ({ sentence, matched: entry.pattern, group: entry.group })),
-  );
+/** 後ろの語を導く語（まるで）。同じ文にほかの語が当たれば、それと合わせて一つ（まるで魔法のように）と数える。 */
+const OPENER_GROUP = "opener";
+
+const sentenceHits = (sentence: Sentence, lexicon: Lexicon): Hit[] => {
+  const hits = lexicon.filter((entry) => entryIn(sentence, entry)).map((entry) => ({ sentence, matched: entry.pattern, group: entry.group }));
+  const closed = hits.some((hit) => hit.group !== OPENER_GROUP);
+  return closed ? hits.filter((hit) => hit.group !== OPENER_GROUP) : hits;
+};
+
+const hitsFor = (doc: ProseDocument, lexicon: Lexicon): Hit[] => doc.sentences.flatMap((sentence) => sentenceHits(sentence, lexicon));
 
 /**
  * A lexicon word in group address says how the document speaks to its reader (あなたの). Alone it is the writer's chosen
@@ -110,6 +118,7 @@ export const hedging: Detector = (doc, options): Finding[] => {
     hedges: options.lexicon ?? [],
     frames: doc.lexicons["hedge-frame"] ?? [],
     scope: doc.lexicons["hedge-scope"] ?? [],
+    complements: doc.lexicons["hedge-complement"] ?? [],
   });
   const reported = new Set(stacked.map((entry) => entry.sentence.span.start));
   const density = hedgingDensity(doc, options).filter((finding) => !reported.has(Number(finding.values["offset"])));
@@ -122,17 +131,21 @@ const DIGIT = /\p{Nd}/u;
 type Qualifiers = {
   readonly comparison: ComparisonMarkers;
   readonly scope: ScopeMarkers;
+  /** 字の並びで照らす、文のどこにあっても範囲を言う語（県内でも）。 */
+  readonly scopeTexts: readonly string[];
   readonly quantityNouns: Lexicon;
   readonly suffixes: Lexicon;
   readonly amounts: Lexicon;
   readonly restrictors: Restrictors;
   readonly phrases: Lexicon;
   readonly owners: Lexicon;
+  readonly context: Context;
 };
 
 const qualifiersOf = (doc: ProseDocument): Qualifiers => ({
   comparison: comparisonMarkersOf(doc.lexicons["comparison-marker"] ?? []),
-  scope: scopeMarkersOf(doc.lexicons["superlative-scope"] ?? []),
+  scope: scopeMarkersOf(doc.lexicons["superlative-scope"] ?? [], doc.lexicons["superlative-purpose"], doc.lexicons["superlative-realm"]),
+  scopeTexts: (doc.lexicons["superlative-scope-text"] ?? []).map((entry) => entry.pattern),
   quantityNouns: doc.lexicons["quantity-noun"] ?? [],
   suffixes: doc.lexicons["superlative-suffix"] ?? [],
   amounts: doc.lexicons["superlative-amount"] ?? [],
@@ -143,6 +156,7 @@ const qualifiersOf = (doc: ProseDocument): Qualifiers => ({
   },
   phrases: doc.lexicons["superlative-phrase"] ?? [],
   owners: doc.lexicons["superlative-owner"] ?? [],
+  context: contextOf(doc.lexicons),
 });
 
 /** 範囲・持ち主・節・分詞・形容詞・すぐ前の相手のどれかが最上級を限っているか、最上級が量か名前を言っているか。 */
@@ -150,6 +164,10 @@ const qualifiedAt = (tokens: readonly Token[], range: TokenRange, qualifiers: Qu
   counterpartBefore(tokens, range, qualifiers.comparison.before) ||
   scoped(tokens, range, qualifiers.scope) ||
   ownedBefore(tokens, range, qualifiers.owners) ||
+  viewpointBefore(tokens, range, qualifiers.context.viewpoints) ||
+  pointsAtReferent(tokens, range, qualifiers.context.referents) ||
+  ranksParts(tokens, range, qualifiers.context.parts) ||
+  picksFromNamedSet(tokens, range, qualifiers.context.proForms) ||
   restricted(tokens, range, qualifiers.restrictors) ||
   namesQuantity(tokens, range, qualifiers.quantityNouns) ||
   makesWord(tokens, range, qualifiers.suffixes) ||
@@ -161,14 +179,23 @@ const everyQualified = (sentence: Sentence, entry: LexiconEntry, qualifiers: Qua
   const ranges = entryRanges(sentence, entry);
   return (
     ranges.length > 0 &&
-    ranges.every((range) => quotedRange(sentence, range) || inPhrase(tokens, range, qualifiers.phrases) || qualifiedAt(tokens, range, qualifiers))
+    ranges.every(
+      (range) =>
+        quotedRange(sentence, range) ||
+        inPhrase(tokens, range, qualifiers.phrases) ||
+        sought(sentence, range, qualifiers.context.goals) ||
+        supposed(sentence.tokens ?? [], range, qualifiers.context.conditions) ||
+        qualifiedAt(tokens, range, qualifiers),
+    )
   );
 };
 
 const qualified = (sentence: Sentence, entry: LexiconEntry, qualifiers: Qualifiers): boolean =>
   DIGIT.test(sentence.text) ||
+  asked(sentence) ||
   onlyQuoted(sentence, entry) ||
   qualifiers.comparison.anywhere.some((marker) => entryIn(sentence, marker)) ||
+  qualifiers.scopeTexts.some((text) => sentence.text.includes(text)) ||
   everyQualified(sentence, entry, qualifiers);
 
 const bareHits = (doc: ProseDocument, lexicon: Lexicon): Hit[] => {
@@ -202,14 +229,28 @@ const openerOf = (doc: ProseDocument, lexicon: Lexicon): (string | undefined)[] 
     return head === undefined ? undefined : lexicon.find((entry) => entryOpens(head, entry))?.pattern;
   });
 
+/** 句点の無い一行の段落で、図・表の名前（語彙表 figure-label）と番号で始まるもの（表2－2－1 …の概要）。本文の間に置いた図表の題。 */
+const captionTest = (doc: ProseDocument): ((index: number) => boolean) => {
+  const labels = (doc.lexicons["figure-label"] ?? []).map((entry) => escapeRegExp(entry.pattern));
+  if (labels.length === 0) return () => false;
+  const caption = new RegExp(`^(?:${labels.join("|")})${FIGURE_NUMBER}[^\\n。．.]*$`, "u");
+  return (index) => {
+    const paragraph = doc.paragraphs[index];
+    return paragraph !== undefined && caption.test(doc.source.slice(paragraph.span.start, paragraph.span.end).trim());
+  };
+};
+
 /**
  * 段落が同じ接続詞で始まり続ける。1 つなら流れを作るが、続くとどの段落も
  * 前の段落の付け足しに見えて、話がどこへ向かっているのか分からなくなる。
+ * 段落の間に置いた図表の題（表2－2－1 …）は本文の段落ではないので、並びを切らない。
  */
 export const repeatedConjunction: Detector = (doc, options): Finding[] => {
   const openers = openerOf(doc, options.lexicon ?? []);
+  const isCaption = captionTest(doc);
   const runs = openers.reduce<{ runs: number[][]; current: number[] }>(
     (acc, opener, index) => {
+      if (opener === undefined && isCaption(index)) return acc;
       if (opener === undefined) return { runs: [...acc.runs, acc.current], current: [] };
       return { runs: acc.runs, current: [...acc.current, index] };
     },
@@ -238,20 +279,47 @@ export const repeatedConjunction: Detector = (doc, options): Finding[] => {
  * 書き手が書いた語。引用符の中だけの語（words such as "delves" and "pivotal"）は、例に挙げたか人の言葉を引いたもの。
  * 品詞があれば当たった語の並びごとに見る（活用した形も原形で当たる）。無ければ字で照らす。
  */
-const writtenIn = (sentence: Sentence, entry: LexiconEntry): boolean =>
+const writtenIn = (sentence: Sentence, entry: LexiconEntry, isHeading: boolean): boolean =>
   sentence.tokens === undefined || entry.tokens === undefined || entry.tokens.length === 0
     ? entryIn(sentence, entry) && !onlyQuoted(sentence, entry)
-    : entryRanges(sentence, entry).some((range) => !quotedRange(sentence, range));
+    : entryRanges(sentence, entry).some((range) => !quotedRange(sentence, range) && (isHeading || !inTitleCasedName(sentence.tokens ?? [], range)));
+
+const LETTER = /\p{L}/u;
+const CAPITALISED = /^\p{Lu}/u;
 
 /**
- * AI 生成の signal。1 つでは何も言えないので、重みを足し合わせて文書の点にする。
- * 単独で断じない。§20.2 の複合シグナルの入口で、これだけで「AI が書いた」とは言わない。
+ * Whether the phrase is capitalised word by word past the sentence's first word: part of a name (a mood board called
+ * Inspiring and Empowering, a programme title), not the writer's own phrasing. A heading's title case is the writer's.
+ */
+const inTitleCasedName = (tokens: readonly Token[], range: TokenRange): boolean => {
+  const firstWord = tokens.findIndex((token) => LETTER.test(token.surface));
+  const words = tokens.slice(range.start, range.end).filter((token) => LETTER.test(token.surface));
+  return range.start > firstWord && words.length > 0 && words.every((token) => CAPITALISED.test(token.surface));
+};
+
+/**
+ * How many sentences one pile-up may span. Generated articles fit inside it whole; a long text (a listing of many authors'
+ * abstracts, a novel) gathers one phrase here and one there, and only a stretch of it is scored.
+ */
+const AI_TELL_STRETCH = 100;
+
+/**
+ * AI 生成の signal。1 つでは何も言えないので、重みを足し合わせて点にする。見出しも読む（「〜をわかりやすく解説」のような題）。
+ * 点は AI_TELL_STRETCH 文の中で最も重なった所のもの。単独で断じない。§20.2 の複合シグナルの入口で、これだけで「AI が書いた」とは言わない。
  */
 export const aiTell: Detector = (doc, options): Finding[] => {
   const entries = [...new Map((options.lexicon ?? []).map((entry) => [entry.pattern.toLowerCase(), entry])).values()];
-  const found = entries.filter((entry) => doc.sentences.some((sentence) => writtenIn(sentence, entry)));
+  const sentences = sentencesWithHeadings(doc);
+  const headings = new Set(headingSentences(doc).map((heading) => heading.span.start));
+  const counts = (sentence: Sentence, entry: LexiconEntry): boolean => {
+    const isHeading = headings.has(sentence.span.start);
+    return (entry.heading_only !== true || isHeading) && writtenIn(sentence, entry, isHeading);
+  };
+  const hitsPerSentence = sentences.map((sentence) => entries.filter((entry) => counts(sentence, entry)));
+  const stretch = densestStretch(hitsPerSentence, AI_TELL_STRETCH, (entry) => entry.weight ?? 1);
+  const found = entries.filter((entry) => stretch?.keys.has(entry) === true);
   const score = Math.round(found.reduce((sum, entry) => sum + (entry.weight ?? 1), 0) * 10);
-  const first = doc.sentences.find((sentence) => found.some((entry) => writtenIn(sentence, entry)));
+  const first = stretch === undefined ? undefined : sentences[stretch.first];
   if (first === undefined || score <= options.limit) return [];
   return [
     {
@@ -272,59 +340,4 @@ export const aiTell: Detector = (doc, options): Finding[] => {
       },
     },
   ];
-};
-
-/**
- * 同じことを言う 2 つの書きかたが、1 つの文書で混ざっているか。
- *
- * **どちらが正しいかは決めない。** 短縮形を使うかどうかは文体の選択で、
- * 立場を取ると方針の違う書き手に rule ごと無視される。spec §12.3。
- *
- * 語彙表は対を持つ（`pattern` と `instead_of`）。比べるのは対の中だけで、別の語どうしは比べない。
- * GOV.UK の文体は「you're」を使い否定は「do not」と書く。語ごとに決めた書きかたで、混在ではない。
- * 否定と代名詞＋動詞の族にもまとめない。「don't」と「does not」を書き分ける文書もある。
- */
-/**
- * 語の境界で照合する。部分一致だと「it isn't」が「it is」を含んでしまい、
- * 短縮形を使っている文が「使っていない」側に数えられる。
- */
-const wordUses = (text: string, word: string): number => [...text.matchAll(new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&")}\\b`, "gu"))].length;
-
-const containsWord = (text: string, word: string): boolean => wordUses(text, word) > 0;
-
-/**
- * アポストロフィの形（don’t と don't）は短縮形かどうかを変えない。違うのは印刷の形で、文体ではない。
- * 折り返した行（「do」で改行して「not」）も、空白 1 つと同じに読む。
- */
-const comparableText = (sentence: Sentence): string => withoutMentions(straightApostrophes(sentence.text)).replace(/\s+/gu, " ").toLowerCase();
-
-type MixedPair = { readonly minority: string; readonly majority: string; readonly count: number };
-
-const mixedPair = (body: string, short: string, long: string): MixedPair | undefined => {
-  const uses = { short: wordUses(body, short), long: wordUses(body, long) };
-  const side = pairMinority(uses);
-  if (side === undefined) return undefined;
-  return side === "short" ? { minority: short, majority: long, count: uses.short } : { minority: long, majority: short, count: uses.long };
-};
-
-export const contractionMix: Detector = (doc, options): Finding[] => {
-  // 文は改行でつなぐ。空白でつなぐと、箇条書きの「What we do」と次の項目「not every…」が「do not」と数えられる。
-  const body = doc.sentences.map(comparableText).join("\n");
-  const mixed = (options.lexicon ?? []).flatMap((entry) => {
-    const pair = entry.instead_of === undefined ? undefined : mixedPair(body, entry.pattern.toLowerCase(), entry.instead_of.toLowerCase());
-    return pair === undefined || pair.count > options.limit ? [] : [pair];
-  });
-  const hits = doc.sentences.flatMap((sentence) => {
-    const text = comparableText(sentence);
-    const pair = mixed.find((candidate) => containsWord(text, candidate.minority));
-    return pair === undefined ? [] : [{ sentence, pair }];
-  });
-  return hits.map(({ sentence, pair }) => ({
-    rule: "contraction-consistency",
-    severity: "info",
-    line: 0,
-    column: 0,
-    quote: sentence.text.trim(),
-    values: { matched: pair.minority, majority: pair.majority, count: pair.count, limit: options.limit, offset: sentence.span.start },
-  }));
 };

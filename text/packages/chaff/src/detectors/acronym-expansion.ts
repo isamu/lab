@@ -13,6 +13,7 @@ import { escapeRegExp } from "../orthography.ts";
  *   人事部（以下「HR」という。）      括弧の中が定義の語と略語だけ
  *   overnight reverse repurchase agreement (ON RRP)  括弧の中が空白で繋いだ略語だけで、前の名前から文字が順に拾える
  *   Partnership On Wide Energy and Resources Resilience Asia (POWERR Asia)  括弧の中が略語と添えた語で、前の名前の頭文字と揃う
+ *   Regional Alliances and Multistakeholder Partnerships to Stimulate … (RAMPS program)  括弧の中が略語と小文字の語で、前の名前の頭の頭文字と揃う
  *   End User Technical Advisory Board (“End User TAB”)  括弧の中が名前の頭の語と略語で、前の名前の頭文字と揃う
  *   Special Interest Groups, or SIGs  名前の後ろの読点と言い換えの語（語彙表の definition-alternative）の後ろで、名前の頭文字と揃う
  *   Department of Health and Human Services (HHS or the Department)  括弧の最初の項目が略語で、言い換えの語の後ろに別の呼び名を添え、直前の語の頭文字と揃う
@@ -119,7 +120,13 @@ const isNamedBeforeAt = (body: string, acronym: string, at: number): boolean => 
  */
 export type DefinitionWords = { readonly markers: readonly string[]; readonly verbs: readonly string[]; readonly alternatives?: readonly string[] };
 
-type DefinitionPatterns = { readonly opened: RegExp; readonly closes: RegExp; readonly alternative: RegExp; readonly otherName: RegExp };
+type DefinitionPatterns = {
+  readonly opened: RegExp;
+  readonly closes: RegExp;
+  readonly alternative: RegExp;
+  readonly quotedAlternative: RegExp;
+  readonly otherName: RegExp;
+};
 
 const oneOf = (words: readonly string[]): string => (words.length === 0 ? "(?!)" : words.map(escapeRegExp).join("|"));
 
@@ -127,6 +134,7 @@ const definitionPatterns = (words: DefinitionWords): DefinitionPatterns => ({
   opened: new RegExp(String.raw`[(（]\s*(?<markers>(?:(?:${oneOf(words.markers)})${MARKER_GAP})*)${WRAP}(?<![A-Za-z])$`, "iu"),
   closes: new RegExp(String.raw`^${WRAP}(?<verb>(?:${oneOf(words.verbs)})[。.]?)?${WRAP}[)）]`, "iu"),
   alternative: new RegExp(String.raw`[,，、]\s*(?:${oneOf(words.alternatives ?? [])})\s*["“'‘]?$`, "iu"),
+  quotedAlternative: new RegExp(String.raw`(?<=["”'’])\s(?:${oneOf(words.alternatives ?? [])})\s*["“'‘]?$`, "iu"),
   otherName: new RegExp(String.raw`^${WRAP}[,，、]?\s*(?:${oneOf(words.alternatives ?? [])})\s[^()（）\n]{1,${String(DEFINITION_REACH)}}[)）]`, "iu"),
 });
 
@@ -201,6 +209,30 @@ const isQualifiedAt = (body: string, acronym: string, at: number): boolean => {
   return spellsOut(name.endsWith(words) ? name.slice(0, -words.length) : name, acronym);
 };
 
+/** 括弧の中で略語に添えた、小文字の 1、2 語（(RAMPS program)）と、閉じる括弧。 */
+const LOWER_QUALIFIER = new RegExp(String.raw`^(?: \p{Ll}+){1,2}${WRAP}[)）]`, "u");
+
+/** 名前の頭から拾う略語の文字数の下限。2 字は名前の途中の頭文字にたまたま揃いやすい。 */
+const MIN_HEAD_LETTERS = 3;
+
+/**
+ * 括弧の中が略語と、それが何かを言う小文字の語だけの形（Regional Alliances and Multistakeholder Partnerships to Stimulate
+ * Cybersecurity Education and Workforce Development (RAMPS program)）。略語は名前の頭の部分だけを縮めることがあるので、前の名前の
+ * 大文字で始まる語の頭文字の中に、略語の文字が続けて現れるときだけ展開と見なす。
+ */
+const isLowerQualifiedAt = (body: string, acronym: string, at: number): boolean => {
+  const letters = lettersOf(acronym);
+  if (letters.length < MIN_HEAD_LETTERS || !OPENED.test(body.slice(Math.max(0, at - NEAR), at))) return false;
+  if (!LOWER_QUALIFIER.test(body.slice(at + acronym.length, at + acronym.length + DEFINITION_REACH))) return false;
+  const words = body
+    .slice(0, at)
+    .replace(ANY_OPENED, "")
+    .trim()
+    .split(/\s+/u)
+    .slice(-letters.length * 3);
+  return initialsOf(words).includes(letters);
+};
+
 /** 括弧の中で略語の前に置いた、大文字で始まる語（(“End User TAB”) の End User）。 */
 const PREFIX = new RegExp(String.raw`[(（]${WRAP}(?<words>(?:[A-Z][a-z]+ )+)$`, "u");
 
@@ -219,13 +251,25 @@ const isPrefixedAt = (body: string, acronym: string, at: number): boolean => {
 /** 引用符で囲んで書き終えた名前（‘abstract syntax tree’）。小文字の語でも、囲みが名前の始まりと終わりを決める。 */
 const QUOTED_NAME_END = /(?:“(?<curly>[^“”\n]{1,60})”|‘(?<single>[^‘’\n]{1,60})’|"(?<straight>[^"\n]{1,60})")$/u;
 
-/** 名前の後ろの読点と言い換えの語に続く略語（Special Interest Groups, or SIGs、‘abstract syntax tree’, or ‘AST’）。名前の頭文字が略語と揃うときだけ。 */
-const isAlternativeAt = (patterns: DefinitionPatterns, body: string, acronym: string, at: number): boolean => {
-  const joined = patterns.alternative.exec(body.slice(Math.max(0, at - DEFINITION_REACH), at));
-  if (joined === null) return false;
-  const name = body.slice(0, at - joined[0].length);
+const quotedNameBefore = (name: string): string | undefined => {
   const groups = QUOTED_NAME_END.exec(name)?.groups;
-  const quoted = groups?.["curly"] ?? groups?.["single"] ?? groups?.["straight"];
+  return groups?.["curly"] ?? groups?.["single"] ?? groups?.["straight"];
+};
+
+/**
+ * 名前の後ろの読点と言い換えの語に続く略語（Special Interest Groups, or SIGs、‘abstract syntax tree’, or ‘AST’）。名前の頭文字が略語と揃うときだけ。
+ * 引用符で囲んだ名前なら読点が無くてもよい（“subject matter experts” or SME）。囲みが名前の終わりを決める。
+ */
+const isAlternativeAt = (patterns: DefinitionPatterns, body: string, acronym: string, at: number): boolean => {
+  const before = body.slice(Math.max(0, at - DEFINITION_REACH), at);
+  const joined = patterns.alternative.exec(before);
+  if (joined === null) {
+    const quotedJoin = patterns.quotedAlternative.exec(before);
+    const quoted = quotedJoin === null ? undefined : quotedNameBefore(body.slice(0, at - quotedJoin[0].length));
+    return quoted !== undefined && namesAcronym(quoted, acronym);
+  }
+  const name = body.slice(0, at - joined[0].length);
+  const quoted = quotedNameBefore(name);
   return spellsOut(name, acronym) || (quoted !== undefined && namesAcronym(quoted, acronym));
 };
 
@@ -239,6 +283,7 @@ const isBracketedAt = (body: string, acronym: string, at: number): boolean => {
     isNamedBeforeAt(body, acronym, at) ||
     isJointBracketedAt(body, acronym, at) ||
     isQualifiedAt(body, acronym, at) ||
+    isLowerQualifiedAt(body, acronym, at) ||
     isPrefixedAt(body, acronym, at) ||
     isSuffixedAt(body, acronym, at)
   );
@@ -337,7 +382,7 @@ const CLOSING_FENCE = /^ {0,3}(?<fence>`{3,}|~{3,})\s*$/u;
 const closes = (line: string, open: string): boolean => CLOSING_FENCE.exec(line)?.groups?.["fence"]?.startsWith(open) === true;
 
 /** コードの囲みの中の行（開き・閉じの行も）を空にする。閉じるのは同じ記号で、開きと同じか長い並び。 */
-const withoutFences = (lines: readonly string[]): string[] =>
+export const withoutFences = (lines: readonly string[]): string[] =>
   lines.reduce<FenceScan>(
     (scan, line) => {
       const fence = FENCE.exec(line)?.groups?.["fence"];

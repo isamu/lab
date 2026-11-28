@@ -15,14 +15,24 @@ export const REQUEST_LEXICONS = {
   owner: "request-owner",
   pointer: "request-pointer",
   offer: "request-offer",
+  instruction: "request-instruction",
   timing: "request-timing",
   invitation: "request-invitation",
   contact: "request-contact",
   prohibition: "request-prohibition",
   deadlineSection: "request-deadline-section",
+  noDeadlineTitle: "request-no-deadline-title",
+  decision: "request-decision",
+  conditionHeading: "request-condition-heading",
 } as const;
 
-type Words = Readonly<Record<keyof typeof REQUEST_LEXICONS, readonly string[]>>;
+/** The lexicon of the words that say when a proposal starts (group start) and of the request to consider it (group consider). */
+const START_LEXICON = "request-start";
+
+type Words = Readonly<Record<keyof typeof REQUEST_LEXICONS, readonly string[]>> & {
+  readonly start: readonly string[];
+  readonly consider: readonly string[];
+};
 
 /** A clock time (14:00, 14時, 2pm) says when as much as a date does; a duration (3時間) does not. */
 const CLOCK = /\d{1,2}\s*(?:[:：]\d{2}|時(?!間)|\s?[ap]\.?m\.?(?![a-z]))/iu;
@@ -37,11 +47,17 @@ const wordsOf = (doc: ProseDocument): Words => ({
   owner: patternsOf(doc.lexicons[REQUEST_LEXICONS.owner]),
   pointer: patternsOf(doc.lexicons[REQUEST_LEXICONS.pointer]),
   offer: patternsOf(doc.lexicons[REQUEST_LEXICONS.offer]),
+  instruction: patternsOf(doc.lexicons[REQUEST_LEXICONS.instruction]),
   timing: patternsOf(doc.lexicons[REQUEST_LEXICONS.timing]),
   invitation: patternsOf(doc.lexicons[REQUEST_LEXICONS.invitation]),
   contact: patternsOf(doc.lexicons[REQUEST_LEXICONS.contact]),
   prohibition: patternsOf(doc.lexicons[REQUEST_LEXICONS.prohibition]),
   deadlineSection: patternsOf(doc.lexicons[REQUEST_LEXICONS.deadlineSection]),
+  noDeadlineTitle: patternsOf(doc.lexicons[REQUEST_LEXICONS.noDeadlineTitle]),
+  decision: patternsOf(doc.lexicons[REQUEST_LEXICONS.decision]),
+  conditionHeading: patternsOf(doc.lexicons[REQUEST_LEXICONS.conditionHeading]),
+  start: patternsOf(doc.lexicons[START_LEXICON]?.filter((entry) => entry.group === "start")),
+  consider: patternsOf(doc.lexicons[START_LEXICON]?.filter((entry) => entry.group === "consider")),
 });
 
 /** How far apart, in characters, the action word and the request ending may be: the action must be what is requested. */
@@ -99,7 +115,8 @@ const isProhibition = (text: string, endings: readonly Place[], words: Words): b
 /**
  * A request for an action: an action word next to a request ending (「確認してください」「please send」), not a condition
  * (「ご不明な点があれば…ください」 is an offer), not an open offer to take the reader's questions (「ご質問はメールでお送りください」),
- * not a pointer to where to read more (「詳細は資料をご確認ください」), not what an invitation is for (「登録をしにお越しください」),
+ * not a pointer to where to read more (「詳細は資料をご確認ください」), not the writer asking how to do something
+ * (「返送の方法を教えてください」 "let me know how to send it back"), not what an invitation is for (「登録をしにお越しください」),
  * not a prohibition (「メールでは送らないでください」 "Please do not submit comments by email"),
  * and not the way to reach the writer on a contact line (「ファックス番号：… 送信後、ご連絡ください」).
  * The action has to be close to the ending, or a noun like 検討会 or 履修登録 earlier in the sentence would make one.
@@ -113,7 +130,7 @@ export const isRequest = (text: string, words: Words): boolean => {
       endings.some((ending) => gapBetween(action, ending) <= ACTION_REACH) && !invitations.some((invitation) => invitedTo(comparable, action, invitation)),
   );
   if (!asked || holdsContactLine(text, words) || isProhibition(text, endings, words)) return false;
-  return ![words.condition, words.offer, words.pointer].some((patterns) => containsAny(text, patterns));
+  return ![words.condition, words.offer, words.instruction, words.pointer].some((patterns) => containsAny(text, patterns));
 };
 
 const NAMED = new Set(["PROPN"]);
@@ -222,37 +239,109 @@ const withoutDates = (source: string, span: Span, inside: readonly Span[]): stri
     source.slice(span.start, span.end),
   );
 
+/** A date with a deadline word, or with the decision step (a schedule's 「12月：経営会議にて承認」 says when the decision is made). */
 const statesDeadline = (source: string, sentence: Sentence, words: Words, dates: readonly Span[]): boolean => {
   const inside = datesInside(sentence.span, dates);
-  return inside.length > 0 && containsAny(withoutDates(source, sentence.span, inside), words.deadline);
+  return inside.length > 0 && containsAny(withoutDates(source, sentence.span, inside), [...words.deadline, ...words.decision]);
 };
 
 /**
- * Where a section headed only by a deadline-section word (a notice's "DATES:", "2. Deadline") states a date with a
- * deadline word: the document gives its deadline once there, for the requests that follow it. Undefined without one.
+ * The section headed only by a deadline-section word (a notice's "DATES:", "2. Deadline", a proposal's schedule) that
+ * states a date with a deadline or decision word: the document gives its deadline once there. -1 without one.
  */
-const documentDeadlineAt = (source: string, sections: readonly Section[], words: Words, dates: readonly Span[]): number | undefined =>
-  sections.find(
+const documentDeadlineSection = (source: string, sections: readonly Section[], words: Words, dates: readonly Span[]): number =>
+  sections.findIndex(
     (section) =>
       words.deadlineSection.includes(withoutHeadingEnd(comparableWords(section.unlabeledHeading ?? section.heading)).trim()) &&
       section.sentences.some((sentence) => statesDeadline(source, sentence, words, dates)),
-  )?.span.start;
+  );
+
+/**
+ * Whether the deadline section at index covers the offset: everything after it, and a section before it at its own level
+ * under the same heading (a proposal's 結論 asks, its 判断の期限 says by when). Text before the sections, or under another
+ * heading, is not covered.
+ */
+const coveredByDeadline = (sections: readonly Section[], deadline: number, offset: number): boolean => {
+  const section = sections[deadline];
+  if (section === undefined) return false;
+  if (offset > section.span.start) return true;
+  const own = sections.findLastIndex((candidate) => candidate.span.start <= offset);
+  const between = sections.slice(own + 1, deadline);
+  return own >= 0 && sections[own]?.depth === section.depth && section.depth > 0 && between.every((other) => other.depth >= section.depth);
+};
+
+/** A request under a heading that names a case (### 火山噴火の場合): it is done when the case comes, which says when. */
+const underConditionHeading = (sections: readonly Section[], sentence: Sentence, words: Words): boolean =>
+  enclosingHeadings(sections, sentence.span.start).some((heading) => {
+    const text = withoutHeadingEnd(comparableWords(heading.text)).trim();
+    return words.conditionHeading.some((pattern) => pattern !== "" && text.endsWith(pattern));
+  });
+
+const LIST_ITEM = /^([^\S\n]*)(?:[-*+]|\d+[.)])[^\S\n]+/u;
+
+type Line = { readonly start: number; readonly text: string };
+
+/** The source's lines up to and including the one that holds offset, with where each starts. */
+const linesUpTo = (source: string, offset: number): Line[] => {
+  const end = source.indexOf("\n", offset);
+  return source
+    .slice(0, end === -1 ? source.length : end)
+    .split("\n")
+    .reduce<{ at: number; lines: Line[] }>((walk, text) => ({ at: walk.at + text.length + 1, lines: [...walk.lines, { start: walk.at, text }] }), {
+      at: 0,
+      lines: [],
+    }).lines;
+};
+
+/**
+ * A request in a sub-item of a list item that opens with a date (* February 2025: … / * …, so please respond to …): a dated
+ * timeline gives the request its when. The parent is the nearest line above that is a list item with less indent.
+ */
+const inDatedItem = (source: string, sentence: Sentence, dates: readonly Span[]): boolean => {
+  const lines = linesUpTo(source, sentence.span.start);
+  const own = lines.at(-1);
+  const indent = own === undefined ? undefined : LIST_ITEM.exec(own.text)?.[1]?.length;
+  if (indent === undefined || indent === 0) return false;
+  const parent = lines.slice(0, -1).findLast((line) => {
+    const item = LIST_ITEM.exec(line.text);
+    return item !== null && (item[1]?.length ?? 0) < indent;
+  });
+  const marker = parent === undefined ? null : LIST_ITEM.exec(parent.text);
+  if (parent === undefined || marker === null) return false;
+  const contentStart = parent.start + marker[0].length;
+  return dates.some((date) => date.start === contentStart);
+};
+
+/** A request to consider the proposal (ご検討よろしくお願いします。) after a sentence that says when it starts (12月から試して): decided by then. */
+const consideredBeforeStart = (doc: ProseDocument, index: number, words: Words): boolean => {
+  const sentence = doc.sentences[index];
+  if (sentence === undefined || !containsAny(proseText(sentence), words.consider)) return false;
+  return doc.sentences.slice(0, index).some((earlier) => containsAny(proseText(earlier), words.start));
+};
+
+/** A document whose title names a kind that asks without a deadline by its nature (a 諮問 asks a council to deliberate). */
+const asksWithoutDeadline = (sections: readonly Section[], words: Words): boolean => {
+  const title = sections.find((section) => section.depth > 0)?.heading;
+  return title !== undefined && containsAny(title, words.noDeadlineTitle);
+};
 
 /**
  * The request sentences with neither a deadline nor a person in them, in the sentence after (same paragraph or item), in a
- * heading above, or in a deadline section before them.
+ * heading above, or in a deadline section that covers them; none in a document that asks without a deadline by its kind.
  */
 export const ownerlessRequests = (doc: ProseDocument): Sentence[] => {
   const words = wordsOf(doc);
   const dates = dateSpans(doc.structure);
-  const deadlineAt = documentDeadlineAt(doc.source, doc.sections, words, dates) ?? Number.POSITIVE_INFINITY;
+  if (asksWithoutDeadline(doc.sections, words)) return [];
+  const deadline = documentDeadlineSection(doc.source, doc.sections, words, dates);
   return doc.sentences.filter((sentence, index) => {
-    if (sentence.span.start > deadlineAt) return false;
+    if (coveredByDeadline(doc.sections, deadline, sentence.span.start)) return false;
     if (!isRequest(proseText(sentence), words) || saysWhenOrWho(sentence, words, dates, true)) return false;
     if (notesContactLine(doc.source, doc.sentences[index - 1], sentence, words)) return false;
     const next = doc.sentences[index + 1];
     if (continues(doc.source, sentence, next) && saysWhenOrWho(next, words, dates, false)) return false;
-    return !underDeadlineHeading(doc.sections, sentence, words);
+    if (underConditionHeading(doc.sections, sentence, words) || inDatedItem(doc.source, sentence, dates)) return false;
+    return !underDeadlineHeading(doc.sections, sentence, words) && !consideredBeforeStart(doc, index, words);
   });
 };
 

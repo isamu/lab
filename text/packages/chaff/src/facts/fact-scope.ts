@@ -11,7 +11,7 @@ import { withoutEdgeMarks } from "./trim-marks.ts";
  */
 export type FactPart = "opening" | "summary" | "body";
 
-/** record: 同じ範囲で、行の頭に何度も書かれた名前。催しや論文ごとの記録の欄で、値が違っても食い違いではない。 */
+/** record: 同じ範囲で、行の頭（か行の中の文の切れ目の後ろ）に何度も書かれた名前。催しや論文ごとの記録の欄で、値が違っても食い違いではない。 */
 export type ScopedFact = Fact & { readonly scope: string; readonly part: FactPart; readonly record: boolean };
 
 const CONTAINERS: ReadonlySet<string> = new Set(["section", "chapter", "article"]);
@@ -99,15 +99,29 @@ const partOf = (around: readonly StructureNode[], tree: StructureNode, offset: n
   return isOpening(around.at(-1), tree, offset) ? "opening" : "body";
 };
 
-/** 名前ごとに、頭にその名前を書いた行の番号。 */
+/** 行の中の文の切れ目のすぐ後ろ。参考文献の項目は、書誌の文のあとに「External Links: …」と欄を続ける。 */
+const INLINE_LABEL = /[.!?。．！？][ \t]+([^.!?。．！？:：|]{1,24})[:：]/gu;
+
+/** 文の切れ目の後ろから始まる「名前：」の名前。行の頭の名前と同じ書き方に揃える。表の行は読まない。 */
+const inlineLabelsOf = (line: Line): string[] =>
+  line.text.trimStart().startsWith("|")
+    ? []
+    : [...line.text.matchAll(INLINE_LABEL)].flatMap((match) => {
+        const label = withoutEdgeMarks(match[1] ?? "");
+        return /\p{L}/u.test(label) ? [label.normalize("NFKC").toLowerCase()] : [];
+      });
+
+/** 名前ごとに、その名前の欄を書いた行の番号。欄は行の頭か、行の中の文の切れ目の後ろ。 */
 const headLines = (lines: readonly Line[]): ReadonlyMap<string, readonly number[]> => {
   const found = new Map<string, number[]>();
   lines.forEach((line, index) => {
     const head = headLabelOf(line);
-    if (head === undefined) return;
-    const indexes = found.get(head);
-    if (indexes === undefined) found.set(head, [index]);
-    else indexes.push(index);
+    const labels = new Set([...(head === undefined ? [] : [head]), ...inlineLabelsOf(line)]);
+    labels.forEach((label) => {
+      const indexes = found.get(label);
+      if (indexes === undefined) found.set(label, [index]);
+      else indexes.push(index);
+    });
   });
   return found;
 };

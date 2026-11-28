@@ -59,6 +59,28 @@ entries:
   - pattern: 課
     group: blank-suffix
     genres: [business]
+  # 所在の名前（〇〇市、〇〇区、〇〇ビル、〇〇大学）。住所や宛先に残った伏せ字。
+  - pattern: 大学
+    group: blank-suffix
+    genres: [business]
+  - pattern: ビル
+    group: blank-suffix
+    genres: [business]
+  - pattern: 市
+    group: blank-suffix
+    genres: [business]
+  - pattern: 区
+    group: blank-suffix
+    genres: [business]
+  - pattern: 町
+    group: blank-suffix
+    genres: [business]
+  - pattern: 村
+    group: blank-suffix
+    genres: [business]
+  - pattern: 県
+    group: blank-suffix
+    genres: [business]
   # 前に付く語（株式会社〇〇、総務部の〇〇、署名の「営業部　〇〇」）。
   - pattern: 株式会社
     group: blank-prefix
@@ -81,6 +103,38 @@ entries:
   - pattern: 課
     group: blank-prefix
     genres: [business]
+  # 住所の区切りに続けた伏せ字（所在地：東京都品川区〇〇）。町名・番地の位置の空欄。
+  - pattern: 都
+    group: blank-prefix
+    genres: [business]
+  - pattern: 県
+    group: blank-prefix
+    genres: [business]
+  - pattern: 市
+    group: blank-prefix
+    genres: [business]
+  - pattern: 区
+    group: blank-prefix
+    genres: [business]
+  - pattern: 町
+    group: blank-prefix
+    genres: [business]
+  - pattern: 村
+    group: blank-prefix
+    genres: [business]
+  # 役職に続けた名前（議事録の「取締役〇〇より」「部長〇〇が説明」）。役職と名前の間に空白が無い形。
+  - pattern: 取締役
+    group: blank-prefix
+    genres: [business]
+  - pattern: 社長
+    group: blank-prefix
+    genres: [business]
+  - pattern: 部長
+    group: blank-prefix
+    genres: [business]
+  - pattern: 課長
+    group: blank-prefix
+    genres: [business]
   # 数の代わりの伏せ字に付く単位（月額〇万円、2026年〇月〇日、〇か月）。行頭の「○」は箇条書きの印なので数えない。
   - pattern: 万円
     group: blank-unit
@@ -100,6 +154,16 @@ entries:
   - pattern: 日
     group: blank-unit
     genres: [business]
+  # 番地（〇丁目〇番〇号）。
+  - pattern: 丁目
+    group: blank-unit
+    genres: [business]
+  - pattern: 番
+    group: blank-unit
+    genres: [business]
+  - pattern: 号
+    group: blank-unit
+    genres: [business]
   # group: template — 見出しにあれば、その節が雛形だと言う語（「## 雛形」「# 記入例」）。
   # その見出しの下（同じ深さか浅い次の見出しまで）の空欄は雛形の役目なので数えない。
   - pattern: 雛形
@@ -114,3 +178,28 @@ entries:
     group: template
   - pattern: 文例
     group: template
+  # group: example-lead — 書き方の例を示す行の書き出し。コロンと鉤括弧が続く（例：「【会社名】の田中です」）。その鉤括弧の中の空欄は、書き方を示したもの。
+  - pattern: 例
+    group: example-lead
+  - pattern: 良い例
+    group: example-lead
+  - pattern: 悪い例
+    group: example-lead
+  # group: address-blank — 雛形のまま残った URL のパスの一区切り（example.com/yourname/tool）。区切り全体が語と同じとき、
+  # 大文字小文字を問わず数える（YOUR_USERNAME）。URL の外でもその語を書いている文書（yourname を自分の名前に置き換える）は、わざと置いた語なので数えない。
+  - pattern: yourname
+    group: address-blank
+  - pattern: your-name
+    group: address-blank
+  - pattern: your_name
+    group: address-blank
+  - pattern: yourusername
+    group: address-blank
+  - pattern: your-username
+    group: address-blank
+  - pattern: your_username
+    group: address-blank
+  - pattern: your-org
+    group: address-blank
+  - pattern: yourorg
+    group: address-blank

@@ -1,0 +1,24 @@
+# Names every reader already knows: the months and the days of the week. Read by proper-noun-density, which does not count
+# them: a date (April 17, 2026) is no name a newcomer has to look up. Matched as written, capital first.
+id: everyday-name
+language: en
+entries:
+  - pattern: January
+  - pattern: February
+  - pattern: March
+  - pattern: April
+  - pattern: May
+  - pattern: June
+  - pattern: July
+  - pattern: August
+  - pattern: September
+  - pattern: October
+  - pattern: November
+  - pattern: December
+  - pattern: Monday
+  - pattern: Tuesday
+  - pattern: Wednesday
+  - pattern: Thursday
+  - pattern: Friday
+  - pattern: Saturday
+  - pattern: Sunday

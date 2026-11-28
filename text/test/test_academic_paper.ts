@@ -254,10 +254,15 @@ describe("figure-reference-order: figures referred to in order and in place", ()
   });
 
   it("reports a figure first referred to past a heading after its caption, and one never referred to", () => {
-    const late = "# Naps\n\n## Results\n\n図1　研究の流れ\n\n本文。\n\n## 考察\n\n図1のとおりである。\n";
+    const late = `# Naps\n\n## Results\n\n図1\u3000研究の流れ\n\n${"本文。".repeat(1500)}\n\n## 考察\n\n図1のとおりである。\n`;
     assert.deepEqual(variantsOf(ja, "figure-reference-order", late), ["late"]);
     const unreferenced = "# Naps\n\nFigure 1 shows the design.\n\nFigure 1: Design\n\nFigure 2: Recall\n";
     assert.deepEqual(variantsOf(en, "figure-reference-order", unreferenced), ["unreferenced"]);
+  });
+
+  it("does not report a figure captioned a heading ahead of its reference within a page, where a float lands", () => {
+    const floated = `# Naps\n\n## 1. Introduction\n\n${"Text. ".repeat(300)}\n\nFigure 1. Pipeline\n\n## 2. Method\n\nWe re-scored the outputs (Fig. 1).\n`;
+    assert.deepEqual(variantsOf(en, "figure-reference-order", floated), []);
   });
 
   it("does not report figures the text never refers to at all", () => {
@@ -341,5 +346,8 @@ describe("abstract-length: an abstract over the limit, or none", () => {
     assert.deepEqual(variantsOf(en, "abstract-length", "# Naps\n\n## Introduction\n\nText.\n\n## Methods\n\nText.\n"), ["missing"]);
     assert.deepEqual(variantsOf(en, "abstract-length", "# Naps\n\n## Introduction\n\nText.\n\n## Budget\n\nText.\n"), []);
     assert.deepEqual(variantsOf(ja, "abstract-length", "# 昼寝\n\n## はじめに\n\n本文。\n\n## 方法\n\n本文。\n"), ["missing"]);
+    assert.deepEqual(variantsOf(ja, "abstract-length", "# 昼寝\n\n## はじめに\n\n本文。\n\n## 昼寝の歴史\n\n本文。\n\n## おわりに\n\n本文。\n"), []);
+    assert.deepEqual(variantsOf(en, "abstract-length", "# Naps\n\n## Introduction\n\nText.\n\n## History\n\nText.\n\n## Conclusion\n\nText.\n"), []);
+    assert.deepEqual(variantsOf(ja, "abstract-length", "# 昼寝\n\n## はじめに\n\n本文。\n\n## 結果\n\n本文。\n\n## おわりに\n\n本文。\n"), ["missing"]);
   });
 });

@@ -1,0 +1,11 @@
+# Site navigation that a web page keeps when it is converted to a document (Skip to main content, Back to top). It is
+# not the document's prose, so concrete-evidence-density does not count it among a section's sentences. Compared with
+# the whole sentence, in lower case, without its closing full stop.
+id: navigation-line
+language: en
+entries:
+  - pattern: skip to main content
+  - pattern: skip to content
+  - pattern: skip navigation
+  - pattern: back to top
+  - pattern: return to top

@@ -89,3 +89,27 @@ describe("title-case-consistency: the heading that encloses the others is the ti
     assert.deepEqual(quotesFor(source), ["Fraud and related activity"]);
   });
 });
+
+describe("title-case-consistency: a heading that names an acronym", () => {
+  it("valid: a name with its acronym in brackets keeps its capitals in either style, and does not vote", () => {
+    const source = [
+      "## Award guide\n\nText.",
+      "### Intro meeting\n\nText.",
+      "### Contract modifications\n\nText.",
+      "### Contractor Performance Assessment Report (CPARS)\n\nText.",
+      "### Contract close out\n\nText.",
+    ].join("\n\n");
+    assert.deepEqual(quotesFor(source), []);
+  });
+
+  it("invalid: a Title Case heading with no acronym in the minority is still reported", () => {
+    const source = [
+      "## Award guide\n\nText.",
+      "### Intro meeting\n\nText.",
+      "### Contract modifications\n\nText.",
+      "### Performance Assessment Report\n\nText.",
+      "### Contract close out\n\nText.",
+    ].join("\n\n");
+    assert.deepEqual(quotesFor(source), ["Performance Assessment Report"]);
+  });
+});

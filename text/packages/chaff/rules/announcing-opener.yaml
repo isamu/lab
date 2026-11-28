@@ -53,7 +53,7 @@ not_flagged:
   en: An announcing phrase inside a sentence, and fewer than the level needs, are not reported.
 level_meaning:
   ja: 予告で始まる文が {limit} 個あれば指摘
-  en: reported once {limit} sentences open with an announcement
+  en: reported once {limit} {limit|sentence opens|sentences open} with an announcement
 rewrite:
   depth: light
   ja:

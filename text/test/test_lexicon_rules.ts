@@ -50,8 +50,72 @@ describe("padded-intro", () => {
     assert.ok(!idsFor(body).includes("padded-intro"));
   });
 
+  it("valid: 冒頭でも、文の途中の「近年」「昨今」は時を言う普通の語", () => {
+    [
+      "指針を作った。その後、近年の災害の激甚化を踏まえて見直した。",
+      "作業中の熱中症が増えている。その背景には、近年の気候変動による気温の上昇がある。",
+      "こうした中で、市場環境としては、近年は気候変動の影響もあり需要が伸びた。",
+      "料金を改定します。人件費が昨今は上がり続けており、価格を見直しました。",
+    ].forEach((source) => assert.ok(!idsFor(source).includes("padded-intro"), source));
+  });
+
+  it("invalid: 文の頭の「近年」「昨今」は書き出しの決まり文句", () => {
+    [
+      "近年、クマの出没が増えています。対策を説明します。",
+      "近年では、在宅勤務が広がりました。本記事で紹介します。",
+      "昨今、働き方が変わりました。本記事で紹介します。",
+    ].forEach((source) => assert.ok(idsFor(source).includes("padded-intro"), source));
+  });
+
   it("英語でも同じ rule が動く", () => {
     assert.ok(idsFor("In today's fast-paced world, teams ship faster.", en).includes("padded-intro"));
+  });
+
+  it("invalid: a reader-address hook ('Sound familiar?') in the opening", () => {
+    const source = "You open the app. Nothing loads. The spinner keeps turning. Sound familiar? Here is the fix.";
+    assert.ok(idsFor(source, en).includes("padded-intro"));
+  });
+
+  it("invalid: どの企業にも当てはまる問題から始める書き出しを指摘する", () => {
+    [
+      "多くの企業が、社内の問い合わせ対応に課題を抱えています。本記事で解決策を紹介します。",
+      "請求書の処理に悩んでいませんか。本記事で解決策を紹介します。",
+    ].forEach((source) => assert.ok(idsFor(source).includes("padded-intro"), source));
+    ["Many teams struggle with internal support requests. This post shows a fix.", "As organizations increasingly adopt chat tools, noise grows."].forEach(
+      (source) => assert.ok(idsFor(source, en).includes("padded-intro"), source),
+    );
+  });
+
+  it("valid: 自分たちの課題を具体に書いた書き出しは指摘しない", () => {
+    // 誤検知しやすい正常な文章。「課題」「struggle」は、誰の話かが書いてあれば一般論ではない。
+    assert.ok(!idsFor("総務の 3 人で受けていた問い合わせが、先月から倍になりました。課題は夜間の対応です。").includes("padded-intro"));
+    assert.ok(!idsFor("Our team struggled with support requests last spring. We put a bot in front of them.", en).includes("padded-intro"));
+  });
+
+  it("invalid: a problem followed by 'The good news is' in the opening", () => {
+    [
+      "If your desk is buried in paper, you're not alone. The good news is that you can clear it in an afternoon.",
+      "Your notes are scattered across three apps. The good news is, one folder fixes that.",
+    ].forEach((source) => assert.ok(idsFor(source, en).includes("padded-intro"), source));
+  });
+
+  it("valid: 'The good news is' past the opening is not reported", () => {
+    // A human post may turn to good news after setting out its own problem in several sentences.
+    const body =
+      "Our build took forty minutes last spring. We split the test suite in two. The slow half ran overnight. Nobody liked the wait. The good news is that the split held.";
+    assert.ok(!idsFor(body, en).includes("padded-intro"));
+  });
+
+  it("invalid: the clipped 'Good news:' turn in the opening", () => {
+    const source = "It snows here most of the winter. Visitors ask what there is to do. Good news: the snowy weeks are our busiest and best.";
+    assert.ok(idsFor(source, en).includes("padded-intro"));
+  });
+
+  it("valid: 'Good news:' past the opening, and 'good news' without the colon, are not reported", () => {
+    [
+      "Our build took forty minutes last spring. We split the test suite in two. The slow half ran overnight. Nobody liked the wait. Good news: the split held.",
+      "The quarterly figures arrived on Monday. That is good news for the team.",
+    ].forEach((source) => assert.ok(!idsFor(source, en).includes("padded-intro"), source));
   });
 });
 

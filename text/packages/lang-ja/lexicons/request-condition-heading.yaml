@@ -1,0 +1,9 @@
+# 見出しの終わりの、場合を言う語（### 火山噴火の場合）。request-without-deadline は、この語で終わる見出しの下の依頼（…避難の準備を
+# してください。）を、その場合になったときにする依頼として、期限が要るものとは見ない。いつするかは見出しの場合が言っている。
+id: request-condition-heading
+language: ja
+entries:
+  - pattern: の場合
+  - pattern: のとき
+  - pattern: の時
+  - pattern: の際

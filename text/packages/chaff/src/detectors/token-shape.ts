@@ -2,10 +2,20 @@ import { hasParticle, isClosed, lastContent } from "../sentence-shape.ts";
 import { isWithinAny, quotedIn } from "../quoted-span.ts";
 import { chronologyRows } from "../chronology-rows.ts";
 import { externalLinkTitleSpans } from "../link-title.ts";
-import type { Detector, Finding, Span, Token } from "../plugin.ts";
+import { referenceListSpans } from "../reference-lists.ts";
+import type { Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { countedTokens, uncountedWordsOf, type UncountedWords } from "../uncounted-particles.ts";
-import { honorificGroupParticles } from "../honorific-group.ts";
+import { boundWordParticles } from "../bound-word-particles.ts";
+import { setPhraseParticles } from "../set-phrase-particles.ts";
+import { timeWordParticles } from "../time-word-particles.ts";
+import { clauseEnds, copulaEnds, determinerParticles, longestClausePart } from "../clause-particles.ts";
 import { noteSentences } from "../note-paragraphs.ts";
+import { labelledNoteSentences } from "../labelled-note-paragraphs.ts";
+import { listLeadSentences } from "../list-lead-sentence.ts";
+import { documentNameSpans } from "./particle-run-names.ts";
+import { namedLongForms } from "./particle-run-long-forms.ts";
+import { quotedNameSpans, quotedNames } from "./particle-run-quoted-names.ts";
+import { isFlattenedTable } from "./sentence-parts.ts";
 
 /**
  * 文末が名詞で終わる（体言止め）。箇条書きでは普通だが、本文では文が途中で切れて読める。
@@ -19,13 +29,34 @@ const isDependent = (token: Token): boolean => token.features?.["NounType"] === 
 
 const inside = (span: Span, spans: readonly Span[]): boolean => spans.some((other) => span.start >= other.start && span.start < other.end);
 
+/** 表や図の注の段落の頭の語（（注1）の「注」）。 */
+const NOTE_LABEL_LEXICON = "note-paragraph-label";
+
+/** 名詞で止めるのが書き方の文: 年表の行、注や文献の一覧、（注1）で始まる表の注、箇条書きへ渡す文（以下のとおり説明。）。 */
+const clippedByForm = (doc: ProseDocument): ReadonlySet<Sentence> => {
+  const patterns = (id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
+  return new Set([
+    ...chronologyRows(doc),
+    ...noteSentences(doc.source, doc.paragraphs),
+    ...labelledNoteSentences(doc.source, doc.paragraphs, patterns(NOTE_LABEL_LEXICON), patterns("note-mark")),
+    ...listLeadSentences(doc.sentences, doc.lists, doc.source),
+  ]);
+};
+
+/** 問いを閉じる助詞の語彙表（か）。 */
+const QUESTION_PARTICLE_LEXICON = "question-particle";
+
+/** 最後の語の後ろに問いの助詞がある文（どのような見直しが必要か。）。問いで、名詞で止めた文ではない。 */
+const asksAfter = (sentence: Sentence, last: Token, questionParticles: ReadonlySet<string>): boolean =>
+  (sentence.tokens ?? []).some((token) => token.span.start >= last.span.end && token.pos === "PART" && questionParticles.has(token.surface));
+
 export const nounEnding: Detector = (doc, options): Finding[] => {
-  const rows = chronologyRows(doc);
-  const notes = noteSentences(doc.source, doc.paragraphs);
+  const clipped = clippedByForm(doc);
+  const questionParticles = new Set((doc.lexicons[QUESTION_PARTICLE_LEXICON] ?? []).map((entry) => entry.pattern));
   const ended = doc.sentences.filter((sentence) => {
-    if (inside(sentence.span, doc.listSpans) || rows.has(sentence) || notes.has(sentence) || !isClosed(sentence) || !hasParticle(sentence)) return false;
+    if (inside(sentence.span, doc.listSpans) || clipped.has(sentence) || !isClosed(sentence) || !hasParticle(sentence)) return false;
     const last = lastContent(sentence);
-    return last !== undefined && NOMINAL.has(last.pos) && !isDependent(last);
+    return last !== undefined && NOMINAL.has(last.pos) && !isDependent(last) && !asksAfter(sentence, last, questionParticles);
   });
   const first = ended[0];
   // 文書全体の数についての指摘なので、1 文ずつ出さない。13 件並べても直す順番が分からない。
@@ -64,6 +95,12 @@ const PARTICLE = new Set(["ADP", "SCONJ", "PART", "CCONJ"]);
 
 const BREAK: Run = { surface: "", tokens: [] };
 
+/** 括弧だけの語。解析器が括弧の続き（「分析】(1)経営成績」の「】(」）を名詞と読んでも、句読点と同じく句を閉じる。％や半角の･は句を閉じない。 */
+const BRACKETS_ONLY = /^[\p{Ps}\p{Pe}]+$/u;
+
+const breaksRun = (token: Token, breaks: readonly string[]): boolean =>
+  token.pos === "PUNCT" || PARTICLE.has(token.pos) || breaks.includes(token.surface) || BRACKETS_ONLY.test(token.surface);
+
 /**
  * 名詞は連なりの中身なので飛ばす。読点と、語彙表に無い助詞は連なりを切る。
  * 「弊社のAはBの」を 2 回続いたと数えないため。「は」でいちど句が閉じている。
@@ -76,9 +113,12 @@ const runsOf = (tokens: readonly Token[], nesting: readonly string[], breaks: re
   tokens.reduce<Run[]>((acc, token) => {
     if (isWithinAny(quoted, token.span)) return acc;
     if (nesting.includes(token.surface)) return extend(acc, token);
-    if (token.pos === "PUNCT" || PARTICLE.has(token.pos) || breaks.includes(token.surface)) acc.push(BREAK);
+    if (breaksRun(token, breaks)) acc.push(BREAK);
     return acc;
   }, []);
+
+/** 括弧の中で、前の語句に短い呼び名を付ける語（以下「…」という）。前の語句は名前なので、題名と同じく中の助詞を数えない。 */
+const NAMING_LEXICON = "definition-marker";
 
 /** 句と句の間の記号（制限=タグの制限、A→B）。半角の = や : は名詞として読まれ、句読点のようには切れない。 */
 const RUN_BREAK_LEXICON = "particle-run-break";
@@ -86,29 +126,81 @@ const RUN_BREAK_LEXICON = "particle-run-break";
 /** 人の集まりを敬って呼ぶ語（国民の皆様の「皆様」）。直前の助詞は呼び方の一部で、入れ子の輪に数えない。 */
 const HONORIFIC_GROUP_LEXICON = "honorific-group";
 
-/** 数えない助詞（番号をつなぐ「の」と、敬って呼ぶ語の前の「の」）を除いた語。 */
-const chainTokens = (tokens: readonly Token[], numbering: UncountedWords, groups: readonly string[]): readonly Token[] => {
-  const honorific = honorificGroupParticles(tokens, numbering.particles, groups);
+/** 置き場所を言う語（ラックの下の「下」）。直前の助詞は「ラックの下」という一つの場所の名前の中にあり、入れ子の輪に数えない。 */
+const POSITION_LEXICON = "particle-run-position";
+
+/** 助詞を挟んで一語のように読む決まった言い回し（おそれのある）。中の助詞は入れ子の輪に数えない。 */
+const SET_PHRASE_LEXICON = "particle-run-set-phrase";
+
+/** どれを指すかだけを言う語（他の）。直後の「の」は名詞を名詞の中に入れない。 */
+const DETERMINER_LEXICON = "particle-run-determiner";
+
+/** いつかだけを言う語（現在）。直後の「の」が連なりの最後の名詞に係るとき（アクターの現在の状態）は、その名詞と一つの名前に読む。 */
+const TIME_WORD_LEXICON = "particle-run-time-word";
+
+/** 前の語と組んで一つの名前になる語（皆様、下）、決まった言い回し（おそれのある）、どれを指すかだけを言う語（他）、いつかだけを言う語（現在）。 */
+type Phrases = {
+  readonly boundWords: readonly string[];
+  readonly setPhrases: readonly string[];
+  readonly determiners: readonly string[];
+  readonly timeWords: readonly string[];
+};
+
+/** 数えない助詞（番号をつなぐ「の」、敬って呼ぶ語や置き場所を言う語の前の「の」、決まった言い回しの中の「の」、他の）を除いた語。 */
+const chainTokens = (tokens: readonly Token[], numbering: UncountedWords, { boundWords, setPhrases, determiners, timeWords }: Phrases): readonly Token[] => {
+  const uncounted = new Set([
+    ...boundWordParticles(tokens, numbering.particles, boundWords),
+    ...setPhraseParticles(tokens, numbering.particles, setPhrases),
+    ...determinerParticles(tokens, numbering.particles, determiners),
+    ...timeWordParticles(tokens, numbering.particles, timeWords),
+  ]);
   const counted = countedTokens(tokens, numbering);
-  return honorific.size === 0 ? counted : counted.filter((token) => !honorific.has(token));
+  return uncounted.size === 0 ? counted : counted.filter((token) => !uncounted.has(token));
 };
 
 export const doubledParticle: Detector = (doc, options): Finding[] => {
   const nesting = (options.lexicon ?? []).map((entry) => entry.pattern);
-  const titles = externalLinkTitleSpans(doc.source, doc.links);
+  // 文献一覧の項目に写した著作の題（在宅勤務の日の時間の使い方）は、鉤括弧で引いた題と同じく書き手が言い換えられない。
+  const headings = (doc.lexicons["reference-list-heading"] ?? []).map((entry) => entry.pattern);
+  const titles = [...externalLinkTitleSpans(doc.source, doc.links), ...referenceListSpans(doc.source, headings)];
   const breaks = (doc.lexicons[RUN_BREAK_LEXICON] ?? []).map((entry) => entry.pattern);
   const numbering = uncountedWordsOf(doc.lexicons, nesting);
-  const groups = (doc.lexicons[HONORIFIC_GROUP_LEXICON] ?? []).map((entry) => entry.pattern);
-  return doc.sentences.flatMap((sentence) =>
-    runsOf(chainTokens(sentence.tokens ?? [], numbering, groups), nesting, breaks, [...quotedIn(sentence), ...titles])
-      .filter((run) => run.tokens.length > options.limit)
-      .map((run) => ({
+  const phrases: Phrases = {
+    boundWords: [HONORIFIC_GROUP_LEXICON, POSITION_LEXICON].flatMap((id) => (doc.lexicons[id] ?? []).map((entry) => entry.pattern)),
+    setPhrases: (doc.lexicons[SET_PHRASE_LEXICON] ?? []).map((entry) => entry.pattern),
+    determiners: (doc.lexicons[DETERMINER_LEXICON] ?? []).map((entry) => entry.pattern),
+    timeWords: (doc.lexicons[TIME_WORD_LEXICON] ?? []).map((entry) => entry.pattern),
+  };
+  const prose = doc.prose ?? doc.source;
+  const namingMarkers = (doc.lexicons[NAMING_LEXICON] ?? []).map((entry) => entry.pattern);
+  const names = quotedNames(doc.source, nesting);
+  const continuesName = (token: Token): boolean => nesting.includes(token.surface) || !breaksRun(token, breaks);
+  // 平らにした表の文は、見出しのセル（役員の兼任等・営業上の取引・設備の賃貸借）の切れ目が見えず、別のセルの「の」が一つの連なりに見える。
+  return doc.sentences
+    .filter((sentence) => !isFlattenedTable(sentence.text))
+    .flatMap((sentence) => {
+      const tokens = chainTokens(sentence.tokens ?? [], numbering, phrases);
+      const quoted = [
+        ...quotedIn(sentence),
+        ...titles,
+        ...namedLongForms(sentence.text, sentence.span.start, sentence.tokens ?? [], namingMarkers, continuesName),
+        ...quotedNameSpans(sentence.text, sentence.span.start, names),
+      ];
+      // 「の」で主語を示した節（番号のついた版）や、一つの「の」だけの「である」の節（当社の子会社である法人）の前と後ろは別の句。どちらかの句の中で上限を超える連なりだけを、連なり全体で言う。
+      const ends = clauseEnds(tokens, nesting);
+      const copulas = copulaEnds(tokens);
+      const isLong = (run: Run): boolean => run.tokens.length > options.limit && longestClausePart(run.tokens, ends, copulas) > options.limit;
+      const longRuns = (skipped: readonly Span[]): Run[] => runsOf(tokens, nesting, breaks, skipped).filter(isLong);
+      const found = longRuns(quoted);
+      // 文書の名前を読むのは長い連なりのある文だけ。名前は位置ごとに読むので、全部の文で読むと遅い。
+      const runs = found.length === 0 ? found : longRuns([...quoted, ...documentNameSpans(prose, sentence.span, doc.namedDocument)]);
+      return runs.map((run) => ({
         rule: "no-doubled-joshi",
         severity: "warning" as const,
         line: 0,
         column: 0,
         quote: sentence.text.trim(),
         values: { word: run.surface, count: run.tokens.length, limit: options.limit, offset: run.tokens[0]?.span.start ?? sentence.span.start },
-      })),
-  );
+      }));
+    });
 };

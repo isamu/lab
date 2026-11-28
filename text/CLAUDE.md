@@ -47,13 +47,16 @@ The direction is tracked in isamu/lab#130.
 ## Working here
 
 - `yarn format`, `yarn lint`, `yarn lint:oxlint`, `yarn typecheck`, `yarn build`, `yarn test` (node:test,
-  `test/test_*.ts`; `CHAFF_TEST_JOBS=4 yarn test` caps the processes when several checkouts share a machine).
+  `test/test_*.ts`; `CHAFF_TEST_JOBS=4 yarn test` caps the processes when several checkouts share a machine). CI splits
+  the suite into parts balanced by `scripts/test-times.json`; `yarn test:times <log>` rewrites it from a CI run's log
+  (the command is at the top of `scripts/test-times-update.ts`).
 - `yarn corpus`, `yarn bench` and `yarn planted` compare findings with committed expectations (`--update` accepts a
   change). `yarn rules:measure --apply` places a new or changed rule, over the documents pinned in
   `corpus/rules-measure-documents.json`. `yarn rules:precision --corpus <chaff-corpus clone> --apply` turns a rule off
   for a genre where its judged precision is low (recorded in `corpus/rules-precision.json`); a rule file's `precision_hold`
   keeps a group on while a narrowing fix is due. `yarn screens:update`
-  regenerates the guide's screens.
+  regenerates the guide's screens, and `yarn samples:update` the screens of the per-rule samples
+  (`docs/samples/<ja|en>/<rule-id>.md`, checked by `test/test_rule_samples.ts`).
 - A change to a user-visible behaviour (a new rule, a new command, a new mechanism) updates the READMEs (en and ja),
   `packages/chaff/skills/chaff/SKILL.md` and the site guide in the same round.
 - A change that claims Japanese output is unchanged is proved by diffing the old and new builds over many

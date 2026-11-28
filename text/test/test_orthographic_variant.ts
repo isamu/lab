@@ -70,6 +70,13 @@ describe("orthographic-variant: 読みで束ねる", () => {
     ]);
   });
 
+  it("窓口の「受付」と行いの「受け付け」は書き分け。「受け付け」と「受付け」は言う", () => {
+    assert.deepEqual(findingsOf("受付は一階にあります。\n\n来客の受け付けを始めます。受け付けの時間は九時からです。受け付けの場所は一階です。\n"), []);
+    assert.deepEqual(findingsOf("来客の受け付けを始めます。受け付けの時間は九時からです。受け付けの場所は一階です。受付けは窓口でします。\n"), [
+      "「受付け」と書いています（この文書はふつう「受け付け」と書く語です。4 箇所のうち 1 箇所が違う）",
+    ]);
+  });
+
   it("どちらも同じ数なら、どちらの側にも立たない", () => {
     assert.deepEqual(findingsOf("窓口で申請できます。代理の人も申請出来ます。\n"), []);
   });
@@ -103,6 +110,37 @@ describe("orthographic-variant: カタカナ語と英字", () => {
   it("ウィンドウ と ウインドウ", () => {
     assert.deepEqual(findingsOf("ウィンドウを開きます。ウィンドウを閉じます。ウインドウの大きさを変えます。\n"), [
       "「ウインドウ」と書いています（この文書はふつう「ウィンドウ」と書く語です。3 箇所のうち 1 箇所が違う）",
+    ]);
+  });
+
+  it("reads an English heading's words with the body's", () => {
+    const source = [
+      "# Email help",
+      "",
+      "You can sign in with your email address. Each email we send has a link. Check your email for the code.",
+      "",
+      "## Can I have two accounts with one e-mail address?",
+      "",
+      "No. One email address holds one account.",
+      "",
+    ].join("\n");
+    assert.deepEqual(findingsOf(source, en), ['"e-mail" here, where the document usually writes "email" (1 of 6)']);
+    const code = [
+      "# Maps",
+      "",
+      "A ConfigMap holds settings. Each ConfigMap has a name. Mount the ConfigMap as a volume.",
+      "",
+      "## Create one with `kubectl create configmap`",
+      "",
+    ];
+    assert.deepEqual(findingsOf(code.join("\n"), en), []);
+  });
+
+  it("日本語の見出しの語は数えない（見出しは送り仮名を省く札、分類の語）", () => {
+    const source = ["# 好きな店", "", "## コーヒー", "", "珈琲を淹れる店です。珈琲の豆も買えます。珈琲に合う菓子もあります。", ""].join("\n");
+    assert.deepEqual(findingsOf(source), []);
+    assert.deepEqual(findingsOf(source.replace("## コーヒー", "コーヒーも出します。")), [
+      "「コーヒー」と書いています（この文書はふつう「珈琲」と書く語です。4 箇所のうち 1 箇所が違う）",
     ]);
   });
 
@@ -212,6 +250,30 @@ describe("orthographic-variant: 使い方で分ける", () => {
     assert.deepEqual(findingsOf("締切日を守る。締切日を決める。締切日を書く。提出の締切りは明日です。\n"), []);
   });
 
+  it("送り仮名を省いた複合語の頭（申込締切の申込）は、ほかの複合語の送り仮名のある頭（申し込み画面）と比べない", () => {
+    const notice = "# 研修\n\n- 申込締切：11月20日\n- 申込方法：社内の掲示板\n- 申込先：人事課\n\n社内の掲示板の申し込み画面から申し込んでください。\n";
+    assert.deepEqual(findingsOf(notice), []);
+    assert.deepEqual(findingsOf("申込書を送る。申込書を書く。申込期限を守る。会場で申し込みを受け付ける。\n"), []);
+  });
+
+  it("同じ複合語を送り仮名の有無で書き分けたもの、送り仮名のある頭どうしのゆれは言う", () => {
+    assert.deepEqual(findingsOf("申込方法は掲示板です。申込方法を確かめます。申込方法を守ります。申し込み方法は変わりません。\n"), [
+      "「申し込み」と書いています（この文書はふつう「申込」と書く語です。4 箇所のうち 1 箇所が違う）",
+    ]);
+    assert.deepEqual(findingsOf("申込み画面を開く。申込み方法を読む。申込み期限を守る。申し込み用紙を書く。\n"), [
+      "「申し込み」と書いています（この文書はふつう「申込み」と書く語です。4 箇所のうち 1 箇所が違う）",
+    ]);
+  });
+
+  it("送り仮名を語末だけに付ける書き方（申込み画面）、漢字だけのそれだけの語（申出）のある文書では、漢字だけの複合語の頭と比べる", () => {
+    assert.deepEqual(findingsOf("申込締切を守る。申込方法を読む。申込先に送る。申込み画面を開く。\n"), [
+      "「申込み」と書いています（この文書はふつう「申込」と書く語です。4 箇所のうち 1 箇所が違う）",
+    ]);
+    assert.deepEqual(findingsOf("休業の申出は書面で行う。申出書を出す。申出書は保存する。二週間前を申し出期限とする。\n"), [
+      "「申し出」と書いています（この文書はふつう「申出」と書く語です。3 箇所のうち 1 箇所が違う）",
+    ]);
+  });
+
   it("漢字だけの書き方が無い語（引越し と 引っ越し）は、複合語の頭も分けずに比べる", () => {
     assert.deepEqual(findingsOf("引越し業者に頼む。引越し業者を選ぶ。引越し業者と話す。引っ越しの日を決める。\n"), [
       "「引っ越し」と書いています（この文書はふつう「引越し」と書く語です。4 箇所のうち 1 箇所が違う）",
@@ -264,6 +326,18 @@ describe("orthographic-variant: 語の書き方ではないもの", () => {
     assert.equal(findingsOf("画面を見る。記録を見る。結果を見る。そしてみる。\n").length, 1);
   });
 
+  it("て形の後ろの漢字の動詞は、本動詞を漢字、補助動詞をかなで書く文書では本動詞（並んで見た）", () => {
+    assert.deepEqual(findingsOf("展示を見に行った。石が見たかった。三時間並んで見た。投資してみよう。発信してみたい。\n"), []);
+    // 本動詞を漢字で書かない文書では、て形の後ろの漢字は補助動詞として数える。
+    assert.equal(findingsOf("芽を残して置く。値を書いておく。式を足しておく。型を決めておく。\n").length, 1);
+    // 同じ動詞にかなの補助動詞を付けた所がほかにあれば（まとめてみました）、て形の後ろの漢字は補助動詞として数える。
+    assert.equal(findingsOf("資料を見ながら話す。顔を見て話す。要点をまとめてみました。注意をまとめて見ました。発信してみたい。\n").length, 1);
+    // て形の動詞が目的語を取れば（芽を残して置く）、後ろの漢字は補助動詞として数える。
+    assert.equal(findingsOf("値を書いておく。式を足しておく。型を決めておく。筆を置きます。芽を残して置く。\n").length, 1);
+    // 本動詞もかなで書く文書では、て形の後ろの漢字は補助動詞のまま比べる。
+    assert.equal(findingsOf("画面をみる。記録をみる。試しにやって見る。使ってみる。書いてみる。\n").length, 1);
+  });
+
   it("慣用句の動詞（気をつける）は、それだけの動詞（名札を付ける）と別に比べる", () => {
     assert.deepEqual(findingsOf("名札を付ける。印を付ける。色を付ける。足元に気をつける。\n"), []);
     assert.equal(findingsOf("名札を付ける。印を付ける。色を付ける。紙につける。\n").length, 1);
@@ -274,6 +348,13 @@ describe("orthographic-variant: 語の書き方ではないもの", () => {
   it("「目的をもって」は、物を持つ（鍵を持つ）と別に比べる。物を持つ「もって」は数える", () => {
     assert.deepEqual(findingsOf("鍵を持つ。権限を持つ。資格を持つ。目的をもって開発する。\n"), []);
     assert.equal(findingsOf("鍵を持つ。権限を持つ。資格を持つ。鍵をもって出かける。\n").length, 1);
+  });
+
+  it("「この決意をもって」「覚悟をもって」は心構えの言い方で、物を持つ（権限を持つ）と別に比べる", () => {
+    assert.deepEqual(findingsOf("国の持つ権限。力を持つ。能力を持った職員。この決意をもって話を終えます。\n"), []);
+    assert.deepEqual(findingsOf("国の持つ権限。力を持つ。能力を持った職員。覚悟をもって臨みます。\n"), []);
+    // 心構えの言い方どうしは比べる。
+    assert.equal(findingsOf("責任をもって進める。目的をもって作る。余裕をもって出る。決意を持って臨む。\n").length, 1);
   });
 
   it("文の頭で読点の続く て形（あわせて、）は接続詞として、動詞（日程を合わせる）と別に比べる", () => {
@@ -572,9 +653,10 @@ describe("orthographic-variant: 名詞と動詞は別の語として比べる", 
   });
 
   it("文書がほかで名詞として書く語は、自立の名詞の前でも複合語の頭（申し出期限 と 申出書）", () => {
-    assert.deepEqual(findingsOf("申出書を出す。申出者に通知する。申出書は保存する。二週間前を申し出期限とする。\n"), [
-      "「申し出」と書いています（この文書はふつう「申出」と書く語です。4 箇所のうち 1 箇所が違う）",
+    assert.deepEqual(findingsOf("申出期限を定める。申出書を出す。申出期限は守る。二週間前を申し出期限とする。\n"), [
+      "「申し出」と書いています（この文書はふつう「申出」と書く語です。3 箇所のうち 1 箇所が違う）",
     ]);
+    assert.deepEqual(findingsOf("申出書を出す。申出者に通知する。申出書は保存する。二週間前を申し出期限とする。\n"), []);
   });
 
   it("名詞として書かない語の連用形は、自立の名詞の前で動詞のまま（受取り内容 は 受け取る と比べる）", () => {

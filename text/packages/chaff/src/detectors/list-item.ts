@@ -26,7 +26,7 @@ export const firstContent = (scope: ItemScope, item: TokenRange): Token | undefi
 
 export const lastContent = (scope: ItemScope, item: TokenRange): Token | undefined => last(scope, "content", item);
 
-const shapeOfHead = (head: Token | undefined): string | undefined => {
+export const shapeOfHead = (head: Token | undefined): string | undefined => {
   if (head === undefined) return undefined;
   return NOMINAL.has(head.pos) ? "NOMINAL" : head.pos;
 };
@@ -40,6 +40,13 @@ export const leadShape = (scope: ItemScope, item: TokenRange): string | undefine
 export const openingOf = (scope: ItemScope, item: TokenRange): Token | undefined => first(scope, "open", item);
 
 export const isParticiple = (token: Token): boolean => token.features?.["VerbForm"] === "Part";
+
+/** 前置詞で始まる項目。解析器は冠詞の前の to（to the extent practicable）も不定詞の to と読むので、冠詞が続けば前置詞と読む。 */
+export const opensAsPreposition = (scope: ItemScope, item: TokenRange): boolean => {
+  const at = firstAt(scope, "open", item);
+  const [opening, next] = [scope.sentence.tokens[at], scope.sentence.tokens[at + 1]];
+  return opening?.pos === "ADP" || (opening?.surface.toLowerCase() === "to" && next?.pos === "DET");
+};
 
 export const openingKind = (scope: ItemScope, item: TokenRange): string | undefined => {
   const opening = openingOf(scope, item);
@@ -90,6 +97,42 @@ export const isModifiedNoun = (scope: ItemScope, item: TokenRange): boolean => {
   const tailLength = count(scope, "open", tail);
   const nounPhrase = tailLength > 0 && tailLength === count(scope, "nounPhraseTail", tail);
   return MODIFIER.has(tokenAt(scope, headAt)?.pos ?? "") && nounPhrase && APPOSITIVE_ANCHOR.has(last(scope, "open", tail)?.pos ?? "");
+};
+
+/** and / or の直前が読点か。Oxford comma を打った並び。 */
+export const commaBefore = (scope: ItemScope, at: number): boolean => scope.sentence.tokens[at - 1]?.surface === ",";
+
+export const lastAt = (scope: ItemScope, name: ColumnName, item: TokenRange): number => lastIn(scope.sentence.column[name], item, scope.level);
+
+/** 目的語を待つ語。前置詞と、解析器が小辞と読む to（related to / not limited to）。 */
+const AWAITS_OBJECT: ReadonlySet<string> = new Set(["ADP", "PART"]);
+
+/** 前置詞で終わる項目（conditions upon / necessary for / but not limited to）。目的語は読点の後ろにあり、項目はまだ閉じていない。 */
+export const endsWithPreposition = (scope: ItemScope, item: TokenRange): boolean => AWAITS_OBJECT.has(last(scope, "open", item)?.pos ?? "");
+
+/** 前置詞だけの項目（on or before Jan 23 の on）。and / or は 2 つの前置詞を結び、目的語を共有する。 */
+export const isBarePreposition = (scope: ItemScope, item: TokenRange): boolean => {
+  const words = count(scope, "open", item);
+  return words > 0 && words === count(scope, "adposition", item);
+};
+
+/** 形容詞と名詞だけの句（issues / use cases）。前置詞や動詞を連れていない。 */
+export const isBareNounPhrase = (scope: ItemScope, item: TokenRange): boolean => {
+  const words = count(scope, "open", item);
+  return words > 0 && words === count(scope, "nounPhraseTail", item);
+};
+
+/** 副詞でない中身の語がある項目。not だけ、quickly だけの切れ端は項目にならない。 */
+export const hasNonAdverbContent = (scope: ItemScope, item: TokenRange): boolean => count(scope, "contentNotAdverb", item) > 0;
+
+/** 不定冠詞と形容詞だけの項目（a simple / a flexible）。名詞がまだ来ていないので、次の項目の名詞にかかる語。 */
+export const isBareIndefiniteModifier = (scope: ItemScope, item: TokenRange): boolean => {
+  const at = firstAt(scope, "open", item);
+  const article = tokenAt(scope, at);
+  if (article === undefined || !(scope.sentence.words.indefinite?.has(article.surface.toLowerCase()) ?? false)) return false;
+  const rest = { start: at + 1, end: item.end };
+  const words = count(scope, "open", rest);
+  return words > 0 && words === count(scope, "adjective", rest);
 };
 
 export const isPluralNounPhrase = (scope: ItemScope, item: TokenRange): boolean =>

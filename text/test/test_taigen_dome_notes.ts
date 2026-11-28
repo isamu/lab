@@ -44,3 +44,56 @@ describe("taigen-dome-in-prose: 番号を付けた注の一覧", () => {
     assert.equal(findingsOf(`${body}\n${enumerated}`).length, 1);
   });
 });
+
+// 表の注（（注1）…をもって算定。）と、箇条書きへ渡す文（以下のとおり説明。）も、名詞で止めるのが書き方。例文はすべて自作。
+describe("taigen-dome-in-prose: 表の注と、箇条書きへ渡す文", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  const tableNotes = [
+    "（注1）各年度の末の数をもって算定。",
+    "",
+    "（注2）「施設数」は利用者が千人以上の施設を計上。",
+    "",
+    "注3：駅と港の施設を合わせて計上。",
+    "",
+  ].join("\n");
+
+  it("注の語と番号で始まる段落は、表の注として数えない", () => {
+    assert.deepEqual(findingsOf(`${body}\n${tableNotes}`), []);
+  });
+
+  it("注の語で始まっても、番号や括弧の無い段落（注意、注目）は本文として数える", () => {
+    const plain = ["注意の対象は駅の施設。", "", "注目の点は港の施設の数。", "", "残りの課題は空港の施設。", ""].join("\n");
+    assert.equal(findingsOf(`${body}\n${plain}`).length, 1);
+  });
+
+  const minutes = (lead: string): string => ["# 議事概要", "", `${lead}`, "", "- 費用の見込みを示した。", "- 日程の案を示した。", ""].join("\n");
+
+  it("箇条書きのすぐ前の文は、箇条書きへ渡す案内として数えない", () => {
+    const source = [minutes("資料について事務局より以下のとおり説明。"), minutes("主な意見は以下の通り。"), minutes("今後の進め方について座長より説明。")].join(
+      "\n",
+    );
+    assert.deepEqual(findingsOf(source), []);
+  });
+
+  it("箇条書きとの間に別の文がある名詞止めは、本文として数える", () => {
+    const source = [
+      "# 議事概要",
+      "",
+      "資料について事務局より説明。",
+      "",
+      "次に日程を確認。",
+      "",
+      "最後に費用を確認。",
+      "",
+      "そのうえで次の点を話した。",
+      "",
+      "- 費用",
+      "- 日程",
+      "",
+    ].join("\n");
+    assert.equal(findingsOf(source).length, 1);
+  });
+});

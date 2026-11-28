@@ -29,17 +29,22 @@ const TEXT: Texts<{ readonly heading: string; readonly byDefault: string; readon
   {
     ja: {
       heading: "オプション（chaff.yaml の options で決めます）:",
-      byDefault: "既定",
-      from: (source) => `${source} から`,
+      byDefault: "（既定）",
+      from: (source) => `（${source} から）`,
       howTo: (id) => `決める:  chaff.yaml に options: { ${id}: { <名前>: <値> } } を書く`,
     },
     en: {
       heading: "Options (set under options in chaff.yaml):",
-      byDefault: "default",
-      from: (source) => `from ${source}`,
+      byDefault: "(default)",
+      from: (source) => `(from ${source})`,
       howTo: (id) => `Set one:  write options: { ${id}: { <name>: <value> } } in chaff.yaml`,
     },
   };
+
+/** The narrowest column a choice name is padded to, so short names line up as before. */
+const CHOICE_COLUMN = 11;
+/** The spaces between the longest choice name and its meaning. */
+const CHOICE_GAP = 2;
 
 /** A rule's options for explain: each one's value now and where it came from, what it decides, and each choice's meaning. */
 export const optionLines = (rule: RuleDefinition, layers: readonly OptionLayer[], language: string): string[] => {
@@ -49,10 +54,11 @@ export const optionLines = (rule: RuleDefinition, layers: readonly OptionLayer[]
   const lines = Object.entries(rule.options).flatMap(([name, option]) => {
     const now = settled[name];
     const source = now === undefined || now.from === DEFAULT_SOURCE ? text.byDefault : text.from(now.from);
+    const width = Math.max(CHOICE_COLUMN, ...Object.keys(option.choiceNames).map((choice) => choice.length + CHOICE_GAP));
     const choices = Object.entries(option.choiceNames).map(
-      ([choice, meaning]) => `      ${choice === now?.value ? "→" : " "} ${choice.padEnd(11)}${localized(meaning, language)}`,
+      ([choice, meaning]) => `      ${choice === now?.value ? "→" : " "} ${choice.padEnd(width)}${localized(meaning, language)}`,
     );
-    return [`    ${name}: ${printed(now?.value ?? option.default)}   (${source})`, `      ${localized(option.about, language)}`, ...choices];
+    return [`    ${name}: ${printed(now?.value ?? option.default)}   ${source}`, `      ${localized(option.about, language)}`, ...choices];
   });
   return ["", `  ${text.heading}`, ...lines, "", `  ${text.howTo(rule.id)}`];
 };

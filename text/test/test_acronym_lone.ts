@@ -87,9 +87,9 @@ describe("undefined-acronym: 上限に届かない文書の、展開しなかっ
   });
 
   it("展開が上限より少ない文書では、これまでどおり指さない", () => {
-    const two =
-      "# Harbour notice\n\nThe Harbour Lighting Office (HLO) runs the lamps. The Quay Maintenance Board (QMB) mends the walls.\n\nGive the number of the CFR title.\n";
-    assert.deepEqual(reportedAt(two), []);
+    // business/report reads normal as a limit of 2, so a document that spells out one acronym is below it.
+    const one = "# Harbour notice\n\nThe Harbour Lighting Office (HLO) runs the lamps.\n\nGive the number of the CFR title.\n";
+    assert.deepEqual(reportedAt(one), []);
   });
 
   it("名前の一部の略語は、展開する文書でも指さない", () => {

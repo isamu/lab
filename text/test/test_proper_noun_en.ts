@@ -331,10 +331,10 @@ describe("proper-noun-density の英語の上限は、人の書いた文書の�
     "Nobody asked for more time.",
   ];
   const repeated = (sentences: readonly string[]): string => Array.from({ length: 8 }, () => sentences.join(" ")).join("\n\n");
-  // 名前の文 1 つに名前の無い文 4 つ。人の書いた報告書ではふつうの多さ（コーパスの中ほど）。
+  // 名前の文 1 つに名前の無い文 4 つ。人の書いた報告書にもある多さで、strict の上限の下。
   const REPORT = repeated([NAMED_SENTENCE, ...PLAIN_SENTENCES]);
-  // 名前の文 1 つに短い名前の無い文 3 つ。strict と normal の上限のあいだ。
-  const NAME_HEAVY = repeated([NAMED_SENTENCE, PLAIN_SENTENCES[0] ?? "", PLAIN_SENTENCES[1] ?? "", "Everyone left with a clear list."]);
+  // 名前の文 1 つに短い名前の無い文 2 つ。strict と normal の上限のあいだ。
+  const NAME_HEAVY = repeated([NAMED_SENTENCE, PLAIN_SENTENCES[0] ?? "", "Everyone left with a clear list."]);
   // 名前ばかりの文章（著者の並んだ抄録のページ）。
   const NAMES = Array.from({ length: 20 }, () => "Alice Moreno met Bob Tanaka in Chicago. Kubernetes runs on Azure and Google Cloud.").join("\n\n");
 
@@ -348,5 +348,25 @@ describe("proper-noun-density の英語の上限は、人の書いた文書の�
     assert.equal(densityAt(NAME_HEAVY, "normal"), 0);
     assert.equal(densityAt(NAMES, "normal"), 1);
     assert.equal(densityAt(NAMES, "relaxed"), 1);
+  });
+});
+
+describe("proper-noun-density points at the densest sentence", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+  });
+
+  it("quotes the sentence with the most names, not the first name in the document", () => {
+    const plain = "The team reviewed the plan and agreed on the next steps for the month ahead.";
+    const crowd = "Alice Moreno from Contoso met Bob Tanaka from Fabrikam and Carol Diaz from Northwind in Seattle.";
+    const source = [`Maria planned the trip. ${plain}`, ...Array.from({ length: 16 }, () => plain), crowd].join("\n\n");
+    const findings = runRules(buildDocument("t.md", source, en), loadRules("en"), { "proper-noun-density": "strict" }, true, "business/report", {
+      "proper-noun-density": 1,
+    }).findings.filter((finding) => finding.rule === "proper-noun-density");
+    assert.deepEqual(
+      findings.map((finding) => finding.quote),
+      [crowd],
+    );
+    assert.equal(findings[0]?.values["offset"], source.indexOf("Alice"));
   });
 });

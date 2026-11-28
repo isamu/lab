@@ -55,7 +55,7 @@ not_flagged:
   en: One softener is courtesy and is not reported. A short document, such as an email, is measured as if it were as long as a short letter, so at the default level the third softener is the first reported; one alone is never reported.
 level_meaning:
   ja: 1000 字あたりクッション言葉 {limit} 個まで
-  en: up to {limit} softeners per 1000 words
+  en: up to {limit} {limit|softener|softeners} per 1000 words
 rewrite:
   depth: light
   ja:

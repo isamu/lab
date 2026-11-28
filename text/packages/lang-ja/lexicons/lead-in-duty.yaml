@@ -1,0 +1,10 @@
+# colon-lead-in が義務を述べる前置きと読む語（「担当者は次を行わなければならない：」）。続くのは、行うことや
+# 含めるものの一覧で、手順や部品の一覧として箇条書きのままでよい。述語は文の終わりに来るので、前置きの終わり
+# （コロンの手前）にあるときだけ当たる（position: after）。「注意しなければならない点は次のとおりです：」は数える。
+id: lead-in-duty
+language: ja
+entries:
+  - { pattern: なければならない, position: after }
+  - { pattern: なければなりません, position: after }
+  - { pattern: ものとする, position: after }
+  - { pattern: ものとします, position: after }

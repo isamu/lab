@@ -65,7 +65,7 @@ chaff が機械で見つけた箇所と、それぞれの直す方向です。ch
 - 試してうまくいかなかったこと、制約、前提を書いているか
 - 結びが本文の言い直しではなく、次に読むもの・試すものを示しているか
 
-このジャンルで特に効く rule: `closing-cliche`, `empty-conclusion`, `padded-intro`, `paragraph-length-variance`, `quote-without-source`, `rule-of-three`, `section-length-uniformity`, `sentence-rhythm`
+このジャンルで特に効く rule: `closing-cliche`, `empty-conclusion`, `generic-opening`, `padded-intro`, `paragraph-length-variance`, `quote-without-source`, `section-length-uniformity`, `sentence-rhythm`
 
 …
 ```
@@ -95,10 +95,10 @@ $ npx chaffjs rules --json --genre blog/tech
     "rules": [
       "closing-cliche",
       "empty-conclusion",
+      "generic-opening",
       "padded-intro",
       "paragraph-length-variance",
       "quote-without-source",
-      "rule-of-three",
       "section-length-uniformity",
       "sentence-rhythm"
     ],
@@ -121,24 +121,32 @@ Claude Code の skill（`npx chaffjs skill`）は、指摘より先に指針を�
 
 | ルール | 見つけるもの |
 | --- | --- |
-| `ai-tell` | 生成文に多い言い回しの重なり（「重要な役割を果たす」「静かに壊れる」「時間を溶かす」） |
-| `contrast-framing` | 「単なる X ではなく Y」「X ではありません。Y です」の対比の枠の重なり |
+| `ai-tell` | 生成文に多い言い回しの重なり（「深く掘り下げる」「静かに壊れる」「時間を溶かす」）。ブログでは重い言い回し 1 つでも |
+| `contrast-framing` | 「単なる X ではなく Y」「X ではありません。Y です」「X ではなく、Y です。」の対比の枠で書いた文の割合が多い所 |
+| `unprompted-denial` | 「〜の話ではありません」「〜の材料になりません」のように、誰も言っていない前提を打ち消して終わり、何であるかを言わない文の割合が多い所 |
 | `stock-transition` | 「さらに、」「加えて、」で始まる文の密度 |
 | `announcing-opener` | 「重要なのは、」「ポイントは、」「正直に言うと、」で始まる文の重なり |
-| `colon-lead-in` | 「以下の通りです：」のように、コロンで箇条書きへ渡す文の密度 |
+| `over-general-claim` | 「most people」「nobody」「everyone」のように人を大きく括る一般論の重なり（英語のブログとビジネス文書だけ） |
+| `q-fragment-answer` | 「Is it perfect? No.」「The result? Faster builds.」のように、自分で問うてすぐ断片で答える所の重なり（英語の文書だけ） |
+| `colon-lead-in` | 「以下の通りです：」のように、コロンで箇条書きへ渡す文の密度。3 つ以上の節に続くときだけ（英語は上限を高くしています） |
 | `emoji-heading` | 「## 🚀 はじめに」のように、絵文字の付いた見出しが続く所 |
-| `bold-label-list` | 「- **速さ**：〜」のように、太字の札とコロンで始まる項目の多さ（日本語の文書だけ） |
+| `bold-label-list` | 「- **速さ**：〜」のように、太字の札とコロンで始まる項目の多さ。「**利用は毎週伸びた**：〜」と言い切りの太字や、「**Pick the quietest room you can.** 〜」と英語の命令の一文の太字で始まる段落が続く所も |
 | `assistant-residue` | 「お役に立てれば幸いです」のような、チャットの返事の名残 |
+| `email-stock-courtesy` | 「I hope this email finds you well」「I apologize for any inconvenience」のような英文メールの決まり文句が、一通のメールに 2 つ以上（英語の文書だけ） |
+| `honesty-marker` | 「正直、」「正直に言うと」のように本音だと前置きする言い回し。1 つでも言う（ブログと業務文書だけ） |
+| `closing-exhortation` | 「ぜひ〜してみてください」「きっと〜はずです」のように、結びで読み手を励ます・請け合う文が 2 つ以上 |
+| `cold-open` | 状況も例もないまま、短い願い（「〜に任せたい。」）、前の文の語の引き直し（この「だいたい」が）、難所の予告（「それだけのことに見えて」）が重なる書き出し |
 | `chat-citation-residue` | 「?utm_source=chatgpt.com」の付いたリンクや「oaicite」のような、チャットの答えを貼ったときに残る印 |
 | `closing-cliche` | 「いかがでしたでしょうか」で締める終わり方 |
 | `bold-density` | 太字の多さ |
+| `bold-emphasis` | 文の途中の太字が文書じゅうに散っている所（箇条書きの頭の太字の札は `bold-label-list` が数えます） |
 | `no-em-dash` | ダッシュ（——）の多さ |
 | `sentence-rhythm` | 文の長さが揃いすぎている所 |
 | `rule-of-three` | 箇条書きがどれも 3 項目の所 |
 | `section-length-uniformity` | どの節もほぼ同じ長さに埋めてあり、ひな形を埋めたように見える所 |
 | `paragraph-length-variance` | どの段落もほぼ同じ長さで、型に流しこんだように見える所 |
-| `ai-structure` | 構成の項目（見出しの多さ、3 つに分けた小見出し、太字の札、節の長さの揃い方、本文を言い直すまとめなど）のいくつもが、人の記事の 9 割を超えた文書。ブログとエッセイだけで見ます |
-| `ai-generated-composite` | 次の特徴のうち 3 つ以上がそろった文書：`ai-tell`、`contrast-framing`、`stock-transition`、`announcing-opener`、`colon-lead-in`、`assistant-residue`、`closing-cliche`、`padded-intro`、`no-em-dash`、`sentence-rhythm`、`rule-of-three`、`section-length-uniformity`、`ai-structure`（`bold-density` は数えません） |
+| `ai-structure` | 構成の項目（見出しの多さ、3 つに分けた小見出し、太字の札、節の長さの揃い方、本文を言い直すまとめなど）のいくつもが、人の記事の 9 割を超えた文書。ビジネス文書では、教科書どおりの提案書の見出し（背景、現状と課題、提案内容、期待される効果、費用、リスクと対策…）も 1 項目に数え、見出しのほとんどがその定型ならもう 1 項目に数えます |
+| `ai-generated-composite` | 次の特徴のうち 3 つ以上（ブログの記事では 2 つ以上）がそろった文書：`ai-tell`、`honesty-marker`、`contrast-framing`、`stock-transition`、`announcing-opener`、`colon-lead-in`、`assistant-residue`、`closing-cliche`、`padded-intro`、`no-em-dash`、`sentence-rhythm`、`rule-of-three`、`section-length-uniformity`、`ai-structure`、`over-general-claim`、`q-fragment-answer`、`closing-exhortation`、`unfilled-placeholder`、`bold-emphasis`（`bold-density` と `bold-label-list` は数えません。太字の札は `ai-structure` が測っています） |
 
 どのルールも、それだけで「AI が書いた」とは言いません。人も書く形です。
 重なったときに、読み返す場所の目印になります。
@@ -156,12 +164,41 @@ Claude Code の skill（`npx chaffjs skill`）は、指摘より先に指針を�
 - 目印は、上のルールが出した指摘と、`chaff outline` の構成の項目です。人の文書の 9 割に出ないものだけを数えます。
 - 人の文書は、corpus の人の文書（ブログ、技術文書、ビジネス文書などのジャンルごと）と、生成 AI が広まる前の技術記事です。どちらも chaff と一緒に置いてある数で比べます。
 - 目印が 3 つから「中」、5 つから「高」です。`ai-generated-composite` が出る数と、その relaxed の段階と同じです。
-- `ai-generated-composite` が読むルールのうち 2 つ以上が同じ文書に出たとき（その strict の段階）は、目印をもう 1 つ数えます。corpus の人の文書には、2 つがそろって出るものがありません（`yarn ai-score:corpus --all` で数えられます）。
+- `ai-generated-composite` が読むルールのうち 2 つ以上が同じ文書に出たとき（その strict の段階）は、目印をもう 1 つ数えます。corpus の人の文書で 2 つがそろって出るものはまれです（`yarn ai-score:corpus --all --verbose` がその文書を挙げます）。
 - 構成の項目と、同じ形を見るルール（節の長さの揃い方と `section-length-uniformity` など）がどちらも出たときは、1 つに数えます。
 - 短すぎる文書（日本語 500 字、英語 200 語より短い）と、人の文書の基準が足りないジャンル（学術、話し言葉）では、段階を出さずに理由を言います。
 - ふだんの `npx chaffjs <file>` も、報告の最後に 1 行で段階を出します。`chaff grade` は出力ごとの結果に `aiScore` を入れます（[AI の評価に使う](./ai-evals)）。
 
 画面の例は、[技術記事の例](./ai-sounding-examples#技術記事を節ごとに書き直す)の最後にあります。
+
+## AI らしさを全部消す
+
+「AI臭さを全部消して」と頼まれたら、計画に `--all-ai-signs` を付け、止めるときを満たすまで繰り返します。
+
+```bash
+npx chaffjs fix-plan article.md --all-ai-signs --json                       # 1. AI らしさのルールを全部、点、止めるとき
+npx chaffjs test article.rewritten.md --checks ai-tells --dry-run           # 2. 読まないとわからない目印を問う
+npx chaffjs fix-plan article.rewritten.md --all-ai-signs --before article.md --json  # 3. 書き直しを元と比べる
+npx chaffjs compare article.md article.rewritten.md                          # 4. 事実が落ちていないか、足されていないか
+```
+
+1. `--all-ai-signs` は、ジャンルが止めているものや対象にしていないものも含めて、AI らしさのルールを全部動かします。
+   計画には `aiScore`（`ai-score` の点）、`aiRules`（指摘のある AI らしさのルール）、`stop`（止めるとき）が加わります。
+   計画の直し方で、`rules` のどのルールの指摘も直します。AI らしさ以外のルールも直し、書き直しで悪くしません。
+2. `--checks ai-tells` は、ルールでは見えない目印を問います。作った具体、抽象的な書き出し、誰も言っていないことの打ち消し、
+   教訓で締める結び、課題を裏返しただけの効果の一覧、言い換えただけの繰り返し、大きく言いすぎた意味、どこにでも書ける内容、
+   相手の得にすり替えた頼みごと、同じものの言い換えです。
+   `--dry-run` で送るものを見てから、API key と書き手の了承があるときだけ送ります。送らないときは、書き直す AI が自分で読んで確かめます。
+   作ったように見える具体は書き手への問いです。「［105cm］くらい」のように印を付けて残し、確かめるか消すかを書き手に聞きます。
+3. `--before` は、元の文書より指摘が増えたルールを全部挙げます（`since.risen`）。
+4. 次のすべてが成り立つまで 2 から繰り返します。3 回までで、残ったものは理由と一緒に書き出します。
+   - `aiRules` が空。
+   - `aiScore.level` が `low`。短くて点が付かない文書は、ルールの指摘だけで決めます。
+   - `since.risen` が空。
+   - `compare` が通る。
+   - `ai-tells` のどの問いにも当てはまらない。
+
+書き手にしか埋められない空欄（［会社名］）と、書き手にしか確かめられない具体は、繰り返しても消えません。残ったものとして書き手に渡します。
 
 ## 3 つの直し方
 
@@ -301,7 +338,7 @@ npx chaffjs compare old.md new.md --distinct --allow-dropped heading --allow-add
 
 6. 次のどれもが成り立ったら止めます。全面書き直しは 2 回までにします。
    - `ai-generated-composite` が出ない
-   - 密度のルール（`bold-density`、`contrast-framing`、`stock-transition`、`colon-lead-in`）が上限より下にある
+   - 密度のルール（`bold-density`、`stock-transition`、`colon-lead-in`）と、対比の枠の文の割合（`contrast-framing`）が上限より下にある
    - `compare` が通るか、外したものすべてに理由が書いてある
    - `chaff outline old.md new.md` で、書き直した後の構成の AI らしさが計画の上限より下にあり、計画が目標に挙げた項目に ✗ が残っていない
 7. 書き直した文章、何をなぜ変えたのかの短い一覧、前と後の特徴と形の表を見せます。表の数は chaff の出力から取ります。
@@ -309,6 +346,7 @@ npx chaffjs compare old.md new.md --distinct --allow-dropped heading --allow-add
 ## 機械では見つけられない形
 
 次の形は、chaff が機械では見つけられません。どの直し方でも、読んで確かめます。
+`npx chaffjs test <file> --checks ai-tells` は、その一部を問います（[AI らしさを全部消す](#ai-らしさを全部消す)）。
 
 | 形 | 読んで確かめること |
 | --- | --- |

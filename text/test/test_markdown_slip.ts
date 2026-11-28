@@ -15,6 +15,7 @@ const run =
 const overflow = run("table-row-overflow");
 const fence = run("unclosed-code-fence");
 const emphasis = run("unrendered-emphasis");
+const absorbed = run("table-absorbed-line");
 
 describe("table-row-overflow", () => {
   it("reports a row with more cells than the header", () => {
@@ -33,6 +34,27 @@ describe("table-row-overflow", () => {
     assert.deepEqual(overflow("| A | B |\n| --- | --- |\n| a \\| b | c |", en), []);
     assert.deepEqual(overflow("> | A | B |\n> | --- | --- |\n> | a | b | c |", en), []);
     assert.deepEqual(overflow("| A | B |\n| --- | --- |\n| a | b | c |", en, "a.txt"), []);
+  });
+});
+
+describe("table-absorbed-line", () => {
+  it("reports a line with no bar written right under a table", () => {
+    assert.deepEqual(absorbed("| 項目 | 金額 |\n| --- | --- |\n| 会場 | 5万円 |\n金額はすべて税込みです。"), [
+      "この行は表の行として読まれ、表の最初の列に入って表示されます",
+    ]);
+    assert.deepEqual(absorbed("Item | Cost\n--- | ---\nVenue | $500\nAll prices include tax.", en), [
+      "This line is read as a row of the table above and is shown in its first column",
+    ]);
+  });
+
+  it("does not report a short row, a one-column table, a blank line, a list, a quotation, or a plain-text file", () => {
+    assert.deepEqual(absorbed("| A | B |\n| --- | --- |\n| a |", en), []);
+    assert.deepEqual(absorbed("| A | B |\n| --- | --- |\n| a \\| b | c |", en), []);
+    assert.deepEqual(absorbed("| A |\n| --- |\n| a |\nnext", en), []);
+    assert.deepEqual(absorbed("| A | B |\n| --- | --- |\n| a | b |\n\nAll prices include tax.", en), []);
+    assert.deepEqual(absorbed("| A | B |\n| --- | --- |\n| a | b |\n- a list item", en), []);
+    assert.deepEqual(absorbed("> | A | B |\n> | --- | --- |\n> | a | b |\n> a note", en), []);
+    assert.deepEqual(absorbed("| A | B |\n| --- | --- |\n| a | b |\nnote", en, "a.txt"), []);
   });
 });
 

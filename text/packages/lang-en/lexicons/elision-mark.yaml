@@ -1,0 +1,9 @@
+# Marks of an omission inside a quotation. A quotation that marks what it leaves out is an excerpt of another text (a
+# statute, a ruling), so the commas of a list inside it are that text's, not the writer's ("words of the Fifth Amendment
+# that 'No person shall be * * * deprived of life, liberty, or property'"). Read by oxford-comma-consistency.
+id: elision-mark
+language: en
+entries:
+  - pattern: "..."
+  - pattern: "…"
+  - pattern: "* * *"

@@ -12,6 +12,7 @@ import { splitAtQuotedLineEnds } from "./quoted-line-stop.ts";
 import { insideBrackets, startsWithCloser } from "./inside-brackets.ts";
 import { structure } from "./structure.ts";
 import { cutAtBreaks, lineVocabulary, listItemHeads, listLineBreaks, startsListItem } from "./list-line.ts";
+import { cutRunInHeadings, headingOpeners } from "./run-in-heading.ts";
 import { listItemHeads as englishListItemHeads, listLineBreaks as englishListLineBreaks } from "./english-list-line.ts";
 import { isReady, predicateOnly, prepare, readsAsCounter, readsAsOneAdverb, readsAsOneWord, tokenize } from "./pos.ts";
 import { markSpacedCounters } from "./spaced-counter.ts";
@@ -76,6 +77,7 @@ const merge = (source: string, spans: readonly Span[]): Sentence[] => {
       return acc;
     }, [])
     .flatMap((span) => cutAtBreaks(span, listBreaks))
+    .flatMap((span) => (english ? [span] : cutRunInHeadings(source, span, HEADING_OPENERS)))
     .map((span) => withLanguage(source.slice(span.start, span.end), span))
     .map((sentence) => (startsListItem(itemHeads, sentence.span.start) ? asListItem(sentence) : sentence));
 };
@@ -105,11 +107,13 @@ const withTokens = (source: string, sentences: readonly Sentence[]): Sentence[] 
 
 const patternsOf = (id: string): string[] => (LEXICONS[id] ?? []).map((entry) => entry.pattern);
 const LINE_VOCABULARY = lineVocabulary(patternsOf("numbering-counter"), patternsOf("line-head-tag"));
+const HEADING_OPENERS = headingOpeners(patternsOf("run-in-heading-opener"));
 
 const LABEL_STOPS = labelStops((LEXICONS["abbreviated-label"] ?? []).map((entry) => entry.pattern));
 const INITIAL_STOPS = initialStops(
   (LEXICONS["sentence-start-word"] ?? []).map((entry) => entry.pattern),
   (LEXICONS["prepositive-abbreviation"] ?? []).map((entry) => entry.pattern),
+  (LEXICONS["closing-abbreviation"] ?? []).map((entry) => entry.pattern),
 );
 
 /**

@@ -7,6 +7,7 @@ import {
   isClause,
   lastContent,
   openingOf,
+  opensAsPreposition,
   participleOpening,
   shapeOf,
 } from "./list-item.ts";
@@ -18,12 +19,14 @@ import { lowerBound, type TokenRange } from "./token-column.ts";
 // に答えるための表を足していく。and / or のたびに作るのは、まだ閉じていない最後の 1、2 項目だけ。
 
 /** 項目ごとに一度だけ答えを覚えておく問い。 */
-export type Flag = "closed" | "example" | "participle" | "verbalShape" | "hasVerb" | "isClause" | "prepositionalTail" | "notNounHead" | "notProperNounHead";
+export type Flag =
+  "closed" | "turn" | "example" | "participle" | "verbalShape" | "hasVerb" | "isClause" | "prepositionalTail" | "notNounHead" | "notProperNounHead";
 
 type FlagTest = (scope: ItemScope, item: TokenRange) => boolean;
 
 export const FLAG_TESTS: Readonly<Record<Flag, FlagTest>> = {
   closed: (scope, item) => isListConjunction(openingOf(scope, item)),
+  turn: (scope, item) => scope.sentence.words.clauseConjunction?.has(openingOf(scope, item)?.surface.toLowerCase() ?? "") ?? false,
   example: (scope, item) => exampleEnd(scope, item) !== -1,
   participle: (scope, item) => participleOpening(scope, item) !== undefined,
   verbalShape: (scope, item) => VERBAL.has(shapeOf(scope, item) ?? ""),
@@ -40,6 +43,7 @@ type PerFlag<T> = Record<Flag, T>;
 
 const perFlag = <T>(make: () => T): PerFlag<T> => ({
   closed: make(),
+  turn: make(),
   example: make(),
   participle: make(),
   verbalShape: make(),
@@ -102,9 +106,19 @@ const freeze = (frozen: Frozen, scope: ItemScope, item: TokenRange): void => {
   recordFlags(frozen, scope, item, content);
 };
 
-/** 形容詞のあとの読点は、名詞の前で形容詞を重ねているだけのことが多い（the long, winding bridge）。次の項目が名詞で終わるならつなげ直す。 */
+/**
+ * 形容詞のあとの読点は、名詞の前で形容詞を重ねているだけのことが多い（the long, winding bridge）。次の項目が名詞で終わるならつなげ直す。
+ * 名詞の後ろに置いた形容詞（to the extent practicable）は名詞の句を閉じているので、つなげない。
+ */
 const stacks = (scope: ItemScope, previous: TokenRange, item: TokenRange): boolean =>
-  lastContent(scope, previous)?.pos === "ADJ" && lastContent(scope, item)?.pos !== "ADJ";
+  lastContent(scope, previous)?.pos === "ADJ" && !closesNounPhrase(scope, previous) && lastContent(scope, item)?.pos !== "ADJ";
+
+/** 前置詞で始まり、名詞とその後ろの形容詞で終わる項目（to the extent practicable / in the manner necessary）。 */
+const closesNounPhrase = (scope: ItemScope, item: TokenRange): boolean => {
+  const { tokens } = scope.sentence;
+  const end = tokens.slice(item.start, item.end).findLastIndex((token) => token.pos === "ADJ") + item.start;
+  return opensAsPreposition(scope, item) && tokens[end - 1]?.pos === "NOUN";
+};
 
 /** 1 つの深さの並び。start は節の頭、rawStart は読点でまだ閉じていない項目の頭、pending は次の項目とつながりうる最後の項目。 */
 type LevelItems = {

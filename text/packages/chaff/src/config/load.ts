@@ -3,11 +3,14 @@ import { workingDir } from "./working-dir.ts";
 import { isLevel } from "../levels.ts";
 import { defaultModel } from "../backends/default-model.ts";
 import { isBackend, type BackendName } from "../backends/types.ts";
-import type { Level } from "../plugin.ts";
+import type { Level, ScopeSelector } from "../plugin.ts";
+import { preferOf, type PreferProblem } from "./prefer.ts";
 import type { PathRule } from "./by-path.ts";
 import type { Extensions } from "../extension/load.ts";
 import type { StyleLimits } from "../style-parse.ts";
 import type { GuideLayer } from "../genre-guide/layer.ts";
+import { foldTerm } from "../term-form.ts";
+import type { OptionLayer } from "../rule-options.ts";
 
 export const CONFIG_FILE = "chaff.yaml";
 
@@ -30,19 +33,37 @@ export type Config = {
   readonly jargon: readonly string[];
   /** チームの表記。{ 使わない書き方: 使う書き方 }。「サーバー」ではなく「サーバ」、のように。 */
   readonly prefer: Readonly<Record<string, string>>;
+  /** prefer's entries written in the object form with a scope: { avoid: the parts of the document the entry counts in }. */
+  readonly preferScopes?: Readonly<Record<string, ScopeSelector>>;
+  /** prefer's entries that could not be read (an object without use, a scope that cannot be read). Each stops the run. */
+  readonly unreadablePrefer?: readonly PreferProblem[];
   /** この種類の文書に無いと困る見出し。チームが自分で決める。 */
   readonly requiredSections: readonly string[];
   /** チームの固有名詞（組織名・製品名）。1 つの名前として読み、漢字の連なりや繰り返しに数えない。 */
   readonly names: readonly string[];
   /** names に書かれていたが名前として読めなかった値。黙って捨てると、並べたつもりの名前が効いていないことに気づけない。 */
   readonly unreadableNames: readonly string[];
+  /** The team's terms, each to be written exactly so (GitHub, not Github or ＧｉｔＨｕｂ). term-form reads them. */
+  readonly terms?: readonly string[];
+  /** terms as written that cannot be read as a term: not a list, an entry that is not text, or one that is only spaces and hyphens. */
+  readonly unreadableTerms?: readonly string[];
+  /** The team's groups of words that are each right but must not be mixed in one document ([顧客, お客様]). term-consistency reads them. */
+  readonly consistent?: readonly (readonly string[])[];
+  /** consistent as written that cannot be read as a group: not a list, or an entry that is not two or more different words. */
+  readonly unreadableConsistent?: readonly string[];
   /** File-name globs (*.yaml) a directory walk checks besides Markdown. --include adds to them. */
   readonly include?: readonly string[];
+  /** Globs a directory walk leaves out, matched from chaff.yaml's folder as by_path is. A file named on the command line is still checked. */
+  readonly exclude?: readonly string[];
   /** パスごとの上書き。設定ファイルのある場所からの相対で照合する。 */
   readonly byPath: readonly PathRule[];
   /** by_path entries that could not be read (a map instead of a list, an entry without files), as written. */
   readonly unreadableByPath?: readonly string[];
   readonly baseDir: string;
+  /** Set only on the settings one file is checked with (by-path-rules.ts): for each rule a by_path entry set, which entry. */
+  readonly pathLevelsFrom?: Readonly<Record<string, string>>;
+  /** Set only on the settings one file is checked with: the matching by_path entries' options, strongest first. */
+  readonly pathOptionLayers?: readonly OptionLayer[];
   /** Options set on rules that take them: { rule id: { option: value } }, as written. rule-options.ts checks them against the rules. */
   readonly options?: Readonly<Record<string, unknown>>;
   /** options as written when it is not a map. Dropping it silently would leave a team thinking its options apply. */
@@ -59,6 +80,8 @@ export type Config = {
   readonly fixPlan?: unknown;
   /** guide as written: the team's changes to the genre guides, or off (genre-guide/of-config.ts reads it). */
   readonly guide?: unknown;
+  /** allow as written: text never to report, each entry with its reason (allow.ts reads and checks it). */
+  readonly allow?: unknown;
   /** plugins as written: package names and paths. extension/plugin-load.ts reads and checks them. */
   readonly plugins?: unknown;
   /** The code chaff.yaml names, once loaded (extension/load.ts). Reading chaff.yaml does not load it. */
@@ -133,28 +156,37 @@ const globsOf = (value: unknown): string[] => {
   return Array.isArray(value) ? value.map((entry) => String(entry)) : [];
 };
 
+const PATH_BLOCKS: readonly ("rules" | "options")[] = ["rules", "options"];
+
+/** rules: or options: under a by_path entry that is written but is not a map: it changes nothing, so it is reported. */
+const unreadableBlocksOf = (raw: Record<string, unknown>): { key: "rules" | "options"; value: string }[] =>
+  PATH_BLOCKS.flatMap((key) => {
+    const value = raw[key];
+    return value === undefined || value === null || isRecord(value) ? [] : [{ key, value: printed(value) }];
+  });
+
+/** An entry's rules: and options:, read as the top-level ones are. Nothing is added for an entry that writes neither. */
+const pathRuleSettingsOf = (raw: Record<string, unknown>): Pick<PathRule, "rules" | "limits" | "unreadableRules" | "options" | "unreadableBlocks"> => {
+  const written = (key: string): boolean => raw[key] !== undefined && raw[key] !== null;
+  const blocks = unreadableBlocksOf(raw);
+  const options = raw["options"];
+  return {
+    ...(written("rules") ? { rules: rulesOf(raw["rules"]), limits: limitsOf(raw["rules"]), unreadableRules: unreadableOf(raw["rules"]) } : {}),
+    ...(written("options") ? { options: isRecord(options) ? options : {} } : {}),
+    ...(blocks.length === 0 ? {} : { unreadableBlocks: blocks }),
+  };
+};
+
 const toPathRule = (raw: unknown): PathRule | undefined => {
   if (!isRecord(raw)) return undefined;
   const files = raw["files"];
   const globs = globsOf(files);
   if (globs.length === 0) return undefined;
-  return { files: globs, genre: str(raw["genre"]), language: str(raw["language"]), profile: str(raw["profile"]) };
+  return { files: globs, genre: str(raw["genre"]), language: str(raw["language"]), profile: str(raw["profile"]), ...pathRuleSettingsOf(raw) };
 };
 
 /** 利用者が書く語の並び。空白だけのものは落とす。 */
 const wordsOf = (raw: unknown): string[] => (Array.isArray(raw) ? raw.map((entry) => String(entry).trim()).filter((entry) => entry.length > 0) : []);
-
-/** 両側とも空でない文字列の対だけを読む。同じ語どうし（「サーバ: サーバ」）は何も言えないので捨てる。 */
-const preferOf = (raw: unknown): Record<string, string> =>
-  isRecord(raw)
-    ? Object.fromEntries(
-        Object.entries(raw).flatMap(([avoid, use]): [string, string][] => {
-          const from = avoid.trim();
-          const to = typeof use === "string" ? use.trim() : "";
-          return from !== "" && to !== "" && from !== to ? [[from, to]] : [];
-        }),
-      )
-    : {};
 
 const isNameEntry = (value: unknown): value is string | number => typeof value === "string" || typeof value === "number";
 
@@ -168,6 +200,35 @@ const namesOf = (raw: unknown): { readonly names: string[]; readonly unreadable:
   return {
     names: wordsOf(entries.filter(isNameEntry)),
     unreadable: entries.filter((entry) => !isNameEntry(entry)).map(printed),
+  };
+};
+
+/** A term is text with something besides spaces and hyphens in it; a number (2025) reads as text, as under names. */
+const termsOf = (raw: unknown): { readonly terms: string[]; readonly unreadable: string[] } => {
+  if (raw === undefined || raw === null) return { terms: [], unreadable: [] };
+  if (!Array.isArray(raw)) return { terms: [], unreadable: [printed(raw)] };
+  const entries: unknown[] = raw;
+  const isTerm = (entry: unknown): entry is string | number => isNameEntry(entry) && foldTerm(String(entry)) !== "";
+  return { terms: wordsOf(entries.filter(isTerm)), unreadable: entries.filter((entry) => !isTerm(entry)).map(printed) };
+};
+
+/** A group: a list of two or more different words (a number reads as text, as under names). */
+const groupOf = (entry: unknown): string[] | undefined => {
+  if (!Array.isArray(entry)) return undefined;
+  const members: unknown[] = entry;
+  const words = wordsOf(members);
+  return members.every(isNameEntry) && words.length === members.length && new Set(words).size === words.length && words.length >= 2 ? words : undefined;
+};
+
+/** consistent is a list of groups. A value that is not a list, and an entry that is not a group, are kept printed to be reported. */
+const consistentOf = (raw: unknown): { readonly groups: string[][]; readonly unreadable: string[] } => {
+  if (raw === undefined || raw === null) return { groups: [], unreadable: [] };
+  if (!Array.isArray(raw)) return { groups: [], unreadable: [printed(raw)] };
+  const entries: unknown[] = raw;
+  const read = entries.map((entry) => ({ entry, group: groupOf(entry) }));
+  return {
+    groups: read.flatMap(({ group }) => (group === undefined ? [] : [group])),
+    unreadable: read.filter(({ group }) => group === undefined).map(({ entry }) => printed(entry)),
   };
 };
 
@@ -189,8 +250,11 @@ export const configOf = (raw: unknown, path: string): Config => {
   const declared: unknown = raw["ai_backend"];
   const backend: BackendName = isBackend(declared) ? declared : DEFAULT_BACKEND;
   const names = namesOf(raw["names"]);
+  const terms = termsOf(raw["terms"]);
+  const consistent = consistentOf(raw["consistent"]);
   const byPath = byPathOf(raw["by_path"]);
   const options: unknown = raw["options"];
+  const prefer = preferOf(raw["prefer"]);
   return {
     genre: str(raw["genre"]),
     profile: str(raw["profile"]),
@@ -204,11 +268,18 @@ export const configOf = (raw: unknown, path: string): Config => {
     aiModel: str(raw["ai_model"]) ?? defaultModel(backend),
     confidenceThreshold: typeof raw["confidence_threshold"] === "number" ? raw["confidence_threshold"] : 0.7,
     jargon: wordsOf(raw["jargon"]),
-    prefer: preferOf(raw["prefer"]),
+    prefer: prefer.prefer,
+    preferScopes: prefer.scopes,
+    unreadablePrefer: prefer.problems,
     requiredSections: wordsOf(raw["required_sections"]),
     names: names.names,
     unreadableNames: names.unreadable,
+    terms: terms.terms,
+    unreadableTerms: terms.unreadable,
+    consistent: consistent.groups,
+    unreadableConsistent: consistent.unreadable,
     include: globsOf(raw["include"]),
+    exclude: globsOf(raw["exclude"]),
     byPath: byPath.rules,
     unreadableByPath: byPath.unreadable,
     baseDir: dirname(path),
@@ -220,5 +291,6 @@ export const configOf = (raw: unknown, path: string): Config => {
     fixPlan: raw["fix_plan"],
     guide: raw["guide"],
     plugins: raw["plugins"],
+    allow: raw["allow"],
   };
 };

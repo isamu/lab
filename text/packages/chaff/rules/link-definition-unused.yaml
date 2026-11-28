@@ -1,0 +1,107 @@
+id: link-definition-unused
+layer: L1
+status: stable
+how_to_find: link-definition-unused
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 使われないリンクの定義
+  en: Link definition that does nothing
+
+why:
+  ja: |-
+    Markdown の参照の形のリンク（[資料][1]）は、文書のどこかの「[1]: URL」の行から行き先を取ります。どのリンクも呼ばない定義は、表示されず何もしません。リンクの文字を書き換えた、リンクを消した、名前を打ち間違えたときに残り、書いたはずのリンクが本文から消えていることを示します。同じ名前をもう一度、別の行き先で定義した行も、Markdown は最初の定義を使って黙って捨てます（markdownlint の MD053、remark-lint の no-unused-definitions・no-duplicate-definitions）。
+  en: |-
+    A reference-style Markdown link ("[report][1]") takes its address from a "[1]: URL" line somewhere in the document. A definition no link calls is not shown and does nothing. It is left behind when a link's text was changed, the link was removed, or its label was mistyped, and it shows that a link the writer meant to give is missing from the text. A second definition of the same label with another address is silently ignored too: Markdown uses the first one (markdownlint's MD053; remark-lint's no-unused-definitions and no-duplicate-definitions).
+
+message:
+  ja: リンクの定義「{label}」を使うリンクがありません
+  en: 'No link uses the definition "{label}"'
+
+messages:
+  unused:
+    ja: リンクの定義「{label}」を使うリンクがありません
+    en: 'No link uses the definition "{label}"'
+  duplicate:
+    ja: 「{label}」は前にも定義されていて（{url}）、この行き先は使われません
+    en: '"{label}" is already defined ({url}); this address is never used'
+
+how_to_fix:
+  ja: 本文でそのリンクを使うつもりだったなら、リンクの名前を定義と同じにしてください（[資料][{label}]）。要らなくなった定義なら消してください。二度目の定義は、どちらの行き先が正しいかを決めて一つにします。
+  en: If the text was meant to link there, make the link's label match the definition ("[report][{label}]"). If the definition is no longer needed, delete it. For a second definition, decide which address is right and keep one.
+
+placeholders:
+  label:
+    ja: 名前
+    en: label
+  url:
+    ja: URL
+    en: URL
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: |-
+    どのリンクも使わない「[名前]: URL」の定義と、別の行き先で二度書いた定義
+  en: |-
+    A "[label]: URL" definition no link uses, or one defined twice to two places
+example:
+  ja:
+    before: |
+      申し込みの方法は[案内][guide]を見てください。
+
+      [guide]: https://example.com/guide
+      [form]: https://example.com/form
+    after: |
+      申し込みの方法は[案内][guide]を見て、[申込書][form]から送ってください。
+
+      [guide]: https://example.com/guide
+      [form]: https://example.com/form
+  en:
+    before: |
+      See the [guide][guide] for how to apply.
+
+      [guide]: https://example.com/guide
+      [form]: https://example.com/form
+    after: |
+      See the [guide][guide] for how to apply, and send the [form][form].
+
+      [guide]: https://example.com/guide
+      [form]: https://example.com/form
+
+not_flagged:
+  ja: |-
+    同じ行き先での二度目の定義（表示は変わりません）、注の形（「[^1]: …」は footnote-mismatch が見ます）、コメントとして書いた定義（「[//]: # (メモ)」）、見出しのすぐ下に置いたその見出しの名前（「[summary]: #summary」）、定義だけの文書（他のページが読み込む定義の一覧）、引用の中の定義は指しません。定義の無い参照の形のリンクは broken-link が指します。
+  en: |-
+    A second definition with the same address (nothing changes on screen), notes ("[^1]: …", which footnote-mismatch checks), a definition written as a comment ("[//]: # (note)"), an anchor written under its own heading ("[summary]: #summary"), a document of nothing but definitions (a list other pages include) and definitions inside quotations are not reported. A reference-style link with no definition is reported by broken-link.
+rewrite:
+  depth: light
+  ja:
+    direction: 定義を使うリンクを本文に戻すか、要らない定義を消してください。二度書いた定義は、正しい行き先の一つにします。
+    pairs:
+      - before: |-
+          「[form]: https://example.com/form」（本文に「[…][form]」が無い）
+        after: 本文の「申込書」を「[申込書][form]」にする
+      - before: |-
+          「[terms]: https://example.com/terms」と「[terms]: https://example.com/terms-old」の二つ
+        after: |-
+          正しい行き先の「[terms]: https://example.com/terms」だけを残す
+    keep:
+      - リンクの行き先
+    avoid:
+      - 使うつもりだったリンクの定義を、確かめずに消す
+  en:
+    direction: Put the link that uses the definition back into the text, or delete a definition that is no longer needed. Keep one address for a label defined twice.
+    pairs:
+      - before: '"[form]: https://example.com/form" (no "[form]" in the text)'
+        after: '"send the form" written as "send the [form][form]"'
+      - before: '"[terms]: https://example.com/terms" and "[terms]: https://example.com/terms-old"'
+        after: 'only "[terms]: https://example.com/terms", the right address'
+    keep:
+      - the link addresses
+    avoid:
+      - deleting a definition the text meant to use without checking

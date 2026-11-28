@@ -5,6 +5,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { headingKey, repeatedSiblingHeadings } from "../packages/chaff/src/detectors/duplicate-heading.ts";
 import { recordLabelOf, recordRhythmMask } from "../packages/chaff/src/detectors/heading-record-rhythm.ts";
+import { presetLevels } from "../packages/chaff/src/genre-load.ts";
 import type { MarkupHeading } from "../packages/chaff/src/plugin.ts";
 
 // 兄弟の見出しの重複（duplicate-heading）。例文はすべて自作。
@@ -76,11 +77,104 @@ describe("duplicate-heading: 同じ見出しが兄弟に二つある", () => {
   it("文書のいちばん上の見出しどうしも兄弟", () => {
     assert.deepEqual(
       repeatedIn([
+        [1, "Menu"],
         [1, "Soup"],
         [1, "Soup"],
       ]),
-      ["Soup@0"],
+      ["Soup@1"],
     );
+  });
+
+  it("番号付きの見出しと同じ深さに並べた例は、その番号付きの節の中で比べる（節ごとに数え直す「Example 1」）", () => {
+    const notice = [
+      "# Record keeping",
+      "## 7. Electronic account",
+      "### 7.2 Supplies made",
+      "Keep a record of each supply.",
+      "### Example 1",
+      "A shop sells a meal.",
+      "### Example 2",
+      "A shop sells a drink.",
+      "### 7.3 Supplies made by agents",
+      "Keep the agent's records too.",
+      "### Example 1",
+      "An agent sells a ticket.",
+    ].join("\n\n");
+    assert.deepEqual(findingsOf(`${notice}\n`, en), []);
+    assert.deepEqual(
+      repeatedIn([
+        [2, "3. 記録"],
+        [3, "3.1 売上"],
+        [3, "例1"],
+        [3, "3.2 仕入れ"],
+        [3, "例1"],
+      ]),
+      [],
+    );
+  });
+
+  it("番号を持つ語（Chapter 2、第2章）の見出しも、同じ深さの見出しを区切る", () => {
+    assert.deepEqual(findingsOf("# Guide\n\n## Chapter 1\n\nA.\n\n## Overview\n\nB.\n\n## Chapter 2\n\nC.\n\n## Overview\n\nD.\n", en), []);
+    assert.deepEqual(findingsOf("# 手引き\n\n## 第1章　準備\n\nA。\n\n## 概要\n\nB。\n\n## 第2章　実行\n\nC。\n\n## 概要\n\nD。\n"), []);
+  });
+
+  it("同じ番号付きの節の中の重複と、番号付きの見出しどうしの重複は言う", () => {
+    assert.deepEqual(
+      repeatedIn([
+        [2, "7. Electronic account"],
+        [3, "7.2 Supplies made"],
+        [3, "Example 1"],
+        [3, "Example 1"],
+      ]),
+      ["Example 1@2"],
+    );
+    assert.deepEqual(
+      repeatedIn([
+        [2, "1. Setup"],
+        [2, "Notes"],
+        [2, "2. Run"],
+        [2, "1. Setup"],
+      ]),
+      ["1. Setup@0"],
+    );
+    assert.deepEqual(
+      repeatedIn([
+        [1, "Guide"],
+        [2, "1. Setup"],
+        [2, "Notes"],
+        [3, "2.1 Inner"],
+        [2, "Notes"],
+      ]),
+      ["Notes@2"],
+    );
+  });
+
+  it("文書の題（最初の # の見出し）をもう一度掲げた所は言わない", () => {
+    const report = [
+      "# 社会人受入れの推進方策について（答申）",
+      "## 社会人受入れの推進方策について（答申）",
+      "### 目次",
+      "- はじめに",
+      "## 社会人受入れの推進方策について（答申）",
+      "### はじめに",
+      "本文です。",
+    ].join("\n\n");
+    assert.deepEqual(findingsOf(`${report}\n`), []);
+    assert.deepEqual(findingsOf("# Vegetable Soup\n\nBack to search\n\n# Vegetable Soup\n\nServes four.\n", en), []);
+  });
+
+  it("題でない見出しの重複と、# で始まらない文書の最初の見出しの重複は言う", () => {
+    assert.deepEqual(findingsOf("# 答申\n\n## 目次\n\n- はじめに\n\n## はじめに\n\nA。\n\n## はじめに\n\nB。\n"), [
+      "見出し「はじめに」は、同じ親の下の 7 行目の見出しと同じです",
+    ]);
+    assert.deepEqual(findingsOf("## 添付一覧\n\nA。\n\n## 添付一覧\n\nB。\n"), ["見出し「添付一覧」は、同じ親の下の 1 行目の見出しと同じです"]);
+  });
+
+  it("文学の文書（詩集の同じ題の詩）では止め、ほかのジャンルでは動く", () => {
+    assert.equal(presetLevels("literature/poetry")[RULE], "off");
+    assert.equal(presetLevels("literature/fiction")[RULE], "off");
+    assert.notEqual(presetLevels("business/report")[RULE], "off");
+    assert.equal(findingsOf("# 詩集\n\n## 春\n\n花がさく\n\n## 冬\n\n雪がふる\n\n## 春\n\n鳥がなく\n").length, 1);
   });
 
   it("言葉の無い見出しは比べない", () => {

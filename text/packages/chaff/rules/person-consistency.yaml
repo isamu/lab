@@ -55,8 +55,8 @@ example:
       You can book a slot online. Your booking shows on the next page. If you miss it, you can book again. You can also call the desk.
 
 not_flagged:
-  ja: 呼び方が一通りの文書と、少ないほうが決まった割合を超える文書（使い分けていると見ます）は指摘しません。多いほうが 3 箇所に満たない文書も見ません。鉤括弧と引用符の中、引用の段落、コード、前後に漢字やカタカナが続く語（東京本社、当社比）は数えません。英語の one は、can や must の前の主語の one だけを数え、no one や the one や前置詞の後ろの one は数えません。どの呼び方が正しいかは決めません。
-  en: A document with one form, or whose other form passes a set share of the places (it uses both on purpose), is not reported, nor one whose usual form appears fewer than 3 times. Quotations, quoted blocks, code and words joined to longer ones (東京本社) are not counted. Only "one" as the subject of a modal verb is counted, not "no one", "the one" or "one" after a preposition. Which form is right is not decided.
+  ja: 呼び方が一通りの文書と、少ないほうが決まった割合を超える文書（使い分けていると見ます）は指摘しません。多いほうが 3 箇所に満たない文書も見ません。鉤括弧と引用符の中、引用の段落、コード、前後に漢字やカタカナが続く語（東京本社、当社比）は数えません。英語の one は、can や must の前の主語の one だけを数え、no one や the one や前置詞の後ろの one は数えません。どの呼び方が正しいかは決めません。同じ文で「僕は…、君は…」のように、自分の呼び方をほかの人と対にして話題に立てたもの（例に出した二人の言葉）も数えません。
+  en: A document with one form, or whose other form passes a set share of the places (it uses both on purpose), is not reported, nor one whose usual form appears fewer than 3 times. Quotations, quoted blocks, code and words joined to longer ones (東京本社) are not counted. Only "one" as the subject of a modal verb is counted, not "no one", "the one" or "one" after a preposition. Which form is right is not decided. Nor is a Japanese self-reference set as a topic against another person in one sentence (僕は…、君は…), the two people of an example.
 level_meaning:
   ja: 少ないほうの呼び方が全体の {limit} パーセント以下のとき指摘
   en: reported when the other form is {limit} percent of the places or fewer

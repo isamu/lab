@@ -1,26 +1,25 @@
 import { proseText } from "../measure.ts";
 import { dateSpans, wordsOf } from "./structure.ts";
-import { compacted, linkedIn, placeAt } from "./gram-place.ts";
-import { charWindows, wordWindows } from "./gram-windows.ts";
-import { fixedEndingSpans, furnitureMask, isFurniture } from "./gram-furniture.ts";
 import { lexiconNotationOf, sourceNotAcronymSpans, unreportedAcronymSpans, type NotAcronymSpans } from "./acronym-context.ts";
+import { titledCodeSpans } from "./titled-code-citation.ts";
 import { abbreviates, expansionAt, termEntryAcronyms, type DefinitionWords, type ExpandedAt } from "./acronym-expansion.ts";
+import { parentItemAcronyms } from "./acronym-parent-item.ts";
+import { nameHeadAcronyms } from "./acronym-name-head.ts";
 import { isExplained } from "./acronym-compound.ts";
 import { statedAcronyms } from "./acronym-definition.ts";
 import { isBracketed, isInHeading, isNamePart } from "./acronym-lone.ts";
 import { linkedListTerms } from "./acronym-link.ts";
-import { caseVariantsIn, spelledOutAcronyms } from "./acronym-mention.ts";
+import { headingSeries } from "./acronym-series.ts";
+import { citationSpans } from "./acronym-name.ts";
+import { referenceEntryLabels } from "./reference-entry.ts";
+import { caseVariantsIn, spelledOutAcronyms, writtenAsWordIn } from "./acronym-mention.ts";
 import { conjugatedForms } from "./conjugated-form.ts";
-import { evidenceSpans, hasNumeral, isClaim, isLabelOnly, startsWithin, type AdviceWords } from "./concrete-evidence.ts";
-import { letteredIndexEntries } from "./lettered-index.ts";
 import { knownByDocument } from "./acronym-known.ts";
-import { glossedAcronyms, headingsSpellingOut } from "./acronym-gloss.ts";
-import { hasPredicateIn } from "./gram-predicate.ts";
-import { gramPassagesOf } from "./gram-passages.ts";
-import { sectionOpeners } from "./gram-openers.ts";
-import { nameSpans, touchesAny } from "../team-names.ts";
-import { DASH, introducesList } from "./lead-in-dash.ts";
-import type { Detector, Finding, ProseDocument, Section, Sentence } from "../plugin.ts";
+import { explainedInText, headingsSpellingOut } from "./acronym-gloss.ts";
+import { fileTypeNames, type AcronymUse } from "./acronym-file-type.ts";
+import { nameSpans } from "../team-names.ts";
+import { DASH, introducesList, opensLine } from "./lead-in-dash.ts";
+import type { Detector, Finding, ProseDocument, Sentence } from "../plugin.ts";
 
 const PER = 1000;
 
@@ -31,6 +30,11 @@ const PER = 1000;
 export const MIN_DOCUMENT_LENGTH = { word: 200, char: 500 };
 
 const bodyOf = (doc: ProseDocument): string => doc.sentences.map(proseText).join(" ");
+
+/** 全角の英数字を半角に（ＩＣＯ（Initial Coin Offering）の ＩＣＯ を ICO と読む）。1 文字ずつ置き換えるので位置は変わらない。 */
+const FULL_WIDTH_ALNUM = /[Ａ-Ｚａ-ｚ０-９]/gu;
+const FULL_WIDTH_OFFSET = 0xfee0;
+const halfWidth = (text: string): string => text.replaceAll(FULL_WIDTH_ALNUM, (character) => String.fromCharCode(character.charCodeAt(0) - FULL_WIDTH_OFFSET));
 
 type Hit = { readonly sentence: Sentence; readonly offset: number };
 
@@ -47,9 +51,19 @@ const density = (doc: ProseDocument, count: number): number => {
  * 件数ではなく密度で見る。長い文書ほど当たるのを避けるため（bold-density と同じ）。
  */
 const EMOJI = /\p{Extended_Pictographic}|[←-⇿☀-➿]/gu;
+const ARROW = /^[←-⇿]$/u;
+const WORD_END = /[\p{L}\p{N}*_)\]"'’”]$/u;
+const WORD_START = /^[\p{L}\p{N}*_(["'‘“]/u;
+
+/** 語と語の間の矢印（Settings → Printers、A→B）。メニューの道筋や流れを示す区切りで、飾りではない。行頭の矢印（→ 詳しくはこちら）は飾り。 */
+const isArrowBetween = (hit: Hit): boolean => {
+  const text = hit.sentence.text;
+  const at = hit.offset - hit.sentence.span.start;
+  return ARROW.test(text[at] ?? "") && WORD_END.test(text.slice(0, at).trimEnd()) && WORD_START.test(text.slice(at + 1).trimStart());
+};
 
 export const emojiDensity: Detector = (doc, options): Finding[] => {
-  const hits = findIn(doc, EMOJI);
+  const hits = findIn(doc, EMOJI).filter((hit) => !isArrowBetween(hit));
   const first = hits[0];
   const rate = density(doc, hits.length);
   if (wordsOf(doc) < MIN_DOCUMENT_LENGTH[doc.lengthUnit] || first === undefined || rate <= options.limit) return [];
@@ -61,121 +75,6 @@ export const emojiDensity: Detector = (doc, options): Finding[] => {
       column: 0,
       quote: first.sentence.text.trim(),
       values: { count: hits.length, density: rate, limit: options.limit, offset: first.offset },
-    },
-  ];
-};
-
-/**
- * 同じ言い回しの繰り返し。文字の並びで見るので、adapter の語の区切り（wordSplit）が要らない。英語の窓は空白で語の切れ目にそろえる。
- * spec §10 が n-gram を選んだのはこのためで、新しい言語でそのまま動く。
- */
-/**
- * 窓の幅は単位で分ける。同じ 8 文字でも、日本語では 4〜5 形態素だが英語では 1 語半にしかならない。
- * 英語の窓は語の切れ目にそろえ、18 文字に届くまで語を足す。文字で切ると " generat" のような語の断片が上位に来る。
- * 18 は、文字で切っていた頃の 20 文字の窓から前後の空白を除いた長さ（" juxtaposed to said "）。
- */
-const GRAM = { char: 8, word: 18 };
-
-const windowsOf = (text: string, unit: ProseDocument["lengthUnit"]): Span[] => (unit === "char" ? charWindows(text, GRAM.char) : wordWindows(text, GRAM.word));
-
-/**
- * 名前ではなく言い回しだけを数える。実文書で測ったら、上位は
- * 「AGENTS.m」「シンギュラリティ」のような固有名詞と識別子だった。名前は繰り返して当たり前。
- *
- * 言い回しは、その言語の「つなぎの материал」を含む。日本語ならひらがな、英語なら語の切れ目。
- * どちらを見るかは adapter が宣言する単位で決める。ひらがなを持たない char 単位の言語が
- * 来たら、この見分けは効かなくなる（そのときは adapter 側に判定を移す）。
- */
-/**
- * つなぎが 1 つでは足りない。「detectorは」は用語に助詞が 1 つ付いただけで、
- * 繰り返して当たり前の**用語**であって言い回しではない。
- * 実文書で測ると、本物の言い回しはひらがなを 7 つ前後含み、用語＋助詞は 1〜2 だった。
- */
-const CONNECTIVE = { char: /[ぁ-ゖ].*[ぁ-ゖ].*[ぁ-ゖ]/u, word: /\S \S.*\S \S/u };
-
-const isPhrasing = (gram: string, unit: ProseDocument["lengthUnit"]): boolean => CONNECTIVE[unit].test(gram);
-
-/** 語句が最初に数えられた所。書かれたままの語句と、文と、文の中の範囲（sentence.text の位置）。 */
-type FirstSeen = { readonly gram: string; readonly sentence: Sentence; readonly place: Span };
-
-type Tally = { readonly counts: Map<string, number>; readonly first: Map<string, FirstSeen> };
-
-/** 英語は大文字と小文字を区別せずに数える。文頭の "Proposals submitted via" も文中の "proposals submitted via" も同じ言い回し。 */
-const keyOf = (gram: string, unit: ProseDocument["lengthUnit"]): string => (unit === "word" ? gram.toLowerCase() : gram);
-
-const namesOf = (doc: ProseDocument): readonly string[] =>
-  doc.lengthUnit === "char" ? (doc.names ?? []).map((name) => name.replace(/\s+/gu, "")) : (doc.names ?? []);
-
-/** 語彙表 ngram-fixed-ending: 項目ごとに同じ形で結ぶ書式の結び（〜ものとすること。）。 */
-const fixedEndingsOf = (doc: ProseDocument): string[] => (doc.lexicons["ngram-fixed-ending"] ?? []).map((entry) => entry.pattern);
-
-/**
- * 文をまたいで数えない。文の終わりと次の文の始まりが繋がると、固有名詞が言い回しに見える。
- * 並べた名前にかかる語句も数えない。名前が繰り返されれば、その前後（「the …」）も一緒に繰り返されるのは当たり前。
- * 一覧の飾り（gram-furniture.ts）も数えない。項目ごとに繰り返すのはひな形で、書き手ではない。
- */
-const tallySentence = (doc: ProseDocument, sentence: Sentence, tally: Tally): void => {
-  const source = compacted(sentence.text, doc.lengthUnit);
-  const named = nameSpans(source.text, namesOf(doc));
-  const mask = furnitureMask(source.text, linkedIn(doc, sentence, source));
-  fixedEndingSpans(source.text, fixedEndingsOf(doc)).forEach((span) => mask.fill(true, span.start, span.end));
-  windowsOf(source.text, doc.lengthUnit)
-    .filter((window) => !touchesAny(named, window.start, window.end) && !isFurniture(source.text, mask, window))
-    .forEach((window) => {
-      const gram = source.text.slice(window.start, window.end);
-      const key = keyOf(gram, doc.lengthUnit);
-      tally.counts.set(key, (tally.counts.get(key) ?? 0) + 1);
-      const place = placeAt(source, window);
-      if (!tally.first.has(key) && place !== undefined) tally.first.set(key, { gram, sentence, place });
-    });
-};
-
-const gramsOf = (doc: ProseDocument, sentences: readonly Sentence[]): Tally => {
-  const tally: Tally = { counts: new Map(), first: new Map() };
-  sentences.forEach((sentence) => tallySentence(doc, sentence, tally));
-  return tally;
-};
-
-type Repeat = { readonly key: string; readonly count: number; readonly at: FirstSeen | undefined };
-
-/** 範囲（gram-passages.ts）ごとに数える。よくある質問の別々の答えは別の範囲。節の最初の文にだけ出るものは節のひな形（gram-openers.ts）。 */
-const repeatsOf = (doc: ProseDocument, limit: number, openers = sectionOpeners(doc.sections, doc.source)): Repeat[] =>
-  gramPassagesOf(doc.sections).flatMap((sentences) => {
-    const tally = gramsOf(doc, sentences);
-    const opening = gramsOf(
-      doc,
-      sentences.filter((sentence) => openers.has(sentence)),
-    ).counts;
-    return [...tally.counts.entries()]
-      .filter(([key, count]) => count > limit && isPhrasing(key, doc.lengthUnit) && (opening.get(key) ?? 0) < count)
-      .map(([key, count]) => ({ key, count, at: tally.first.get(key) }));
-  });
-
-/**
- * 語句が文の中で占める範囲に、述語になる動詞か助動詞があるか（gram-predicate.ts）。
- * 品詞が無ければ見分けられないので、これまでどおり言い回しとして数える。
- */
-const hasPredicate = (at: FirstSeen | undefined, unit: ProseDocument["lengthUnit"]): boolean => {
-  if (at?.sentence.tokens === undefined) return true;
-  const start = at.sentence.span.start;
-  return hasPredicateIn(at.sentence.tokens, { start: start + at.place.start, end: start + at.place.end }, unit);
-};
-
-export const ngramRepetition: Detector = (doc, options): Finding[] => {
-  if (wordsOf(doc) < MIN_DOCUMENT_LENGTH[doc.lengthUnit]) return [];
-  const worst = repeatsOf(doc, options.limit)
-    .toSorted((left, right) => right.count - left.count)
-    .find(({ at }) => hasPredicate(at, doc.lengthUnit));
-  if (worst === undefined) return [];
-  const at = worst.at?.sentence;
-  return [
-    {
-      rule: "ngram-repetition",
-      severity: "info",
-      line: 0,
-      column: 0,
-      quote: at?.text.trim() ?? worst.key,
-      values: { word: worst.at?.gram ?? worst.key, count: worst.count, limit: options.limit, offset: at?.span.start ?? 0 },
     },
   ];
 };
@@ -202,15 +101,18 @@ const ACRONYM = new RegExp(String.raw`${EDGE_BEFORE}${ACRONYM_PART}(?:-${ACRONYM
  * 強調は読点や括弧をまたいで続くので（THE AUTHOR, THE COMPANY (IF ANY)）、そういう続きを含む
  * 「大文字以外の文字を含まない一続き」を丸ごと強調と見なす。小文字の語が挟まれば切れるので、
  * 「SRE, SLO, MTTR」のような略語の並びは残る。引用符に包まれた大文字の句（“AS IS”）も強調。
- * 2 語でも、片方が略語にしては長い語なら強調（BILLING CODE）。略語 2 つの並び（NIST SP）は残る。
+ * 2 語でも、片方が略語にしては長い語なら強調（BILLING CODE）。どちらも 5 字以上の 2 語（MIRAI SCHOOL、UNITED STATES）は
+ * 大文字で書いた名前や語で、略語がそう並ぶことはない。略語 2 つの並び（NIST SP、FEMA NFIP）は残る。
  */
 const CAPS_WORD = String.raw`[A-Z]+(?:&[A-Z]+)*`;
 const LONG_CAPS_WORD = String.raw`[A-Z]{${ACRONYM_MAX + 1},}`;
+const WORD_PAIR_MIN = 5;
+const WORD_PAIR_PART = String.raw`[A-Z]{${WORD_PAIR_MIN},}`;
 const CAPS_GAP = String.raw`[\s"“”'‘’]+`;
 const SHOUTED_RUN = new RegExp(String.raw`${EDGE_BEFORE}${CAPS_WORD}(?:${CAPS_GAP}${CAPS_WORD}){2,}${EDGE_AFTER}`, "u");
 /** 2 語の強調は、その 2 語だけを外す。続きまで外すと、区切りの後ろの略語（NEW GUIDELINES: SRE）まで消える。 */
 const SHOUTED_PAIR = new RegExp(
-  String.raw`${EDGE_BEFORE}(?:${LONG_CAPS_WORD}${CAPS_GAP}${CAPS_WORD}|${CAPS_WORD}${CAPS_GAP}${LONG_CAPS_WORD})${EDGE_AFTER}`,
+  String.raw`${EDGE_BEFORE}(?:${LONG_CAPS_WORD}${CAPS_GAP}${CAPS_WORD}|${CAPS_WORD}${CAPS_GAP}${LONG_CAPS_WORD}|${WORD_PAIR_PART}${CAPS_GAP}${WORD_PAIR_PART})${EDGE_AFTER}`,
   "gu",
 );
 const UNCASED_STRETCH = /(?:[A-Z]|\P{L})+/gu;
@@ -264,6 +166,14 @@ const acronymsOf = (doc: ProseDocument, notation: NotAcronymSpans): AcronymHit[]
       .filter(({ hit }) => !isEmphasised(hit.sentence, hit.offset));
   });
 
+/** 略語のすぐ前と後ろの文字列と、後ろに始まる語の品詞。 */
+const fileUseOf = ({ word, hit }: AcronymHit): AcronymUse => {
+  const start = hit.offset - hit.sentence.span.start;
+  const next = (hit.sentence.tokens ?? []).find((token) => token.span.start >= hit.offset + word.length);
+  const { text } = hit.sentence;
+  return { word, preceding: text.slice(Math.max(0, start - 2), start), following: text.slice(start + word.length), nextPos: next?.pos };
+};
+
 /** 略語ごとの、最初に現れた所。 */
 const firstHits = (hits: readonly AcronymHit[]): Map<string, Hit> => {
   const seen = new Map<string, Hit>();
@@ -297,6 +207,13 @@ const expandsInHeading = (heading: string, acronym: string, expandedAt: Expanded
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
+/**
+ * 法令集の名前（CFR）を、この文書が引用の形（12 CFR 1005.20）で書いているなら、引用の外（the List of CFR Sections Affected）でも
+ * 読み手の知る名前と読む。引用の形で書いていない文書の CFR は略語のまま数える。
+ */
+const citedSeriesOf = (doc: ProseDocument, body: string): string[] =>
+  patternsOf(doc, "citation-series").filter((series) => citationSpans(body, [series]).length > 0 || titledCodeSpans(body, [series]).length > 0);
+
 const notationOf = (doc: ProseDocument): NotAcronymSpans => lexiconNotationOf((id) => patternsOf(doc, id));
 
 /** 定義の語。定義の動詞は、語彙表の形（という）と、この文書で活用して書かれた形（といいます）の両方で照らす。 */
@@ -305,6 +222,13 @@ const definitionWordsOf = (doc: ProseDocument): DefinitionWords => {
   const alternatives = patternsOf(doc, "definition-alternative");
   return { markers: patternsOf(doc, "definition-marker"), verbs: [...verbs, ...conjugatedForms(doc.sentences, verbs)], alternatives };
 };
+
+/** 数える略語のすべての所。文書全体で読む書き方の範囲（所在地、文献一覧）と、編と区分で引く法令集（21 CFR subpart J）の中は外す。 */
+const countedHitsOf = (doc: ProseDocument): AcronymHit[] =>
+  outsideSpans(acronymsOf(doc, notationOf(doc)), [
+    ...sourceNotAcronymSpans(doc.source, (id) => patternsOf(doc, id)),
+    ...titledCodeSpans(doc.source, patternsOf(doc, "citation-series")),
+  ]);
 
 const acronymFinding = (acronym: string, hit: Hit, count: number, limit: number): Finding => ({
   rule: "undefined-acronym",
@@ -325,14 +249,15 @@ const isNamePartAt = (acronym: string, hit: Hit): boolean => {
  * 書き手が展開する文書では、展開の抜けは抜けとして読める。名前の一部の略語（SRI International）は、そのときも指さない。
  */
 export const undefinedAcronym: Detector = (doc, options): Finding[] => {
-  const body = bodyOf(doc);
-  // HTTP のメソッド名（GET）は略語ではなく、税の名前（VAT、GST）は読み手が名前として知るので、通じる略語と同じく展開を求めない。
+  const body = halfWidth(bodyOf(doc));
+  // HTTP のメソッド名（GET）と SQL のキーワード（VIEW）は略語ではなく、税の名前（VAT、GST）は読み手が名前として知るので、通じる略語と同じく展開を求めない。
   // 並べた名前（JAXA）も、繋いだ略語（JAXA-ISAS）の片割れとして説明済みに数える。
   // 文書が自分で知らせた語（select を書いた文書の SELECT、リンクで引いた講演の場 [Jane Roe, FOSDEM 2024](…)）も同じ。
   const common = new Set([
     ...(options.lexicon ?? []).map((entry) => entry.pattern),
-    ...knownByDocument(doc.source, doc.links).concat(patternsOf(doc, "http-method"), patternsOf(doc, "tax-code")),
+    ...knownByDocument(doc.source, doc.links).concat(patternsOf(doc, "http-method"), patternsOf(doc, "sql-keyword"), patternsOf(doc, "tax-code")),
     ...(doc.names ?? []),
+    ...citedSeriesOf(doc, body),
   ]);
   const expandedAt = expansionAt(definitionWordsOf(doc));
   const stated = statedAcronyms(doc.source, { statements: patternsOf(doc, "definition-statement"), markers: patternsOf(doc, "definition-marker") });
@@ -342,9 +267,26 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
     doc.sentences.map((sentence) => sentence.text),
     patternsOf(doc, "abbreviation-mention"),
   );
-  // 略語のすぐ後ろのダッシュで挟んだ同格（the VIX—a measure of …—）も、略語の説明と読む。
-  const entries = new Set([...termEntryAcronyms(doc.source), ...stated, ...linkedListTerms(doc.source), ...spelled, ...glossedAcronyms(body)]);
-  const headings = doc.sections.map((section) => section.heading);
+  // 略語のすぐ後ろのダッシュで挟んだ同格（the VIX—a measure of …—）、同じ文か段落の前に書いた名前（Small Business Administration … SBA、Social Security number … SSN）、
+  // 2 つ以上の番号で引く続き物の名前（BCP 78、BCP 14）も、略語の説明と読む。
+  // 文献一覧の見出し語（[UNIX]    The Open Group, "The Single UNIX Specification"）と、見出しに番号で立てた書簡の続き物（### SR 26-8: …）も。
+  // 入れ子の箇条書きで、親の項目が書き出した名前（- No product owner: の下の - Unavailable PO）も。
+  // 長い略語を括弧に入れて書き出した名前の頭の略語（XSL Transformations (XSLT) の XSL）も。
+  const headings = doc.sections.map((section) => halfWidth(section.heading));
+  const counted = countedHitsOf(doc);
+  // ファイルの種類の名前としてだけ書いた大文字（the MAP files、MAPファイル）も、展開を待つ略語ではない。
+  const entries = new Set([
+    ...fileTypeNames(counted.map(fileUseOf), patternsOf(doc, "file-noun")),
+    ...termEntryAcronyms(doc.source),
+    ...parentItemAcronyms(doc.source),
+    ...nameHeadAcronyms(body),
+    ...stated,
+    ...linkedListTerms(doc.source),
+    ...spelled,
+    ...explainedInText(body, doc.sentences, doc.paragraphs),
+    ...referenceEntryLabels(doc.source),
+    ...headingSeries(headings),
+  ]);
   // 見出しが略語の名前を書き出していれば（## Federal Open Market Committee の下の FOMC）、説明済み。
   const spelledInHeading = headingsSpellingOut(headings);
   const explainedAsWritten = (word: string): boolean =>
@@ -354,16 +296,15 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
     isExpanded(body, word, expandedAt) ||
     headings.some((heading) => expandsInHeading(heading, word, expandedAt));
   // 大文字の違うだけの書き方（TCoP と TCOP）は同じ略語と読む。どちらかで説明してあれば説明済み。
+  // 文の中で頭だけ大文字の語に書いた名前（a hotel / Airbnb）を大文字で書いた AIRBNB は、語を大きく書いただけで略語ではない。
+  const wholeText = [body, ...headings].join("\n");
   const explained = new Map<string, boolean>();
   const explainedAlone = (word: string): boolean => {
-    const known = explained.get(word) ?? (explainedAsWritten(word) || caseVariantsIn([body, ...headings].join("\n"), word).some(explainedAsWritten));
+    const known =
+      explained.get(word) ?? (explainedAsWritten(word) || writtenAsWordIn(wholeText, word) || caseVariantsIn(wholeText, word).some(explainedAsWritten));
     explained.set(word, known);
     return known;
   };
-  const counted = outsideSpans(
-    acronymsOf(doc, notationOf(doc)),
-    sourceNotAcronymSpans(doc.source, (id) => patternsOf(doc, id)),
-  );
   const hits = outsideSpans(
     counted,
     unreportedAcronymSpans(doc.source, doc.sentences, doc.links, (id) => patternsOf(doc, id)),
@@ -384,76 +325,21 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   return alone.map(([acronym, hit]) => acronymFinding(acronym, hit, alone.length, options.limit));
 };
 
-/**
- * 具体物の密度。数値・コード・リンク・引用が 1 つも無い節は、
- * 読み終えても何も持ち帰れない。**少ないほうを指摘する**ので、他の密度 rule と向きが逆。
- */
-const CONCRETE = /\d|`|https?:\/\//u;
+/** 二つ重ねて一本に組むダッシュ（——、――）。重ねた二つ目からは、同じ一本の続き。 */
+const DOUBLED_DASH = /[—―]/u;
+const continuesDash = (source: string, offset: number): boolean => DOUBLED_DASH.test(source[offset] ?? "") && DOUBLED_DASH.test(source[offset - 1] ?? "");
 
-/**
- * 見出しのない導入部は、書き出しで呼ぶ。文書の言葉なので、message がどの言語でも混ざらない。
- * 決まった呼び名（「この節」）を置くと、英語の文書の message に日本語が入る。
- */
-const OPENING = { word: 4, char: 12 };
-
-const openingOf = (sentence: Sentence | undefined, unit: ProseDocument["lengthUnit"]): string => {
-  const text = sentence === undefined ? "" : proseText(sentence);
-  const pieces = unit === "word" ? text.split(" ") : Array.from(text);
-  const joiner = unit === "word" ? " " : "";
-  return pieces.length <= OPENING[unit] ? pieces.join(joiner) : `${pieces.slice(0, OPENING[unit]).join(joiner)}…`;
-};
-
-const hasNumeralIn = (section: Section): boolean => section.sentences.some((sentence) => hasNumeral(sentence.tokens ?? []));
-
-/** これより短い節は、具体物があるべきか判断できない。 */
-const MIN_SENTENCES = 3;
-
-const adviceWordsOf = (doc: ProseDocument): AdviceWords => ({
-  openers: (doc.lexicons["advice-opener"] ?? []).map((entry) => entry.pattern),
-  endings: (doc.lexicons["advice-ending"] ?? []).map((entry) => entry.pattern),
-});
-
-/** 文の半分以上が問いか指示の節（質問の一覧、手引き）は、数字で裏づける主張をしていない。番号だけの文（a.）は数えない。 */
-const mostlyClaims = (section: Section, language: string, advice: AdviceWords): boolean => {
-  const said = section.sentences.filter((sentence) => !isLabelOnly(sentence));
-  return said.filter((sentence) => isClaim(sentence, language, advice)).length * 2 > said.length;
-};
-
-export const concreteEvidence: Detector = (doc, options): Finding[] => {
-  const entries = letteredIndexEntries(doc.sections);
-  const advice = adviceWordsOf(doc);
-  const sections = doc.sections.filter(
-    (section) => section.sentences.length >= MIN_SENTENCES && !entries.has(section) && mostlyClaims(section, doc.language, advice),
-  );
-  const bare = sections.filter(
-    (section) => !CONCRETE.test(doc.source.slice(section.span.start, section.span.end)) && !hasNumeralIn(section) && !startsWithin(section.span, doc.links),
-  );
-  // 構造の木は作るのに手間がかかる。指摘に届かない文書では作らない。
-  const nodes = bare.length < options.limit ? [] : evidenceSpans(doc.structure);
-  const empty = bare.filter((section) => !startsWithin(section.span, nodes));
-  if (empty.length < options.limit) return [];
-  return empty.map((section) => ({
-    rule: "concrete-evidence-density",
-    severity: "info",
-    line: 0,
-    column: 0,
-    quote: section.heading.length > 0 ? section.heading : (section.sentences[0]?.text.trim() ?? ""),
-    values: {
-      word: section.heading.length > 0 ? section.heading : openingOf(section.sentences[0], doc.lengthUnit),
-      count: empty.length,
-      total: sections.length,
-      limit: options.limit,
-      offset: section.span.start,
-    },
-  }));
-};
+/** 重ねたダッシュの最後の字の位置。段落の終わりで箇条を導くかは、そこから後ろで見る。 */
+const dashEnd = (source: string, offset: number): number => (continuesDash(source, offset + 1) ? dashEnd(source, offset + 1) : offset);
 
 /**
  * ダッシュの多用。英語では正当な用法が多いが、2026 年時点で最も知られた生成文のシグナルでもある。
  * 日本語の組版ではそもそも扱いが難しい。どちらが正しいかは severity の言語別指定で分ける。spec §12.4。
  */
 export const dashDensity: Detector = (doc, options): Finding[] => {
-  const hits = findIn(doc, DASH).filter((hit) => !introducesList(doc.source, hit.offset));
+  const hits = findIn(doc, DASH).filter(
+    (hit) => !continuesDash(doc.source, hit.offset) && !introducesList(doc.source, dashEnd(doc.source, hit.offset)) && !opensLine(doc.source, hit.offset),
+  );
   const first = hits[0];
   const rate = density(doc, hits.length);
   if (wordsOf(doc) < MIN_DOCUMENT_LENGTH[doc.lengthUnit] || first === undefined || rate <= options.limit) return [];

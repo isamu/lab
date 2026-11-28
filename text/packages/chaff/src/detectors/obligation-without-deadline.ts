@@ -4,21 +4,31 @@
 // a vague limit (promptly) is vague-deadline's; one stating an amount (pays a fee of $9,000) sets a price, and its
 // timing is another clause's. The words come from the language package's word lists: timed-duty (the act),
 // duty-marker (shall, will), duty-ending (う, するものとする: what may follow a Japanese act at the sentence end),
-// stated-deadline (by the, までに) with concrete-deadline and vague-deadline, deadline-permission and currency-notation. Pure.
+// stated-deadline (by the, までに) with concrete-deadline and vague-deadline, deadline-permission, currency-notation and paragraph-pointer (前項). Pure.
 import { quoteAt } from "./structure-tree.ts";
 import { actsTimedAt, type NamedDeadline, type Units } from "./deadline-unit.ts";
+import { pointedParagraphs } from "./paragraph-pointer.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { grantsRight, statesConcrete, vagueIn } from "./vague-deadline.ts";
-import type { Detector, Finding, LexiconEntry, ProseDocument } from "../plugin.ts";
+import type { Detector, Finding, LexiconEntry, ProseDocument, Span, StructureNode } from "../plugin.ts";
 
 export type UntimedDuty = { readonly offset: number; readonly act: string };
 
 /**
  * sameLine: the sentence goes on the line of the one before it (no line break between them). timedActs: the acts whose
- * dated deadline (支払期日 for 支払) its article, else its list or paragraph, names; a duty to do one of them is timed.
+ * dated deadline (支払期日 for 支払) its article, else its list or paragraph, names; a duty to do one of them is timed. place: its
+ * article (where it starts) and its paragraph's number in it.
  */
-type Text = { readonly start: number; readonly text: string; readonly sameLine?: boolean; readonly timedActs?: readonly string[] };
+type Text = {
+  readonly start: number;
+  readonly text: string;
+  readonly sameLine?: boolean;
+  readonly timedActs?: readonly string[];
+  readonly place?: Place | undefined;
+};
+
+type Place = { readonly article: number; readonly paragraph: number };
 
 /** What the word lists give the decision. */
 export type DutyWords = {
@@ -36,6 +46,8 @@ export type DutyWords = {
   readonly deferrals: readonly string[];
   readonly permissions: readonly LexiconEntry[];
   readonly currencies: readonly LexiconEntry[];
+  /** Words that point at another paragraph of the article (前項, 本条1項). */
+  readonly paragraphPointers?: readonly LexiconEntry[];
 };
 
 const LATIN = /\p{Script=Latin}/u;
@@ -147,13 +159,41 @@ const lineEnds = (texts: readonly Text[]): number[] => {
   return ends;
 };
 
+type Bound = { readonly place: Place; readonly act: string; readonly text: string };
+
+/** The limited sentences of articles, with the act each binds. */
+const limitedBounds = (texts: readonly Text[], words: DutyWords): Bound[] =>
+  texts.flatMap((text) => {
+    const act = text.place === undefined || !limited(text, words) ? undefined : actIn(text.text, words);
+    return act === undefined || text.place === undefined ? [] : [{ place: text.place, act: act.act.toLowerCase(), text: text.text }];
+  });
+
+/**
+ * Whether another paragraph of the duty's article times the same act and one of the two points at the other: an article
+ * that says what is paid in its first paragraph and, in its third, pays 「本条1項に定める対価」 within ten days, or pays
+ * 「前項の対価」 by bank transfer after the paragraph that gives the time.
+ */
+const timedInArticle = (text: Text, act: string, bounds: readonly Bound[], pointers: readonly LexiconEntry[]): boolean => {
+  const place = text.place;
+  if (place === undefined || pointers.length === 0) return false;
+  const pointed = pointedParagraphs(text.text, place.paragraph, pointers);
+  return bounds.some(
+    (bound) =>
+      bound.place.article === place.article &&
+      bound.place.paragraph !== place.paragraph &&
+      bound.act === act.toLowerCase() &&
+      (pointed.includes(bound.place.paragraph) || pointedParagraphs(bound.text, bound.place.paragraph, pointers).includes(place.paragraph)),
+  );
+};
+
 /**
  * Each duty to act at a point in time whose sentence, and the rest of whose line, states no limit, holds no vague one, grants no right and states
- * no amount, when more sentences of the document state a limit than hold such a duty: these duties are then the
+ * no amount, and whose article times its act in a paragraph one of the two points at, when more sentences of the document state a limit than hold such a duty: these duties are then the
  * document's minority.
  */
 export const untimedDuties = (texts: readonly Text[], words: DutyWords): UntimedDuty[] => {
   const ends = lineEnds(texts);
+  const bounds = limitedBounds(texts, words);
   const found = texts.flatMap((text, index) => {
     const line = texts.slice(index, ends[index]);
     if (line.some((later) => limited(later, words) || words.deferrals.some((deferral) => phraseIn(later.text, deferral)))) return [];
@@ -161,6 +201,7 @@ export const untimedDuties = (texts: readonly Text[], words: DutyWords): Untimed
     const act = actIn(text.text, words);
     if (act === undefined || (LATIN.test(act.act) && !isWordStart(text.text, act.at))) return [];
     if (text.timedActs?.some((timed) => timed.toLowerCase() === act.act.toLowerCase()) === true) return [];
+    if (timedInArticle(text, act.act, bounds, words.paragraphPointers ?? [])) return [];
     return [{ offset: text.start + act.at, act: text.text.slice(act.at, act.at + act.act.length) }];
   });
   const limitedSentences = texts.filter((text) => statesLimit(text, words)).length;
@@ -185,14 +226,36 @@ const timedActsReader = (doc: ProseDocument): ((offset: number) => string[]) => 
   return (offset) => actsTimedAt(doc.source, units, offset, deadlines, phraseIn);
 };
 
+const within = (span: Span, offset: number): boolean => offset >= span.start && offset < span.end;
+
+/** The paragraph's number: its item's label among the article's own items (2, ２), or 1 for the article's first, unnumbered text. */
+const paragraphOf = (article: StructureNode, offset: number): number | undefined => {
+  const item = article.children.find((child) => child.kind === "item" && within(child.span, offset));
+  if (item === undefined) return 1;
+  const label = Number(String(item.attrs["label"] ?? "").normalize("NFKC"));
+  return Number.isInteger(label) && label > 0 ? label : undefined;
+};
+
+/** Where a sentence stands: its innermost article and the paragraph in it. */
+const placeReader = (doc: ProseDocument): ((offset: number) => Place | undefined) => {
+  const articles = doc.structure === undefined ? [] : inDocumentOrder(doc.structure).filter((node) => node.kind === "article");
+  return (offset) => {
+    const article = articles.filter((node) => within(node.span, offset)).at(-1);
+    const paragraph = article === undefined ? undefined : paragraphOf(article, offset);
+    return article === undefined || paragraph === undefined ? undefined : { article: article.span.start, paragraph };
+  };
+};
+
 export const obligationWithoutDeadline: Detector = (doc): Finding[] => {
   const timedActs = timedActsReader(doc);
+  const placeAt = placeReader(doc);
   return untimedDuties(
     doc.sentences.map((sentence, index) => ({
       start: sentence.span.start,
       text: sentence.text,
       sameLine: index > 0 && !doc.source.slice(doc.sentences[index - 1]?.span.end ?? 0, sentence.span.start).includes("\n"),
       timedActs: timedActs(sentence.span.start),
+      place: placeAt(sentence.span.start),
     })),
     {
       acts: patternsOf(doc, "timed-duty"),
@@ -205,6 +268,7 @@ export const obligationWithoutDeadline: Detector = (doc): Finding[] => {
       deferrals: patternsOf(doc, "duty-terms-elsewhere"),
       permissions: doc.lexicons["deadline-permission"] ?? [],
       currencies: doc.lexicons["currency-notation"] ?? [],
+      paragraphPointers: doc.lexicons["paragraph-pointer"] ?? [],
     },
   ).map((duty) => ({
     rule: "obligation-without-deadline",

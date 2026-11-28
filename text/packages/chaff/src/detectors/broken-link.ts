@@ -68,6 +68,21 @@ const REFERENCE_LIKE = /(?<![\\A-Za-z0-9_\]])\[([^[\]\n]+)\]\[([^[\]\n]*)\]/gu;
 /** 数だけの括弧（[1][2]、[3, 4]）は、参照の記法ではなく文献の番号を並べたもの。 */
 const CITATION_NUMBERS = /^[\d\s,，、–-]+$/u;
 
+/**
+ * ファイルの種類と大きさの札（[PDF:47KB]、[PDFファイル／269KB]、[Excel 28 KB]）。役所のページがリンクの後ろに書く添え書きで、
+ * 写すと字のまま残る。名前の定義で呼ぶ参照の記法ではない。
+ */
+const FILE_SIZE = /^\d[\d.,]*\s*(?:[KMGT]i?B|bytes?|バイト)$/iu;
+const FILE_TYPE_PREFIX = /^\p{L}[\p{L}\p{N}]*(?:\s*[:：/／、,，]\s*|\s+)/u;
+
+const isFileSizeLabel = (text: string): boolean => {
+  if (FILE_SIZE.test(text)) return true;
+  const prefix = FILE_TYPE_PREFIX.exec(text)?.[0];
+  return prefix !== undefined && FILE_SIZE.test(text.slice(prefix.length));
+};
+
+const fileSizeLabel = (match: RegExpMatchArray): boolean => isFileSizeLabel(match[1] ?? "") || isFileSizeLabel(match[2] ?? "");
+
 /** 画像の参照（`![alt][label]`）の頭の印。指摘の範囲に含める。 */
 const IMAGE_MARK = "!";
 
@@ -95,19 +110,54 @@ const imageAt = (source: string, start: number): boolean => {
  */
 export const siteDefinedImage = (source: string, start: number, label: string): boolean => label === "" && imageAt(source, start);
 
-export const unresolvedReferences = (source: string, markup: Markup): Span[] =>
-  markup.texts.flatMap((text) =>
+/**
+ * 正規表現の文字クラス（[A-Za-z0-9][\\w.-]*）。範囲（A-Z）と逃がし（\\.）と記号だけでできていて、範囲を一つは含む。
+ * 文の中にコードの印を付けずに書いた正規表現で、参照の記法ではない。
+ */
+const CHARACTER_CLASS = /^\^?(?:[A-Za-z0-9]-[A-Za-z0-9]|\\.|[^\sA-Za-z0-9\\])*[A-Za-z0-9]-[A-Za-z0-9](?:[A-Za-z0-9]-[A-Za-z0-9]|\\.|[^\sA-Za-z0-9\\])*$/u;
+
+/** mdBook の規則の印（r[type.trait-object]）だけの行。この印のある本は、印の名前で呼ぶ参照の定義を本全体に足す。 */
+const RULE_MARKER_LINE = /^r\[([a-z0-9_-]+(?:\.[a-z0-9_-]+)+)\]$/mu;
+
+/** 規則の印の形の名前（type.trait-object）。 */
+const RULE_ID = /^[a-z0-9_-]+(?:\.[a-z0-9_-]+)+$/u;
+
+/** 本が定義を足す名前: 規則の印を書いた本で、その印の形をした名前。 */
+const bookDefinedLabel = (source: string): ((label: string) => boolean) => {
+  const marked = RULE_MARKER_LINE.test(source);
+  return (label) => marked && RULE_ID.test(label);
+};
+
+export const unresolvedReferences = (source: string, markup: Markup): Span[] => {
+  const bookDefined = bookDefinedLabel(source);
+  return markup.texts.flatMap((text) =>
     [...source.slice(text.start, text.end).matchAll(REFERENCE_LIKE)]
       .filter((match) => !CITATION_NUMBERS.test(match[1] ?? "") && !siteDefinedImage(source, text.start + match.index, match[2] ?? ""))
+      .filter((match) => !fileSizeLabel(match))
+      .filter((match) => !CHARACTER_CLASS.test(match[1] ?? "") && !CHARACTER_CLASS.test(match[2] ?? "") && !bookDefined(match[2] ?? ""))
       .map((match) => ({ start: text.start + match.index, end: text.start + match.index + match[0].length }))
       .map((span) => (imageAt(source, span.start) ? { start: span.start - 1, end: span.end } : span)),
   );
+};
 
 const emptyLinks = (doc: ProseDocument, markup: Markup): Finding[] =>
   markup.links.filter((link) => link.destination.trim() === "").map((link) => findingAt(doc, link, { link: quoteOf(doc.source, link) }, "empty"));
 
+/**
+ * MDN の決まった節を作るマクロと、その節に MDN が付ける名前。訳した文書でも見出しの字からではなく、この名前で指す
+ * （「## ブラウザーの互換性」の下の {{Compat}} は #browser_compatibility）。
+ */
+const MDN_SECTION_MACROS: readonly (readonly [string, string])[] = [
+  ["{{Compat", "browser_compatibility"],
+  ["{{Specifications", "specifications"],
+];
+
+/** 文書が書いたマクロが名前を付ける節。 */
+const macroAnchors = (source: string): string[] => MDN_SECTION_MACROS.filter(([macro]) => source.includes(macro)).map(([, id]) => id);
+
 const missingAnchors = (doc: ProseDocument, markup: Markup): Finding[] => {
-  const anchors = anchorsOf(markup);
+  const written = anchorsOf(markup);
+  const anchors = { ...written, ids: new Set([...written.ids, ...macroAnchors(doc.source)]) };
   return markup.links
     .filter((link) => link.destination.startsWith("#") && !reachesAnchor(link.destination, anchors))
     .map((link) => findingAt(doc, link, { link: quoteOf(doc.source, link), target: link.destination }, "anchor"));

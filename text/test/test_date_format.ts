@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { dateGroups, dateMinority, datesIn, opensLine, stampedDate, type WrittenDate } from "../packages/chaff/src/date-format.ts";
+import { bracketedDate, dateGroups, dateMinority, datesIn, headerDate, opensLine, stampedDate, type WrittenDate } from "../packages/chaff/src/date-format.ts";
 
 // 日付の書き方の揃い（date-format-consistency）。例文はすべて自作。
 
@@ -111,7 +111,7 @@ describe("opensLine and dateGroups", () => {
       [true, true, false, false],
     );
     assert.deepEqual(
-      dateGroups(text, datesIn(text, WORDS), labels).map((group) => group.map((date) => date.written)),
+      dateGroups(text, datesIn(text, WORDS), { stampLabels: labels }).map((group) => group.map((date) => date.written)),
       [
         ["2026-10-20", "2026-10-21"],
         ["2026年10月13日", "2026-10-14"],
@@ -128,6 +128,82 @@ describe("opensLine and dateGroups", () => {
       datesIn(text, WORDS).map((date) => stampedDate(text, date.offset, labels)),
       [false, false, false, true, true],
     );
+  });
+
+  it("a label in an opening bracket is a stamp; a label after a letter or a closing bracket is not", () => {
+    const labels = ["更新日"];
+    const text = "［更新日\u30002026年10月1日]\n【更新日：2026年10月2日】\n(更新日 2026-10-03)\n）更新日 2026-10-04\n新更新日 2026-10-05\n";
+    assert.deepEqual(
+      datesIn(text, WORDS).map((date) => stampedDate(text, date.offset, labels)),
+      [true, true, true, false, false],
+    );
+  });
+
+  it("a line holding only a date, with nothing but headings above it, is the page's date", () => {
+    const header = (text: string): boolean[] => datesIn(text, WORDS).map((date) => headerDate(text, date));
+    assert.deepEqual(header("# 講師募集\n\n2026年10月7日\n\n申込は2026年10月9日まで。"), [true, false]);
+    assert.deepEqual(header("**2026-10-07**\n"), [true]);
+    assert.deepEqual(header("# 講師募集\n\n2026年10月7日に開きます。\n"), [false]);
+    assert.deepEqual(header("# 講師募集\n\n説明会のお知らせ。\n\n2026年10月7日\n"), [false]);
+    assert.deepEqual(header("- 2026-10-07\n"), [false]);
+  });
+
+  it("a line wholly in one pair of brackets is a stamp; a bracket inside a sentence is not", () => {
+    const text = "［受理：2026-11-18］\n(2026-11-19)\n説明会（2026年11月20日）を開く。\n［受理］2026-11-21\n";
+    assert.deepEqual(
+      datesIn(text, WORDS).map((date) => bracketedDate(text, date)),
+      [true, true, false, false],
+    );
+  });
+
+  it("dates in a reference list or a run of notes form no group", () => {
+    const text = "Released 2026-10-01.\n\nRead on October 2, 2026.\n";
+    const dates = datesIn(text, WORDS);
+    assert.deepEqual(
+      dateGroups(text, dates, { cited: [{ start: 0, end: 20 }] }).map((group) => group.map((date) => date.written)),
+      [["October 2, 2026"]],
+    );
+    assert.deepEqual(dateGroups(text, dates, { cited: [{ start: 0, end: text.length }] }), []);
+  });
+});
+
+describe("date-format-consistency: 一覧ごとの日付", () => {
+  it("行の頭の日付は節ごとに比べる（予定表の節の月名と、更新の記録の節の ISO）", () => {
+    const page = [
+      "## Timeline",
+      "",
+      "* October 2026: We will open the new service.",
+      "* October 9, 2026: We will close the old one.",
+      "",
+      "## Updates",
+      "",
+      "* 2026-09-01: Added the timeline.",
+      "* 2026-09-12: Added a checklist.",
+      "* 2026-09-20: Fixed a link.",
+    ].join("\n");
+    assert.deepEqual(mixed(page, en), []);
+  });
+
+  it("一つの節の中で混ざった行の頭の日付は今までどおり指す", () => {
+    const page = ["* 2026-09-01: Added the timeline.", "* 2026-09-12: Added a checklist.", "* October 20, 2026: Fixed a link."].join("\n");
+    assert.deepEqual(mixed(page, en), ['The date "October 20, 2026" is written differently from 2 other dates in the document (such as "2026-09-01")']);
+  });
+
+  it("箇条書きの項目の終わりの括弧の日付（過去の催しの一覧）は、本文の和暦と比べない", () => {
+    const page = [
+      "令和8年11月19日に研究集会を開きます。申込みは令和8年11月5日までです。",
+      "",
+      "- 研究集会（2025/11/20）",
+      "- 講習会（2025/2/3）（PDF）",
+      "- 研究集会（2024/11/18）",
+    ].join("\n");
+    assert.deepEqual(mixed(page), []);
+  });
+
+  it("文の中の括弧の日付は今までどおり本文と比べる", () => {
+    assert.deepEqual(mixed("令和8年11月19日に開きます。申込みは令和8年11月5日から令和8年11月9日まで、説明会（2026/11/1）は別の会場です。"), [
+      "日付「2026/11/1」の書き方が、この文書のほかの日付（「令和8年11月5日」など 2 箇所）と違います",
+    ]);
   });
 });
 
@@ -147,5 +223,94 @@ describe("date-format-consistency: ページの更新日の刻印", () => {
     assert.deepEqual(mixed(page), ["日付「2026年10月20日」の書き方が、この文書のほかの日付（「令和8年11月1日」など 3 箇所）と違います"]);
     const english = "The page was outdated 2026-10-13.\n\nApplications open on 1 November 2026 and close on 30 November 2026. Adverts run from 1 April 2027.";
     assert.deepEqual(mixed(english, en), ['The date "2026-10-13" is written differently from 3 other dates in the document (such as "1 November 2026")']);
+  });
+});
+
+describe("date-format-consistency: 文献と注、題の下のページの日付", () => {
+  it("注の並びの中の日付（引いた文書の題、参照日、判例）は本文と比べない", () => {
+    const paper = [
+      "# 報告",
+      "",
+      "新しい版は2026年6月3日に出た。次の版は2026年11月9日に出る予定である。",
+      "",
+      "(1) 文部科学省. “大臣会見録（令和8年12月25日）”. 2026-12-25.",
+      "https://example.go.jp/a, （参照 2027-01-20）.",
+      "",
+      "(2) 例えば、東京地判令和3年10月12日がある。",
+      "https://example.go.jp/b, （参照 2027-01-20）.",
+      "",
+      "(3) 研究会. “資料（2026/11/14版）”. 2026-11-14.",
+      "https://example.go.jp/c, （参照 2027-01-20）.",
+      "",
+      "［受理：2027-02-01］",
+    ].join("\n");
+    assert.deepEqual(mixed(paper), []);
+  });
+
+  it("参照日の括弧書きの日付は、番号の並びと読めない注の中でも本文と比べない", () => {
+    const paper = [
+      "2023年5月に会議を設け、同年12月21日に指針の案を示した。2024年4月19日に第1.0版が公表された。",
+      "",
+      "31　会議決定，「原則」，<https://example.go.jp/a.pdf>（2024/3/12参照）",
+      "",
+      "32　研究会，「指針」，<https://example.go.jp/b.html>（2024/3/12参照）",
+      "",
+      "33　協議会，「論点」，<https://example.go.jp/c.pdf>（2024/3/12参照）",
+      "",
+      "34　研究所，<https://example.go.jp/>（閲覧日 2024/3/12）",
+      "",
+      "35　省，「手引」，<https://example.go.jp/d.pdf>（2024/3/12参照）",
+    ].join("\n");
+    assert.deepEqual(mixed(paper), []);
+    const english = [
+      "The panel met in 2023 and published the guide on 19 April 2024.",
+      "",
+      "Sources: the charter (accessed 2024-03-12), the draft (accessed 2024-03-12), the notes (retrieved 2024-03-12) and the minutes (last accessed 2024-03-12).",
+    ].join("\n");
+    assert.deepEqual(mixed(english, en), []);
+  });
+
+  it("参照の語の無い括弧書きの日付は、本文と比べる", () => {
+    const paper = [
+      "2023年9月1日に案を示し、2023年12月21日に指針を出し、2024年4月19日に第1.0版が公表された。",
+      "",
+      "次の会合は来年に開く（2025/3/12予定）。",
+    ].join("\n");
+    assert.deepEqual(mixed(paper), ["日付「2025/3/12」の書き方が、この文書のほかの日付（「2023年12月21日」など 2 箇所）と違います"]);
+  });
+
+  it("本文の中の違う書き方の日付は、注の並びがあっても指す", () => {
+    const paper = [
+      "新しい版は2026年6月3日に出た。次の版は2026年11月9日、その次は2027年5月1日、最後の版は2027-11-01に出る。",
+      "",
+      "(1) 文部科学省. 会見録. 2026-12-25.",
+      "",
+      "(2) 研究会. 資料. 2026-11-14.",
+      "",
+      "(3) 協議会. 報告. 2026-10-14.",
+    ].join("\n");
+    assert.deepEqual(mixed(paper), ["日付「2027-11-01」の書き方が、この文書のほかの日付（「2026年6月3日」など 3 箇所）と違います"]);
+  });
+
+  it("References の下の日付は本文と比べない", () => {
+    const paper = [
+      "We collected posts from 1 January 2026 to 28 February 2026, coded them by 15 March 2026, and reported on 1 April 2026 and 2 May 2026.",
+      "",
+      "## References",
+      "",
+      "- Corp. (2026) Guide. Accessed 2026-09-15.",
+      "- Corp. (2026) Source code. Commit dated 2026-08-20.",
+    ].join("\n");
+    assert.deepEqual(mixed(paper, en), []);
+    const unlisted = paper.replace("## References", "## Sources");
+    assert.equal(mixed(unlisted, en).length, 2);
+  });
+
+  it("題の下の日付だけの行と、［更新日 …］の刻印は、本文の和暦と比べない", () => {
+    const schedule = "- 令和8年10月25日：説明会\n- 令和8年11月7日：説明会\n- 令和8年11月16日：見学会\n";
+    const page = `# 講師募集\n\n2026年10月7日\n\n${schedule}\n［更新日\u30002021年10月1日]\n`;
+    assert.deepEqual(mixed(page), []);
+    const inBody = `# 講師募集\n\n${schedule}\n2026年10月7日\n`;
+    assert.equal(mixed(inBody).length, 1);
   });
 });

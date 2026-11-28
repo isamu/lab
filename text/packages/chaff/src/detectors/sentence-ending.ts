@@ -1,13 +1,21 @@
 import { endingTokens, isClosed } from "../sentence-shape.ts";
 import { enumeratedRuns, enumeratorStarts, numberedStarts } from "./enumerated-runs.ts";
-import { continuesInto, groupOf, majorityOf, registerOf, slipsOf, type Register } from "./register.ts";
+import { continuesThrough, groupOf, majorityOf, registerOf, slipsOf, type Register } from "./register.ts";
 import { isRunInLabel } from "./run-in-label.ts";
+import { labelNoteSentences } from "./register-label-note.ts";
 import { noticeSentences } from "./notice-paragraph.ts";
+import { separatePartSentences, trailingPartSentences } from "./register-separate-part.ts";
 import { askerSentences } from "./asker-voice.ts";
+import { recordingCaptionSentences } from "../recording-title.ts";
 import { licenceNoticeSentences } from "./licence-notice.ts";
 import { chronologyRows } from "../chronology-rows.ts";
 import { isNeutralPlainShape } from "./register-neutral-shape.ts";
-import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span } from "../plugin.ts";
+import { spokenAnswerSentences } from "./register-interview.ts";
+import { contactBlockSentences, fieldValueSentences, labelledQuoteSentences, referenceNoteSentences, tableCellSentences } from "./register-set-apart.ts";
+import { endsInSetGreeting, isAddressed, isDeclaration, isExclamation, isFeelingAside, isTakenUp, pagePointerSentences } from "./register-voice.ts";
+import { entriesForGenre } from "../lexicon-genres.ts";
+import { headingRegisters, offRequired, regionOfGroup, requiredOf, requiresAny, type RequiredRegisters } from "./register-required.ts";
+import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 
 /**
  * 文末の調子が混ざっているかを見る。日本語の「ですます / である」がこれ。
@@ -18,25 +26,76 @@ import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span } f
  * 年表の行（1921年信号装置の製作を開始する。）も、文書の文体と揃えない書き方なので数えない。
  * 断り書きの段落（…ご了承ください。）も、本文とは別の声で書く決まり文句なので数えない（notice-paragraph.ts）。
  * 読み手の相談や質問を載せる節（【相談事例等】）の文は尋ねた人の言葉のままなので数えない（asker-voice.ts）。
+ * 動画の題（…（3分00秒））の下の説明も、動画の言葉のままなので数えない（recording-title.ts）。
  * 文書の最後に掲載先が付けた利用条件の断り書き（…ライセンスの下に提供されています。）も数えない（licence-notice.ts）。
+ * 札を付けて引いた言葉（例：…。Q: …？）、印を付けた札の行の下の記入欄の値（■ 調査目的\n…とする。）、
+ * 〒や電話の行のある問い合わせ先の段落も数えない（register-set-apart.ts）。
+ * 一番上の見出しで分けた部分のうち、2 文以上がみな文書の多いほうと違う同じ調子のものは、別の文書として数えない（register-separate-part.ts）。
+ * 多いほうの最後の文より後ろの 2 文以上が、みな前に無い違う同じ調子で、間に調子を持たない行（リンクの並び）を挟むものも、ページの注記として数えない。
  */
 /**
  * quiet: 常体と読めるが、願い・問い・言いさしの形（register-neutral-shape.ts）の文。どちらの調子の文書にも現れるので指さない。
+ * 丁寧な形でしか言わない挨拶（お疲れ様でした。）、演説の決意の言い切り（二度と繰り返さない。）、
+ * 次の文が「そんな」「これだけ」で受ける場面の書き出し、「！」で終わる叫び（わかるかっ！）、読み手に呼びかける終助詞で終わる文（…いるよ。）も quiet（register-voice.ts）。
+ * ※や＊で始まる行の注記と、行に並べ直した表のセル（制限なし。）は、どちらの調子でも quiet（register-set-apart.ts）。
+ * インタビューの答え（聞き手の「――」の後の段落）は話した言葉なので quiet（register-interview.ts）。
  * 数には入れる。数から外すと、常体を何度も使う文書（演説）で少数派が閾値を下回り、残りの常体の文が新たに指されてしまう。
  */
 type Entry = { readonly sentence: Sentence; readonly register: Register; readonly group: number | undefined; readonly quiet: boolean };
 
-/** polite は語彙表 polite-ending、neutral は neutral-ending、requests は neutral-request。 */
-type EndingWords = { readonly polite: readonly LexiconEntry[]; readonly neutral: readonly LexiconEntry[]; readonly requests: readonly LexiconEntry[] };
+/** 文の調子と quiet を決める語彙表。polite は polite-ending、neutral は neutral-ending、requests は neutral-request、wishes は neutral-wish、
+ * greetings は set-polite-phrase、declaration と resolves は declaration-particle と declaration-ending を文書の genre で絞ったもの、openers は takeup-opener、
+ * address は address-particle、asides は feeling-aside を文書の genre で絞ったもの。 */
+type EndingWords = {
+  readonly polite: readonly LexiconEntry[];
+  readonly neutral: readonly LexiconEntry[];
+  readonly requests: readonly LexiconEntry[];
+  readonly wishes: readonly LexiconEntry[];
+  readonly greetings: readonly LexiconEntry[];
+  readonly declaration: readonly LexiconEntry[];
+  readonly resolves: readonly LexiconEntry[];
+  readonly openers: readonly LexiconEntry[];
+  readonly address: readonly LexiconEntry[];
+  readonly asides: readonly LexiconEntry[];
+};
 
 type Read = { readonly register: Register; readonly quiet: boolean };
 
-const registerOfSentence = (sentence: Sentence, words: EndingWords): Read | undefined => {
+const endingWords = (doc: ProseDocument, polite: readonly LexiconEntry[], genre: string | undefined): EndingWords => ({
+  polite,
+  neutral: doc.lexicons["neutral-ending"] ?? [],
+  requests: doc.lexicons["neutral-request"] ?? [],
+  wishes: doc.lexicons["neutral-wish"] ?? [],
+  greetings: doc.lexicons["set-polite-phrase"] ?? [],
+  declaration: entriesForGenre(doc.lexicons["declaration-particle"] ?? [], genre),
+  resolves: entriesForGenre(doc.lexicons["declaration-ending"] ?? [], genre),
+  openers: doc.lexicons["takeup-opener"] ?? [],
+  address: doc.lexicons["address-particle"] ?? [],
+  asides: entriesForGenre(doc.lexicons["feeling-aside"] ?? [], genre),
+});
+
+/** 調子を持つ文のうち、指さない形か。next は同じ文書の次の文、between はその間の文字列。 */
+const isQuiet = (sentence: Sentence, ending: readonly Token[], register: Register, words: EndingWords, next: Sentence | undefined, between: string): boolean =>
+  register === "polite"
+    ? endsInSetGreeting(sentence, words.greetings)
+    : isNeutralPlainShape(sentence, ending, words.requests, words.wishes) ||
+      isDeclaration(sentence, ending, words.declaration, words.resolves) ||
+      isExclamation(sentence) ||
+      isAddressed(sentence, words.address) ||
+      isFeelingAside(sentence, ending, words.asides) ||
+      isTakenUp(next, between, words.openers);
+
+const registerOfSentence = (doc: ProseDocument, index: number, words: EndingWords): Read | undefined => {
+  const sentence = doc.sentences[index];
+  if (sentence === undefined) return undefined;
   const ending = endingTokens(sentence);
   const tokens = sentence.tokens ?? [];
   const head = ending[0] === undefined ? -1 : tokens.indexOf(ending[0]);
   const register = registerOf(ending, head > 0 ? tokens.slice(0, head) : [], words.polite, words.neutral);
-  return register === undefined ? undefined : { register, quiet: register === "plain" && isNeutralPlainShape(sentence, ending, words.requests) };
+  if (register === undefined) return undefined;
+  const next = doc.sentences[index + 1];
+  const between = next === undefined ? "" : doc.source.slice(sentence.span.end, next.span.start);
+  return { register, quiet: isQuiet(sentence, ending, register, words, next, between) };
 };
 
 /** 番号で始まる段落の並び。木を組むのは高いので、調子が一つだけの文書（混ざりようがない）では組まない。 */
@@ -51,29 +110,52 @@ const runsOf = (doc: ProseDocument, registers: readonly Register[]): Span[] => {
 };
 
 /** 調子を持つ文と、比べ合うまとまり（groupOf）。polite は語彙表 polite-ending。 */
-export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntry[]): Entry[] => {
-  const words: EndingWords = { polite, neutral: doc.lexicons["neutral-ending"] ?? [], requests: doc.lexicons["neutral-request"] ?? [] };
+export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntry[], genre?: string): Entry[] => {
+  const words = endingWords(doc, polite, genre);
   const lists = doc.lists.map((list) => list.span);
   const rows = chronologyRows(doc);
-  const asked = askerSentences(doc.sections, doc.lexicons["asker-heading"] ?? []);
+  const asked = new Set([...askerSentences(doc.sections, doc.lexicons["asker-heading"] ?? []), ...recordingCaptionSentences(doc.sections)]);
   const licence = licenceNoticeSentences(doc, doc.lexicons["licence-word"] ?? []);
+  const quoted = labelledQuoteSentences(doc.paragraphs, doc.source, doc.lexicons["quote-label"] ?? []);
+  const fields = fieldValueSentences(doc.sentences, doc.source);
+  const contact = contactBlockSentences(doc.sentences, doc.source, doc.lexicons["contact-line-opener"] ?? []);
+  const asides = new Set([
+    ...referenceNoteSentences(doc.sentences, doc.source),
+    ...tableCellSentences(doc.sentences, doc.source),
+    ...pagePointerSentences(doc.sections, doc.lexicons["page-pointer"] ?? []),
+    ...spokenAnswerSentences(
+      doc,
+      (doc.lexicons["interviewer-mark"] ?? []).map((entry) => entry.pattern),
+    ),
+  ]);
   const all = doc.sentences.flatMap((sentence, index): { sentence: Sentence; register: Register; quiet: boolean }[] => {
     if (
       !isClosed(sentence) ||
       rows.has(sentence) ||
       asked.has(sentence) ||
       licence.has(sentence) ||
-      continuesInto(sentence, doc.sentences[index + 1]) ||
+      quoted.has(sentence) ||
+      fields.has(sentence) ||
+      contact.has(sentence) ||
+      continuesThrough(doc.sentences, index) ||
       isRunInLabel(doc.source, sentence.span)
     )
       return [];
-    const read = registerOfSentence(sentence, words);
-    return read === undefined ? [] : [{ sentence, ...read }];
+    const read = registerOfSentence(doc, index, words);
+    return read === undefined ? [] : [{ sentence, register: read.register, quiet: read.quiet || asides.has(sentence) }];
   });
   const registers = new Map(all.map((entry) => [entry.sentence, entry.register]));
   const majority = majorityOf(all.map((entry) => ({ register: entry.register, group: undefined })));
-  const notices = noticeSentences(doc.paragraphs, doc.lexicons["notice-phrase"] ?? [], (sentence) => registers.get(sentence), majority);
-  const found = all.filter((entry) => !notices.has(entry.sentence));
+  const registerAt = (sentence: Sentence): Register | undefined => registers.get(sentence);
+  const notices = noticeSentences(doc.paragraphs, doc.lexicons["notice-phrase"] ?? [], registerAt, majority);
+  const parts = new Set([
+    ...separatePartSentences(doc.sections, registerAt, majority),
+    ...trailingPartSentences(doc.sentences, doc.paragraphs, registerAt, majority),
+  ]);
+  const labelNotes = labelNoteSentences(doc.sentences, doc.source, registerAt);
+  const found = all
+    .filter((entry) => !notices.has(entry.sentence) && !parts.has(entry.sentence))
+    .map((entry) => (labelNotes.has(entry.sentence) ? { ...entry, quiet: true } : entry));
   const runs = runsOf(
     doc,
     found.map((entry) => entry.register),
@@ -81,17 +163,53 @@ export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntr
   return found.map((entry): Entry => ({ ...entry, group: groupOf(entry.sentence.span.start, lists, runs) }));
 };
 
+const finding = (sentence: Sentence, values: Finding["values"], variant: string | undefined): Finding => ({
+  rule: "no-mixed-desumasu",
+  severity: "warning",
+  line: 0,
+  column: 0,
+  quote: sentence.text.trim(),
+  ...(variant === undefined ? {} : { variant }),
+  values,
+});
+
+/** The variant naming the register a team requires: the message says which one this spot should be in. */
+const REQUIRED_VARIANT: Readonly<Record<Register, string>> = { polite: "required-desumasu", plain: "required-dearu" };
+
+/**
+ * Only where chaff.yaml names the register a region requires (options body, list, heading): a sentence in the other
+ * register is reported even with no mix, and that region is no longer checked for consistency (its minority may be the
+ * register the team chose). Regions left out keep the consistency check.
+ */
+const requiredFindings = (
+  doc: ProseDocument,
+  judged: readonly Entry[],
+  required: RequiredRegisters,
+  consistent: readonly Finding[],
+  polite: readonly LexiconEntry[],
+): Finding[] => {
+  const told = offRequired(judged, required).map((entry) =>
+    finding(entry.sentence, { offset: entry.sentence.span.start }, REQUIRED_VARIANT[required[regionOfGroup(entry.group)] ?? entry.register]),
+  );
+  const wantedHeading = required.heading;
+  const headings =
+    wantedHeading === undefined
+      ? []
+      : headingRegisters(doc.sections, polite, doc.lexicons["neutral-ending"] ?? [])
+          .filter((read) => read.register !== wantedHeading)
+          .map((read) =>
+            finding({ span: read.section.span, text: read.section.heading }, { offset: read.section.span.start }, REQUIRED_VARIANT[wantedHeading]),
+          );
+  return [...consistent, ...told, ...headings].toSorted((left, right) => Number(left.values["offset"]) - Number(right.values["offset"]));
+};
+
 export const sentenceEnding: Detector = (doc, options): Finding[] => {
-  const judged = judgedSentences(doc, options.lexicon ?? []);
+  const judged = judgedSentences(doc, options.lexicon ?? [], options.genre);
+  const required = requiredOf(options.settings);
   // 数えたのは文が属するまとまりの中なので、文言もそのまとまりを名指す（本文の中で / この箇条書きの中で）。
-  const slips = slipsOf(judged, options.limit).filter(({ entry }) => !entry.quiet);
-  return slips.map(({ entry: { sentence, group }, count }) => ({
-    rule: "no-mixed-desumasu",
-    severity: "warning",
-    line: 0,
-    column: 0,
-    quote: sentence.text.trim(),
-    ...(group === undefined ? {} : { variant: "list" }),
-    values: { count, limit: options.limit, offset: sentence.span.start },
-  }));
+  const slips = slipsOf(judged, options.limit).filter(({ entry }) => !entry.quiet && required[regionOfGroup(entry.group)] === undefined);
+  const consistent = slips.map(({ entry: { sentence, group }, count }) =>
+    finding(sentence, { count, limit: options.limit, offset: sentence.span.start }, group === undefined ? undefined : "list"),
+  );
+  return requiresAny(required) ? requiredFindings(doc, judged, required, consistent, options.lexicon ?? []) : consistent;
 };

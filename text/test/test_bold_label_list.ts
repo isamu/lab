@@ -1,7 +1,8 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { firedRules } from "./rule-run.ts";
-import { boldLabelOf, isQuotedAt } from "../packages/chaff/src/detectors/bold-label.ts";
+import { boldLabelList, boldLabelOf, boldLeadOf, isQuotedAt } from "../packages/chaff/src/detectors/bold-label.ts";
+import { buildDocument } from "../packages/chaff/src/document.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
@@ -78,6 +79,36 @@ describe("boldLabelOf: an item that opens with a bold label", () => {
   it("takes a label of exactly the longest length", () => assert.equal(boldLabelOf(`- **${"長".repeat(40)}**：説明です。`), "長".repeat(40)));
 });
 
+describe("boldLeadOf: an item that opens with a bold lead sentence", () => {
+  const leads: readonly (readonly [string, string])[] = [
+    ["- **Information gets out of date.** Updates depend on people.", "Information gets out of date"],
+    ["1. **Involve support in release planning.** Notice helps.", "Involve support in release planning"],
+    ["- __No calls!__ Step outside.", "No calls"],
+    ["- **Why does it fail?** The cache is stale.", "Why does it fail"],
+    ["- **情報が古くなる。**更新は人頼みです。", "情報が古くなる"],
+    ["- [ ] **Check one result by hand.** Work it out yourself.", "Check one result by hand"],
+    ["- **Use e.g. a lamp.** It helps.", "Use e.g. a lamp"],
+  ];
+  leads.forEach(([item, lead]) => {
+    it(`reads ${JSON.stringify(item)} as led by "${lead}"`, () => assert.equal(boldLeadOf(item), lead));
+  });
+
+  const notLeads: readonly (readonly [string, string])[] = [
+    ["- **Rain alerts** that adjust the schedule.", "a bold opening word with no stop"],
+    ["- **Leave during the lunch rush** if it is busy.", "a bold phrase the sentence goes on from"],
+    ["- **Done.**", "nothing after the bold"],
+    ["- **Done.**   ", "only spaces after the bold"],
+    ["- The list is **fast.** Really.", "the bold is not at the start"],
+    ["- Plain sentence. More text.", "no bold"],
+    [`- **${"a".repeat(81)}.** More.`, "a bold run longer than a lead sentence"],
+  ];
+  notLeads.forEach(([item, why]) => {
+    it(`does not read ${JSON.stringify(item)} (${why})`, () => assert.equal(boldLeadOf(item), undefined));
+  });
+
+  it("takes a lead of exactly the longest length", () => assert.equal(boldLeadOf(`- **${"a".repeat(80)}.** More.`), "a".repeat(80)));
+});
+
 describe("isQuotedAt: an offset on a quoted line", () => {
   const source = "本文\n> - **a**：x\n>> - **b**：y\n- **c**：z\n";
   it("reads a quoted item", () => assert.ok(isQuotedAt(source, source.indexOf("- **a**"))));
@@ -142,8 +173,205 @@ describe("bold-label-list", () => {
     assert.ok(!idsFor(`# 仕様\n\n${labelledList(8)}\n`, ja, "technical/spec").includes("bold-label-list"));
   });
 
-  it("valid: an English document is not checked", () => {
-    const list = Array.from({ length: 8 }, (_unused, index) => `- **Item ${index + 1}**: what it does.`).join("\n");
-    assert.ok(!idsFor(`# Post\n\n${list}\n`, en).includes("bold-label-list"));
+  const englishList = (count: number): string => Array.from({ length: count }, (_unused, index) => `- **Item ${index + 1}**: what it does.`).join("\n");
+
+  it("invalid: an English list of eight bold-label items is reported", () => {
+    assert.ok(idsFor(`# Post\n\n${englishList(8)}\n`, en).includes("bold-label-list"));
+  });
+
+  it("valid: four English bold-label items stay under the normal level", () => {
+    assert.ok(!idsFor(`# Post\n\n${englishList(4)}\n`, en).includes("bold-label-list"));
+  });
+
+  it("valid: English items labelled without bold, or in code, are not counted", () => {
+    const plain = Array.from({ length: 8 }, (_unused, index) => `- Item ${index + 1}: what it does.`).join("\n");
+    const options = Array.from({ length: 8 }, (_unused, index) => `- **\`--option-${index}\`**: what it does.`).join("\n");
+    assert.ok(!idsFor(`# Post\n\n${plain}\n`, en).includes("bold-label-list"));
+    assert.ok(!idsFor(`# Post\n\n${options}\n`, en).includes("bold-label-list"));
+  });
+
+  const leadList = (count: number): string => Array.from({ length: count }, (_unused, index) => `- **Step ${index + 1} matters.** Here is why.`).join("\n");
+
+  it("invalid: five English items open with a bold lead sentence", () => {
+    assert.ok(idsFor(`# Post\n\n${leadList(5)}\n`, en).includes("bold-label-list"));
+  });
+
+  it("invalid: bold labels and bold lead sentences are counted together", () => {
+    assert.ok(idsFor(`# Post\n\n${englishList(3)}\n\nBody text.\n\n${leadList(2)}\n`, en).includes("bold-label-list"));
+  });
+
+  it("invalid: three bold lead sentences report on their own, below the level for colon labels", () => {
+    const tips = [
+      "- **Lock your ranges.** Add dollar signs so the range stays put.",
+      "- **Check one result by hand.** Work out one answer yourself.",
+      "- **Keep your data tidy.** One kind of value in each column.",
+    ].join("\n");
+    assert.ok(idsFor(`# Post\n\n${tips}\n`, en).includes("bold-label-list"));
+    assert.ok(
+      idsFor(
+        `# 記事\n\n- **範囲を固定する。**ずれないようにします。\n- **一つは手で確かめる。**答えを自分で出します。\n- **表を整える。**列ごとに一種類にします。\n`,
+        ja,
+      ).includes("bold-label-list"),
+    );
+  });
+
+  it("valid: a tips list whose items each run a paragraph after the bold advice is a handbook's form; short items still count", () => {
+    const explanation = (topic: string): string =>
+      `Talk to the people around you about ${topic} before you start, and agree on who does what. Teams that skip this step tend to find out late that two people did the same work, or that nobody did it at all, and the time lost then is far more than the time a short talk would have taken at the start.`;
+    const tips = [
+      "Find out how best to take part.",
+      "Use your team's tracking tools.",
+      "Keep the conversation going.",
+      "Start with the most important tasks.",
+      "Get feedback early.",
+    ]
+      .map((lead) => `- **${lead}** ${explanation(lead.toLowerCase())}`)
+      .join("\n");
+    assert.ok(!idsFor(`# Post\n\n${tips}\n`, en).includes("bold-label-list"));
+    const short = ["Find out how best to take part.", "Use your team's tracking tools.", "Keep the conversation going."]
+      .map((lead) => `- **${lead}** Ask your lead which ones matter.`)
+      .join("\n");
+    assert.ok(idsFor(`# Post\n\n${short}\n\nMore text.\n\n${tips}\n`, en).includes("bold-label-list"));
+    const longJa = Array.from(
+      { length: 5 },
+      (_unused, index) => `- **手順${index + 1}を決める。**${"始める前に周りの人と誰が何をするかを話し合っておきます。".repeat(4)}`,
+    ).join("\n");
+    assert.ok(!idsFor(`# 記事\n\n${longJa}\n`, ja).includes("bold-label-list"));
+  });
+
+  it("valid: two bold lead sentences, or two with two colon labels, stay under", () => {
+    assert.ok(!idsFor(`# Post\n\n${leadList(2)}\n`, en).includes("bold-label-list"));
+    assert.ok(!idsFor(`# Post\n\n${englishList(2)}\n\nBody text.\n\n${leadList(2)}\n`, en).includes("bold-label-list"));
+  });
+
+  it("invalid: three labels that each state a gain count like bold lead sentences", () => {
+    const gains = [
+      "- **More timely:** news would reach staff within a week.",
+      "- **More likely to be read:** shorter emails are opened more often.",
+      "- **Less work:** a weekly update takes half a day to prepare.",
+    ].join("\n");
+    assert.ok(idsFor(`# Proposal\n\n## Why this would work better\n\n${gains}\n`, en, "business/proposal").includes("bold-label-list"));
+    const gainsJa = [
+      "- **作業時間の削減**：入力作業がなくなります。",
+      "- **ミスの削減**：読み取り結果を自動で確かめます。",
+      "- **検索性の向上**：日付ですぐに探せます。",
+    ].join("\n");
+    assert.ok(idsFor(`# 提案\n\n## 導入の効果\n\n${gainsJa}\n`, ja, "business/proposal").includes("bold-label-list"));
+  });
+
+  it("valid: three labels naming steps, fields or a single word stay under the level for colon labels", () => {
+    const steps = ["- **Gather input**: count the visitors.", "- **Lower bound**: the least we expect.", "- **More**: see the appendix."].join("\n");
+    assert.ok(!idsFor(`# Post\n\n${steps}\n`, en).includes("bold-label-list"));
+    const fieldsJa = ["- **削減**：今期は無し。", "- **担当**：山田。", "- **期限**：月末。"].join("\n");
+    assert.ok(!idsFor(`# 記事\n\n${fieldsJa}\n`, ja).includes("bold-label-list"));
+  });
+
+  it("reads the lead count from the rule's min_leads option", () => {
+    const doc = buildDocument("t.md", `# Post\n\n${leadList(3)}\n`, en);
+    assert.equal(boldLabelList(doc, { limit: 5, settings: { min_leads: 4 } }).length, 0);
+    assert.deepEqual(boldLabelList(doc, { limit: 5 })[0]?.values, { label: "Step 1 matters", count: 3, limit: 3, offset: 8 });
+    assert.deepEqual(boldLabelList(doc, { limit: 3 })[0]?.values, { label: "Step 1 matters", count: 3, limit: 3, offset: 8 });
+  });
+
+  it("valid: items that only open with a bold word are not counted", () => {
+    const words = Array.from({ length: 8 }, (_unused, index) => `- **Feature ${index + 1}** that does something.`).join("\n");
+    assert.ok(!idsFor(`# Post\n\n${words}\n`, en).includes("bold-label-list"));
+  });
+
+  it("valid: a Japanese list of bold lead sentences in meeting notes is their form", () => {
+    const leads = Array.from({ length: 6 }, (_unused, index) => `- **論点${index + 1}を確認した。**次回に回す。`).join("\n");
+    assert.ok(idsFor(`# 記事\n\n${leads}\n`, ja).includes("bold-label-list"));
+    assert.ok(!idsFor(`# 議事録\n\n${leads}\n`, ja, "business/meeting-notes").includes("bold-label-list"));
+  });
+
+  it("valid: the labelled fields at the head of English meeting notes are their form", () => {
+    const fields = ["Date", "Place", "Present", "Chair", "Notes", "Next meeting"].map((field) => `- **${field}**: to be decided.`).join("\n");
+    assert.ok(!idsFor(`# Minutes\n\n${fields}\n`, en, "business/meeting-notes").includes("bold-label-list"));
+  });
+
+  const statementParagraphs = [
+    "**Sales rose every month**: 10 in May, 14 in June and 19 in July.",
+    "**Older readers rarely opened it**: most of them read the printed copy.",
+    "**Most questions were about refunds**: about half of the tickets asked how to get money back.",
+  ].join("\n\n");
+
+  it("invalid: three paragraphs that each open with a bold statement", () => {
+    assert.ok(idsFor(`# Report\n\n${statementParagraphs}\n`, en, "business/report").includes("bold-label-list"));
+    const doc = buildDocument("t.md", `# Report\n\n${statementParagraphs}\n`, en);
+    const [found] = boldLabelList(doc, { limit: 5 });
+    assert.equal(found?.variant, "paragraphs");
+    assert.deepEqual(found?.values, { label: "Sales rose every month", count: 3, limit: 3, offset: 10 });
+    assert.equal(boldLabelList(doc, { limit: 5, settings: { min_clause_paragraphs: 4 } }).length, 0);
+  });
+
+  it("invalid: bold statements closed by a stop count as well", () => {
+    const leads = ["**The queue moved faster.** Waits halved.", "**Nobody used the kiosk.** It sat idle.", "**Refunds took a week.** Customers wrote in."].join(
+      "\n\n",
+    );
+    assert.ok(idsFor(`# Report\n\n${leads}\n`, en, "business/report").includes("bold-label-list"));
+  });
+
+  it("valid: two bold statements stay under", () => {
+    const two = statementParagraphs.split("\n\n").slice(0, 2).join("\n\n");
+    assert.ok(!idsFor(`# Report\n\n${two}\n`, en, "business/report").includes("bold-label-list"));
+  });
+
+  it("valid: paragraphs run in with bold imperatives, terms or questions are a human head", () => {
+    const imperatives = ["Talk to your users", "Start small", "Know your values", "Write it down", "Share early"].map(
+      (head) => `**${head}:** Then the work goes on from there.`,
+    );
+    const terms = ["Work week", "Pay period", "Base schedule", "Leave balance"].map((head) => `**${head}**: the hours the office counts.`);
+    const questions = ["Who is my reader?", "What do they need?", "Where will they read it?"].map((head) => `**${head}** Think about it before you write.`);
+    [imperatives, terms, questions].forEach((paragraphs) => {
+      assert.ok(!idsFor(`# Post\n\n${paragraphs.join("\n\n")}\n`, en).includes("bold-label-list"));
+    });
+  });
+
+  it("invalid: paragraphs that each open with a whole bold instruction closed by a stop; gerund leads stay a human head", () => {
+    const tips = ["Pick the quietest room you can.", "Face the window, not away from it.", "Raise the laptop to eye level."]
+      .map((lead) => `**${lead}** It makes the call easier for everyone.`)
+      .join("\n\n");
+    assert.ok(idsFor(`# Post\n\n${tips}\n`, en).includes("bold-label-list"));
+    const gerunds = ["Examining who is involved.", "Surfacing potential harms.", "Thinking beyond the current context."]
+      .map((lead) => `**${lead}** It is part of the work.`)
+      .join("\n\n");
+    assert.ok(!idsFor(`# Post\n\n${gerunds}\n`, en).includes("bold-label-list"));
+  });
+
+  it("valid: quoted bold statements are someone else's words", () => {
+    const quoted = statementParagraphs
+      .split("\n\n")
+      .map((paragraph) => `> ${paragraph}`)
+      .join("\n>\n");
+    assert.ok(!idsFor(`# Report\n\n${quoted}\n`, en, "business/report").includes("bold-label-list"));
+  });
+});
+
+describe("bold-label-list: a changelog's commit scopes", () => {
+  /** A generated changelog: each release's entries open with their commit scope in bold. */
+  const changelog = (scope: (index: number) => string): string =>
+    [
+      "# Changelog",
+      "",
+      ...["2.2.0 (2022-09-19)", "2.1.0 (2022-09-05)", "2.0.1 (2022-08-11)"].flatMap((version, release) => [
+        `## ${version}`,
+        "",
+        "### Bug Fixes",
+        "",
+        ...Array.from({ length: 8 }, (_unused, index) => `* ${scope(release * 8 + index)} update all non-major dependencies (#${String(9000 + index)})`),
+        "",
+      ]),
+    ].join("\n");
+
+  const scopes = (index: number): string => `**${["deps", "build", "legacy", "types"][index % 4] ?? ""}:**`;
+
+  const unversioned = (): string => changelog(scopes).replace(/## \d[^\n]*/gu, "## Notes");
+
+  it("valid: entries under release headings that open with their commit scope", () => {
+    assert.ok(!idsFor(changelog(scopes), en).includes("bold-label-list"));
+  });
+
+  it("invalid: the same labels in a list under headings that name no release", () => {
+    assert.ok(idsFor(unversioned(), en).includes("bold-label-list"));
   });
 });

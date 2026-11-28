@@ -4,7 +4,8 @@ import type { LexiconEntry, Sentence, Token } from "../plugin.ts";
  * ですます調にもである調にも数えない文の形。どちらの調子の文書にも同じ形で現れる。
  * - へりくだる動詞の願い（受け継いでいただきたい。ご協力願いたい。）: 丁寧さは動詞が持ち、訓示でも論文でもこの形で頼む。
  * - 句点で閉じた常体の問い（対処できているか。どうすればよいのだろうか。）: 自分や聞き手に投げる問いで、ですます調の演説や記事にも混ざる。
- * - 言いさし（いつもと違っていたら・・・。）: 条件だけ言って文末を言わない文には、文末の調子が無い。
+ * - 「て」に付けた相手への願い（信じてほしい。）: 願いの言い切りは、ですます調の挨拶でもこの形で言う。語は語彙表 neutral-wish。
+ * - 言いさし（いつもと違っていたら・・・。これが数万行のコードだったら？）: 条件だけ言って文末を言わない文には、文末の調子が無い。
  * Pure。
  */
 
@@ -14,6 +15,8 @@ const CONDITIONAL = new Set(["たら", "だら"]);
 /** 三点リーダー・二点リーダーと、二つ以上の中黒、三つ以上のピリオドで書いた「…」。後ろの句点は除いてから見る。 */
 const ELLIPSIS_ENDINGS = ["…", "‥", "・・", "..."];
 const FULL_STOP = /[。．]$/u;
+const QUESTION_MARK = /[？?]$/u;
+const TE = new Set(["て", "で"]);
 
 const endsWithEllipsis = (text: string): boolean => {
   const body = text.replace(FULL_STOP, "");
@@ -38,9 +41,26 @@ const endsAsQuestion = (sentence: Sentence, ending: readonly Token[]): boolean =
   return tokens[at + 1]?.surface === QUESTION && CLOSES_QUESTION.has(tokens[at + 2]?.surface ?? "");
 };
 
-const trailsOff = (sentence: Sentence, ending: readonly Token[]): boolean =>
-  CONDITIONAL.has(ending.at(-1)?.surface ?? "") && endsWithEllipsis(sentence.text.trim());
+const trailsOff = (sentence: Sentence, ending: readonly Token[]): boolean => {
+  const text = sentence.text.trim();
+  return CONDITIONAL.has(ending.at(-1)?.surface ?? "") && (endsWithEllipsis(text) || QUESTION_MARK.test(text));
+};
 
-/** 常体と読める文末でも調子に数えない文か。ending は sentence-shape の endingTokens、verbs は語彙表 neutral-request。 */
-export const isNeutralPlainShape = (sentence: Sentence, ending: readonly Token[], verbs: readonly LexiconEntry[]): boolean =>
-  isHumbleWish(ending, verbs) || endsAsQuestion(sentence, ending) || trailsOff(sentence, ending);
+/** 「て」の直後の、語彙表 neutral-wish の語だけで終わる文末（信じてほしい。）。「ほしいです」「ほしかった」は入らない。 */
+const isWishToOthers = (sentence: Sentence, ending: readonly Token[], wishes: readonly LexiconEntry[]): boolean => {
+  const [wish, ...rest] = ending;
+  if (wish === undefined || rest.length > 0 || !wishes.some((entry) => entry.pattern === wish.surface)) return false;
+  const tokens = sentence.tokens ?? [];
+  return TE.has(tokens[tokens.indexOf(wish) - 1]?.surface ?? "");
+};
+
+/**
+ * 常体と読める文末でも調子に数えない文か。ending は sentence-shape の endingTokens、verbs は語彙表 neutral-request、
+ * wishes は語彙表 neutral-wish。
+ */
+export const isNeutralPlainShape = (
+  sentence: Sentence,
+  ending: readonly Token[],
+  verbs: readonly LexiconEntry[],
+  wishes: readonly LexiconEntry[] = [],
+): boolean => isHumbleWish(ending, verbs) || isWishToOthers(sentence, ending, wishes) || endsAsQuestion(sentence, ending) || trailsOff(sentence, ending);

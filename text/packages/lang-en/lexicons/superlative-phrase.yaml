@@ -1,5 +1,7 @@
 # Set phrases that hold a superlative but claim nothing is the best. A superlative inside one is not reported by
 # unqualified-superlative. "Even the best" concedes ("even the best teams slip"); "the best case" is a hypothetical.
+# "Make the most of" and "do the most good" are idioms of effort; "the most recent" places in time; "the most common"
+# reports how often something occurs; "the most important thing" orders the writer's own points.
 id: superlative-phrase
 language: en
 entries:
@@ -11,3 +13,9 @@ entries:
   - pattern: even with the best
   - pattern: the best case
   - pattern: the best-case
+  - pattern: make the most of
+  - pattern: get the most out of
+  - pattern: do the most good
+  - pattern: the most recent
+  - pattern: the most common
+  - pattern: the most important thing

@@ -1,0 +1,226 @@
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
+import { buildDocument } from "../packages/chaff/src/document.ts";
+import { loadRules } from "../packages/chaff/src/rule-load.ts";
+import { runRules } from "../packages/chaff/src/run.ts";
+import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { adapter as en } from "../packages/lang-en/src/index.ts";
+import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+
+// All text here is self-written.
+const matchedFor = (source: string, adapter: LanguageAdapter = ja, genre = "blog/tech"): string[] =>
+  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), {}, false, genre)
+    .findings.filter((finding) => finding.rule === "closing-cliche")
+    .map((finding) => String(finding.values?.["matched"] ?? ""));
+
+const flagged = (source: string, adapter: LanguageAdapter = ja, genre = "blog/tech"): boolean => matchedFor(source, adapter, genre).length > 0;
+
+describe("closing-cliche: 最後の段落でだけ定型になる言い回し", () => {
+  it("invalid: 読み手への「〜てみてほしい」で締める", () => {
+    assert.ok(flagged("# 散歩\n\n朝に歩くようになった。\n\n景色が変わって見えた。\n\nもし時間があるなら、一度歩いてみてほしい。\n", ja, "blog/essay"));
+  });
+
+  it("valid: 本文の途中の「〜てみてほしい」は勧めで、結びではない", () => {
+    const body = "# 散歩\n\n## 道\n\nこの坂は一度歩いてみてほしい。\n\n坂の上に古い寺がある。\n\n寺の裏に川が流れている。\n\n川沿いを駅まで戻った。\n";
+    assert.ok(!flagged(body, ja, "blog/essay"));
+  });
+
+  it("invalid: 「楽しんでください！」「〜ましょう！」で締める", () => {
+    assert.ok(flagged("# 手順\n\n設定を保存します。\n\nこれで準備は終わりです。新しい机、楽しんでください！\n"));
+    assert.ok(flagged("# 手順\n\n設定を保存します。\n\n## まとめ\n\n毎朝、最初に予定を確かめる習慣をつけましょう！\n"));
+  });
+
+  it("invalid: 「まずは〜試してみてください」と試すよう勧めて締める", () => {
+    assert.deepEqual(matchedFor("# 通知\n\n通知は三種類あります。\n\n## まとめ\n\nまずは基本の設定から試してみてください。それだけでも静かになります。\n"), [
+      "試してみてください",
+    ]);
+    assert.ok(flagged("# 通知\n\n通知は三種類あります。\n\n## まとめ\n\n気になった設定から、ひとつずつやってみてください。\n"));
+  });
+
+  it("invalid: a business's offer to help as the last line", () => {
+    const source = "# Receipts\n\nKeep every receipt in one folder.\n\nCall our office with questions. We're here to help you spend less time on paperwork.\n";
+    assert.deepEqual(matchedFor(source, en, "blog/owned-media"), ["here to help"]);
+  });
+
+  it("invalid: the same offer before a note set apart in italics (a disclaimer)", () => {
+    const source =
+      "# Receipts\n\nKeep every receipt in one folder.\n\nCall our office with questions. We're here to help you spend less time on paperwork.\n\n*This article is general information, not tax advice.*\n";
+    assert.deepEqual(matchedFor(source, en, "blog/owned-media"), ["here to help"]);
+  });
+
+  it("valid: an offer two paragraphs before the end is not the last line, italic note or not", () => {
+    const source =
+      "# Receipts\n\nKeep every receipt in one folder.\n\nWe're here to help with receipts.\n\nScan them each week.\n\n*This article is general information, not tax advice.*\n";
+    assert.deepEqual(matchedFor(source, en, "blog/owned-media"), []);
+  });
+
+  it("valid: the same offer earlier in the text", () => {
+    const source =
+      "# Receipts\n\n## Our office\n\nWe're here to help with receipts.\n\nKeep every receipt in one folder.\n\nScan them each week.\n\nFile them by month.\n";
+    assert.deepEqual(matchedFor(source, en, "blog/owned-media"), []);
+  });
+
+  it("valid: 本文の途中の「試してみてください」は手順の勧めで、結びではない", () => {
+    const body = "# 通知\n\n## 設定\n\n先に通知の設定を試してみてください。\n\n通知は三種類あります。\n\n件数は右上に出ます。\n\n既読にすると消えます。\n";
+    assert.ok(!flagged(body));
+  });
+
+  it("valid: 最後の段落の具体的な指示は結びの定型ではない", () => {
+    assert.ok(!flagged("# 手順\n\n設定を保存します。\n\n## まとめ\n\n落ちたテストは、まず落ちた時刻を並べてみてください。\n"));
+    assert.ok(!flagged("# 手順\n\n設定を保存します。\n\n## まとめ\n\n保存の前に、必ず差分を確かめましょう。\n"));
+  });
+});
+
+describe("closing-cliche: 前の語と文の終わりの語の組", () => {
+  it("invalid: 「気軽に〜ください」で締める", () => {
+    assert.ok(
+      flagged(
+        "# 保存のしかた\n\n冷凍すれば一か月もちます。\n\n## さいごに\n\nわからないことがあれば、店の者に気軽に声をかけてください。\n",
+        ja,
+        "blog/owned-media",
+      ),
+    );
+  });
+
+  it("valid: 「気軽に」があっても頼む文で終わらなければ指さない", () => {
+    assert.ok(
+      !flagged("# 保存のしかた\n\n冷凍すれば一か月もちます。\n\n## さいごに\n\n冷凍庫に入れておけば、気軽に一切れずつ焼けます。\n", ja, "blog/owned-media"),
+    );
+  });
+});
+
+describe("closing-cliche: 語彙の広げ方", () => {
+  it("invalid: 「参考になればうれしいです」も「参考になれば幸いです」と同じ結び", () => {
+    assert.ok(flagged("# 設定\n\n手順は三つです。\n\n同じことで困っている方の参考になればうれしいです。\n"));
+  });
+
+  it("「参考になれば幸いです」は今までどおりその語で言う", () => {
+    assert.deepEqual(matchedFor("# 設定\n\n手順は三つです。\n\n誰かの参考になれば幸いです。\n"), ["参考になれば幸いです"]);
+  });
+});
+
+describe("closing-cliche: English closings", () => {
+  it("invalid: a two-word sign-off such as Happy brewing!", () => {
+    assert.deepEqual(matchedFor("# Brewing\n\nGrind the beans fresh.\n\nAsk us at the counter.\n\nHappy brewing!\n", en, "blog/owned-media"), [
+      "Happy brewing!",
+    ]);
+  });
+
+  it("valid: a sentence that only opens with Happy is not a sign-off", () => {
+    assert.ok(!flagged("# Brewing\n\nGrind the beans fresh.\n\nHappy customers come back for the second bag!\n", en, "blog/owned-media"));
+  });
+
+  it("valid: a sign-off line before the last paragraph is not the closing line", () => {
+    const body =
+      "# Notes\n\n## Week one\n\nHappy brewing!\n\nWe moved the roaster on Monday.\n\nThe new one heats faster.\n\nIt cut our roast time by four minutes.\n\nWe will report the second week next.\n";
+    assert.ok(!flagged(body, en));
+  });
+
+  it("invalid: Your future self will thank you", () => {
+    assert.ok(flagged("# Backups\n\nCopy the photos to a drive.\n\n## Final thoughts\n\nStart today. Your future self will thank you.\n", en));
+  });
+
+  it("invalid: ends on 'and go from there'", () => {
+    assert.ok(flagged("# Formulas\n\nSUMIF adds the matching rows.\n\nPick one formula, try it on a copy, and go from there.\n", en));
+  });
+
+  it("invalid: ends on 'give it a try'", () => {
+    assert.ok(flagged("# Filters\n\nA filter moves mail into a folder.\n\n## Wrapping up\n\nSet up one filter this week and give it a try.\n", en));
+  });
+
+  it("valid: 'give it a try' in the body is an ordinary suggestion", () => {
+    const body =
+      "# Filters\n\n## Start\n\nMake one filter and give it a try.\n\nA filter moves mail into a folder.\n\nThe folder keeps a count.\n\nThe count resets each week.\n\nOld mail stays where it was.\n";
+    assert.ok(!flagged(body, en));
+  });
+
+  it("valid: 'go from there' in the body is an ordinary phrase", () => {
+    const body =
+      "# Formulas\n\n## Start\n\nWe checked the totals and went from there.\n\nWe will go from there to the second sheet.\n\nThe second sheet holds the costs.\n\nThe third sheet holds the dates.\n\nThe fourth sheet holds the names.\n\nThe totals now match.\n";
+    assert.ok(!flagged(body, en));
+  });
+});
+
+describe("closing-cliche: the stock last line of an email or a proposal", () => {
+  it("invalid: a letter that closes on 'prompt attention to this matter'", () => {
+    const mail = "Dear Mr Lee,\n\nInvoice 1042 is now 30 days overdue.\n\nThank you for your prompt attention to this matter.\n\nBest regards,\nAnna\n";
+    assert.deepEqual(matchedFor(mail, en, "business/email"), ["prompt attention to this matter"]);
+  });
+
+  it("invalid: a proposal that closes on 'We would welcome any feedback'", () => {
+    const proposal = "# Weekly update\n\nWe suggest a weekly update in place of the monthly newsletter.\n\nWe would welcome any feedback on this proposal.\n";
+    assert.deepEqual(matchedFor(proposal, en, "business/proposal"), ["would welcome any feedback"]);
+  });
+
+  it("invalid: a proposal that closes on an offer to discuss; an email leaves it to email-stock-courtesy", () => {
+    const proposal =
+      "# Shared tool\n\nWe recommend a six-week rollout.\n\n## Recommendation\n\nWe recommend approving the rollout. We would be happy to discuss any questions or adjustments to this plan.\n";
+    assert.deepEqual(matchedFor(proposal, en, "business/proposal"), ["happy to discuss any"]);
+    const mail = "Hi Sam,\n\nThe draft is attached.\n\nI'd be happy to discuss any questions.\n\nBest,\nAnna\n";
+    assert.ok(!flagged(mail, en, "business/email"));
+  });
+
+  it("invalid: an email that closes on a chirpy wish", () => {
+    const wish = "Hi all,\n\nThe office closes at noon on Friday.\n\nWishing you all a restful and happy holiday season!\n\nBest,\nKaren\n";
+    const enjoy = "Hi all,\n\nThe office closes at noon on Friday.\n\nThanks, and enjoy the long weekend!\n\nBest,\nKaren\n";
+    assert.deepEqual(matchedFor(wish, en, "business/email"), ["Wishing"]);
+    assert.deepEqual(matchedFor(enjoy, en, "business/email"), ["enjoy"]);
+  });
+
+  it("invalid: a courtesy beside a chirpy wish in an email's closing; alone it is ordinary", () => {
+    const stacked =
+      "Hi all,\n\nThe office closes at noon on Friday.\n\nIf you have any questions, feel free to reach out to me.\n\nWishing you all a restful holiday season!\n\nBest,\nKaren\n";
+    const alone = "Hi all,\n\nThe office closes at noon on Friday.\n\nIf you have any questions, feel free to reach out to me.\n\nBest,\nKaren\n";
+    assert.deepEqual(matchedFor(stacked, en, "business/email"), ["feel free to", "Wishing"]);
+    assert.ok(!flagged(alone, en, "business/email"));
+  });
+
+  it("valid: the same wish outside an email, and a plain closing in one", () => {
+    const post = "# The trail\n\nThe trail opens in May.\n\nMountaineering is welcome, but not required to enjoy the wilderness!\n";
+    const plain =
+      "Hi all,\n\nThe office closes at noon on Friday. Enjoy the quiet floor while it lasts.\n\nThe doors open again on Monday at eight.\n\nBest,\nKaren\n";
+    assert.ok(!flagged(post, en, "blog/owned-media"));
+    assert.ok(!flagged(plain, en, "business/email"));
+  });
+
+  it("valid: a business report is not read", () => {
+    assert.ok(!flagged("# Q3\n\nSales rose in every region.\n\nThank you for your prompt attention to this matter.\n", en, "business/report"));
+  });
+});
+
+describe("closing-cliche: 「いかがでしょうか」は記事の結びでだけ", () => {
+  it("valid: メールで都合を聞く、提案書で勧める「いかがでしょうか」", () => {
+    assert.ok(!flagged("山田様\n\n打ち合わせの日程の件です。\n\n来週の火曜日の午後はいかがでしょうか。\n\n佐藤\n", ja, "business/email"));
+    assert.ok(!flagged("# 提案\n\n紙の申請は月に二百件あります。\n\n## 結論\n\n申請をフォームに移してはいかがでしょうか。\n", ja, "business/proposal"));
+  });
+
+  it("invalid: 記事の結びの「いかがでしょうか」", () => {
+    assert.ok(flagged("# 朝の散歩\n\n朝に歩くと頭が冴えます。\n\nみなさんも明日から始めてみてはいかがでしょうか。\n"));
+  });
+});
+
+describe("closing-cliche: 仕事のメールの普通の結び", () => {
+  it("valid: 「ご参考になれば幸いです」「お気軽にお問い合わせください」はメールでは指さない", () => {
+    const mail = "山田様\n\n見積書を添付いたします。\n\nご参考になれば幸いです。ご不明な点は、お気軽にお問い合わせください。\n\n佐藤\n";
+    assert.ok(!flagged(mail, ja, "business/email"));
+  });
+
+  it("invalid: 記事の結びでは今までどおり指す", () => {
+    assert.ok(flagged("# 見積の書き方\n\n項目は三つです。\n\nご参考になれば幸いです。\n"));
+    assert.ok(flagged("# 見積の書き方\n\n項目は三つです。\n\nわからないことは気軽に聞いてください。\n"));
+  });
+});
+
+describe("closing-cliche: 結びの決まった請け合い", () => {
+  it("invalid: 何をいつするかを言わずに頑張ると誓って終えるメール", () => {
+    const mail =
+      "山田様\n\n本日はありがとうございました。\n\n店を広げたいというお話が印象に残っています。その思いに応えられるよう、しっかり考えてみます。\n\n引き続きよろしくお願いいたします。\n\n佐藤\n";
+    assert.ok(flagged(mail, ja, "business/email"));
+    assert.ok(flagged("# 新人の一年\n\n一年が過ぎました。\n\nみなさんの期待に応えられるよう、頑張ります。\n"));
+  });
+
+  it("valid: 中身のある約束と、本文の途中の請け合い", () => {
+    const concrete = "山田様\n\nご要望を承りました。\n\nご要望に沿えるよう、11月7日までに見積もりを作り直します。\n\n佐藤\n";
+    assert.ok(!flagged(concrete, ja, "business/email"));
+  });
+});

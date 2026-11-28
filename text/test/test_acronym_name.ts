@@ -8,6 +8,7 @@ import {
   companyNameSpans,
   currencySymbolSpans,
   namePrefixSpans,
+  postalAddressSpans,
   streetSuffixSpans,
 } from "../packages/chaff/src/detectors/acronym-name.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
@@ -98,9 +99,13 @@ cases(
     ["§ の前", "under 21 USC §301 et seq and 22 CCR §§ 12801", ["USC", "CCR"]],
     ["Part と番号の前", "see CFR Part 117 today", ["CFR"]],
     ["スラッシュで繋いだ番号の後ろ", "Recommendation 94/820/EC provides", ["EC"]],
+    ["条の番号の前の調達規則", "a commercial item for purposes of FAR 12.212 and DFARS 227.7202", ["FAR", "DFARS"]],
+    ["section と番号の前", "according to FAR section 12.212 and DFAR section 227.7202", ["FAR", "DFAR"]],
   ],
   [
     ["文の中で法令集そのものを言う", "the number of the CFR title and each part"],
+    ["section の後ろに番号が無い", "the FAR section on pricing"],
+    ["大文字で書いた普通の語", "YOU ARE FAR FROM HOME"],
     ["引用の形でない", "the EC provides and the USC campus"],
     ["番号の後ろでも条が続かない", "The 2 CFR export was generated"],
   ],
@@ -137,6 +142,23 @@ cases(
   ],
 );
 
+// 自作の所在地。番地から州と郵便番号まで揃った一行の中の大文字（通りの方角、局内の宛先）は所在地の部品。
+cases(
+  "postalAddressSpans",
+  (text) => postalAddressSpans(text, words("street-suffix"), words("us-state-code")),
+  [
+    ["通りの方角と局内の宛先", "Mail: 1600 Elm Rd. NE, MS K12-3, Springfield, GA 30329", ["NE", "MS", "GA"]],
+    ["略さずに書いた通りの種類", "Centers for Disease Control, 1600 Elm Road NE, MS K12-3, Springfield, GA 30329.", ["NE", "MS", "GA"]],
+    ["大文字の通りの種類と方角", "at 42 Lake View DR SW, Fort Lauderdale, FL 33304-1234.", ["DR", "SW", "FL"]],
+  ],
+  [
+    ["州と郵便番号で終わらない", "1600 Elm Rd. NE, MS K12-3, Springfield"],
+    ["通りの名前と種類が一語だけ", "1600 Elm NE, MS K12-3, Springfield, GA 30329"],
+    ["番地が無い", "Elm Rd. NE, MS K12-3, Springfield, GA 30329"],
+    ["行をまたぐ", "1600 Elm Rd.\nNE, MS K12-3, Springfield, GA 30329"],
+  ],
+);
+
 cases(
   "capitalPhraseSpans",
   (text) => capitalPhraseSpans(text, words("capital-phrase")),
@@ -157,6 +179,8 @@ describe("語彙表が空", () => {
     assert.deepEqual(carrierListSpans("UPS, DHL", []), []);
     assert.deepEqual(namePrefixSpans("HM Treasury", []), []);
     assert.deepEqual(streetSuffixSpans("512 Bayshore DR", []), []);
+    assert.deepEqual(postalAddressSpans("1600 Elm Rd. NE, Springfield, GA 30329", [], words("us-state-code")), []);
+    assert.deepEqual(postalAddressSpans("1600 Elm Rd. NE, Springfield, GA 30329", words("street-suffix"), []), []);
     assert.deepEqual(capitalPhraseSpans("AND/OR", []), []);
   });
 
@@ -177,6 +201,12 @@ describe("undefined-acronym と名前の部品", () => {
       "The SRE team owns the plan.",
     ].join("\n\n");
     assert.deepEqual(reportedAcronyms(en, source, "legal/contract"), ["SRE"]);
+  });
+
+  it("en: 所在地の中の方角と局内の宛先は数えず、所在地の外の同じ大文字は数える", () => {
+    const address = "Send comments by mail to the Office of Data, 1600 Elm Rd. NE, MS K12-3, Springfield, GA 30329.";
+    assert.deepEqual(reportedAcronyms(en, address), []);
+    assert.deepEqual(reportedAcronyms(en, `${address}\n\nThe NE region and the MS team reply.`), ["NE", "MS"]);
   });
 
   it("en: 引用の形でない法令集の名前は数える", () => {

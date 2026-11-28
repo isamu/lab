@@ -1,0 +1,29 @@
+# 読み手が誰でも知っている名前。proper-noun-density はこれを固有名詞に数えない。日付の元号（平成20年）や英語の月の名前
+# （April 17）は、知らない人が調べる名前ではない。字面どおりに照らす（「令和」は「令」「和」の二語に分かれることがある）。
+id: everyday-name
+language: ja
+entries:
+  - pattern: 令和
+  - pattern: 平成
+  - pattern: 昭和
+  - pattern: 大正
+  - pattern: 明治
+  - pattern: January
+  - pattern: February
+  - pattern: March
+  - pattern: April
+  - pattern: May
+  - pattern: June
+  - pattern: July
+  - pattern: August
+  - pattern: September
+  - pattern: October
+  - pattern: November
+  - pattern: December
+  - pattern: Monday
+  - pattern: Tuesday
+  - pattern: Wednesday
+  - pattern: Thursday
+  - pattern: Friday
+  - pattern: Saturday
+  - pattern: Sunday

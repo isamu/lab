@@ -34,7 +34,7 @@ chaff は、丁寧にしようとして増える言い回しや、送る前に�
 - 宛名や会社名が正しいかは見ません。「山田様」が本当に山田さんかは、送る人が確かめます。
 - 文書のどの日付にも年が無いときは、曜日を確かめません。この例の「10月10日（金）」は、どの年か決まらないからです。年まで書いた日付が一つでもあれば、年の無い日付はその日付から 5 か月以内になる年として、曜日を確かめます。
 - 敬語が場面に合っているか（へりくだりすぎていないか）は決めません。数が多い所を示すだけです。
-- 添付を忘れたかは見ません。chaff が読むのは本文だけです。
+- 下書きの添付は見ません。ファイルは送るときに付けるので、本文には出てこないからです。差出人や日時のヘッダーのある、送った・届いたメールでだけ、「添付します」と書いて添付の欄もファイル名も無い所を示します。
 
 ## かけてみる
 
@@ -85,6 +85,10 @@ mail.md   blog/tech · 日本語   ジャンルは既定から
                   sasete-itadaku
   20:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
                   sasete-itadaku
+  20:27   warning 「気軽に」で締めています
+                  closing-cliche
+  20:27   warning 生成文の特徴が 2 種、同じ文書にそろっています（2 種から）。定型の結び、埋め忘れた空欄
+                  ai-generated-composite
   20:55   warning 「[担当者名]」が埋まっていません
                   unfilled-placeholder
   22:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
@@ -143,7 +147,7 @@ $ npx chaffjs mail.md --genre business/email
   - 「添付します」と書いたものを、本当に添付しているか
   - 宛名・挨拶・結び・署名がそろっているか
 
-  このジャンルで特に効く rule: attachment-not-attached, concrete-evidence-density, cushion-phrase-density, email-greeting-closing, email-subject-length, request-without-deadline, risk-disclosure, unsourced-number
+  このジャンルで特に効く rule: attachment-not-attached, closing-cliche, concrete-evidence-density, cushion-phrase-density, email-greeting-closing, email-subject-length, request-without-deadline, risk-disclosure, unsourced-number
   chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
 
 ════════════════════════════════════════════════════════════

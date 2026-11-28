@@ -2,6 +2,828 @@
 
 Newest first.
 
+## 0.54.0 — 2026-11-28
+
+This release comes from judging findings in isamu/chaff-corpus: every change narrows a rule where a judged document
+showed a false positive.
+
+### Fewer false positives
+
+- undefined-acronym leaves the letters a sentence says an identifier starts with (starts with XI) (#2887), knows NYC as
+  an everyday place name (#2889) and the stand-in name AN Other (#2890), reads the acronym that heads a name spelled out
+  with its own longer acronym as explained (XSL Transformations (XSLT)) (#2896), and does not count the spaced capitals
+  of a name the document also writes joined (JS Conf / JSConf) (#2899).
+- max-kanji-continuous reads 〜貯蓄, 〜融資, 〜講習 as scheme names (#2888), skips a quoted name that ends in a bracketed
+  note (#2895), reads a line ending in a notice title word (について, お知らせ) as a title (#2897), and takes 方針 as a
+  title ending (#2898).
+- topic-predicate-distance closes a topic at a question's 〜のか、 (#2891), at a copula's reason (〜ですから、) before a
+  new noun topic (#2892), at 〜であり、 when an act topic (〜することは) is followed by a subject of its own (#2893), and
+  inside a 〜という clause before a new topic (#2894).
+- unqualified-superlative reads 〜ためには in the same sentence as the superlative's purpose (#2901).
+- no-doubled-joshi reads a time word's の before the run's last noun as one name (#2903).
+- ngram-repetition leaves the phrase every section of a repeated form carries (#2904), the clauses of a resolution
+  (RESOLVED, / WHEREAS,) (#2905), and a phrase built only on the words of the document's title (#2906).
+
+## 0.53.0 — 2026-11-27
+
+This release comes from judging findings in isamu/chaff-corpus: most changes narrow a rule where a judged document showed
+a false positive, and a few add a pattern a judged document showed chaff missing.
+
+### New patterns
+
+- unknown-word reports a capitalised slip of a caption the document also writes correctly (#2867).
+- numbering-gap reports a two-part number whose first part is not its section's (4.3 inside 5) (#2883).
+
+### Fewer false positives
+
+- topic-predicate-distance closes 〜であり、 before an act the final copula is said of, and a passive 〜され、 before a new
+  topic (#2849, #2857).
+- max-kanji-continuous reads 都道府県/市町村 + organisation unit as one name (#2850).
+- undefined-acronym leaves a register's label before its number and the model letters of a price list (#2851).
+- unqualified-superlative reads 〜内でも as a scope anywhere in the sentence, and leaves the simplest form a writer
+  presents (#2852).
+- ngram-repetition leaves the formulas items carry: a closing per numbered example, a quoted file name, board minutes'
+  stock lines (#2853).
+- unknown-word knows cmake, rustc and collab, and a word the document writes before a release number elsewhere (#2854).
+- orthographic-variant does not compare a spelling shown as wrong (× Rspec / ○ RSpec) (#2855).
+- obligation-without-deadline reads 〜の際に and 〜と合算して as the duty's time (#2856). request-without-deadline reads a
+  request repeated at intervals as timed (#2859).
+- colon-lead-in counts a duty that ends in a copula (The guide should be:) (#2860).
+- adverb-overuse does not count likely, a stance adverb like probably (#2861).
+- hyphen-as-dash leaves an issue title a list item copies before its number (#2863).
+- space-before-punctuation leaves an ABNF grammar in a plain-text specification (#2864).
+- oxford-comma-consistency reads E.g., and a clause before purpose infinitives as no list item (#2865).
+- requirement-smell leaves an act + など that gives an example of how to do the act that follows (#2866).
+- list-item-form-mix reads a clause followed by 等 or など by its predicate (#2869). step-statement-mix reads an item
+  whose verb follows a preposition and a relative word as a noun phrase (#2879).
+- unbalanced-bracket reads the brackets of an IPv6 URL as the URL's (#2870).
+- date-format-consistency leaves an access date in brackets after a source (#2871).
+- teki-overuse leaves the fixed triad 身体的・精神的・社会的 (#2872).
+- all-caps-shouting leaves the outage markers of an incident timeline (#2874).
+- kutoten-consistency reads a comma between primed reference signs (ａ′，ｂ′) as a sign separator (#2875).
+- undefined-term leaves a heading run in before its clause's number, cited by its title (#2877).
+- reference-topic-missing ends an English topic before a word that says what about it (regarding) (#2878).
+- no-mixed-desumasu reads a chronology's last row opened by 現在～ as a row, not body text (#2880).
+- defined-term-form reads the quoted name that opens a definitions entry as a definition (#2881).
+- use-before-definition reads a term followed by (defined below) as pointing ahead (#2882).
+
+## 0.52.0 — 2026-11-26
+
+This release comes from judging findings in isamu/chaff-corpus: most changes narrow a rule where a judged document showed
+a false positive, and a few add a pattern a judged document showed chaff missing.
+
+### New patterns
+
+- unfilled-placeholder reports a template's user name left in a web address (#2822).
+- ai-tell holds "It doesn't have to be (that way)." (#2827). cliche reports "speak for themselves" / "speaks for itself"
+  (#2830). padded-intro reports the clipped "Good news:" turn in an English opening (#2831).
+
+### Fewer false positives
+
+- preferred-term and internal-jargon declare `uses: [pos]` (#2817). unknown-word knows systemd and sudo (#2821).
+- step-statement-mix and list-item-form-mix read a step that states, then orders, as an instruction (#2818, #2824);
+  list-item-form-mix reads a relative clause's verb as the noun phrase's (#2832).
+- bold-emphasis leaves a bold that holds only a code to look for (#2819). pseudo-heading leaves a bold statement, a
+  bracketed caption and its example, and a mid-section link-list label (#2834).
+- obligation-without-deadline leaves a return made under a return authorization (#2820).
+- closing-cliche reads the last line before a closing note set in italics (#2823).
+- contraction-consistency leaves a full form in a clause beside plain-language summaries (#2825).
+- no-mixed-desumasu leaves the note after a list item's bold label (#2826). no-doubled-joshi separates a である clause
+  with one の (#2836).
+- oxford-comma-consistency reads a final "taxis or rideshares" as one item (#2833).
+- bracket-width-consistency counts a count's bracket and a case number's kind with the prose (#2835).
+- topic-predicate-distance stops at a prefixed noun topic after 〜ますが and at であるため before a request (#2837).
+- max-kanji-continuous splits at a form name used alone and at a kanji-numeral 丁目 block (#2838). max-sentence-length
+  measures a Japanese link title run into its blurb apart (#2842).
+- ngram-repetition leaves a run of sentence endings to repeated-sentence-ending (#2839).
+- use-before-definition leaves a use that points ahead (下記, 後述の, the following, below) (#2841).
+- expletive-construction leaves a passive whose it names a thing (It is designed to …) (#2843).
+- requirement-smell leaves an open word in a reason clause (〜となるため、) (#2844).
+- currency-notation-consistency leaves a coin named by a code and one digit (#2845).
+
+## 0.51.0 — 2026-11-25
+
+This release takes in what markdownlint, textlint, Vale and remark-lint offer and chaff lacked: a team can now list its
+terms and the words it keeps to one form, allow text with a reason, limit its own rules to parts of a document, leave
+files out, and choose its register. New rules check Markdown shapes, transcripts and Japanese wording. The fixes that
+follow come from judging findings in isamu/chaff-corpus and from writing the rule samples.
+
+### chaff.yaml and stets
+
+- `terms:` lists a team's terms; term-form reports one written in another case, width, hyphen or spacing (#2778).
+  `consistent:` lists words a team keeps to one; term-consistency reports a mix in a document or across files (#2780).
+  Both say why they did not run when their key lists nothing.
+- `allow:` names text never to report, literal or regex, for every rule or one, and requires a reason (#2772).
+- `scope:` on `custom_rules` and `prefer` entries limits where they read: headings, lists, tables, quotes and so on
+  (#2774).
+- `exclude:` globs leave files out, and files the repository ignores are skipped (#2775). `by_path` entries take
+  `rules` and `options`, so one chaff.yaml can hold contracts and manuals (#2757).
+- no-mixed-desumasu's `body` option lets a team require です・ます or である instead of the document's majority
+  (#2776).
+- stet ranges cover the blocks between a begin and an end comment, and a stet can name one matched word (#2773).
+  stets and `allow:` share one suppression path.
+
+### New rules
+
+- filler-word reports fillers left in minutes made from a transcript; it is off in legal, academic, literature and
+  speech documents (#2777). sa-ire reports a godan causative with an extra さ (読まさせて) (#2767).
+- pseudo-heading reports a bold line standing in for a heading in a document that uses headings (#2765);
+  heading-marker-no-space reports #見出し and ##Heading, which render as text (#2768).
+- link-definition-unused reports a reference-link definition no link uses or one defined twice (#2766);
+  reversed-link reports a link written (text)[URL] (#2769).
+- table-absorbed-line reports a sentence run into a table as one more row (#2770); enumeration-marker-mix reports an
+  item number written in another form than the rest of its run (#2763).
+
+### AI-likeness
+
+- honesty-marker reads "Let's be honest" (#2754); ai-tell weighs the one-tip pitch (If you only do one thing …) and
+  意外と見落としがち (#2755); cliche reads "punches above its weight" (#2756); closing-cliche reads a business's "here
+  to help" as the last line (#2753).
+- weasel-word skips a clause naming an origin (造語, 語源) and the bare "Scientists believe", and keeps the quantified
+  forms (#2701). comparative-without-baseline leaves 新た, an intent split across tokens, an alternative after the noun
+  phrase and a baseline named in a code example before it (#2703).
+- vague-word-density counts fixed wordings but does not report them (#2685). nominalization matches a compound event
+  noun as written (計画運休) (#2720). adverb-overuse leaves an -ly word before a number or one opening a naming aside
+  (#2692).
+- teki-overuse leaves the 的 inside a term the document defines, and 基盤的経費 and 競争的研究費 join the fixed terms
+  (#2719, #2735). repeated-sentence-ending does not count a flattened table row in a run (#2730).
+
+### Rules
+
+- topic-predicate-distance closes the topic's clause before a later subject, at 〜であり、 before a clause subject and
+  before 〜ことが必要である, but not at another topic's 〜であり、 (#2684, #2728, #2731).
+- max-kanji-continuous splits at 委員 after a body's name, at a 当 inside a run and before 両殿下, leaves a title in
+  『』 and drops a trailing kanji-numeral quantity (#2686, #2748).
+- undefined-acronym reads template blanks, names earlier in the paragraph, form labels, event titles and talk items in
+  a list of past events, and reads HDMI as an everyday word (#2680, #2729, #2749). undefined-term leaves title-case
+  prose and a one-word back-reference to a longer run (#2743).
+- unfilled-placeholder reads a 〇〇 glued to a title (取締役〇〇), a blank inside a mail address and a ward left
+  without its town (#2727, #2752).
+- preamble-length does not measure a notice whose only heading is its contact box, a press release's dateline lead or
+  a letter set out under 記 (#2681, #2760). empty-table-cell skips the conditions a catch-all row leaves blank (#2683).
+- one-sentence-paragraph-run reads a footnotes section's notes as entries (#2687). missing-final-period does not count
+  a one-line link label (〜で見る) (#2723). max-sentence-length skips an email's subject field (#2726). title-length
+  does not count a newsletter's issue date in brackets (#2745).
+- list-item-form-mix treats a minority ※ or 注： item as a note, leaves dated press-release titles, and reads verbs an
+  object follows (Dry and lube the chain) as an instruction (#2712, #2762).
+- use-before-definition reads a document's own name and a GitHub alert as not a use (#2691). defined-term-form skips a
+  term written twice in a row and a lower-case term joined to an ordinary word before a shared noun (#2719, #2750).
+- request-without-deadline leaves a heading that names a case, a dated timeline item and a proposal's start date
+  (#2705). obligation-without-deadline leaves a duty a payment schedule, a final award or a prior approval times
+  (#2738).
+- no-doubled-joshi skips the entries of a reference list (#2666). no-nakaguro-parallel reads a katakana chain written
+  the same way again and again as a name (#2718). quote-without-source reads 「…」と言われるほど as a received saying
+  (#2721). unbalanced-bracket skips a short title line that opens [ for a date (#2711).
+- article-sound reads SAR as a word and takes SOW either way (#2694, #2733). unknown-word joins a word split by an
+  inline tag, accepts a lower-case name the document also writes with an inner capital, and knows comms (#2709,
+  #2741). known-misspelling leaves a period spelling a document uses repeatedly (#2717). hyphen-as-dash leaves the
+  hyphen of a name set in emphasis (#2761).
+
+### Consistency
+
+- orthographic-variant leaves a kana verb stem before a suffix (つきたて) beside a kanji noun of its sound (月), a set
+  compound in kanji alone (申込締切) beside okurigana in another compound (申し込み画面), and a run-in article title
+  copied without its link, and reads 方 before が and a verb of being as the person (#2662, #2678, #2696).
+- oxford-comma-consistency sets aside a which/who clause after an opening phrase, coordinate modifiers, a set-off
+  phrase, an and inside an item, and the introduction after a sentence-opening And or But (#2697, #2737, #2764).
+- title-case-consistency counts neither "if" nor "nor" and leaves a heading that is a name with its acronym in
+  brackets (#2695, #2742). which-that-consistency leaves "consent which will not be unreasonably withheld" (#2744).
+- latin-spacing skips a lone letter between spaces, checks a label joined by または or 及び part by part, and leaves
+  the space between a title in letters and the name after it (#2698, #2759).
+- name-variant reads a form that fills a quotation by itself, "the White House" beside "Whitehouse", more word endings
+  and e for s as a period spelling (Turke / Turks) (#2704, #2736).
+- no-mixed-desumasu sets apart blog asides of feeling and a lone page pointer under its heading (#2702).
+  contraction-consistency leaves a plain-language summary beside the clauses out of the report (#2689).
+- bracket-width-consistency compares bracketed item numbers inside a line only with other labels (#2693).
+  fullwidth-alnum-consistency leaves examples bracketed after a width's name and the title after a dated list item's
+  date (#2710). quote-style-consistency ignores the quotes of a value after an unclosed code mark (#2700).
+  number-style-consistency does not count a number that names a coin or a note (十円玉) (#2751).
+
+### Dates
+
+- date-weekday-mismatch gives a yearless date the year of the one date in the document with the same month, day and
+  weekday, and pairs a weekday written before its date in brackets (#2734, #2740).
+- date-format-consistency groups a bracketed date at a list item's end on its own and compares line-head dates within
+  their section (#2715). date-without-year leaves a day the text gave earlier with its year (#2758).
+- period-label-conflict reads a quarter written with another year as that year's (#2669). elapsed-years-mismatch
+  reads the year a word of opening gives in the count's sentence (#2672).
+
+### Facts
+
+- net-amount-mismatch reads a payslip's 総支給額, 控除合計 and 差引支給額 set out in sections of their own (#2658).
+  change-rate-mismatch reads an earlier value written without its noun (#2664). serial-range-reversed reads a code
+  with a digit group before the hyphen (#2668). version-mismatch reads the current release stated in an earlier
+  sentence (#2670).
+- product-exceeds-maximum reads "in a day" and other English period forms (#2671). summary-fact-mismatch measures a
+  sentence's label without its article (#2674).
+- cross-doc-fact-conflict, cross-doc-term-variant and cross-doc-duplicate-definition report every side of an even
+  split (#2673, #2676).
+
+### Markdown, code and changelogs
+
+- code-fence-language-mix skips compiler error output after an error lead-in and a block of printed output with a
+  status mark and no prompt (#2707, #2746). shell-prompt-mix reads gdb, lldb and pdb sessions and digit-led unprompted
+  lines as output (#2708).
+- broken-link reads the section names MDN's Compat and Specifications macros give (#2747).
+- empty-section skips an empty heading inside a changelog's run of version headings; bold-label-list, bold-density and
+  sentence-rhythm are not measured inside a changelog's release sections (#2713, #2714, #2716).
+
+### Messages and CI
+
+- The excerpt above a finding in a table row stops at the row's end (#2675).
+- The prose scan reads `docs/ChangeLog.md`, not the rule sample pages (#2724).
+
+## 0.50.0 — 2026-11-22
+
+This release completes the rule samples: every rule that runs as a lint has a page in each language it runs on. Writing
+the pages showed where a rule missed natural wording, quoted the wrong span, or said its rule text badly, and those are
+fixed here too.
+
+### Samples
+
+- `docs/samples/ja/` and `docs/samples/en/` now cover every lint rule: wording, AI-likeness, structure, consistency,
+  readability, slips, team and facts rules (#2570–#2667). The four rules judged by AI under `chaff test` have no page.
+
+### Explain and messages
+
+- explain names the genre whose numbers it shows, says when the genre does not run the rule, reads a placeholder's
+  description without quotation marks, keeps a long option choice apart from its meaning and writes （既定） in
+  Japanese (#2574, #2578, #2609, #2644, #2645).
+- Level lines agree with their number at 1 (#2576). ai-generated-composite names its signals, not their ids (#2579).
+- Consistency rules for figures and marks, ordinal-suffix-mismatch and vague-deadline quote their sentence, not a window
+  cut mid-word (#2592, #2611). one-sentence-paragraph-run and demonstrative-opener-run quote their own sentences (#2628,
+  #2630).
+- bracket-width-consistency reports a half-width pair once, kutoten-consistency a sentence's odd marks once,
+  chat-citation-residue one mark once (#2614, #2616, #2626).
+- double-negative names every double negative in a sentence, internal-jargon every listed word, and
+  expletive-construction its sentence's own form (#2617, #2623, #2642).
+- misconversion and nonstandard-word say that `names` in chaff.yaml keeps a form; cross-doc-term-variant's advice names
+  preferred-term (#2606, #2629). repeated-sentence-head says how much of each opening it compares (#2638).
+
+### AI-likeness
+
+- contrast-framing counts a denial its own subject answers (#2584). まるで and the figure it opens count as one figure
+  (#2582). A doubled dash set as one counts once in no-em-dash (#2583).
+- ngram-repetition leaves the words touching a figure's aside (#2567). nominalization reads the compound a verbal noun
+  ends (#2585). agentless-passive quotes the passive verb, and a time から is not an agent (#2586).
+- A lexicon phrase's head verb matches its inflections (moved the needle) (#2591). expletive-construction counts a
+  perfect or modal be (#2625). cliche reads at the end of the day and on the same page only as the figure (#2618).
+- proper-noun-density points at the sentence with the most names (#2640). email-greeting-closing takes thanks for the
+  reader's time as an opening (#2639).
+
+### Rules
+
+- numbering-gap reads Rule, Clause and Regulation headings as Sections (#2608). unfilled-placeholder reads a capitalised
+  bracket a closing word ends ([Candidate Name]) (#2633).
+- requirement-smell reads as quickly as possible as a loophole about time (#2594); unqualified-superlative reads the
+  lightest and the cheapest (#2598); very-adjective counts an adjective the tagger read as a noun (#2599).
+- agreement-slip and less-for-fewer read a plural before to, leave fewer comparing counts (a third fewer requests) and
+  leave homophone pairs to homophone-slip (#2632, #2636). homophone-slip leaves "your welcome email" (#2595).
+- use-before-definition checks a party's single-kanji short name (#2596); defined-name-repeated reads the second party
+  after and (#2610).
+- outside-announced-list reads a list after は、 (#2605); a count in an earlier clause is not what a later 以下の
+  announces (#2580); words said to the writer are received, not quoted (#2581).
+- list-item-form-mix reads an unclosed item opening with a subject and its verb as a sentence (#2613); a noun + 連用形
+  compound at a sentence end reads as a noun (#2615); oxford-comma-consistency leaves a relative clause set off after
+  a name (#2635).
+- hiragana-fukushi reads 直ぐ (#2619); misconversion finds 始めて before 食べる, 見る, 使う and 乗る (#2627);
+  orthographic-variant reads an English heading's words with the body's and leaves the desk 受付 apart from 受け付け
+  (#2620, #2648).
+- request-without-deadline reads その日のうちに and 当日中に as deadlines (#2631); obligation-without-deadline reads "by
+  the" as a deadline only before a time (#2602).
+- title-case-consistency, required-listed-as-preferred, vague-figure-reference, missing-final-period,
+  max-sentence-length and preferred-term each leave a shape they misread (#2600, #2603, #2604, #2637, #2641, #2643).
+
+### Facts
+
+- arrival-before-departure reads 東京発 07:45; connection-time-short reads a row opening with its time and Arrive;
+  deadline-after-event compares a yearless deadline with a single yearless event; phone-number-variant reads a number
+  after at, on or us (#2650–#2653).
+
+## 0.49.0 — 2026-11-21
+
+This release fixes false positives found by judging the 0.48.0 findings in isamu/chaff-corpus, and adds a page per
+rule showing a text chaff fixes: the original, what chaff says, the corrected text and the settings.
+
+### Samples
+
+- `docs/samples/ja/` and `docs/samples/en/` hold one page per rule: a realistic original, chaff's real output, the
+  corrected text, why it changed, and the chaff.yaml settings. A test runs chaff on every page, and
+  `yarn samples:update` regenerates the output (#2564). The first pages cover max-kanji-continuous, no-mixed-desumasu,
+  closing-exhortation, undefined-acronym, empty-intensifier and dangling-reference.
+
+### AI-likeness
+
+- concrete-evidence-density judges a subheading repeated under three or more items with its whole item (#2549).
+- vague-word-density treats the law's own security-duty wording (appropriate … safeguards) as a term of art in legal
+  documents (#2560).
+- expletive-construction leaves speaker turns of verbatim minutes alone (#2565).
+- ngram-repetition reads 「〜は次のとおりであります。」 before each table as a fixed ending (#2562).
+
+### Sentences
+
+- A Japanese bracket opened full-width and closed half-width after a full stop pairs with that close (#2553).
+
+### Rules
+
+- undefined-acronym reads FAR, DFARS and DFAR as citation series, with `section` before the number, and an RFC
+  reference entry with a long label as the cited work (#2548, #2550).
+- max-kanji-continuous reads a name set on a line of its own above its number, and a run that fills the brackets right
+  after a word (its gloss), as names (#2541, #2546).
+- topic-predicate-distance closes a topic at the polite negative ませんが and an act topic (〜することは) at 〜ますが
+  (#2545, #2547).
+- no-mixed-desumasu leaves ＊ notes and a plain sentence ending in よ, ね or かな that speaks to the reader (#2559,
+  #2566).
+- max-sentence-length and max-ten cut a chronology dated with era names into its rows (#2552).
+- name-variant leaves a dictionary word after a or an, and a spelling shown wrong after ×, ✗ (#2555, #2557).
+- orthographic-variant compares 〜ばよかった and よかったら apart from 良い, and leaves a kanji suffix (山, 用) beside an
+  unrelated kana word (#2556, #2558).
+- no-doubled-joshi reads のような / のように as a set phrase (#2551).
+
+## 0.48.0 — 2026-11-20
+
+This release fixes false positives found by judging the 0.46.0 and 0.47.0 findings in isamu/chaff-corpus: contracts,
+business reports, meeting notes, manuals and annual securities reports.
+
+### AI-likeness
+
+- concrete-evidence-density counts named things and domain names as concrete, and reads a parent section with its
+  subsections (#2491).
+- adverb-overuse does not count the -ly word that opens a title-case line (#2488).
+
+### Sentences
+
+- A run-in item heading of a one-line Japanese report starts its own sentence (#2492).
+- An English sentence ends at "etc." before a sentence-start word across a line break (#2529), does not end at a.m. or
+  p.m. before a word in lower case (#2480), and a bare URL hides only the address, not the sentence end after it (#2479).
+
+### Rules
+
+- undefined-acronym reads an expansion in the parent list item or in quotes, a definition across inline markup, NB, HR
+  and MS Excel as explained (#2490, #2496, #2531).
+- numbering-gap and dangling-reference read a subsection run into its section heading's line as an address (#2494).
+- vague-word-density does not count a word a law or a section governs (#2495); requirement-smell does not read 等 in a
+  term law fixes (消費税等) (#2497).
+- Fewer false findings on real documents:
+  - broken-link leaves file-type and size labels ([PDF:47KB]) (#2489).
+  - taigen-dome-in-prose does not count a question closed by か (#2493).
+  - max-sentence-length leaves a reference's author list and a leading parenthesised sentence (#2485).
+  - name-variant leaves ordinary words, contractions, plural acronyms and file names (#2481).
+  - no-doubled-joshi reads 他の, との間 and a clause subject の apart from a nesting chain (#2478).
+  - topic-predicate-distance reads 最後は as an adverb (#2486).
+  - unbalanced-bracket and bracket-nesting leave verse quoted with the mark reopening each line (#2483, #2484).
+  - doubled-punctuation leaves a dot leader in a table (#2477); space-before-punctuation leaves a spaced ellipsis
+    wrapped across a line break (#2482).
+
+## 0.47.0 — 2026-11-20
+
+This release catches more bold benefit labels, stacked email closings and half-width/full-width slips in headings, and
+fixes false positives found by judging the 0.46.0 findings in isamu/chaff-corpus.
+
+### AI-likeness
+
+- bold-label-list counts labels that state a gain with the lead sentences (#2441).
+- closing-cliche counts an email courtesy stacked beside another stock closing (#2449).
+- adverb-overuse does not count stance adverbs (probably, apparently, honestly) (#2448).
+- ai-tell skips a phrase inside a title-cased name (#2442).
+
+### Rules
+
+- fullwidth-alnum-consistency counts a heading's letter and number written in different widths (Q５) (#2444), and does
+  not take one phone number as the document's way of writing (#2440).
+- unknown-word reports a closed compound the document writes apart (flagsalute beside flag salute) (#2443).
+- Fewer false findings on real documents:
+  - max-kanji-continuous reads a trailing range word (以外, 以上) like 等 (#2439).
+  - ngram-repetition leaves a form guide's per-field closing (〜を記載してください。) (#2445).
+  - date-outside-period leaves the dates of a report's follow-up section (今後の対応) (#2446).
+
+## 0.46.0 — 2026-11-18
+
+This release catches more AI-written closings, bold labels and stock wording, and fixes false positives found by
+judging the 0.45.0 findings in isamu/chaff-corpus, many of them in tables flattened into prose, forms, press releases
+and interviews.
+
+### AI-likeness
+
+- bold-label-list does not take paragraph-length tips for captions, and counts paragraphs opened by a whole bold
+  instruction (#2425).
+- closing-cliche reads a closing pledge that promises effort without saying what (#2389), and a proposal's closing
+  offer to discuss any questions (#2423).
+- bold-density reads a field label opening a line as a name, not emphasis (#2424).
+- paragraph-restatement leaves a summary that leads into a next step (#2410).
+- one-sentence-paragraph-run reads paragraphs keyed by a bold term as a list of entries (#2369).
+- colloquial-opener is quiet in a document written in a casual voice throughout (#2386).
+- very-adjective allows up to three per 1000 words by default (#2378).
+
+### Rules
+
+- total-mismatch reads more total words in Japanese sentences, and English counts of people, items and documents
+  (#2421).
+- stray-space reads a space inside a kanji compound in running text (#2422).
+- unbalanced-bracket pairs half-width ｢｣ (#2428).
+- Fewer false findings on real documents:
+  - Tables flattened into prose: teki-overuse (#2409), max-ten (#2429), repeated-sentence-head (#2435),
+    no-nakaguro-parallel (#2375).
+  - repeated-sentence-head ends a run at a heading, and reads one-sentence entries in one frame as a list (#2379).
+  - taigen-dome-in-prose skips table notes and list lead-ins (#2366).
+  - numeral-sentence-start does not read a worked sum as a sentence (#2368).
+  - katakana-density reads the front matter's title as the document's subject (#2370).
+  - comparative-without-baseline reads a place in a stack of layers and a figure with something taken out (#2371).
+  - number-style-consistency reads a list sharing one unit, and leaves native counts (二通り) out (#2372).
+  - orthographic-variant keeps a bracketed title's hyphens and reads イヤ as a sense of its own (#2373).
+  - clause-chain does not count a list of names or a repeated step (#2374).
+  - oxford-comma-consistency does not count the "and" inside a byline's title of office (#2376).
+  - title-case-consistency skips a leading letter label (b. / iv) / (c)) (#2377).
+  - list-item-form-mix reads noun phrases with a relative clause, an infinitive or a participle as phrases (#2381).
+  - email-subject-length does not count a reference number in brackets at the end (#2383), and reads a quoted title
+    under SUBJECT: (#2432).
+  - yori-as-from is off for press releases, where より開始いたします is the fixed wording (#2385).
+  - no-mixed-desumasu does not point at an interview's spoken answers (#2387).
+  - title-length and no-mixed-desumasu leave a video's title and caption (#2417).
+  - date-order reads a deadline column after the first as a list of actions, not a schedule (#2390).
+  - date-without-year reads a yearly schedule in one paragraph as any year's (#2391).
+  - duration-mismatch does not pair two start dates (#2430).
+  - broken-link skips a regex character class and mdBook rule-identifier labels (#2392).
+  - figure-reference-order allows a figure floated a heading ahead within a page (#2393).
+  - space-before-punctuation skips an empty capitalised field in a reference list (#2394).
+  - hyphen-as-dash skips a hyphen that joins a capitalised word onto a name (#2395).
+  - all-caps-shouting skips a label a sentence names as on a screen (#2396).
+  - bare-url-mix skips a URL template with placeholders (#2397).
+  - code-fence-language-mix skips a block a lead-in calls output (#2398).
+  - unqualified-superlative skips a superlative inside a condition (#2399).
+  - defined-term-form skips another instrument's term and a term picked out of its kind (#2400).
+  - dangling-participle skips an -ing phrase that is the subject of a verb (#2401).
+  - name-variant skips a word whose capitals spell out an acronym (#2402).
+  - outside-announced-list does not read ordinals as names (#2403).
+  - party-role-name skips a plural picked out with "of the" (#2404).
+  - undefined-term skips a capitalised run holding a run-together word (#2405).
+  - no-lead does not read a marker line under the title as the lead (#2406).
+  - request-without-deadline does not read the writer asking how to do something as a task (#2407).
+  - ngram-repetition reads a phrase a heading writes as one compound as the subject (#2411).
+  - requirement-smell reads a list a heading names as the page's subject (#2412).
+  - warning-without-action reads 〜べきです as an action (#2413).
+  - vague-word-density skips a table of contents and reads "reasonable accommodation" as a term of art (#2414).
+  - preamble-length does not measure a document whose only headings are front or back matter (#2415).
+  - missing-final-period skips a table cell laid out as a term line and its note (#2416).
+  - empty-intensifier reads 〜には、 as naming what a necessity is for (#2418).
+  - repeated-conjunction reads a run of paragraphs across a table's caption (#2419).
+  - person-consistency leaves a self-reference set against another person (僕は…、君は…) (#2420).
+  - summary-fact-mismatch reads no values inside code blocks (#2431).
+  - doubled-punctuation leaves the separator after a title ending with 。 in a reference (#2433).
+
+## 0.45.0 — 2026-11-11
+
+This release catches more AI-written bold labels, email courtesies and restated headings, and fixes false positives
+found by judging the 0.44.0 findings in isamu/chaff-corpus, many of them in court opinions, forms and literature.
+
+### AI-likeness
+
+- bold-label-list counts a run of paragraphs that each open with a bold statement (#2341).
+- heading-echo reads a Japanese cleft first sentence (〜のは、〜ことだ) by its focus (#2342).
+- email-stock-courtesy counts an offer of help and "for your convenience" (#2355).
+- paragraph-length-variance measures documents of nine paragraphs or more (#2344).
+- rule-of-three does not count a list whose every item is a paragraph (#2350).
+- emoji-density does not count an arrow between two words (#2356).
+
+### Rules
+
+- attachment-not-attached checks only a message as sent (one with a From, Date or Sent header); on a draft it is
+  listed as not run, with the reason (#2353).
+- lookalike-character reports a dash typed for the long-vowel mark between katakana (ニュ－ス) (#2359).
+- Fewer false findings on real documents:
+  - article-sound reads NAS as said as a word (#2340).
+  - teki-overuse is off for literature/essay (#2343).
+  - max-kanji-continuous reads a category named before として認定 and a one-line notice title as names (#2345).
+  - demonstrative-opener-run counts a chain of "It" once and skips more expletive openers (#2348).
+  - agreement-slip reads an -ics field noun (a conversational ethics) as either number (#2351).
+  - date-without-year reads a year written after a slash (Jan 23/58) (#2352).
+  - sentence-spacing-consistency skips pauses inside verse and the gap before a field label (#2361).
+  - adversative-ga-repeat skips a dialect topic, a taken-back word and 御承知かも知れませんが (#2347).
+  - dangling-reference reads a part of a unit cited to another document as that document's (#2349).
+  - unfilled-placeholder skips a form's field label, a fill line's caption and a blank inside a quoted example (#2354).
+  - bracket-width-consistency compares a cited note number (注(24)) apart from the prose (#2357).
+  - fullwidth-alnum-consistency counts a letter and a number in different widths (Q５) apart (#2358).
+  - use-before-definition skips a copied statute's definition, counts an introduction like a summary, and skips a
+    term after a longer name ending in it (#2360).
+  - repeated-sentence-ending starts a new run at a labelled list item (#2362).
+  - empty-section reads a same-depth heading numbered under a section (3. then 3.1) as its subsection (#2363).
+  - abstract-length asks no abstract of a paper whose sections are only an opening and a closing (#2364).
+
+## 0.44.0 — 2026-11-10
+
+This release catches more AI-written list and phrase shapes and fixes false positives found by judging the 0.43.0
+findings in isamu/chaff-corpus, many of them in model contracts and research papers.
+
+### AI-likeness
+
+- bold-label-list reports three list items that each open with a bold lead sentence (#2321).
+- ai-tell reports a single 橋渡し in a Japanese blog post (#2312).
+- padded-intro: a lexicon entry can count only where it opens the sentence (`opens: true`); 近年 and 昨今 are set so
+  (#2318).
+- rule-of-three does not count a list of short label：figure items (#2317).
+- bold-density does not count a bold run that is only a quotation or a code span (#2315).
+- cliche and honesty-marker skip a phrase whose every use is in the title of a reference-list link (#2316).
+- expletive-construction does not count an "It is" opening whose only "that" follows ", but" (#2319).
+
+### Rules
+
+- Contracts:
+  - obligation-without-deadline reads a time set in a paragraph the duty's article points at (前項, 本条第N項), and
+    を目途に (#2327).
+  - reference-title-mismatch reads a longer form of the document's own name and 同第N条 as pointing into another
+    document (#2330).
+  - defined-term-form reads the definition marker (以下本契約において同じ) as no added word (#2332).
+  - requirement-smell does not read 等 right after a defined term as an open list (#2334).
+  - request-without-deadline reads the decision date in a proposal's schedule section (#2311).
+- Fewer false findings on real documents:
+  - no-doubled-joshi reads a chain through a place word (ラックの下の段) as one place name (#2325).
+  - orthographic-variant reads a kanji verb after a て-form as the full verb where the document keeps helpers in kana
+    (#2326).
+  - number-style-consistency does not count a numeral that opens a longer word (二枚貝) (#2310).
+  - katakana-density does not count the katakana words of the document's title (#2314).
+  - all-caps-shouting skips a capital run that is a whole quotation (#2313).
+  - duration-mismatch reads "N days and N nights" as round the clock (#2322).
+  - reference-topic-missing reads a Latin link word only as a whole word (#2323).
+  - absolute-exception leaves an absolute word right after a negation (#2324).
+  - percent-sum-mismatch skips two percentages joined into a range or a change (#2328).
+  - unbalanced-bracket reads the mouth of an emoticon as no bracket (#2329).
+  - unqualified-superlative reads "the best-scoring one" as picking from a named set (#2331).
+  - max-paragraph-length skips a block whose line breaks were lost (#2336).
+  - redundant-expression skips a pair running into a hyphenated compound ("true fact-check") (#2337).
+- Fewer misses:
+  - agreement-slip catches a plural determiner after a preposition ("on these flagged post") (#2333).
+  - hyphen-as-dash finds a spaced hyphen beside a code span (#2335).
+
+## 0.43.0 — 2026-11-08
+
+This release reads two more shapes of AI-written structure and fixes false positives found by judging the 0.42.0
+findings in isamu/chaff-corpus.
+
+### AI-likeness
+
+- ai-structure reads bold Pros / Cons (メリット / デメリット) labels as a pros / cons pair (#2295) and numbered Option
+  headings as a stock heading form (#2296).
+- excessive-hedging does not stack a reported view (と思われている) or a modal inside a content clause on an earlier
+  hedge (#2294).
+- weasel-word leaves a phrase that names its source: an in-text citation, a reference entry, からは「…」 (#2298).
+- ngram-repetition does not count a role named before a modal ("the Manager should") (#2301).
+
+### Rules
+
+- Fewer false findings on real documents:
+  - doubled-word skips a doubled noun in a table a converter ran together (#2274), reads a noun said twice and quoted
+    with と as a chant (#2275), and accepts 時点時点 and 是非是非 (#2276).
+  - adverb-overuse does not count a capitalised -ly name in mid-sentence (July) (#2277).
+  - undefined-acronym reads two capitalised words of five letters or more as words (#2278) and CM (テレビCM) as an
+    everyday word (#2279).
+  - repeated-sentence-ending counts a refrain of the same closing phrase once (#2280) and skips questions run together
+    inside one sentence (#2283).
+  - no-mixed-desumasu points at neither register when a document has as many of each (#2281), sets apart a page's note
+    after the text it carries (#2306), and leaves a speech's 〜を…ていく declaration alone (#2307).
+  - bracket-width-consistency compares a Latin line tag and an item's address with the line labels (#2282) and leaves
+    out a self-citation of the document's own heading (#2286).
+  - number-style-consistency leaves out a section number after § and a count of nights (#2284), and the numbers of law
+    articles a document quotes (#2304).
+  - orthographic-variant compares a noun joined to another (物やサービス) apart from the dependent noun (#2285), and
+    決意をもって and 覚悟をもって as the attitude idiom (#2303).
+  - lookalike-character does not report an example shown next to words naming such characters (#2288).
+  - no-doubled-joshi reads a long name given a short one (以下「…」という) and a name quoted once and written again
+    bare as one noun (#2289, #2291).
+  - unknown-word accepts an -nce spelling of an -nse word (recompence) (#2290).
+  - unused-definition counts spaced uses, reads quoted glosses as glosses, and is off for glossaries (#2293).
+  - bracket-nesting allows three levels in literature (#2297).
+  - title-length reads a Japanese heading ending in か as a question (#2299).
+  - number-without-unit leaves a count whose row is bare in another column too (#2302).
+  - fact-conflict leaves reference-entry fields, era years and two rows of one name (#2305).
+
+## 0.42.0 — 2026-11-04
+
+This release catches more of the stock phrasing in AI-written emails, proposals and advice, and fixes false positives
+found by judging the 0.41.0 findings in isamu/chaff-corpus.
+
+### AI-likeness
+
+- closing-cliche runs on emails and proposals and reads their stock last lines ("Thank you for your prompt attention to
+  this matter", "We would welcome any feedback"); its entries can apply per genre, and the ordinary lines of Japanese
+  work mail stay limited to blog posts (#2264).
+- cliche reads the quips of AI-written advice: "the one you'll actually use", "could have been an email" (#2262).
+- padded-intro reports "The good news is" and a "Sound familiar?" hook in an English opening (#2259, #2260).
+- rule-of-three measures a document with two lists of three (#2263).
+- ai-structure counts a textbook outline that is the whole outline as one more measure (#2261).
+- ai-tell reports a single 刺さる or 地味だけど in a Japanese blog post (#2268).
+- colon-lead-in does not count a lead-in whose own verb states a duty (should, must; なければならない) (#2271).
+
+### Rules
+
+- Fewer false findings on real documents:
+  - max-kanji-continuous skips bibliographic entries in notes (#2248), drops provision numbers after a statute name
+    (#2251), splits a run at a 等 in its middle (#2267), and reads funds, designated zones and memorial ceremonies as
+    names (#2269).
+  - ngram-repetition does not count a phrase spread thin across a long document (#2252), a heading's phrase used as
+    the subject (#2254), the step wording after a bracketed screen label (#2255), or a clause modifying a nakaguro noun
+    pair (#2256).
+  - undefined-acronym leaves out capitals written only as a kind of file (#2249) and capitals known only as an
+    interjection (HEY) (#2250).
+  - contraction-consistency does not point into a quotation (#2253).
+  - topic-predicate-distance stops a cleft topic inside a という noun phrase (#2266).
+
+## 0.41.0 — 2026-10-29
+
+This release makes the AI-likeness checks more exact on long and structured human documents, and fixes false
+positives found by judging the 0.40.0 findings in isamu/chaff-corpus.
+
+### AI-likeness
+
+- ai-tell scores the densest stretch of consecutive sentences instead of the whole document, so a long human text no
+  longer adds up a score by its length (#2241); わかりやすく解説 counts only in a title or heading (#2213).
+- ai-generated-composite no longer counts one shape twice: ai-structure counts only while it reaches its limit without
+  the measures whose own rule also fired (#2234).
+- ai-structure leaves questions under an FAQ heading out of its stock-heading measure (#2242).
+- honesty-marker quotes the marker itself, without the comma or question mark around it (#2221).
+- contrast-framing needs more than one frame per 1000 words or characters beside its share (#2237).
+- colon-lead-in reads field labels that differ in one word as one template (#2214).
+
+### Rules
+
+- Fewer false findings on real documents:
+  - English: contraction-consistency leaves out publisher disclaimers and sentences about contractions, and does not
+    point at warnings (#2212); undefined-acronym reads letter-series numbers, a time zone after a clock time, a phone
+    label, social handles, names in 『』, reference-entry labels, citation-series names and full-width expansions
+    (#2218, #2235); unknown-word (#2219); oxford-comma-consistency (#2236); ngram-repetition (#2238);
+    unqualified-superlative (#2243).
+  - Japanese: no-mixed-desumasu reads お願いします as a set phrase (#2215); fullwidth-alnum-consistency (#2244) and
+    no-doubled-joshi (#2245) read tables whose cells the text runs together.
+
+### Speed
+
+- doubled-word, known-correction and which-that-consistency no longer repeat work per pair or per word in a very long
+  sentence (#2239).
+
+## 0.40.0 — 2026-10-29
+
+This release continues the AI-likeness work: a new rule for honesty markers, ai-tell reads headings and reports one
+heavier phrase in a blog post, and bold-label-list counts bold lead sentences. The rest comes from judging real
+documents in isamu/chaff-corpus, rule by rule.
+
+### New rules
+
+- honesty-marker reports one honesty marker (「正直、」, "Honestly,") in a blog post or business document; the
+  composite reads it as a signal (#2197).
+
+### AI-likeness
+
+- ai-tell reports one heavier phrase in a blog post (#2190) and reads headings and titles (#2193).
+- bold-label-list counts list items that open with a bold lead sentence, not only a bold label and colon (#2196).
+- contrast-framing counts a written-out denial (is not, does not) as the contracted one (#2187).
+- closing-cliche reads "try it" send-offs in the last paragraph (#2174); empty-conclusion sends a closing that only
+  repeats the body's code to `chaff test` (#2188).
+- unfilled-placeholder reads blanks in table cells, field values, addresses and phone numbers (#2191), and reports one
+  blank once (#2201).
+
+### Rules
+
+- Fewer false findings on real documents:
+  - Structure: duplicate-definition leaves out a definition in a clause the signer chooses (#2202); numbering-gap
+    leaves a skip where the text writes the number, quotes an excerpt or repeats a name (#2203); undefined-term reads
+    inherited definitions and capitalised words not written as terms, and reports a slip in a document's name (#2207).
+  - Japanese wording: topic-predicate-distance (#2205), no-doubled-joshi (#2206), orthographic-variant (#2208),
+    teki-overuse (#2209), nominalization (#2210), no-mixed-desumasu (#2194), request-without-deadline (#2175),
+    requirement-smell (#2173).
+  - Lists, paragraphs and sentences: colon-lead-in (#2178, #2189), max-paragraph-length (#2177), one-sentence-paragraph-run
+    (#2184), missing-final-period (#2180), max-sentence-length (#2181).
+  - English wording and references: contraction-consistency (#2164), spelling-consistency (#2179), latin-spacing
+    (#2185), undefined-acronym (#2195), unknown-word (#2192), quote-without-source (#2182), date-format-consistency
+    (#2176).
+
+## 0.39.0 — 2026-10-28
+
+This release deepens the AI-likeness checks. Four new rules report shapes common in generated text, the composite
+reads more signals and needs only two in a blog post, and `fix-plan --all-ai-signs` with `chaff test --checks ai-tells`
+makes "remove every AI tell" a loop a machine can check. The rest again comes from judging real documents in
+isamu/chaff-corpus: US court opinions, the Code of Federal Regulations, Federal Register pages, Japanese statutes and
+securities reports, interviews, blogs and emails. False positives found there are fixed rule by rule.
+
+### New rules
+
+- email-stock-courtesy reports stacked stock courtesies in an English email ("I hope this email finds you well")
+  (#1932).
+- closing-exhortation reports a closing that cheers the reader on (「ぜひ〜してみてください」, "You've got this")
+  (#1943).
+- cold-open reports an opening that piles a bare wish, a quoted echo of the previous sentence and a teaser (#2099).
+- unprompted-denial reports sentences that deny a premise nobody stated (「〜の話ではありません」, "This isn't about
+  tooling.") (#2103).
+
+### AI-likeness
+
+- ai-generated-composite reads five more AI-tells signals (over-general-claim, q-fragment-answer, closing-exhortation,
+  unfilled-placeholder, bold-emphasis) (#2100), and reports two signals together in a blog post (#2143).
+- ai-tell gains era words, honesty markers and Japanese closings and metaphors that human documents lack (#1939);
+  announcing-opener counts guide openers and honesty markers (#1936); contrast-framing reads wider frames and counts a
+  share of sentences (#1941); ai-structure counts the textbook proposal outline in business documents (#1942);
+  rule-of-three runs in business documents (#1944); colon-lead-in checks English too, at its own higher limit (#2096);
+  closing-cliche catches send-offs in the last paragraph (#2129).
+- padded-intro knows generic-problem openers, and `chaff test` gains the `generic-opening` question (#2102).
+- Fewer false findings: ai-tell holds honesty inside a Japanese sentence and drops the phrases human blog and business
+  documents use as much (#2135, #2139); contrast-framing drops three false-positive shapes and re-places its floor by
+  measurement (#2128); colon-lead-in counts lead-ins section after section, not bold noun labels (#2130); rule-of-three
+  (#2154), bold-emphasis (#2111), over-general-claim (#2112), unqualified-superlative, with its minimum placed by
+  measurement (#2116, #2132), section-length-uniformity (#2157), no-em-dash (#2153), preamble-length (#2160).
+
+### fix-plan and chaff test
+
+- `fix-plan --all-ai-signs` runs every AI-likeness rule, also those the genre turns off, and adds the `ai-score` level
+  and when to stop; `--before <original>` lists every rule the rewrite raised; `chaff test --checks ai-tells` asks the
+  bundled questions about the tells only a reader can judge (#2101).
+
+### Rules
+
+- Fewer false findings on real documents:
+  - Japanese wording: max-kanji-continuous (#2105, #2146), no-mixed-desumasu (#2118, #2159), orthographic-variant
+    (#2121), kutoten-consistency (#2125), comparative-without-baseline (#2133), topic-predicate-distance (#2134, #2144),
+    no-doubled-joshi (#2165), fullwidth-alnum-consistency (#2162), ngram-repetition (#2136, #2155).
+  - Lists, headings and sections: list-item-form-mix (#2126), duplicate-heading (#2122), heading-level-skip (#2124),
+    heading-numbering-mix (#2150), max-sentence-length (#2119).
+  - References and names: dangling-reference reads other works' units in opinions, reference lists and excerpts
+    (#2115); name-variant (#2151); proper-noun-density (#2145); concrete-evidence-density (#2148).
+  - English wording: undefined-acronym, with its limit re-measured (#2109, #2156, #2161), unknown-word (#2110, #2158),
+    all-caps-shouting (#2106), oxford-comma-consistency (#2147), hyphen-as-dash (#2163), email-greeting-closing
+    (#2107); lang-en reads AI, the US and other names as names, not verbs (#2140).
+
+### HTML and tools
+
+- HTML pages: a help box shown on hover (federalregister.gov Document Headings) is dropped (#2114).
+- The corpus check finishes within its timeout (#2138).
+
+## 0.38.0 — 2026-10-22
+
+Most of this release again comes from judging real documents in isamu/chaff-corpus: US statutes and court opinions,
+Federal Register notices, RFCs, Diet records, newsletters, poems and plays, and HTML pages. False positives found there
+are fixed rule by rule. Two bundled profiles read Japanese verse and plays, the AI-likeness checks gain two signals, and
+rules are placed by judged precision without being hidden by their own offs. There are no new rules.
+
+### AI-likeness
+
+- sentence-rhythm joins the ai-tells group, with a level measured for Japanese blogs (#1931).
+- unfilled-placeholder reports a 〇〇 left where a Japanese business letter needs a name, a sum or a date (〇〇様,
+  株式会社〇〇, 〇万円) (#1928).
+
+### Profiles and sentences
+
+- New profiles: `verse` ends a Japanese poem's sentences at its line ends (#1722), and `play` splits a stage direction
+  in （） from the spoken line (#1726). `literature/poetry` and `literature/play` choose them.
+- Japanese sentences end after a quotation closed at the line end (#1551), around a line that stands as one unit (a
+  URL, a contact field, a bracketed label) (#1686), and before a ※ note line (#1724).
+- English sentences: an initial before a sentence-start or lower-case word, initials after by or and, U.S. and name
+  abbreviations (Jas., Wm.) before a name (#1637, #1744, #1753, #1892).
+
+### Rules
+
+- Catches more: agreement-slip reports two determiners in a row (the some roads) (#1654); bracket-width-consistency
+  compares square brackets too (#1902).
+- Placement: rules are placed by judged precision, and `yarn rules:precision` measures without the offs it wrote
+  (`CHAFF_IGNORE_MEASURED_OFFS=1`); a rule file's `precision_hold` keeps a group on while a narrowing fix is due
+  (#1747). one-sentence-paragraph-run is off for speech/transcript (#1678) and demonstrative-opener-run for literature
+  (#1707).
+- Fewer false findings on real documents:
+  - Japanese wording: orthographic-variant (#1561, #1640, #1680, #1704, #1745, #1893, #1924), max-kanji-continuous
+    (#1539, #1638, #1706, #1888), no-mixed-desumasu (#1543, #1673, #1755), adversative-ga-repeat (#1565, #1694),
+    humble-for-others (#1566), empty-intensifier (#1548), doubled-word (#1556, #1742), no-doubled-joshi (#1643),
+    teki-overuse (#1657), colloquial-opener (#1647), comparative-without-baseline (#1649, #1692, #1912),
+    topic-predicate-distance (#1716, #1736), demonstrative-opener-run (#1718, #1737), tari-unpaired (#1725, #1915),
+    stray-space (#1689), kutoten-consistency (#1690), bracket-nesting (#1676, #1898), fullwidth-alnum-consistency (#1562,
+    #1571), max-ten (#1749), taigen-dome-in-prose (#1682), ngram-repetition (#1564), change-rate-mismatch (#1693),
+    doubled-punctuation (#1895), unqualified-superlative (#1721), email-greeting-closing reads a newsletter issue (#1685,
+    #1899).
+  - Lists, headings and tables: one-sentence-paragraph-run (#1547, #1751), list-item-form-mix (#1552, #1727, #1752),
+    missing-final-period (#1695, #1914), heading-end-punctuation-mix (#1650), heading-numbering-mix (#1913),
+    colon-lead-in (#1900), title-case-consistency (#1728), title-length (#1631), empty-table-cell (#1733), no-em-dash
+    (#1732).
+  - Definitions, references and numbering: defined-term-form (#1553), requirement-smell (#1555, #1923),
+    use-before-definition (#1642, #1746), unused-definition (#1648, #1710, #1731), duplicate-definition (#1911),
+    undefined-term (#1920), defined-name-repeated (#1925), announced-count-mismatch (#1926), dangling-reference reads US
+    code and Public Law citations (#1655, #1671, #1674, #1691, #1708, #1908), numbering-gap (#1645, #1677, #1729, #1921),
+    citation-reference-mismatch (#1659, #1906), figure-reference-order (#1660, #1907), broken-link (#1662),
+    link-text-url-mismatch (#1559), request-without-deadline (#1666), return-type-mismatch (#1894).
+  - English wording: undefined-acronym (#1550, #1634, #1683, #1897, #1917, #1922), acronym-expansion-conflict (#1675),
+    oxford-comma-consistency (#1560, #1719, #1741), which-that-consistency (#1653), unknown-word (#1696, #1701, #1909),
+    name-variant (#1665, #1702), agreement-slip (#1700), article-sound (#1705, #1896), numeral-sentence-start (#1699),
+    sentence-initial-conjunction-run (#1651), wordy-phrase (#1646), weasel-word (#1549), hyphen-as-dash (#1652, #1712),
+    unrendered-emphasis (#1681), max-sentence-length (#1639, #1684, #1901), max-paragraph-length (#1635),
+    number-style-consistency (#1919).
+  - Dates: date-without-year (#1554, #1687, #1698, #1910), date-weekday-mismatch (#1698), relative-date-mismatch
+    (#1644).
+
+### HTML, compare and fix-plan
+
+- HTML pages: spaces around tags, formulas, empty-looking numbered sections, table header rows and captions, footnote
+  marks, section links, accordion titles and script-filled boxes are read as the page shows them (#1658, #1663, #1667,
+  #1670, #1711, #1713, #1714, #1743).
+- compare: a name the rewrite respelled is reported as respelled, not dropped and added (#1568), and a quotation opened
+  with the closing mark is a quotation (#1570).
+- fix-plan: nominalization's rewrite attaches する to the noun (#1632), and list-item-form-mix's keeps an item's force
+  (#1633).
+- Corpus: 青空文庫 texts are stored without transcriber notes (#1572), and Diet records drop divider lines (#1679).
+
 ## 0.37.0 — 2026-10-19
 
 This release comes from judging more real documents in isamu/chaff-corpus: Cabinet Office press conferences, FSA

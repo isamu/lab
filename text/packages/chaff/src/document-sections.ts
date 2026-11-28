@@ -30,6 +30,7 @@ export const sectionsOf = (
     .map(({ heading, from, to }) => {
       const inside = sentences.filter((sentence) => within(sentence.span, from, to));
       const unlabeled = readers.unlabeledOf(heading.text);
+      const strongsInside = strongs.filter((span) => within(span, from, to));
       return {
         depth: heading.depth,
         heading: heading.text,
@@ -39,7 +40,8 @@ export const sectionsOf = (
         },
         span: { start: from, end: to },
         sentences: inside,
-        strongCount: strongs.filter((span) => within(span, from, to)).length,
+        strongCount: strongsInside.length,
+        strongs: strongsInside,
         firstSentence: inside[0],
       };
     });
