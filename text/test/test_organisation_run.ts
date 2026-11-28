@@ -1,6 +1,6 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { isOrganisationRun, type OrganisationWords } from "../packages/chaff/src/detectors/organisation-run.ts";
+import { isOrganisationRun, leadingNamedOrganisation, type OrganisationWords } from "../packages/chaff/src/detectors/organisation-run.ts";
 import { prepare, tokenize } from "../packages/lang-ja/src/pos.ts";
 import { loadLexicons } from "../packages/lang-ja/src/lexicons.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
@@ -166,5 +166,38 @@ describe("isOrganisationRun — 漢字の連なりが 1 つの組織の名前か
     assert.ok(!isOrganisationRun(unitOnly, [0, 1, 2], WORDS));
     const named = [token("奈良", 0, "PROPN", { NameType: "Geo" }), token("県", 2, "NOUN", { NameType: "GeoUnit" }), token("振興", 3), token("協議会", 5)];
     assert.ok(isOrganisationRun(named, [0, 1, 2, 3], WORDS));
+  });
+});
+
+/** 連なりの頭の、固有名詞を含む組織の名前の字。無ければ空。 */
+const leadingName = (run: string): string => {
+  const tokens = tokensOf(run);
+  return tokens
+    .slice(0, leadingNamedOrganisation(tokens, tokens.length, WORDS))
+    .map((piece) => piece.surface)
+    .join("");
+};
+
+describe("leadingNamedOrganisation — 連なりの頭の、固有名詞を含む組織の名前", () => {
+  before(async () => {
+    await prepare();
+  });
+
+  it("valid: 地名や組織名で始まる組織の名前に普通の語が続く", () => {
+    assert.equal(leadingName("国連安全保障理事会改革"), "国連安全保障理事会");
+    assert.equal(leadingName("東京電力福島第一原子力発電所事故"), "東京電力福島第一原子力発電所");
+    assert.equal(leadingName("日本弁護士連合会臨時総会決議"), "日本弁護士連合会");
+  });
+
+  it("invalid: 固有名詞の無い組織の名前、組織の語で閉じない名前、連なり全体が組織の名前", () => {
+    assert.equal(leadingName("個人情報保護委員会公表資料"), "");
+    assert.equal(leadingName("国連安保理決議違反"), "");
+    assert.equal(leadingName("国連安全保障理事会"), "");
+  });
+
+  it("invalid: 語が無い・語数の上限が 0", () => {
+    assert.equal(leadingNamedOrganisation([], 8, WORDS), 0);
+    const tokens = tokensOf("国連安全保障理事会改革");
+    assert.equal(leadingNamedOrganisation(tokens, 0, WORDS), 0);
   });
 });

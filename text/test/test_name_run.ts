@@ -1,6 +1,6 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { isOneName } from "../packages/chaff/src/detectors/name-run.ts";
+import { isMostlyNames, isOneName } from "../packages/chaff/src/detectors/name-run.ts";
 import { prepare, tokenize } from "../packages/lang-ja/src/pos.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 
@@ -94,5 +94,47 @@ describe("isOneName — 漢字の連なりが 1 つの名前か", () => {
     assert.ok(!isOneName([token("日本銀行", "PROPN", "Com")], []));
     assert.ok(!isOneName([token("日本銀行", "PROPN", "Com")], [1]));
     assert.ok(!isOneName([token("田中", "PROPN", "Sur")], [0, 1]));
+  });
+});
+
+/** 文字列全体を 1 つの漢字の連なりとして、名前が大半を占めるかを判定する。 */
+const isMostlyNamed = (run: string): boolean => {
+  const tokens = tokensOf(run);
+  return isMostlyNames(
+    tokens,
+    tokens.map((_, index) => index),
+  );
+};
+
+describe("isMostlyNames — 名前を並べて組み立てた 1 つの名前か", () => {
+  before(async () => {
+    await prepare();
+  });
+
+  it("valid: 字の半分以上が固有名詞で、普通の語を含む名前（地震や災害の名前、名前に短い語が続くもの）", () => {
+    assert.ok(isMostlyNamed("東北地方太平洋沖地震"));
+    assert.ok(isMostlyNamed("阪神淡路大震災"));
+    assert.ok(isMostlyNamed("東日本大震災"));
+    assert.ok(isMostlyNamed("新東京国際空港公団総務部長"));
+  });
+
+  it("invalid: 普通の語の方が長い連なり（名前に組み立てた語が続く、固有名詞の無い複合語）", () => {
+    assert.ok(!isMostlyNamed("日本弁護士連合会臨時総会決議"));
+    assert.ok(!isMostlyNamed("千島海溝周辺海溝型地震"));
+    assert.ok(!isMostlyNamed("東京電力福島第一原子力発電所事故"));
+    assert.ok(!isMostlyNamed("新規顧客獲得施策検討会議"));
+  });
+
+  it("invalid: 普通の語を含まない名前の並び（地名や人の名前を続けただけ）", () => {
+    assert.ok(!isMostlyNamed("東京大阪名古屋福岡"));
+    assert.ok(!isMostlyNamed("北海道神奈川県横浜市"));
+    assert.ok(!isMostlyNamed("田中一郎山田花子"));
+  });
+
+  it("invalid: 1 字の固有名詞は名前の字に数えない。語が無い・範囲の外", () => {
+    assert.ok(!isMostlyNames([token("東", "PROPN", "Geo"), token("京", "NOUN")], [0, 1]));
+    assert.ok(!isMostlyNames([], []));
+    assert.ok(!isMostlyNames([token("東北", "PROPN", "Geo"), token("地方", "NOUN")], []));
+    assert.ok(!isMostlyNames([token("東北", "PROPN", "Geo"), token("地方", "NOUN")], [5]));
   });
 });

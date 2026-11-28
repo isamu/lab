@@ -116,8 +116,17 @@ describe("max-kanji-continuous: 知っている語で割る", () => {
     assert.deepEqual(kanjiWords("書類を中央区中央通北二丁目課に届ける。\n"), ["中央区中央通北二丁目課"]);
   });
 
+  it("valid: 頭の固有名詞を含む組織の名前は、後ろの普通の語と別に数える", () => {
+    assert.deepEqual(kanjiWords("我が国は国連安全保障理事会改革に取り組みます。\n"), []);
+    assert.deepEqual(kanjiWords("被災者を支援する東京電力福島第一原子力発電所事故の対策。\n"), []);
+  });
+
+  it("invalid: 組織の名前の後ろの普通の語が長ければ、それを数える。サ変の名詞が続く名前の並びはまるごと数える", () => {
+    assert.deepEqual(kanjiWords("我が国は国連安全保障理事会改革推進基本計画策定に取り組みます。\n"), ["改革推進基本計画策定"]);
+    assert.deepEqual(kanjiWords("これは国連安保理決議違反である。\n"), ["国連安保理決議違反"]);
+  });
+
   it("invalid: 知っている語を外しても長い残り、短い単独の語は割らない", () => {
-    assert.deepEqual(kanjiWords("我が国は国連安全保障理事会改革に取り組みます。\n"), ["国連安全保障理事会改革"]);
     assert.deepEqual(kanjiWords("会議の話をした。新規顧客獲得施策検討会議を開く。\n", "business/report"), ["新規顧客獲得施策検討会議"]);
     assert.deepEqual(kanjiWords("情報処理推進機構認定試験を受ける。\n", "business/report"), ["情報処理推進機構認定試験"]);
     assert.deepEqual(kanjiWords("昨年の内閣総理大臣就任以来、取り組んできました。\n"), ["内閣総理大臣就任以来"]);

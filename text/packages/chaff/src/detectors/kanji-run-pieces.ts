@@ -106,17 +106,23 @@ export const isTitledPerson = (
 export const isInnerSuffix = (words: readonly string[], index: number, suffixes: readonly string[]): boolean =>
   index > 0 && index < words.length - 1 && suffixes.includes(words[index] ?? "");
 
-/** 連なりの中で語の切れ目を見せる印: 中ほどの並べた物の後ろに付く語と前を指す語（suffixes）と、漢数字の後ろの街区の単位（blockUnits）。 */
-export type BreakMarks = { readonly suffixes: readonly string[]; readonly blockUnits: readonly string[] };
+/**
+ * 連なりの中で語の切れ目を見せる印: 中ほどの並べた物の後ろに付く語と前を指す語（suffixes）と、漢数字の後ろの街区の単位（blockUnits）と、
+ * 頭の固有名詞を含む組織の名前の語数（leadingName: 国連安全保障理事会改革の「国連安全保障理事会」、無ければ 0）。
+ */
+export type BreakMarks = { readonly suffixes: readonly string[]; readonly blockUnits: readonly string[]; readonly leadingName: number };
 
-/** 連なりの語の [start, end) が、切れ目を見せる印（中ほどの「等」、漢数字の番地）か。 */
+/** 連なりの語の [start, end) が、切れ目を見せる印（中ほどの「等」、漢数字の番地、頭の組織の名前）か。 */
 export const isBreakMark = (runTokens: readonly Token[], words: readonly string[], piece: Span, marks: BreakMarks): boolean =>
-  (piece.end === piece.start + 1 && isInnerSuffix(words, piece.start, marks.suffixes)) || isBlockNumber(runTokens, words, piece, marks.blockUnits);
+  (piece.end === piece.start + 1 && isInnerSuffix(words, piece.start, marks.suffixes)) ||
+  isBlockNumber(runTokens, words, piece, marks.blockUnits) ||
+  (piece.start === 0 && marks.leadingName > 0 && piece.end === marks.leadingName);
 
 /** 連なりの語（runTokens、その字が words）が、知っている語（known）か切れ目を見せる印を含むか。含まなければ、連なりをまるごと数える。 */
 export const holdsKnown = (runTokens: readonly Token[], words: readonly string[], known: readonly string[], marks: BreakMarks): boolean => {
   const whole = words.join("");
   return (
+    marks.leadingName > 0 ||
     known.some((word) => whole.includes(word)) ||
     words.some((word, index) => isInnerSuffix(words, index, marks.suffixes) || (index > 0 && marks.blockUnits.includes(word) && isNumber(runTokens[index - 1])))
   );
